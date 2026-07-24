@@ -12,16 +12,17 @@
     <style>
       :root {
         color-scheme: dark;
-        --ink: #07130f;
-        --ink-soft: #0d1d17;
-        --panel: rgba(16, 37, 29, 0.72);
-        --paper: #eef1df;
-        --muted: #94a69c;
-        --line: rgba(214, 238, 180, 0.16);
-        --acid: #dff36b;
-        --mint: #86e8bd;
-        --coral: #ff8066;
-        --shadow: 0 26px 70px rgba(0, 0, 0, 0.3);
+        --ink: #070a0f;
+        --ink-soft: #0d121a;
+        --panel: rgba(13, 18, 26, 0.94);
+        --paper: #f4f1e7;
+        --muted: #aab2bd;
+        --line: rgba(233, 241, 255, 0.12);
+        --acid: #b8f34b;
+        --mint: #64dfff;
+        --coral: #ff6b5f;
+        --code-bg: #090d13;
+        --shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
         --serif: "STSong", "Songti SC", "Noto Serif SC", Georgia, serif;
         --sans: "Microsoft YaHei UI", "PingFang SC", sans-serif;
         --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
@@ -40,8 +41,8 @@
         overflow-x: hidden;
         color: var(--paper);
         background:
-          radial-gradient(circle at 12% 8%, rgba(134, 232, 189, 0.12), transparent 26rem),
-          radial-gradient(circle at 85% 16%, rgba(223, 243, 107, 0.09), transparent 24rem),
+          radial-gradient(circle at 12% 8%, rgba(72, 142, 255, 0.1), transparent 28rem),
+          radial-gradient(circle at 88% 14%, rgba(100, 223, 255, 0.055), transparent 25rem),
           var(--ink);
         font-family: var(--sans);
       }
@@ -86,7 +87,7 @@
 
       .site-header.scrolled {
         border-color: var(--line);
-        background: rgba(7, 19, 15, 0.78);
+        background: rgba(7, 10, 15, 0.84);
       }
 
       .nav {
@@ -312,7 +313,7 @@
         aspect-ratio: 1;
         transform: translate(-50%, -50%);
         border-color: rgba(223, 243, 107, 0.45);
-        background: rgba(18, 42, 32, 0.92);
+        background: rgba(16, 23, 34, 0.96);
         font-family: var(--serif);
         font-size: 22px;
         line-height: 1.25;
@@ -332,7 +333,7 @@
       .topic-node {
         width: 112px;
         aspect-ratio: 1;
-        background: rgba(9, 25, 19, 0.92);
+        background: rgba(10, 15, 23, 0.96);
         color: var(--muted);
         font-size: 13px;
         cursor: default;
@@ -400,7 +401,7 @@
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 14px;
-        background: linear-gradient(145deg, rgba(17, 40, 31, 0.88), rgba(7, 19, 15, 0.88));
+        background: linear-gradient(145deg, rgba(15, 21, 31, 0.98), rgba(8, 12, 18, 0.98));
         box-shadow: var(--shadow);
         grid-template-columns: minmax(310px, 0.78fr) 1.22fr;
       }
@@ -460,7 +461,7 @@
         background: var(--paper);
       }
 
-      .legend .visited { background: rgba(134, 232, 189, 0.55); }
+      .legend .visited { background: rgba(100, 223, 255, 0.68); }
       .legend .path { background: var(--acid); }
       .legend .wall { background: #33483d; }
 
@@ -479,8 +480,8 @@
         place-items: center;
         padding: 42px;
         background:
-          radial-gradient(circle at center, rgba(134, 232, 189, 0.06), transparent 60%),
-          rgba(5, 16, 12, 0.45);
+          radial-gradient(circle at center, rgba(100, 223, 255, 0.045), transparent 60%),
+          rgba(7, 10, 15, 0.68);
       }
 
       .astar-wrap {
@@ -540,16 +541,16 @@
       }
 
       .cell.open {
-        background: rgba(134, 232, 189, 0.13);
+        background: rgba(100, 223, 255, 0.12);
       }
 
       .cell.closed {
-        background: rgba(134, 232, 189, 0.28);
+        background: rgba(100, 223, 255, 0.26);
       }
 
       .cell.path {
         background: var(--acid);
-        box-shadow: inset 0 0 0 4px rgba(7, 19, 15, 0.18);
+        box-shadow: inset 0 0 0 4px rgba(7, 10, 15, 0.2);
       }
 
       .cell.start,
@@ -577,6 +578,102 @@
         animation: current-cell 620ms ease-in-out infinite alternate;
       }
 
+      .logic-console {
+        overflow: hidden;
+        margin-top: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--code-bg);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+      }
+
+      .logic-head,
+      .logic-vars {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: var(--mono);
+      }
+
+      .logic-head {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+      }
+
+      .logic-state { color: var(--acid); }
+
+      .logic-vars {
+        justify-content: flex-start;
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .logic-vars b { color: var(--paper); font-weight: 500; }
+
+      .logic-code {
+        margin: 0;
+        padding: 8px 0;
+        list-style: none;
+        counter-reset: code-line;
+      }
+
+      .logic-line {
+        display: grid;
+        min-height: 27px;
+        align-items: center;
+        padding: 3px 14px 3px 0;
+        color: #7e8997;
+        font-family: var(--mono);
+        font-size: 10px;
+        grid-template-columns: 34px 1fr;
+        transition: color 120ms ease, background 120ms ease;
+        counter-increment: code-line;
+      }
+
+      .logic-line::before {
+        content: counter(code-line);
+        color: #46505d;
+        text-align: center;
+      }
+
+      .logic-line code { overflow-wrap: anywhere; }
+
+      .logic-line.active {
+        color: var(--paper);
+        background: linear-gradient(90deg, rgba(184, 243, 75, 0.14), transparent 88%);
+      }
+
+      .logic-line.active::before { color: var(--acid); }
+
+      .logic-explain {
+        display: grid;
+        gap: 10px;
+        padding: 13px 15px;
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.025);
+        grid-template-columns: auto 1fr;
+      }
+
+      .logic-explain span {
+        color: var(--mint);
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.12em;
+      }
+
+      .logic-explain p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.65;
+      }
+
       .topics {
         display: grid;
         gap: 14px;
@@ -590,7 +687,7 @@
         padding: 30px;
         border: 1px solid var(--line);
         border-radius: 9px;
-        background: rgba(12, 30, 23, 0.62);
+        background: rgba(13, 18, 26, 0.94);
         transition: transform 260ms ease, border-color 260ms ease, background 260ms ease;
       }
 
@@ -602,7 +699,7 @@
       .topic-card:hover {
         transform: translateY(-6px);
         border-color: rgba(223, 243, 107, 0.5);
-        background: rgba(16, 39, 30, 0.92);
+        background: rgba(17, 25, 37, 0.98);
       }
 
       .topic-card:nth-child(2):hover,
@@ -653,7 +750,7 @@
       .roadmap-note {
         border: 1px solid var(--line);
         border-radius: 10px;
-        background: rgba(12, 30, 23, 0.62);
+        background: rgba(13, 18, 26, 0.94);
       }
 
       .roadmap-main {
@@ -1017,6 +1114,29 @@
                 <span class="metric" id="astar-metric">G — · H — · F —</span>
               </div>
               <div class="astar-grid" id="astar-grid" aria-label="A 星寻路交互网格"></div>
+              <div class="logic-console" aria-label="A 星同步代码逻辑">
+                <div class="logic-head">
+                  <span>SYNCED LOGIC · C#</span>
+                  <span class="logic-state" id="logic-state">READY</span>
+                </div>
+                <div class="logic-vars">
+                  <span>OPEN <b id="open-count">1</b></span>
+                  <span>CLOSED <b id="closed-count">0</b></span>
+                  <span>PARENT <b id="parent-value">—</b></span>
+                </div>
+                <ol class="logic-code">
+                  <li class="logic-line" data-step="pick"><code>current = Open.MinBy(n =&gt; n.G + n.H);</code></li>
+                  <li class="logic-line" data-step="close"><code>Closed.Add(current);</code></li>
+                  <li class="logic-line" data-step="finish"><code>if (current == goal) Backtrack(current);</code></li>
+                  <li class="logic-line" data-step="neighbor"><code>foreach (var next in Neighbors(current))</code></li>
+                  <li class="logic-line" data-step="relax"><code>if (newG &lt; next.G) next.Parent = current;</code></li>
+                  <li class="logic-line" data-step="enqueue"><code>Open.AddOrUpdate(next);</code></li>
+                </ol>
+                <div class="logic-explain">
+                  <span>WHY</span>
+                  <p id="logic-explain">Open 从起点开始。运行后，这里会同步解释每一行代码为何执行。</p>
+                </div>
+              </div>
             </div>
           </div>
         </article>
@@ -1124,6 +1244,12 @@
       const resetButton = document.querySelector("#reset-astar");
       const message = document.querySelector("#astar-message");
       const metric = document.querySelector("#astar-metric");
+      const logicState = document.querySelector("#logic-state");
+      const logicExplain = document.querySelector("#logic-explain");
+      const openCount = document.querySelector("#open-count");
+      const closedCount = document.querySelector("#closed-count");
+      const parentValue = document.querySelector("#parent-value");
+      const logicLines = [...document.querySelectorAll(".logic-line")];
       const header = document.querySelector("#site-header");
 
       let walls = new Set();
@@ -1132,6 +1258,15 @@
       const keyOf = (x, y) => `${x},${y}`;
       const delay = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
       const manhattan = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+      function setLogic(step, explanation, state, counts = {}) {
+        logicLines.forEach((line) => line.classList.toggle("active", line.dataset.step === step));
+        logicExplain.textContent = explanation;
+        logicState.textContent = state;
+        if (counts.open !== undefined) openCount.textContent = counts.open;
+        if (counts.closed !== undefined) closedCount.textContent = counts.closed;
+        if (counts.parent !== undefined) parentValue.textContent = counts.parent;
+      }
 
       function cellAt(x, y) {
         return grid.querySelector(`[data-key="${keyOf(x, y)}"]`);
@@ -1176,6 +1311,7 @@
               clearSearchClasses();
               message.textContent = "地图已改变，可以重新开始推演。";
               metric.textContent = "G — · H — · F —";
+              setLogic(null, "障碍发生变化，Open 与 Closed 会在下一次运行时重新建立。", "MAP EDITED", { open: 1, closed: 0, parent: "—" });
             });
             grid.appendChild(cell);
           }
@@ -1188,6 +1324,7 @@
         renderGrid();
         message.textContent = "点击格子调整障碍，然后开始推演。";
         metric.textContent = "G — · H — · F —";
+        setLogic(null, "Open 从起点开始。运行后，这里会同步解释每一行代码为何执行。", "READY", { open: 1, closed: 0, parent: "—" });
         runButton.disabled = false;
       }
 
@@ -1219,11 +1356,15 @@
         let previousCell = null;
 
         message.textContent = "正在扩展代价最低的候选节点…";
+        setLogic("pick", "Open 里只有起点。每轮都选择 F = G + H 最小的节点。", "SEARCHING", { open: open.length, closed: 0, parent: "—" });
 
         while (open.length > 0) {
           open.sort((a, b) => (a.g + a.h) - (b.g + b.h) || a.h - b.h);
           const current = open.shift();
           const currentKey = keyOf(current.x, current.y);
+
+          setLogic("pick", `选中 (${current.x}, ${current.y})：它是当前 Open 中 F 最小的节点。`, "PICK NODE", { open: open.length, closed: closed.size, parent: current.parent ? `(${current.parent.x},${current.parent.y})` : "起点" });
+          await delay(55);
 
           if (closed.has(currentKey)) continue;
           closed.add(currentKey);
@@ -1236,14 +1377,20 @@
 
           metric.textContent = `G ${current.g} · H ${current.h} · F ${current.g + current.h}`;
           message.textContent = `检查坐标 (${current.x}, ${current.y})，当前累计检查 ${closed.size} 个节点。`;
-          await delay(70);
+          setLogic("close", "节点已被正式检查，移入 Closed，后续不会重复扩展。", "CLOSE NODE", { open: open.length, closed: closed.size });
+          await delay(55);
 
           if (currentKey === endKey) {
             found = current;
+            setLogic("finish", "current 已经是终点。搜索停止，接下来沿 Parent 链反向还原路径。", "GOAL FOUND", { open: open.length, closed: closed.size });
             break;
           }
 
-          for (const neighbor of getNeighbors(current)) {
+          const neighbors = getNeighbors(current);
+          setLogic("neighbor", `读取 (${current.x}, ${current.y}) 的 ${neighbors.length} 个可通行相邻格。`, "SCAN NEIGHBORS", { open: open.length, closed: closed.size });
+          await delay(45);
+
+          for (const neighbor of neighbors) {
             const neighborKey = keyOf(neighbor.x, neighbor.y);
             const nextG = current.g + 1;
             if (closed.has(neighborKey) || nextG >= (bestCost.get(neighborKey) ?? Infinity)) continue;
@@ -1255,9 +1402,12 @@
               h: manhattan(neighbor, END),
               parent: current
             };
+            setLogic("relax", `到 (${neighbor.x}, ${neighbor.y}) 的新 G 更小，因此 Parent 更新为 (${current.x}, ${current.y})。`, "UPDATE PARENT", { open: open.length, closed: closed.size, parent: `(${current.x},${current.y})` });
+            await delay(24);
             open.push(nextNode);
             const neighborCell = cellAt(neighbor.x, neighbor.y);
             if (neighborKey !== startKey && neighborKey !== endKey) neighborCell.classList.add("open");
+            setLogic("enqueue", `节点 (${neighbor.x}, ${neighbor.y}) 已进入 Open，等待按 F 值参与下一轮选择。`, "QUEUE NODE", { open: open.length, closed: closed.size });
           }
         }
 
@@ -1270,17 +1420,20 @@
             path.unshift(cursor);
             cursor = cursor.parent;
           }
+          setLogic("finish", "从终点反复读取 Parent，直到回到起点；黄色格子就是反向得到的完整路径。", "BACKTRACK", { open: open.length, closed: closed.size, parent: "逐级回溯" });
           for (const node of path) {
             const pathCell = cellAt(node.x, node.y);
             pathCell.classList.remove("open", "closed");
             pathCell.classList.add("path");
-            await delay(90);
+            await delay(80);
           }
           message.textContent = `找到路径：${path.length + 1} 步，检查了 ${closed.size} 个节点。`;
           metric.textContent = "沿 Parent 链完成回溯";
+          setLogic("finish", `完成：路径 ${path.length + 1} 步，Closed 共 ${closed.size} 个节点。`, "COMPLETE", { open: open.length, closed: closed.size, parent: "完成" });
         } else {
           message.textContent = "当前障碍布局下没有可达路径。";
           metric.textContent = "搜索结束";
+          setLogic(null, "Open 已为空，说明没有任何候选节点可以继续抵达终点。", "NO PATH", { open: 0, closed: closed.size, parent: "—" });
         }
 
         running = false;
