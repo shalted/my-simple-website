@@ -1,0 +1,10 @@
+{
+  "name": "xianyuwuo-knowledge-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "knowledge:import": "node scripts/knowledge-pipeline.mjs import",
+    "knowledge:build": "node scripts/knowledge-pipeline.mjs build",
+    "knowledge:all": "node scripts/knowledge-pipeline.mjs all"
+  }
+}

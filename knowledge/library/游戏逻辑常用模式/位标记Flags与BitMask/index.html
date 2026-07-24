@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="位标记的核心是：">
+  <title>位标记 Flags 与 BitMask · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
+      <h1>位标记 Flags 与 BitMask</h1>
+      <p class="hero-copy">位标记的核心是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心思想">核心思想</a>
+    <a data-toc-link href="#基础声明">基础声明</a>
+    <a data-toc-link href="#添加标记">添加标记</a>
+    <a data-toc-link href="#判断标记">判断标记</a>
+    <a data-toc-link href="#移除标记">移除标记</a>
+    <a data-toc-link href="#互斥状态为什么也能放在-flags-里">互斥状态为什么也能放在 Flags 里</a>
+    <a data-toc-link href="#最大好处">最大好处</a>
+    <a data-toc-link href="#最多支持多少位">最多支持多少位</a>
+    <a data-toc-link href="#适合什么">适合什么</a>
+    <a data-toc-link href="#不适合什么">不适合什么</a>
+    <a data-toc-link href="#常用模板">常用模板</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：游戏逻辑常用模式 / CSharp 基础数据结构</p>
+<h2 id="核心思想">核心思想</h2>
+<p>位标记的核心是：</p>
+<pre><code class="language-text">用一个整数里的不同二进制位，表示多个可以同时存在的开关。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">CanMove
+CanAttack
+Invincible
+Stunned
+Silenced
+Selectable</code></pre>
+<p>这些状态有些可以同时存在。角色可以同时是：</p>
+<pre><code class="language-text">Stunned + Invincible
+Silenced + CanMove
+Selectable + CanAttack</code></pre>
+<p>如果用很多 <code>bool</code>，字段会越来越散：</p>
+<pre><code class="language-csharp">bool isPrecision;
+bool isCritical;
+bool isBlock;
+bool isMiss;
+bool isHeal;</code></pre>
+<p>用 Flags 可以集中成一个字段：</p>
+<pre><code class="language-csharp">AttributeAttackEffect effects;</code></pre>
+<h2 id="基础声明">基础声明</h2>
+<p>项目里的攻击结果标记：</p>
+<pre><code class="language-csharp">[Flags]
+public enum AttributeAttackEffect
+{
+    None = 0,
+    Normal = 1 &lt;&lt; 0,
+    Precision = 1 &lt;&lt; 1,
+    Block = 1 &lt;&lt; 2,
+    Critical = 1 &lt;&lt; 3,
+    Miss = 1 &lt;&lt; 4,
+    Heal = 1 &lt;&lt; 5,
+}</code></pre>
+<p><code>1 &lt;&lt; n</code> 表示把数字 <code>1</code> 往左移动 <code>n</code> 位。</p>
+<p>可以这样理解：</p>
+<pre><code class="language-text">Normal    = 000001
+Precision = 000010
+Block     = 000100
+Critical  = 001000
+Miss      = 010000
+Heal      = 100000</code></pre>
+<p>每一个标记都占一个独立位置，所以它们可以组合到同一个变量里。</p>
+<h2 id="添加标记">添加标记</h2>
+<p>添加标记用按位或：</p>
+<pre><code class="language-csharp">effects |= AttributeAttackEffect.Precision;
+effects |= AttributeAttackEffect.Critical;</code></pre>
+<p><code>|=</code> 的含义是：</p>
+<pre><code class="language-text">打开这个标记位，同时保留原本已经打开的其他标记。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">Precision = 000010
+Critical  = 001000
+
+组合后    = 001010</code></pre>
+<p>这就表示一次攻击同时带有：</p>
+<pre><code class="language-text">精准 + 暴击</code></pre>
+<h2 id="判断标记">判断标记</h2>
+<p>判断有没有某个标记，用按位与：</p>
+<pre><code class="language-csharp">if ((effects &amp; AttributeAttackEffect.Critical) == AttributeAttackEffect.Critical)
+{
+    // 有暴击标记
+}</code></pre>
+<p><code>&amp;</code> 的含义是：</p>
+<pre><code class="language-text">只保留两边都为 1 的位。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">effects  = Precision + Critical = 001010
+Critical =                      001000
+
+001010
+&amp;001000
+=001000</code></pre>
+<p>结果等于 <code>Critical</code>，说明 <code>effects</code> 里面包含暴击。</p>
+<p>项目里的结果对象也封装了这个判断：</p>
+<pre><code class="language-csharp">public bool HasEffect(AttributeAttackEffect effect)
+{
+    return (Effects &amp; effect) == effect;
+}</code></pre>
+<h2 id="移除标记">移除标记</h2>
+<p>移除标记常用：</p>
+<pre><code class="language-csharp">flags &amp;= ~SomeFlag;</code></pre>
+<p>其中：</p>
+<pre><code class="language-text">~SomeFlag：把 SomeFlag 这一位取反。
+&amp;=：保留其他位，关掉目标位。</code></pre>
+<p>项目里的移动组件有类似写法：</p>
+<pre><code class="language-csharp">int fallbackMask = Physics.DefaultRaycastLayers &amp; ~GetPreferredGroundLayerMask();</code></pre>
+<p>意思是：</p>
+<pre><code class="language-text">从默认射线检测层里，排除掉已经优先检测过的地面层。</code></pre>
+<h2 id="互斥状态为什么也能放在-flags-里">互斥状态为什么也能放在 Flags 里</h2>
+<p>注意：Flags 只是存储和传递多个标签的方式，不负责保证业务规则。</p>
+<p>例如攻击结果里：</p>
+<pre><code class="language-text">Miss 和 Critical 通常互斥。
+Miss 和 Block 通常互斥。
+Precision 和 Critical 可以叠加。</code></pre>
+<p>这些互斥关系不是由 Flags 自动保证的，而是由战斗计算流程保证。</p>
+<p>例如一旦判定成 <code>Miss</code>，计算器可以直接返回：</p>
+<pre><code class="language-csharp">return new AttributeAttackResult(
+    AttributeAttackEffect.Miss,
+    Array.Empty&lt;AttributeDamageEntry&gt;(),
+    ...);</code></pre>
+<p>这样就不会继续添加 <code>Critical</code>、<code>Block</code> 等标记。</p>
+<p>所以这里是一个混合模型：</p>
+<pre><code class="language-text">Flags 负责统一携带标签。
+计算流程负责保证哪些组合合法。</code></pre>
+<p>更严格的设计也可以拆成：</p>
+<pre><code class="language-csharp">AttackOutcome outcome;       // Hit / Miss / Block
+AttackModifiers modifiers;   // Critical / Precision / Heal</code></pre>
+<p>但如果项目更需要把结果轻量传给表现层，一个 Flags 字段也很方便。</p>
+<h2 id="最大好处">最大好处</h2>
+<p>最大的好处不是省内存，而是：</p>
+<pre><code class="language-text">把一次结果里可能带的多个信息压成一个字段，传递和判断都很方便。</code></pre>
+<p>不用到处传：</p>
+<pre><code class="language-csharp">bool isPrecision;
+bool isCritical;
+bool isBlock;
+bool isMiss;
+bool isHeal;</code></pre>
+<p>只传：</p>
+<pre><code class="language-csharp">AttributeAttackEffect effects;</code></pre>
+<p>表现层需要什么就判断什么：</p>
+<pre><code class="language-csharp">if ((effects &amp; AttributeAttackEffect.Critical) == AttributeAttackEffect.Critical)
+{
+    mapped |= CombatPresentationEffect.Critical;
+}</code></pre>
+<p>新增一个表现标签时，通常只需要扩展 enum 和映射逻辑，不需要修改一堆构造参数。</p>
+<h2 id="最多支持多少位">最多支持多少位</h2>
+<p>Flags 能支持多少个标记，取决于底层类型。</p>
+<p>C# 的 <code>enum</code> 默认底层类型是 <code>int</code>，也就是 32 位。</p>
+<p>常见建议：</p>
+<pre><code class="language-text">int：常用 0 到 30 位，约 31 个常规标记。
+uint：可以更舒服地用满 32 位。
+long：常用 63 个常规标记。
+ulong：可以用满 64 位。</code></pre>
+<p>如果需要更多标记，可以指定底层类型：</p>
+<pre><code class="language-csharp">[Flags]
+public enum UnitState : ulong
+{
+    None = 0,
+    CanMove = 1UL &lt;&lt; 0,
+    CanAttack = 1UL &lt;&lt; 1,
+    Stunned = 1UL &lt;&lt; 2,
+    Silenced = 1UL &lt;&lt; 3,
+    Invincible = 1UL &lt;&lt; 4,
+}</code></pre>
+<p>这里要写 <code>1UL &lt;&lt; n</code>，因为底层类型是 <code>ulong</code>。</p>
+<p>如果还写 <code>1 &lt;&lt; n</code>，左边仍然是 <code>int</code>，超过 31 位后容易出问题。</p>
+<h2 id="适合什么">适合什么</h2>
+<p>适合：</p>
+<pre><code class="language-text">多个开关互相独立
+一个对象可以同时拥有多个状态
+需要频繁判断、组合、排除状态
+状态数量不太多
+需要轻量传递或保存结果标签</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">战斗表现标签
+角色能力开关
+Unity LayerMask
+UI 控件状态
+编辑器选项
+权限开关</code></pre>
+<h2 id="不适合什么">不适合什么</h2>
+<p>不适合：</p>
+<pre><code class="language-text">严格互斥且永远只会有一个值的状态
+需要携带复杂数据的状态
+需要记录来源、持续时间、层数的 Buff
+需要策划动态扩展很多类型的状态</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">Idle / Move / Attack / Dead</code></pre>
+<p>这种互斥主状态更适合普通 enum 或状态机。</p>
+<p>而：</p>
+<pre><code class="language-text">眩晕 Buff 的来源、剩余时间、叠加层数</code></pre>
+<p>就不该只靠一个 <code>Stunned</code> 标记解决。</p>
+<h2 id="常用模板">常用模板</h2>
+<pre><code class="language-csharp">// 添加
+flags |= SomeFlag;
+
+// 判断
+bool hasFlag = (flags &amp; SomeFlag) == SomeFlag;
+
+// 移除
+flags &amp;= ~SomeFlag;
+
+// 多个组合
+var combined = FlagA | FlagB;</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">Flags 是把多个 bool 式开关压进一个字段里，用位运算快速组合、判断、排除。</code></pre>
+<p>它适合表达“多标签结果”，但不自动保证业务合法性。</p>
+<p>真正的规则仍然要靠业务流程维护：</p>
+<pre><code class="language-text">哪些标记可以叠加。
+哪些标记必须互斥。
+哪些标记出现后应该提前返回。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E9%9A%8F%E6%9C%BA%E7%B3%BB%E7%BB%9F/"><small>← PREVIOUS</small>随机系统</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E8%84%8F%E6%A0%87%E8%AE%B0DirtyFlag/"><small>NEXT →</small>脏标记 Dirty Flag</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

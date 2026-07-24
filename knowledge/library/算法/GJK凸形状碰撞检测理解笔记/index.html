@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GJK 全名：">
+  <title>GJK：凸形状碰撞检测理解笔记 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>GJK：凸形状碰撞检测理解笔记</h1>
+      <p class="hero-copy">GJK 全名：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#gjk-解决什么问题">GJK 解决什么问题</a>
+    <a data-toc-link href="#原点不是选出来的">原点不是选出来的</a>
+    <a data-toc-link href="#一维例子">一维例子</a>
+    <a data-toc-link href="#二维例子">二维例子</a>
+    <a data-toc-link href="#三维里不是只看-x-y-z">三维里不是只看 x/y/z</a>
+    <a data-toc-link href="#support-点是什么">Support 点是什么</a>
+    <a data-toc-link href="#当前方向上最远点怎么找">当前方向上最远点怎么找</a>
+    <a data-toc-link href="#每次都要跑所有点吗">每次都要跑所有点吗</a>
+    <a data-toc-link href="#方向是怎么选的">方向是怎么选的</a>
+    <a data-toc-link href="#simplex-是什么">Simplex 是什么</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：算法 / 物理碰撞</p>
+<p>状态：理解笔记，后续可继续深入 Simplex 更新、EPA 和具体代码实现。</p>
+<h2 id="gjk-解决什么问题">GJK 解决什么问题</h2>
+<p>GJK 全名：</p>
+<pre><code class="language-text">Gilbert-Johnson-Keerthi</code></pre>
+<p>它主要用于判断：</p>
+<pre><code class="language-text">两个凸形状是否相交。</code></pre>
+<p>常见对象：</p>
+<pre><code class="language-text">凸多边形
+凸多面体
+盒子
+胶囊体
+凸包</code></pre>
+<p>它和 SAT 一样，主要处理凸形状。</p>
+<p>区别可以先这样记：</p>
+<pre><code class="language-text">SAT：找分离轴。
+GJK：看闵可夫斯基差 A - B 是否包含原点。</code></pre>
+<h2 id="原点不是选出来的">原点不是选出来的</h2>
+<p>GJK 里的原点不是算法随便选的点。</p>
+<p>2D 里原点是：</p>
+<pre><code class="language-text">(0, 0)</code></pre>
+<p>3D 里原点是：</p>
+<pre><code class="language-text">(0, 0, 0)</code></pre>
+<p>它不是：</p>
+<pre><code class="language-text">A 的中心
+B 的中心
+两个物体中点
+碰撞点
+某个顶点</code></pre>
+<p>GJK 之所以看原点，是因为：</p>
+<pre><code class="language-text">如果 A 和 B 有相同位置的点 p，
+那么 p - p = 0。</code></pre>
+<p>也就是说：</p>
+<pre><code class="language-text">A 和 B 相交
+= 存在 a == b
+= 存在 a - b == 0
+= A - B 包含原点</code></pre>
+<h2 id="一维例子">一维例子</h2>
+<p>A 是线段：</p>
+<pre><code class="language-text">A = [2, 5]</code></pre>
+<p>B 是线段：</p>
+<pre><code class="language-text">B = [4, 7]</code></pre>
+<p>它们重叠：</p>
+<pre><code class="language-text">重叠区间是 [4, 5]</code></pre>
+<p>A - B 的范围：</p>
+<pre><code class="language-text">最小：2 - 7 = -5
+最大：5 - 4 = 1</code></pre>
+<p>所以：</p>
+<pre><code class="language-text">A - B = [-5, 1]</code></pre>
+<p>里面包含 0。</p>
+<p>因为可以取：</p>
+<pre><code class="language-text">a = 4.5
+b = 4.5</code></pre>
+<p>那么：</p>
+<pre><code class="language-text">a - b = 0</code></pre>
+<p>所以 A 和 B 相交。</p>
+<h2 id="二维例子">二维例子</h2>
+<p>A 是正方形：</p>
+<pre><code class="language-text">x: 0 ~ 2
+y: 0 ~ 2</code></pre>
+<p>B 是正方形：</p>
+<pre><code class="language-text">x: 1 ~ 3
+y: 1 ~ 3</code></pre>
+<p>它们有重叠区域：</p>
+<pre><code class="language-text">x: 1 ~ 2
+y: 1 ~ 2</code></pre>
+<p>可以取重叠点：</p>
+<pre><code class="language-text">a = (1.5, 1.5)
+b = (1.5, 1.5)</code></pre>
+<p>那么：</p>
+<pre><code class="language-text">a - b = (0, 0)</code></pre>
+<p>所以 A - B 包含原点。</p>
+<p>如果换成不相交的 B：</p>
+<pre><code class="language-text">B:
+x: 4 ~ 6
+y: 1 ~ 3</code></pre>
+<p>A - B 的 x 范围：</p>
+<pre><code class="language-text">0 - 6 = -6
+2 - 4 = -2</code></pre>
+<p>也就是：</p>
+<pre><code class="language-text">x: -6 ~ -2</code></pre>
+<p>这个范围不包含 0，所以 A - B 不包含原点，A 和 B 不相交。</p>
+<h2 id="三维里不是只看-x-y-z">三维里不是只看 x/y/z</h2>
+<p>容易误解的一点：</p>
+<pre><code class="language-text">三维里是不是只要 x、y、z 三个方向的差值集合都包含 0，就相交？</code></pre>
+<p>不是。</p>
+<p>这对 AABB 这种轴对齐盒子可以成立，因为 AABB 只需要检查 x/y/z 三个轴的范围。</p>
+<p>但对一般 3D 凸形状，只看 x/y/z 不够。</p>
+<p>正确理解是：</p>
+<pre><code class="language-text">GJK 看的是三维空间里的 A - B 整个差集体，是否包含原点 (0,0,0)。</code></pre>
+<p>不是分别看：</p>
+<pre><code class="language-text">x 轴包含 0
+y 轴包含 0
+z 轴包含 0</code></pre>
+<p>因为三个轴投影都有重叠，只能说明：</p>
+<pre><code class="language-text">从 x/y/z 三个方向看，它们范围重叠。</code></pre>
+<p>但从某个斜方向看，两个物体仍然可能分开。</p>
+<h2 id="support-点是什么">Support 点是什么</h2>
+<p>GJK 不会真的生成完整的 A - B。</p>
+<p>如果 A 有 100 个顶点，B 有 100 个顶点，完整差集需要：</p>
+<pre><code class="language-text">100 * 100 = 10000 个差值点</code></pre>
+<p>GJK 每次只问：</p>
+<pre><code class="language-text">A - B 在当前方向上最远的点在哪里？</code></pre>
+<p>这个点叫 Support 点。</p>
+<p>计算方式：</p>
+<pre><code class="language-text">Support(A, B, dir)
+= A 在 dir 方向上的最远点
+- B 在 -dir 方向上的最远点</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-csharp">Vector3 Support(Shape a, Shape b, Vector3 dir)
+{
+    Vector3 pointA = a.FarthestPoint(dir);
+    Vector3 pointB = b.FarthestPoint(-dir);
+
+    return pointA - pointB;
+}</code></pre>
+<h2 id="当前方向上最远点怎么找">当前方向上最远点怎么找</h2>
+<p>最朴素的做法是：</p>
+<pre><code class="language-text">对所有顶点做点积。
+谁的 dot(point, dir) 最大，谁就是这个方向上的最远点。</code></pre>
+<p>例如 2D 三角形：</p>
+<pre><code class="language-text">P1 = (0, 0)
+P2 = (2, 0)
+P3 = (1, 2)</code></pre>
+<p>方向：</p>
+<pre><code class="language-text">dir = (1, 1)</code></pre>
+<p>点积：</p>
+<pre><code class="language-text">dot(P1, dir) = 0
+dot(P2, dir) = 2
+dot(P3, dir) = 3</code></pre>
+<p>所以当前方向最远点是：</p>
+<pre><code class="language-text">P3 = (1, 2)</code></pre>
+<p>3D 也是一样：</p>
+<pre><code class="language-text">dot = x * dx + y * dy + z * dz</code></pre>
+<p>谁的 dot 最大，谁就是当前方向最远点。</p>
+<h2 id="每次都要跑所有点吗">每次都要跑所有点吗</h2>
+<p>朴素实现里，是的。</p>
+<p>一次 Support 查询：</p>
+<pre><code class="language-text">A：遍历 n 个顶点，找 dir 方向最远点。
+B：遍历 m 个顶点，找 -dir 方向最远点。</code></pre>
+<p>所以一次 Support 是：</p>
+<pre><code class="language-text">O(n + m)</code></pre>
+<p>如果 GJK 迭代 k 次，大概是：</p>
+<pre><code class="language-text">O(k * (n + m))</code></pre>
+<p>但它不是：</p>
+<pre><code class="language-text">O(n * m)</code></pre>
+<p>因为它没有把所有 <code>a - b</code> 都列出来。</p>
+<p>实际引擎会优化 Support：</p>
+<pre><code class="language-text">球体：center + normalize(dir) * radius
+盒子：根据 dir 的正负快速选角点
+凸包：用邻接信息从上次最远点开始爬山
+缓存：复用上一帧或上次查询的极点
+Broad Phase：先过滤掉大量不可能碰撞的对象</code></pre>
+<h2 id="方向是怎么选的">方向是怎么选的</h2>
+<p>GJK 的方向不是随便选一条边。</p>
+<p>方向来自：</p>
+<pre><code class="language-text">当前 Simplex 和原点的位置关系。</code></pre>
+<p>GJK 的目标是：</p>
+<pre><code class="language-text">判断 A - B 是否包含原点。</code></pre>
+<p>所以每一步都在问：</p>
+<pre><code class="language-text">当前 Simplex 离包住原点还差哪个方向的信息？</code></pre>
+<p>2D 里：</p>
+<pre><code class="language-text">点：朝点到原点的方向继续找。
+线段：朝线段到原点的最近方向继续找。
+三角形：如果包住原点，碰撞；否则保留靠近原点的边继续找。</code></pre>
+<p>3D 里：</p>
+<pre><code class="language-text">点：朝原点方向。
+线段：朝线段到原点的最近方向。
+三角形：看原点在三角形哪一侧，朝那一侧继续找。
+四面体：如果原点在内部，碰撞；否则保留原点所在外侧相关面继续找。</code></pre>
+<p>所以：</p>
+<pre><code class="language-text">SAT 是枚举轴。
+GJK 是动态追原点。</code></pre>
+<h2 id="simplex-是什么">Simplex 是什么</h2>
+<p>Simplex 是 GJK 当前收集到的少量 Support 点组成的小形状。</p>
+<p>2D 里 Simplex 可能是：</p>
+<pre><code class="language-text">点
+线段
+三角形</code></pre>
+<p>如果三角形包住原点：</p>
+<pre><code class="language-text">碰撞</code></pre>
+<p>3D 里 Simplex 可能是：</p>
+<pre><code class="language-text">点
+线段
+三角形
+四面体</code></pre>
+<p>如果四面体包住原点：</p>
+<pre><code class="language-text">碰撞</code></pre>
+<p>注意：</p>
+<pre><code class="language-text">不是原物体必须是四面体。</code></pre>
+<p>而是 GJK 在闵可夫斯基差边界上找到的几个 Support 点，在 3D 里组成四面体。</p>
+<p>只要这个四面体包住原点，就说明 A - B 包含原点。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">GJK 用于判断两个凸形状是否相交。
+它把问题变成：A - B 是否包含原点。
+原点不是选出来的，而是坐标系里的 0。
+因为重叠点 p - p = 0。
+GJK 不生成完整 A - B，而是用 Support 函数逐步找边界点。
+朴素 Support 每次是 O(n + m)，不是 O(n * m)。
+2D 中三角形 Simplex 包住原点即可判定碰撞。
+3D 中四面体 Simplex 包住原点即可判定碰撞。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/A%E6%98%9F%E5%AF%BB%E8%B7%AF%E4%B8%AD%E7%9A%84G%E5%80%BC%E4%B8%8EParent%E5%9B%9E%E6%BA%AF/"><small>← PREVIOUS</small>A 星寻路中的 G 值与 Parent 回溯</a>
+          <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/"><small>NEXT →</small>后续学习计划</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

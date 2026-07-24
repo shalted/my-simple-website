@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="List&lt;T&gt; 可以理解成“可变长度数组”。">
+  <title>List 常用操作与删除规则 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
+      <h1>List 常用操作与删除规则</h1>
+      <p class="hero-copy">List&lt;T&gt; 可以理解成“可变长度数组”。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#list-是什么">List 是什么</a>
+    <a data-toc-link href="#常用操作">常用操作</a>
+    <a data-toc-link href="#remove-只删除第一个匹配元素">Remove 只删除第一个匹配元素</a>
+    <a data-toc-link href="#removeall-删除所有满足条件的元素">RemoveAll 删除所有满足条件的元素</a>
+    <a data-toc-link href="#边遍历边删除时用倒序-for">边遍历边删除时用倒序 for</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：CSharp 基础数据结构</p>
+<h2 id="list-是什么">List 是什么</h2>
+<p><code>List&lt;T&gt;</code> 可以理解成“可变长度数组”。</p>
+<p>数组长度固定：</p>
+<pre><code class="language-csharp">int[] nums = new int[3];</code></pre>
+<p><code>List&lt;T&gt;</code> 可以动态添加元素：</p>
+<pre><code class="language-csharp">List&lt;int&gt; nums = new();
+nums.Add(10);
+nums.Add(20);
+nums.Add(30);</code></pre>
+<p><code>T</code> 表示元素类型：</p>
+<pre><code class="language-text">List&lt;int&gt;        存 int
+List&lt;string&gt;     存 string
+List&lt;Unit&gt;       存 Unit
+List&lt;GameObject&gt; 存 GameObject</code></pre>
+<h2 id="常用操作">常用操作</h2>
+<p>添加：</p>
+<pre><code class="language-csharp">List&lt;string&gt; names = new();
+names.Add(&quot;Alice&quot;);
+names.Add(&quot;Bob&quot;);</code></pre>
+<p>读取数量：</p>
+<pre><code class="language-csharp">int count = names.Count;</code></pre>
+<p>按下标访问：</p>
+<pre><code class="language-csharp">string first = names[0];</code></pre>
+<p>修改：</p>
+<pre><code class="language-csharp">names[1] = &quot;Cindy&quot;;</code></pre>
+<p>清空：</p>
+<pre><code class="language-csharp">names.Clear();</code></pre>
+<h2 id="remove-只删除第一个匹配元素">Remove 只删除第一个匹配元素</h2>
+<p><code>Remove</code> 不会删除全部相同元素，它只删除第一个匹配到的元素。</p>
+<pre><code class="language-csharp">List&lt;string&gt; names = new() { &quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;, &quot;Cindy&quot; };
+
+names.Remove(&quot;Alice&quot;);</code></pre>
+<p>执行后：</p>
+<pre><code class="language-text">[&quot;Bob&quot;, &quot;Alice&quot;, &quot;Cindy&quot;]</code></pre>
+<p>只删掉第一个 <code>&quot;Alice&quot;</code>。</p>
+<p><code>Remove</code> 有返回值：</p>
+<pre><code class="language-csharp">bool removed = names.Remove(&quot;Alice&quot;);</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">true：找到了并删除了一个
+false：没找到，什么都没删</code></pre>
+<h2 id="removeall-删除所有满足条件的元素">RemoveAll 删除所有满足条件的元素</h2>
+<p>如果想删除所有 <code>&quot;Alice&quot;</code>：</p>
+<pre><code class="language-csharp">names.RemoveAll(name =&gt; name == &quot;Alice&quot;);</code></pre>
+<p>完整例子：</p>
+<pre><code class="language-csharp">List&lt;string&gt; names = new() { &quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;, &quot;Cindy&quot; };
+
+names.RemoveAll(name =&gt; name == &quot;Alice&quot;);
+
+// 结果：[&quot;Bob&quot;, &quot;Cindy&quot;]</code></pre>
+<p>这里：</p>
+<pre><code class="language-csharp">name =&gt; name == &quot;Alice&quot;</code></pre>
+<p>意思是：</p>
+<pre><code class="language-text">对列表里的每个 name 做判断；
+如果判断结果是 true，就删除。</code></pre>
+<p>也可以写更复杂的条件：</p>
+<pre><code class="language-csharp">names.RemoveAll(name =&gt; name.StartsWith(&quot;A&quot;));</code></pre>
+<p>意思是删除所有以 <code>&quot;A&quot;</code> 开头的名字。</p>
+<h2 id="边遍历边删除时用倒序-for">边遍历边删除时用倒序 for</h2>
+<p>不要正序边遍历边 <code>RemoveAt</code>：</p>
+<pre><code class="language-csharp">for (int i = 0; i &lt; names.Count; i++)
+{
+    if (names[i] == &quot;Bob&quot;)
+    {
+        names.RemoveAt(i);
+    }
+}</code></pre>
+<p>因为删除后，后面的元素会往前移动，<code>i++</code> 可能跳过元素。</p>
+<p>更稳的写法是倒序删：</p>
+<pre><code class="language-csharp">for (int i = names.Count - 1; i &gt;= 0; i--)
+{
+    if (names[i] == &quot;Bob&quot;)
+    {
+        names.RemoveAt(i);
+    }
+}</code></pre>
+<p>倒序删除时，删除只会影响后面的元素，而后面的元素已经遍历过了，所以安全。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">Remove：只删除第一个匹配元素。
+RemoveAll：删除所有满足条件的元素。
+倒序 for：适合边遍历边删除多个元素。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/HashSet%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%8E%BB%E9%87%8D%E6%A3%80%E6%B5%8B/"><small>← PREVIOUS</small>HashSet 常用操作与去重检测</a>
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Queue%E4%B8%8EStack%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/"><small>NEXT →</small>Queue 与 Stack 常用操作</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

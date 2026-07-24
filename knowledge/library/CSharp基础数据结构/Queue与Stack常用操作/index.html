@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Queue&lt;T&gt; 是队列：">
+  <title>Queue 与 Stack 常用操作 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
+      <h1>Queue 与 Stack 常用操作</h1>
+      <p class="hero-copy">Queue&lt;T&gt; 是队列：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#queue-是什么">Queue 是什么</a>
+    <a data-toc-link href="#queue-常用操作">Queue 常用操作</a>
+    <a data-toc-link href="#queue-适合什么场景">Queue 适合什么场景</a>
+    <a data-toc-link href="#stack-是什么">Stack 是什么</a>
+    <a data-toc-link href="#stack-常用操作">Stack 常用操作</a>
+    <a data-toc-link href="#stack-适合什么场景">Stack 适合什么场景</a>
+    <a data-toc-link href="#queue-和-stack-对比">Queue 和 Stack 对比</a>
+    <a data-toc-link href="#和-list-的区别">和 List 的区别</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：CSharp 基础数据结构</p>
+<h2 id="queue-是什么">Queue 是什么</h2>
+<p><code>Queue&lt;T&gt;</code> 是队列：</p>
+<pre><code class="language-text">先进先出。</code></pre>
+<p>也叫 FIFO：</p>
+<pre><code class="language-text">First In, First Out</code></pre>
+<p>就像排队买东西：</p>
+<pre><code class="language-text">先来的人先处理。</code></pre>
+<p>声明：</p>
+<pre><code class="language-csharp">Queue&lt;string&gt; queue = new();</code></pre>
+<p>入队：</p>
+<pre><code class="language-csharp">queue.Enqueue(&quot;Alice&quot;);
+queue.Enqueue(&quot;Bob&quot;);
+queue.Enqueue(&quot;Cindy&quot;);</code></pre>
+<p>出队：</p>
+<pre><code class="language-csharp">string first = queue.Dequeue();</code></pre>
+<p>拿到的是：</p>
+<pre><code class="language-text">Alice</code></pre>
+<h2 id="queue-常用操作">Queue 常用操作</h2>
+<p>入队：</p>
+<pre><code class="language-csharp">queue.Enqueue(&quot;Alice&quot;);</code></pre>
+<p>出队并移除：</p>
+<pre><code class="language-csharp">string name = queue.Dequeue();</code></pre>
+<p>查看队首但不移除：</p>
+<pre><code class="language-csharp">string next = queue.Peek();</code></pre>
+<p>数量：</p>
+<pre><code class="language-csharp">int count = queue.Count;</code></pre>
+<p>清空：</p>
+<pre><code class="language-csharp">queue.Clear();</code></pre>
+<p>空队列时直接 <code>Dequeue()</code> 或 <code>Peek()</code> 会报错。</p>
+<p>所以通常先判断：</p>
+<pre><code class="language-csharp">if (queue.Count &gt; 0)
+{
+    string name = queue.Dequeue();
+}</code></pre>
+<h2 id="queue-适合什么场景">Queue 适合什么场景</h2>
+<p><code>Queue</code> 适合按顺序处理任务：</p>
+<pre><code class="language-text">伤害数字排队播放
+系统消息按顺序弹出
+下载任务队列
+AI 命令队列
+网络包按顺序处理
+BFS 广度优先搜索</code></pre>
+<p>例子：</p>
+<pre><code class="language-csharp">Queue&lt;string&gt; messages = new();
+
+messages.Enqueue(&quot;获得金币 +10&quot;);
+messages.Enqueue(&quot;获得经验 +20&quot;);
+messages.Enqueue(&quot;任务完成&quot;);
+
+while (messages.Count &gt; 0)
+{
+    string message = messages.Dequeue();
+    Debug.Log(message);
+}</code></pre>
+<p>输出顺序：</p>
+<pre><code class="language-text">获得金币 +10
+获得经验 +20
+任务完成</code></pre>
+<h2 id="stack-是什么">Stack 是什么</h2>
+<p><code>Stack&lt;T&gt;</code> 是栈：</p>
+<pre><code class="language-text">后进先出。</code></pre>
+<p>也叫 LIFO：</p>
+<pre><code class="language-text">Last In, First Out</code></pre>
+<p>就像一摞盘子：</p>
+<pre><code class="language-text">最后放上去的盘子，最先被拿走。</code></pre>
+<p>声明：</p>
+<pre><code class="language-csharp">Stack&lt;string&gt; stack = new();</code></pre>
+<p>入栈：</p>
+<pre><code class="language-csharp">stack.Push(&quot;PageA&quot;);
+stack.Push(&quot;PageB&quot;);
+stack.Push(&quot;PageC&quot;);</code></pre>
+<p>出栈：</p>
+<pre><code class="language-csharp">string top = stack.Pop();</code></pre>
+<p>拿到的是：</p>
+<pre><code class="language-text">PageC</code></pre>
+<h2 id="stack-常用操作">Stack 常用操作</h2>
+<p>入栈：</p>
+<pre><code class="language-csharp">stack.Push(&quot;PageA&quot;);</code></pre>
+<p>出栈并移除：</p>
+<pre><code class="language-csharp">string page = stack.Pop();</code></pre>
+<p>查看栈顶但不移除：</p>
+<pre><code class="language-csharp">string top = stack.Peek();</code></pre>
+<p>数量：</p>
+<pre><code class="language-csharp">int count = stack.Count;</code></pre>
+<p>清空：</p>
+<pre><code class="language-csharp">stack.Clear();</code></pre>
+<p>空栈时直接 <code>Pop()</code> 或 <code>Peek()</code> 也会报错。</p>
+<p>所以通常：</p>
+<pre><code class="language-csharp">if (stack.Count &gt; 0)
+{
+    string page = stack.Pop();
+}</code></pre>
+<h2 id="stack-适合什么场景">Stack 适合什么场景</h2>
+<p><code>Stack</code> 适合回退、撤销、嵌套结构：</p>
+<pre><code class="language-text">UI 页面返回栈
+撤销操作 Undo
+递归改成非递归
+括号匹配
+DFS 深度优先搜索
+状态压栈和恢复</code></pre>
+<p>例子：UI 页面返回。</p>
+<pre><code class="language-csharp">Stack&lt;string&gt; pageStack = new();
+
+pageStack.Push(&quot;Home&quot;);
+pageStack.Push(&quot;Bag&quot;);
+pageStack.Push(&quot;ItemDetail&quot;);
+
+string current = pageStack.Pop();   // ItemDetail
+string previous = pageStack.Peek(); // Bag</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">当前关闭 ItemDetail，回到 Bag。</code></pre>
+<h2 id="queue-和-stack-对比">Queue 和 Stack 对比</h2>
+<p>同样放入：</p>
+<pre><code class="language-text">1, 2, 3</code></pre>
+<p><code>Queue</code> 取出：</p>
+<pre><code class="language-text">1, 2, 3</code></pre>
+<p><code>Stack</code> 取出：</p>
+<pre><code class="language-text">3, 2, 1</code></pre>
+<p>示例：</p>
+<pre><code class="language-csharp">Queue&lt;int&gt; queue = new();
+queue.Enqueue(1);
+queue.Enqueue(2);
+queue.Enqueue(3);
+
+Debug.Log(queue.Dequeue()); // 1</code></pre>
+<pre><code class="language-csharp">Stack&lt;int&gt; stack = new();
+stack.Push(1);
+stack.Push(2);
+stack.Push(3);
+
+Debug.Log(stack.Pop()); // 3</code></pre>
+<h2 id="和-list-的区别">和 List 的区别</h2>
+<p>可以用 <code>List</code> 模拟栈：</p>
+<pre><code class="language-csharp">list.Add(item); // push
+var item = list[^1];
+list.RemoveAt(list.Count - 1); // pop</code></pre>
+<p>但队列用 <code>List</code> 从头删很差：</p>
+<pre><code class="language-csharp">var item = list[0];
+list.RemoveAt(0);</code></pre>
+<p><code>RemoveAt(0)</code> 会导致后面所有元素前移，成本是 <code>O(n)</code>。</p>
+<p><code>Queue.Dequeue()</code> 更适合队列场景。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">Queue：适合排队处理，先来的先处理。
+Stack：适合回退撤销，后来的先处理。</code></pre>
+<p>最常记的 API：</p>
+<pre><code class="language-csharp">queue.Enqueue(item);
+queue.Dequeue();
+queue.Peek();
+
+stack.Push(item);
+stack.Pop();
+stack.Peek();</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/List%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%88%A0%E9%99%A4%E8%A7%84%E5%88%99/"><small>← PREVIOUS</small>List 常用操作与删除规则</a>
+          <span></span>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

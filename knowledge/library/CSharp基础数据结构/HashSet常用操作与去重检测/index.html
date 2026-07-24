@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HashSet&lt;T&gt; 可以理解成：">
+  <title>HashSet 常用操作与去重检测 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
+      <h1>HashSet 常用操作与去重检测</h1>
+      <p class="hero-copy">HashSet&lt;T&gt; 可以理解成：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#hashset-是什么">HashSet 是什么</a>
+    <a data-toc-link href="#基础声明">基础声明</a>
+    <a data-toc-link href="#add-有返回值">Add 有返回值</a>
+    <a data-toc-link href="#判断是否存在">判断是否存在</a>
+    <a data-toc-link href="#删除">删除</a>
+    <a data-toc-link href="#去重例子">去重例子</a>
+    <a data-toc-link href="#标记已访问">标记已访问</a>
+    <a data-toc-link href="#冲突检测">冲突检测</a>
+    <a data-toc-link href="#和-list-的区别">和 List 的区别</a>
+    <a data-toc-link href="#和-dictionary-的区别">和 Dictionary 的区别</a>
+    <a data-toc-link href="#string-忽略大小写">string 忽略大小写</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：CSharp 基础数据结构</p>
+<h2 id="hashset-是什么">HashSet 是什么</h2>
+<p><code>HashSet&lt;T&gt;</code> 可以理解成：</p>
+<pre><code class="language-text">一组不重复的东西。</code></pre>
+<p>也可以理解成：</p>
+<pre><code class="language-text">只存 key，不存 value 的 Dictionary。</code></pre>
+<p>如果只关心“有没有”，不关心“对应什么值”，就很适合用 <code>HashSet&lt;T&gt;</code>。</p>
+<h2 id="基础声明">基础声明</h2>
+<pre><code class="language-csharp">HashSet&lt;string&gt; names = new();</code></pre>
+<p>添加元素：</p>
+<pre><code class="language-csharp">names.Add(&quot;Alice&quot;);
+names.Add(&quot;Bob&quot;);
+names.Add(&quot;Alice&quot;);</code></pre>
+<p>最后集合里只有：</p>
+<pre><code class="language-text">Alice
+Bob</code></pre>
+<p>因为 <code>HashSet</code> 自动去重。</p>
+<h2 id="add-有返回值">Add 有返回值</h2>
+<pre><code class="language-csharp">bool added = names.Add(&quot;Alice&quot;);</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">true：之前没有，添加成功
+false：之前已经有了，没有重复添加</code></pre>
+<p>例子：</p>
+<pre><code class="language-csharp">HashSet&lt;string&gt; names = new();
+
+bool first = names.Add(&quot;Alice&quot;);  // true
+bool second = names.Add(&quot;Alice&quot;); // false</code></pre>
+<p>这个返回值很常用，可以顺便做重复检测：</p>
+<pre><code class="language-csharp">if (!names.Add(&quot;Alice&quot;))
+{
+    Debug.Log(&quot;Alice 已经存在&quot;);
+}</code></pre>
+<h2 id="判断是否存在">判断是否存在</h2>
+<pre><code class="language-csharp">if (names.Contains(&quot;Alice&quot;))
+{
+    Debug.Log(&quot;存在 Alice&quot;);
+}</code></pre>
+<p><code>HashSet.Contains</code> 很快，和 <code>Dictionary.ContainsKey</code> 类似。</p>
+<p>适合回答：</p>
+<pre><code class="language-text">这个 ID 是否出现过？
+这个怪物是否已经处理过？
+这个槽位是否已经被占用？
+这个资源路径是否已经收集过？</code></pre>
+<h2 id="删除">删除</h2>
+<pre><code class="language-csharp">names.Remove(&quot;Alice&quot;);</code></pre>
+<p>也有返回值：</p>
+<pre><code class="language-csharp">bool removed = names.Remove(&quot;Alice&quot;);</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">true：找到了并删除
+false：没找到</code></pre>
+<p>清空：</p>
+<pre><code class="language-csharp">names.Clear();</code></pre>
+<h2 id="去重例子">去重例子</h2>
+<p>假设有一个列表：</p>
+<pre><code class="language-csharp">List&lt;int&gt; ids = new() { 1, 2, 2, 3, 3, 3, 4 };</code></pre>
+<p>想得到不重复的 ID：</p>
+<pre><code class="language-csharp">HashSet&lt;int&gt; uniqueIds = new();
+
+foreach (int id in ids)
+{
+    uniqueIds.Add(id);
+}</code></pre>
+<p>结果：</p>
+<pre><code class="language-text">1, 2, 3, 4</code></pre>
+<p>如果还想变回 <code>List</code>：</p>
+<pre><code class="language-csharp">List&lt;int&gt; result = new(uniqueIds);</code></pre>
+<h2 id="标记已访问">标记已访问</h2>
+<p>这是 <code>HashSet</code> 最常见的算法用途。</p>
+<p>比如遍历一组节点，避免重复处理：</p>
+<pre><code class="language-csharp">HashSet&lt;int&gt; visited = new();
+
+void Visit(int nodeId)
+{
+    if (!visited.Add(nodeId))
+    {
+        return; // 已经访问过，直接跳过
+    }
+
+    Debug.Log($&quot;处理节点: {nodeId}&quot;);
+
+    // 继续处理它关联的其他节点
+}</code></pre>
+<p>这里用的是 <code>Add</code> 的返回值：</p>
+<pre><code class="language-text">第一次 Add 成功：说明没访问过，继续处理
+第二次 Add 失败：说明访问过，跳过</code></pre>
+<p>这在图遍历、递归、防止死循环里特别常见。</p>
+<h2 id="冲突检测">冲突检测</h2>
+<p>例如槽位占用检测：</p>
+<pre><code class="language-csharp">HashSet&lt;int&gt; usedSlots = new();
+
+if (!usedSlots.Add(slotIndex))
+{
+    Debug.Log(&quot;这个槽位已经被占用了&quot;);
+}</code></pre>
+<p>因为 <code>Add</code> 返回 <code>false</code>，说明这个槽位已经存在。</p>
+<p>所以 <code>HashSet</code> 可以同时完成两件事：</p>
+<pre><code class="language-text">记录已使用
+检测重复</code></pre>
+<p>比先 <code>Contains</code> 再 <code>Add</code> 更简洁：</p>
+<pre><code class="language-csharp">if (!usedSlots.Add(slotIndex))
+{
+    // 冲突
+}</code></pre>
+<h2 id="和-list-的区别">和 List 的区别</h2>
+<p><code>List&lt;T&gt;</code>：</p>
+<pre><code class="language-text">可以有重复
+有顺序
+可以用下标访问
+Contains 通常要从头找，O(n)</code></pre>
+<p><code>HashSet&lt;T&gt;</code>：</p>
+<pre><code class="language-text">不能有重复
+不关心顺序
+不能用下标访问
+Contains 很快，通常接近 O(1)</code></pre>
+<p>例子：</p>
+<pre><code class="language-csharp">List&lt;string&gt; list = new() { &quot;A&quot;, &quot;A&quot;, &quot;B&quot; };
+HashSet&lt;string&gt; set = new() { &quot;A&quot;, &quot;A&quot;, &quot;B&quot; };</code></pre>
+<p>结果：</p>
+<pre><code class="language-text">list: A, A, B
+set:  A, B</code></pre>
+<h2 id="和-dictionary-的区别">和 Dictionary 的区别</h2>
+<p><code>Dictionary&lt;TKey, TValue&gt;</code>：</p>
+<pre><code class="language-text">key -&gt; value</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">&quot;monster_01&quot; -&gt; monsterObject</code></pre>
+<p><code>HashSet&lt;T&gt;</code>：</p>
+<pre><code class="language-text">只有 key，没有 value</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">&quot;monster_01&quot; 是否存在</code></pre>
+<p>如果只关心“有没有”，用 <code>HashSet</code>。</p>
+<p>如果关心“这个 key 对应什么值”，用 <code>Dictionary</code>。</p>
+<h2 id="string-忽略大小写">string 忽略大小写</h2>
+<p>和 <code>Dictionary</code> 一样，<code>HashSet&lt;string&gt;</code> 也可以指定比较方式：</p>
+<pre><code class="language-csharp">HashSet&lt;string&gt; paths = new(StringComparer.OrdinalIgnoreCase);
+
+paths.Add(&quot;UI/Icon/Player&quot;);
+Debug.Log(paths.Contains(&quot;ui/icon/player&quot;)); // true</code></pre>
+<p>适合资源路径、大小写不敏感的 key。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">List：存一排东西，允许重复，适合顺序遍历。
+Dictionary：按 key 找 value。
+HashSet：只关心有没有，自动去重，适合标记、去重、冲突检测。</code></pre>
+<p>最值得记住的写法：</p>
+<pre><code class="language-csharp">if (!set.Add(value))
+{
+    // 已经存在，发生重复或冲突
+}</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Dictionary%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%B7%B1%E5%85%A5%E7%94%A8%E6%B3%95/"><small>← PREVIOUS</small>Dictionary 常用操作与深入用法</a>
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/List%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%88%A0%E9%99%A4%E8%A7%84%E5%88%99/"><small>NEXT →</small>List 常用操作与删除规则</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

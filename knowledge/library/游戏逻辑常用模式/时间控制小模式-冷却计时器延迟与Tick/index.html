@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="冷却、计时器、延迟和 Tick 都围绕同一个问题：">
+  <title>时间控制小模式：冷却、计时器、延迟与 Tick · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
+      <h1>时间控制小模式：冷却、计时器、延迟与 Tick</h1>
+      <p class="hero-copy">冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心问题">核心问题</a>
+    <a data-toc-link href="#冷却-cooldown">冷却 Cooldown</a>
+    <a data-toc-link href="#计时器-timer">计时器 Timer</a>
+    <a data-toc-link href="#延迟触发-delay">延迟触发 Delay</a>
+    <a data-toc-link href="#tick">Tick</a>
+    <a data-toc-link href="#为什么-ai-不一定每帧-tick">为什么 AI 不一定每帧 Tick</a>
+    <a data-toc-link href="#是否补-tick">是否补 Tick</a>
+    <a data-toc-link href="#time-time-和-time-deltatime">Time.time 和 Time.deltaTime</a>
+    <a data-toc-link href="#unscaledtime-和-unscaleddeltatime">unscaledTime 和 unscaledDeltaTime</a>
+    <a data-toc-link href="#怎么选择">怎么选择</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：游戏逻辑常用模式</p>
+<h2 id="核心问题">核心问题</h2>
+<p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
+<pre><code class="language-text">某件事什么时候发生？
+多久发生一次？
+是否已经到时间了？</code></pre>
+<p>它们不是大型架构，但在游戏逻辑里非常高频。</p>
+<h2 id="冷却-cooldown">冷却 Cooldown</h2>
+<p>冷却控制的是：</p>
+<pre><code class="language-text">做完一件事之后，多久不能再做。</code></pre>
+<p>典型写法：</p>
+<pre><code class="language-csharp">private float nextReadyTime = 0f;
+private float cooldown = 3f;
+
+bool CanUse()
+{
+    return Time.time &gt;= nextReadyTime;
+}
+
+void UseSkill()
+{
+    if (!CanUse())
+    {
+        return;
+    }
+
+    DoSkill();
+
+    nextReadyTime = Time.time + cooldown;
+}</code></pre>
+<p>核心：</p>
+<pre><code class="language-text">nextReadyTime = 下次允许触发的时间</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">技能 CD
+攻击间隔
+按钮防连点
+提示节流
+重试间隔</code></pre>
+<h2 id="计时器-timer">计时器 Timer</h2>
+<p>计时器控制的是：</p>
+<pre><code class="language-text">从现在开始，还剩多久触发。</code></pre>
+<p>例如炸弹 5 秒后爆炸：</p>
+<pre><code class="language-csharp">private float timer = 5f;
+private bool exploded = false;
+
+void Update()
+{
+    if (exploded)
+    {
+        return;
+    }
+
+    timer -= Time.deltaTime;
+
+    if (timer &lt;= 0f)
+    {
+        exploded = true;
+        Explode();
+    }
+}</code></pre>
+<p>这里：</p>
+<pre><code class="language-text">timer：剩余时间
+Time.deltaTime：上一帧到这一帧经过的时间</code></pre>
+<p>如果不加 <code>exploded</code> 这类标记，计时结束后可能每帧重复触发。</p>
+<h2 id="延迟触发-delay">延迟触发 Delay</h2>
+<p>延迟触发表示：</p>
+<pre><code class="language-text">几秒后做一件事。</code></pre>
+<p>写法一：倒计时。</p>
+<pre><code class="language-csharp">private float delay = 2f;
+
+void Update()
+{
+    delay -= Time.deltaTime;
+
+    if (delay &lt;= 0f)
+    {
+        DoSomething();
+    }
+}</code></pre>
+<p>写法二：目标时间。</p>
+<pre><code class="language-csharp">private float triggerTime;
+
+void StartDelay()
+{
+    triggerTime = Time.time + 2f;
+}
+
+void Update()
+{
+    if (Time.time &gt;= triggerTime)
+    {
+        DoSomething();
+    }
+}</code></pre>
+<p>区别：</p>
+<pre><code class="language-text">倒计时：适合对象自己维护剩余时间。
+目标时间：适合判断当前是否过了某个时间点。</code></pre>
+<h2 id="tick">Tick</h2>
+<p><code>Tick</code> 可以理解成：</p>
+<pre><code class="language-text">按固定间隔执行一次逻辑。</code></pre>
+<p>例如 Buff 每 1 秒扣一次血：</p>
+<pre><code class="language-csharp">private float tickInterval = 1f;
+private float nextTickTime = 0f;
+
+void Update()
+{
+    if (Time.time &lt; nextTickTime)
+    {
+        return;
+    }
+
+    nextTickTime = Time.time + tickInterval;
+
+    ApplyPoisonDamage();
+}</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">中毒每秒扣血
+回血每秒恢复
+AI 每 0.2 秒思考一次
+雷达每 0.5 秒扫描一次
+资源每 1 秒增长一次</code></pre>
+<h2 id="为什么-ai-不一定每帧-tick">为什么 AI 不一定每帧 Tick</h2>
+<p>很多 AI 逻辑不需要每帧跑：</p>
+<pre><code class="language-text">查找目标
+计算路径
+筛选候选技能
+扫描附近敌人</code></pre>
+<p>可以改成：</p>
+<pre><code class="language-csharp">private float nextThinkTime = 0f;
+private float thinkInterval = 0.2f;
+
+void Update()
+{
+    if (Time.time &lt; nextThinkTime)
+    {
+        return;
+    }
+
+    nextThinkTime = Time.time + thinkInterval;
+
+    Think();
+}</code></pre>
+<p>这样一秒只思考 5 次，玩家可能感受不到差异，但性能更稳。</p>
+<h2 id="是否补-tick">是否补 Tick</h2>
+<p>普通写法：</p>
+<pre><code class="language-csharp">nextTickTime = Time.time + tickInterval;</code></pre>
+<p>特点是：</p>
+<pre><code class="language-text">如果某一帧卡住了，只补一次 Tick。</code></pre>
+<p>有些场景这是对的，例如 AI 思考：</p>
+<pre><code class="language-text">卡顿后不需要补 3 次思考。</code></pre>
+<p>但有些场景可能要补，例如中毒伤害：</p>
+<pre><code class="language-text">卡了 3 秒，理论上应该扣 3 次。</code></pre>
+<p>可以用循环补 Tick：</p>
+<pre><code class="language-csharp">while (Time.time &gt;= nextTickTime)
+{
+    ApplyPoisonDamage();
+    nextTickTime += tickInterval;
+}</code></pre>
+<p>为了避免一次补太多造成更大卡顿，可以加最大补偿次数：</p>
+<pre><code class="language-csharp">int maxCatchUpTicks = 5;
+int tickCount = 0;
+
+while (Time.time &gt;= nextTickTime &amp;&amp; tickCount &lt; maxCatchUpTicks)
+{
+    ApplyPoisonDamage();
+    nextTickTime += tickInterval;
+    tickCount++;
+}</code></pre>
+<h2 id="time-time-和-time-deltatime">Time.time 和 Time.deltaTime</h2>
+<p><code>Time.time</code>：</p>
+<pre><code class="language-text">游戏开始到现在经过了多少秒。</code></pre>
+<p>适合记录时间点：</p>
+<pre><code class="language-csharp">nextReadyTime = Time.time + cooldown;</code></pre>
+<p><code>Time.deltaTime</code>：</p>
+<pre><code class="language-text">上一帧到这一帧经过了多少秒。</code></pre>
+<p>适合倒计时：</p>
+<pre><code class="language-csharp">timer -= Time.deltaTime;</code></pre>
+<p>简单区分：</p>
+<pre><code class="language-text">要问“现在到没到某个时间点”：用 Time.time。
+要每帧减少剩余时间：用 Time.deltaTime。</code></pre>
+<h2 id="unscaledtime-和-unscaleddeltatime">unscaledTime 和 unscaledDeltaTime</h2>
+<p><code>Time.time</code> 和 <code>Time.deltaTime</code> 受 <code>Time.timeScale</code> 影响。</p>
+<p>如果游戏暂停：</p>
+<pre><code class="language-csharp">Time.timeScale = 0f;</code></pre>
+<p>很多基于 <code>Time.time</code> / <code>deltaTime</code> 的计时也会暂停。</p>
+<p>如果希望暂停时仍然计时，比如：</p>
+<pre><code class="language-text">UI 动画
+真实时间倒计时
+网络重连
+登录超时</code></pre>
+<p>可以用：</p>
+<pre><code class="language-csharp">Time.unscaledTime
+Time.unscaledDeltaTime</code></pre>
+<p>例子：</p>
+<pre><code class="language-csharp">uiTimer -= Time.unscaledDeltaTime;</code></pre>
+<h2 id="怎么选择">怎么选择</h2>
+<p>冷却：</p>
+<pre><code class="language-text">我做完一件事后，多久不能再做？</code></pre>
+<p>用：</p>
+<pre><code class="language-csharp">nextReadyTime = Time.time + cooldown;</code></pre>
+<p>倒计时：</p>
+<pre><code class="language-text">还剩多久触发？</code></pre>
+<p>用：</p>
+<pre><code class="language-csharp">timer -= Time.deltaTime;</code></pre>
+<p>延迟：</p>
+<pre><code class="language-text">几秒后做一件事？</code></pre>
+<p>用 timer 或 triggerTime。</p>
+<p>Tick：</p>
+<pre><code class="language-text">每隔多久做一次？</code></pre>
+<p>用：</p>
+<pre><code class="language-csharp">if (Time.time &gt;= nextTickTime)
+{
+    nextTickTime = Time.time + interval;
+    Tick();
+}</code></pre>
+<p>补 Tick：</p>
+<pre><code class="language-text">这段时间漏掉的次数要不要补？</code></pre>
+<p>需要补就用 <code>while</code>，不需要补就只触发一次。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">冷却看下次可用时间。
+计时器看剩余时间。
+延迟看目标触发时间。
+Tick 看下一次执行时间。</code></pre>
+<p>最常用的两种写法：</p>
+<pre><code class="language-csharp">// 时间点写法
+if (Time.time &gt;= nextTime)
+{
+    nextTime = Time.time + interval;
+    DoSomething();
+}</code></pre>
+<pre><code class="language-csharp">// 倒计时写法
+timer -= Time.deltaTime;
+if (timer &lt;= 0f)
+{
+    DoSomething();
+}</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/"><small>← PREVIOUS</small>后续学习计划</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E9%9A%8F%E6%9C%BA%E7%B3%BB%E7%BB%9F/"><small>NEXT →</small>随机系统</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

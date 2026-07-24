@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="复杂 AI 或流程逻辑不是只能靠一堆 if else。">
+  <title>状态机、行为树、效用 AI 与 GOAP 对比 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
+      <h1>状态机、行为树、效用 AI 与 GOAP 对比</h1>
+      <p class="hero-copy">复杂 AI 或流程逻辑不是只能靠一堆 if else。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心问题">核心问题</a>
+    <a data-toc-link href="#普通状态机-fsm">普通状态机 FSM</a>
+    <a data-toc-link href="#分层状态机-hierarchical-fsm">分层状态机 Hierarchical FSM</a>
+    <a data-toc-link href="#并行状态机-parallel-fsm">并行状态机 Parallel FSM</a>
+    <a data-toc-link href="#行为树-behavior-tree">行为树 Behavior Tree</a>
+    <a data-toc-link href="#效用-ai-utility-ai">效用 AI Utility AI</a>
+    <a data-toc-link href="#goap-目标导向行动规划">GOAP 目标导向行动规划</a>
+    <a data-toc-link href="#选择建议">选择建议</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：游戏 AI 与逻辑建模</p>
+<h2 id="核心问题">核心问题</h2>
+<p>复杂 AI 或流程逻辑不是只能靠一堆 <code>if else</code>。</p>
+<p>常见建模工具包括：</p>
+<pre><code class="language-text">普通状态机
+分层状态机
+并行状态机
+行为树
+效用 AI
+GOAP</code></pre>
+<p>它们不是谁完全替代谁，而是解决不同复杂度、不同类型的问题。</p>
+<p>最重要的判断是：</p>
+<pre><code class="language-text">这是流程问题，还是决策问题，还是规划问题？</code></pre>
+<h2 id="普通状态机-fsm">普通状态机 FSM</h2>
+<p>核心模型：</p>
+<pre><code class="language-text">当前状态 + 条件 = 下一个状态</code></pre>
+<p>例子：</p>
+<pre><code class="language-text">Idle -&gt; 发现玩家 -&gt; Chase
+Chase -&gt; 进入攻击距离 -&gt; Attack
+Attack -&gt; 攻击结束 -&gt; Cooldown
+Cooldown -&gt; 冷却结束 -&gt; Chase
+任意状态 -&gt; 死亡 -&gt; Dead</code></pre>
+<p>C# 常见写法：</p>
+<pre><code class="language-csharp">public enum MonsterState
+{
+    Idle,
+    Chase,
+    Attack,
+    Cooldown,
+    Dead
+}
+
+private MonsterState state;
+
+void Update()
+{
+    switch (state)
+    {
+        case MonsterState.Idle:
+            UpdateIdle();
+            break;
+        case MonsterState.Chase:
+            UpdateChase();
+            break;
+        case MonsterState.Attack:
+            UpdateAttack();
+            break;
+    }
+}</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">状态少
+流程明确
+状态互斥
+切换规则简单</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">简单直观
+容易 Debug
+当前状态一眼能看懂</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">状态多了会膨胀
+多个维度同时存在时不好处理</code></pre>
+<h2 id="分层状态机-hierarchical-fsm">分层状态机 Hierarchical FSM</h2>
+<p>分层状态机把状态分层：</p>
+<pre><code class="language-text">Alive
+  Idle
+  Chase
+  Attack
+  Stunned
+
+Dead</code></pre>
+<p>父状态管公共规则，子状态管具体行为。</p>
+<p>例如所有 <code>Alive</code> 状态都要检查死亡：</p>
+<pre><code class="language-text">Alive.Update:
+    if hp &lt;= 0 -&gt; Dead</code></pre>
+<p>子状态就不用每个都重复写死亡检查。</p>
+<p>适合：</p>
+<pre><code class="language-text">状态明显有层级
+很多状态共享公共逻辑
+普通 FSM 已经开始变乱</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">减少重复判断
+状态结构更清楚
+适合中大型流程</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">实现比普通状态机复杂
+父子状态进入/退出顺序要设计清楚</code></pre>
+<p>常见进入顺序：</p>
+<pre><code class="language-text">Enter 父状态 -&gt; Enter 子状态</code></pre>
+<p>常见退出顺序：</p>
+<pre><code class="language-text">Exit 子状态 -&gt; Exit 父状态</code></pre>
+<h2 id="并行状态机-parallel-fsm">并行状态机 Parallel FSM</h2>
+<p>并行状态机解决多个状态维度同时存在的问题。</p>
+<p>一个角色可能同时有：</p>
+<pre><code class="language-text">移动状态：Idle / Walk / Run / Jump
+战斗状态：Ready / Casting / Cooldown
+控制状态：Normal / Stunned / Frozen
+表情状态：Normal / Hurt / Angry</code></pre>
+<p>如果硬写成一个巨大枚举，会出现组合爆炸：</p>
+<pre><code class="language-text">RunCastingNormal
+RunCastingStunned
+WalkCastingNormal
+JumpCooldownFrozen</code></pre>
+<p>更好的方式是拆成多个状态机：</p>
+<pre><code class="language-csharp">MovementState movementState;
+CombatState combatState;
+ControlState controlState;</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">多个状态维度可以同时存在
+组合数量很多
+不想写巨大 enum</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">避免组合爆炸
+模块职责更清晰
+更接近真实游戏角色结构</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">多个状态机之间可能冲突
+需要优先级或协调规则</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">ControlState = Stunned</code></pre>
+<p>此时移动状态机和战斗状态机都应该受到限制。</p>
+<h2 id="行为树-behavior-tree">行为树 Behavior Tree</h2>
+<p>行为树不是当前状态切来切去，而是每次从树根开始做决策。</p>
+<p>它更像：</p>
+<pre><code class="language-text">按优先级检查行为，谁能执行就执行谁。</code></pre>
+<p>例子：</p>
+<pre><code class="language-text">Selector
+  IsDead? -&gt; Dead
+  IsStunned? -&gt; Stunned
+  CanAttack? -&gt; Attack
+  CanSeePlayer? -&gt; Chase
+  Patrol</code></pre>
+<p>常见节点：</p>
+<pre><code class="language-text">Selector：选择一个成功的子节点
+Sequence：一组步骤都成功才成功
+Condition：条件判断
+Action：执行行为
+Decorator：修饰节点，比如冷却、取反、循环</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">AI 决策复杂
+行为优先级明显
+行为可以组合复用
+策划需要可视化编辑</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">扩展 AI 行为比较自然
+行为节点可复用
+优先级清楚
+很适合怪物 AI</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">每帧从树根 tick，节点多了要注意性能
+复杂树也会变难维护
+长流程行为需要额外状态保存</code></pre>
+<p>一句话：</p>
+<pre><code class="language-text">状态机更像流程图。
+行为树更像决策树。</code></pre>
+<h2 id="效用-ai-utility-ai">效用 AI Utility AI</h2>
+<p>效用 AI 不按固定优先级选行为，而是给每个行为打分。</p>
+<p>例子：</p>
+<pre><code class="language-text">攻击分 = 技能可用 + 距离合适 + 目标血量低
+逃跑分 = 自己血量低 + 敌人太近
+追击分 = 看见目标 + 距离较远
+巡逻分 = 没有目标</code></pre>
+<p>然后：</p>
+<pre><code class="language-text">谁分最高，执行谁。</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">行为不是绝对优先级
+需要多个因素权衡
+希望 AI 更柔性自然</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">行为更自然
+容易调权重
+适合多因素决策</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">调参成本高
+分数设计不好会出现奇怪行为
+Debug 时要能看到各项分数</code></pre>
+<p>关键不是代码难，而是：</p>
+<pre><code class="language-text">怎么设计评分公式。</code></pre>
+<h2 id="goap-目标导向行动规划">GOAP 目标导向行动规划</h2>
+<p>GOAP 的思路是：</p>
+<pre><code class="language-text">AI 有目标。
+AI 自己规划一串行动达成目标。</code></pre>
+<p>每个行动有：</p>
+<pre><code class="language-text">前置条件
+执行效果
+成本</code></pre>
+<p>例子：</p>
+<pre><code class="language-text">行动：开火
+前置条件：有武器、有弹药、目标在范围内
+效果：玩家受伤
+成本：2</code></pre>
+<p>如果目标是消灭玩家，AI 可能规划：</p>
+<pre><code class="language-text">没有武器 -&gt; 找武器 -&gt; 靠近玩家 -&gt; 开火</code></pre>
+<p>适合：</p>
+<pre><code class="language-text">沙盒 AI
+复杂 NPC
+行动组合非常多
+希望 AI 看起来会“想办法”</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">AI 很灵活
+不用手写所有行为顺序
+能根据环境变化重新规划</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">实现复杂
+性能更贵
+Debug 更难
+对普通怪物可能太重</code></pre>
+<h2 id="选择建议">选择建议</h2>
+<pre><code class="language-text">普通状态机：
+适合简单互斥流程。
+
+分层状态机：
+适合有父子层级的流程。
+
+并行状态机：
+适合多个状态维度同时存在。
+
+行为树：
+适合优先级式 AI 决策。
+
+效用 AI：
+适合多因素评分决策。
+
+GOAP：
+适合目标导向的自动规划。</code></pre>
+<p>游戏项目里经常混用：</p>
+<pre><code class="language-text">角色动作流程：状态机 / 分层状态机
+角色移动、战斗、控制：并行状态机
+怪物行为选择：行为树
+技能选择或目标选择：效用评分
+复杂 NPC 规划：GOAP
+Buff、异常状态：标签 / 独立状态模块</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">流程问题：状态机。
+决策问题：行为树 / 效用 AI。
+规划问题：GOAP。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E5%B1%80%E9%83%A8%E9%81%BF%E9%9A%9C-RVO%E4%B8%8EORCA%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>← PREVIOUS</small>局部避障：RVO 与 ORCA 理解笔记</a>
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E5%B8%B8%E8%A7%81%E9%85%8D%E5%A5%97%E8%AF%AD%E6%B3%95/"><small>NEXT →</small>集合常见配套语法</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

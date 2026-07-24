@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。">
+  <title>A 星寻路中的 G 值与 Parent 回溯 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>A 星寻路中的 G 值与 Parent 回溯</h1>
+      <p class="hero-copy">A 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#a-星解决什么问题">A 星解决什么问题</a>
+    <a data-toc-link href="#g-值为什么重要">G 值为什么重要</a>
+    <a data-toc-link href="#数字例子">数字例子</a>
+    <a data-toc-link href="#搜索阶段不是移动阶段">搜索阶段不是移动阶段</a>
+    <a data-toc-link href="#a-星不为每个候选点保存完整路径">A 星不为每个候选点保存完整路径</a>
+    <a data-toc-link href="#换路线时发生了什么">换路线时发生了什么</a>
+    <a data-toc-link href="#保证路径正确的关键">保证路径正确的关键</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>逐步查看 Open、Closed、Parent 和代价如何变化。</span>
+        <p><a href="/#lab">打开 A* 寻路实验 →</a></p>
+      </aside>
+        <p>分类：算法</p>
+<h2 id="a-星解决什么问题">A 星解决什么问题</h2>
+<p>A 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。</p>
+<p>它的核心公式是：</p>
+<pre><code class="language-text">F = G + H</code></pre>
+<p>其中：</p>
+<pre><code class="language-text">G：从起点走到当前点，已经花了多少成本。
+H：从当前点到终点，估计还要多少成本。
+F：综合评分。</code></pre>
+<h2 id="g-值为什么重要">G 值为什么重要</h2>
+<p><code>G</code> 看起来像“过去的账”，但它非常关键。</p>
+<p>A 星不是只想找“看起来离终点近”的点，而是想找：</p>
+<pre><code class="language-text">从起点到终点的总路程尽量短。</code></pre>
+<p>这个总路程必须包含：</p>
+<pre><code class="language-text">已经走过的距离 G
+还没走的估计距离 H</code></pre>
+<p>如果只看 <code>H</code>，就会变成贪心搜索：</p>
+<pre><code class="language-text">谁看起来离终点近，就先选谁。</code></pre>
+<p>这样很容易被障碍骗。</p>
+<p>例如某个点虽然离终点很近，但为了到达它已经绕了很远。</p>
+<p><code>G</code> 的作用就是提醒算法：</p>
+<pre><code class="language-text">你虽然看起来离目标近，但你已经付出了很高成本。</code></pre>
+<p>一句话：</p>
+<pre><code class="language-text">H 让 A 星有方向感。
+G 让 A 星不被方向感骗。</code></pre>
+<h2 id="数字例子">数字例子</h2>
+<p>假设有两个候选点：</p>
+<pre><code class="language-text">A 点：
+G = 10  已经走了 10 步
+H = 2   估计离终点还差 2 步
+F = 12
+
+B 点：
+G = 3   已经走了 3 步
+H = 6   估计离终点还差 6 步
+F = 9</code></pre>
+<p>如果只看 <code>H</code>：</p>
+<pre><code class="language-text">A 更好，因为 H = 2。</code></pre>
+<p>但看总成本：</p>
+<pre><code class="language-text">A 总成本约 12。
+B 总成本约 9。</code></pre>
+<p>所以 B 可能更值得继续探索。</p>
+<h2 id="搜索阶段不是移动阶段">搜索阶段不是移动阶段</h2>
+<p>A 星搜索时，角色并没有真的移动。</p>
+<p>搜索阶段只是算法在内存里推演：</p>
+<pre><code class="language-text">哪些点可能成为路线？
+每个点当前最便宜的到达方式是什么？
+哪个候选点最值得继续探索？</code></pre>
+<p>等找到最终路径之后，角色才开始沿路径移动。</p>
+<p>所以不会发生：</p>
+<pre><code class="language-text">角色走到一半发现路线错了，再一步步倒退。</code></pre>
+<p>单次 A 星是：</p>
+<pre><code class="language-text">先计算路线，再执行移动。</code></pre>
+<h2 id="a-星不为每个候选点保存完整路径">A 星不为每个候选点保存完整路径</h2>
+<p>如果每个候选点都保存一整条路径：</p>
+<pre><code class="language-text">A: [S, A]
+B: [S, A, B]
+C: [S, A, B, C]
+D: [S, X, Y, D]</code></pre>
+<p>会浪费很多内存。</p>
+<p>A 星更常见的做法是：</p>
+<pre><code class="language-text">每个节点只保存 Parent。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">B.parent = A
+C.parent = B
+G.parent = C</code></pre>
+<p>找到终点后，从终点往回追：</p>
+<pre><code class="language-text">G -&gt; C -&gt; B -&gt; A -&gt; S</code></pre>
+<p>再反转：</p>
+<pre><code class="language-text">S -&gt; A -&gt; B -&gt; C -&gt; G</code></pre>
+<p>这就是最终路径。</p>
+<h2 id="换路线时发生了什么">换路线时发生了什么</h2>
+<p>假设某个节点 <code>X</code> 之前是这样到达的：</p>
+<pre><code class="language-text">S -&gt; A -&gt; B -&gt; X</code></pre>
+<p>成本：</p>
+<pre><code class="language-text">X.G = 10
+X.Parent = B</code></pre>
+<p>后来发现另一条更短的路：</p>
+<pre><code class="language-text">S -&gt; C -&gt; X</code></pre>
+<p>成本：</p>
+<pre><code class="language-text">newG = 6</code></pre>
+<p>那就更新：</p>
+<pre><code class="language-text">X.G = 6
+X.Parent = C</code></pre>
+<p>这不是让角色倒退，也不是修改一条正在走的路径 List。</p>
+<p>它只是把数据记录改成：</p>
+<pre><code class="language-text">到 X 的当前最佳来源是 C。</code></pre>
+<p>以后如果最终路径经过 X，回溯出来的就是新路线：</p>
+<pre><code class="language-text">S -&gt; C -&gt; X</code></pre>
+<p>而不是旧路线：</p>
+<pre><code class="language-text">S -&gt; A -&gt; B -&gt; X</code></pre>
+<h2 id="保证路径正确的关键">保证路径正确的关键</h2>
+<p>关键规则是：</p>
+<pre><code class="language-text">如果第一次发现某个节点，记录它的 G 和 Parent。
+如果之后发现更低 G 的路线，更新它的 G 和 Parent。</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-csharp">if (newG &lt; neighbor.G || !openSet.Contains(neighbor))
+{
+    neighbor.G = newG;
+    neighbor.H = Heuristic(neighbor, goal);
+    neighbor.F = neighbor.G + neighbor.H;
+    neighbor.Parent = current;
+}</code></pre>
+<p>这句就是保证最终路径正确的关键。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">A 星搜索时不是角色在走路，而是在内存里推演路线。</code></pre>
+<pre><code class="language-text">G 记录从起点到当前点的真实成本。
+H 估计从当前点到终点的剩余成本。
+Parent 记录当前节点目前最优的来源节点。</code></pre>
+<p>最终路径不是一路维护一个大 List，而是：</p>
+<pre><code class="language-text">从终点沿 Parent 回溯，再反转得到。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%89%A9%E7%90%86%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%9F%BA%E7%A1%80-BroadPhase-AABB-OBB-BVH-SAT/"><small>← PREVIOUS</small>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/GJK%E5%87%B8%E5%BD%A2%E7%8A%B6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>NEXT →</small>GJK：凸形状碰撞检测理解笔记</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

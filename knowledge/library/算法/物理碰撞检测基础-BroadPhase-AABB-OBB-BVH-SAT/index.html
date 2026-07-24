@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="物理碰撞检测解决的是：">
+  <title>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</h1>
+      <p class="hero-copy">物理碰撞检测解决的是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#碰撞检测为什么要分阶段">碰撞检测为什么要分阶段</a>
+    <a data-toc-link href="#broad-phase">Broad Phase</a>
+    <a data-toc-link href="#narrow-phase">Narrow Phase</a>
+    <a data-toc-link href="#aabb">AABB</a>
+    <a data-toc-link href="#unity-里的-bounds">Unity 里的 Bounds</a>
+    <a data-toc-link href="#obb">OBB</a>
+    <a data-toc-link href="#bvh">BVH</a>
+    <a data-toc-link href="#sat">SAT</a>
+    <a data-toc-link href="#sat-的投影">SAT 的投影</a>
+    <a data-toc-link href="#sat-流程">SAT 流程</a>
+    <a data-toc-link href="#sat-的限制">SAT 的限制</a>
+    <a data-toc-link href="#sat-还能得到穿透方向">SAT 还能得到穿透方向</a>
+    <a data-toc-link href="#面试表达">面试表达</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：算法 / 数据结构 / 游戏逻辑常用模式</p>
+<h2 id="碰撞检测为什么要分阶段">碰撞检测为什么要分阶段</h2>
+<p>物理碰撞检测解决的是：</p>
+<pre><code class="language-text">场景里有很多物体，怎么高效判断谁和谁碰撞。</code></pre>
+<p>如果有 1000 个物体，直接两两检测大概需要：</p>
+<pre><code class="language-text">1000 * 999 / 2 = 499500 次</code></pre>
+<p>每帧都这样做会很贵。</p>
+<p>所以物理引擎通常分成两步：</p>
+<pre><code class="language-text">Broad Phase：宽阶段，快速筛出可能碰撞的物体对。
+Narrow Phase：窄阶段，对候选物体对做精确碰撞检测。</code></pre>
+<p>一句话：</p>
+<pre><code class="language-text">Broad Phase 负责少算。
+Narrow Phase 负责算准。</code></pre>
+<h2 id="broad-phase">Broad Phase</h2>
+<p>Broad Phase 不追求精确。</p>
+<p>它只回答：</p>
+<pre><code class="language-text">这两个物体有没有可能碰撞？</code></pre>
+<p>如果两个物体明显离得很远，就直接排除。</p>
+<p>常见做法：</p>
+<pre><code class="language-text">AABB 粗包围
+空间 Hash / 网格
+四叉树 / 八叉树
+BVH
+Sweep and Prune</code></pre>
+<p>它的核心目标是：</p>
+<pre><code class="language-text">用便宜判断，排除大量不可能碰撞的对象。</code></pre>
+<h2 id="narrow-phase">Narrow Phase</h2>
+<p>Narrow Phase 处理 Broad Phase 筛出来的候选对。</p>
+<p>Broad Phase 只会说：</p>
+<pre><code class="language-text">它们可能碰撞。</code></pre>
+<p>Narrow Phase 才会确认：</p>
+<pre><code class="language-text">它们是不是真的碰撞。</code></pre>
+<p>并且计算碰撞信息：</p>
+<pre><code class="language-text">碰撞点
+碰撞法线
+穿透深度
+最小分离方向</code></pre>
+<p>常见精确检测包括：</p>
+<pre><code class="language-text">球和球
+胶囊体和胶囊体
+AABB 和 AABB
+OBB 和 OBB
+凸多边形和凸多边形
+三角形网格</code></pre>
+<p>可能用到的算法：</p>
+<pre><code class="language-text">SAT
+GJK
+EPA
+CCD</code></pre>
+<h2 id="aabb">AABB</h2>
+<p>AABB 全名：</p>
+<pre><code class="language-text">Axis-Aligned Bounding Box
+轴对齐包围盒</code></pre>
+<p>它的边永远和世界坐标轴对齐。</p>
+<p>2D 里可以理解成一个不旋转的矩形：</p>
+<pre><code class="language-text">+---------+
+|         |
+|  物体    |
+|         |
++---------+</code></pre>
+<p>3D 里通常用两个点表示：</p>
+<pre><code class="language-text">minX, minY, minZ
+maxX, maxY, maxZ</code></pre>
+<p>判断两个 AABB 是否相交很便宜：</p>
+<pre><code class="language-csharp">bool Intersects(AABB a, AABB b)
+{
+    if (a.Max.x &lt; b.Min.x || a.Min.x &gt; b.Max.x) return false;
+    if (a.Max.y &lt; b.Min.y || a.Min.y &gt; b.Max.y) return false;
+    if (a.Max.z &lt; b.Min.z || a.Min.z &gt; b.Max.z) return false;
+
+    return true;
+}</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">判断快
+实现简单
+适合 Broad Phase</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">不会跟着物体旋转
+旋转物体可能包得很松
+误报较多</code></pre>
+<p>误报没关系，因为后面还有 Narrow Phase 精筛。</p>
+<h2 id="unity-里的-bounds">Unity 里的 Bounds</h2>
+<p>Unity 里的：</p>
+<pre><code class="language-csharp">Renderer.bounds
+Collider.bounds
+Bounds.Intersects(...)</code></pre>
+<p>这些 <code>Bounds</code> 是世界空间 AABB。</p>
+<p>也就是说：</p>
+<pre><code class="language-text">它永远和世界坐标轴对齐。</code></pre>
+<p>物体旋转后，<code>bounds</code> 可能变大，因为 Unity 要用一个不旋转的盒子把它包住。</p>
+<p>注意：</p>
+<pre><code class="language-text">Collider.bounds 是包围盒。
+Collider 本身的真实碰撞形状不一定是 AABB。</code></pre>
+<p>例如 <code>BoxCollider</code> 会跟随 Transform 旋转，从碰撞形状上更接近 OBB。</p>
+<p>Unity 3D 物理主要由 PhysX 处理：</p>
+<pre><code class="language-text">Broad Phase 用粗包围结构筛候选。
+Narrow Phase 对 BoxCollider、SphereCollider、CapsuleCollider、MeshCollider 等具体形状做精确检测。</code></pre>
+<p>Unity 2D 物理则主要由 Box2D 处理。</p>
+<h2 id="obb">OBB</h2>
+<p>OBB 全名：</p>
+<pre><code class="language-text">Oriented Bounding Box
+有方向包围盒</code></pre>
+<p>它可以跟着物体旋转。</p>
+<p>AABB 包旋转长条可能是：</p>
+<pre><code class="language-text">+-------------+
+|      /      |
+|     /       |
+|    /        |
++-------------+</code></pre>
+<p>OBB 更贴合：</p>
+<pre><code class="language-text">   +---+
+  /   /
+ /   /
++---+</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">比 AABB 更贴合旋转物体
+误报更少</code></pre>
+<p>缺点：</p>
+<pre><code class="language-text">判断更复杂
+性能比 AABB 贵
+通常需要 SAT 这类算法</code></pre>
+<p>可以粗略记：</p>
+<pre><code class="language-text">AABB：便宜但粗。
+OBB：更贴合但更贵。</code></pre>
+<h2 id="bvh">BVH</h2>
+<p>BVH 全名：</p>
+<pre><code class="language-text">Bounding Volume Hierarchy
+包围体层次结构</code></pre>
+<p>它不是一种盒子，而是一种组织方式。</p>
+<p>核心思想：</p>
+<pre><code class="language-text">用大包围盒包住一组小包围盒。
+再用更大的包围盒包住更多组。
+形成一棵树。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">Root 包住全部
+├── Left 包住 A B C D
+│   ├── 包住 A B
+│   └── 包住 C D
+└── Right 包住 E F G H
+    ├── 包住 E F
+    └── 包住 G H</code></pre>
+<p>查询时，如果和某个大包围盒不相交，就可以跳过整个子树。</p>
+<p>BVH 的价值是：</p>
+<pre><code class="language-text">一次排除一大片对象。</code></pre>
+<p>常见用途：</p>
+<pre><code class="language-text">射线检测
+三角形网格碰撞
+物理引擎 Broad Phase
+渲染加速
+光线追踪
+场景查询</code></pre>
+<p>AABB / OBB 是：</p>
+<pre><code class="language-text">用什么形状包住物体。</code></pre>
+<p>BVH 是：</p>
+<pre><code class="language-text">怎么把这些包围体组织成层级结构。</code></pre>
+<h2 id="sat">SAT</h2>
+<p>SAT 全名：</p>
+<pre><code class="language-text">Separating Axis Theorem
+分离轴定理</code></pre>
+<p>常用于：</p>
+<pre><code class="language-text">凸多边形碰撞
+旋转矩形碰撞
+OBB 碰撞</code></pre>
+<p>它的核心是：</p>
+<pre><code class="language-text">如果两个凸形状没有相交，一定存在一条轴，让它们投影到这条轴后互不重叠。</code></pre>
+<p>反过来：</p>
+<pre><code class="language-text">如果所有候选轴上的投影都重叠，那么两个形状相交。</code></pre>
+<h2 id="sat-的投影">SAT 的投影</h2>
+<p>对某条轴 <code>axis</code>，把形状的所有顶点投影上去：</p>
+<pre><code class="language-csharp">float value = Vector2.Dot(point, axis);</code></pre>
+<p>对所有顶点取最小和最大值：</p>
+<pre><code class="language-text">[min, max]</code></pre>
+<p>这就是形状在这条轴上的投影区间。</p>
+<p>如果两个区间不重叠：</p>
+<pre><code class="language-csharp">if (aMax &lt; bMin || bMax &lt; aMin)
+{
+    return false;
+}</code></pre>
+<p>说明找到分离轴，不碰撞。</p>
+<p>如果所有候选轴都重叠，说明碰撞。</p>
+<h2 id="sat-流程">SAT 流程</h2>
+<p>伪代码：</p>
+<pre><code class="language-csharp">bool Intersects(Polygon a, Polygon b)
+{
+    foreach (var axis in GetAxes(a, b))
+    {
+        Project(a, axis, out float aMin, out float aMax);
+        Project(b, axis, out float bMin, out float bMax);
+
+        if (aMax &lt; bMin || bMax &lt; aMin)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}</code></pre>
+<p>候选轴通常来自：</p>
+<pre><code class="language-text">多边形每条边的法线方向。</code></pre>
+<p>两个 2D 旋转矩形通常检查：</p>
+<pre><code class="language-text">A 的两个局部轴
+B 的两个局部轴</code></pre>
+<p>两个 3D OBB 通常最多检查 15 个轴：</p>
+<pre><code class="language-text">A 的 3 个局部轴
+B 的 3 个局部轴
+A 的轴和 B 的轴两两叉乘得到的 9 个轴</code></pre>
+<h2 id="sat-的限制">SAT 的限制</h2>
+<p>SAT 适合凸形状。</p>
+<p>例如：</p>
+<pre><code class="language-text">矩形
+三角形
+六边形
+凸包</code></pre>
+<p>不适合直接处理凹形状：</p>
+<pre><code class="language-text">L 形
+U 形
+星形</code></pre>
+<p>凹形状通常要先拆成多个凸形状，再分别检测。</p>
+<h2 id="sat-还能得到穿透方向">SAT 还能得到穿透方向</h2>
+<p>如果所有轴都重叠，可以记录每条轴上的重叠长度。</p>
+<p>重叠长度最小的轴通常就是最小分离方向：</p>
+<pre><code class="language-text">MTV：Minimum Translation Vector</code></pre>
+<p>它可以用于：</p>
+<pre><code class="language-text">把两个物体沿最小方向分开。
+计算碰撞法线。
+估计穿透深度。</code></pre>
+<h2 id="面试表达">面试表达</h2>
+<p>如果被问物理引擎碰撞流程，可以说：</p>
+<pre><code class="language-text">碰撞检测通常分 Broad Phase 和 Narrow Phase。Broad Phase 用 AABB、空间划分、BVH、Sweep and Prune 等方法快速筛出可能碰撞的对象对，目标是减少候选数量。Narrow Phase 再对候选对做精确形状检测，比如球、胶囊体、OBB、凸多边形，可能用 SAT、GJK 等算法。确认碰撞后，会生成碰撞点、法线、穿透深度等信息，后续交给物理求解器或游戏逻辑处理。</code></pre>
+<p>如果被问 AABB、OBB、BVH，可以说：</p>
+<pre><code class="language-text">AABB 是轴对齐包围盒，判断便宜但对旋转物体包得较松；OBB 是有方向包围盒，可以跟随物体旋转，包得更紧但检测更贵；BVH 是包围体层次结构，用一棵包围盒树组织对象，可以快速跳过大量不相交对象。</code></pre>
+<p>如果被问 SAT，可以说：</p>
+<pre><code class="language-text">SAT 用于凸形状碰撞检测。它会把两个形状投影到候选分离轴上，如果任意一条轴上的投影区间不重叠，就说明不碰撞；如果所有候选轴上都重叠，就说明碰撞。候选轴通常来自多边形边的法线方向，也可以通过最小重叠轴得到碰撞法线和穿透深度。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">Broad Phase 负责少算。
+Narrow Phase 负责算准。
+AABB 便宜但粗。
+OBB 更贴合但更贵。
+BVH 用层级包围盒一次跳过一大片对象。
+SAT 通过寻找分离轴判断凸形状是否碰撞。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/"><small>← PREVIOUS</small>启发式决策模型：怪物集群候选打分</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/A%E6%98%9F%E5%AF%BB%E8%B7%AF%E4%B8%AD%E7%9A%84G%E5%80%BC%E4%B8%8EParent%E5%9B%9E%E6%BA%AF/"><small>NEXT →</small>A 星寻路中的 G 值与 Parent 回溯</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="空间划分解决的是：">
+  <title>空间划分：九宫格与四叉树 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>空间划分：九宫格与四叉树</h1>
+      <p class="hero-copy">空间划分解决的是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#空间划分解决什么问题">空间划分解决什么问题</a>
+    <a data-toc-link href="#九宫格查找">九宫格查找</a>
+    <a data-toc-link href="#为什么用距离平方">为什么用距离平方</a>
+    <a data-toc-link href="#空间-hash">空间 Hash</a>
+    <a data-toc-link href="#四叉树是什么">四叉树是什么</a>
+    <a data-toc-link href="#四叉树节点结构">四叉树节点结构</a>
+    <a data-toc-link href="#四叉树什么时候切分">四叉树什么时候切分</a>
+    <a data-toc-link href="#插入对象">插入对象</a>
+    <a data-toc-link href="#查询范围">查询范围</a>
+    <a data-toc-link href="#四叉树为什么能加速">四叉树为什么能加速</a>
+    <a data-toc-link href="#四叉树的常见坑">四叉树的常见坑</a>
+    <a data-toc-link href="#九宫格和四叉树的区别">九宫格和四叉树的区别</a>
+    <a data-toc-link href="#怎么选">怎么选</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：算法 / 游戏逻辑常用模式</p>
+<h2 id="空间划分解决什么问题">空间划分解决什么问题</h2>
+<p>空间划分解决的是：</p>
+<pre><code class="language-text">不要为了找附近对象，遍历整个世界。</code></pre>
+<p>例如玩家释放一个半径 5 米的技能，需要找到附近敌人。最直接的写法是遍历所有敌人：</p>
+<pre><code class="language-csharp">foreach (var enemy in allEnemies)
+{
+    float distance = Vector3.Distance(playerPos, enemy.Position);
+    if (distance &lt;= 5f)
+    {
+        result.Add(enemy);
+    }
+}</code></pre>
+<p>如果只有几十个敌人，这样没问题。</p>
+<p>但如果场景里有很多对象：</p>
+<pre><code class="language-text">500 个怪物
+2000 个掉落物
+大量子弹
+频繁触发的 AOE 查询</code></pre>
+<p>每次都遍历全部对象就会变贵。</p>
+<p>空间划分的思路是：</p>
+<pre><code class="language-text">先用空间结构缩小候选范围。
+再对候选对象做精确距离判断。</code></pre>
+<p>也就是：</p>
+<pre><code class="language-text">先粗筛，再精筛。</code></pre>
+<h2 id="九宫格查找">九宫格查找</h2>
+<p>九宫格查找通常基于固定网格。</p>
+<p>先把地图切成一格一格：</p>
+<pre><code class="language-text">+---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
+|   | P |   |   |
++---+---+---+---+
+|   |   | E |   |
++---+---+---+---+</code></pre>
+<p>每个单位登记到自己所在的格子里。</p>
+<p>查询玩家附近目标时，只检查玩家所在格子和周围 8 个格子：</p>
+<pre><code class="language-text">[ ][ ][ ]
+[ ][P][ ]
+[ ][ ][ ]</code></pre>
+<p>这就是九宫格查找。</p>
+<p>它的核心不是“九个格子里的对象都命中”，而是：</p>
+<pre><code class="language-text">九个格子里的对象只是候选对象。</code></pre>
+<p>最后仍然要做距离判断：</p>
+<pre><code class="language-csharp">float radius = 5f;
+float radiusSqr = radius * radius;
+
+foreach (var enemy in nearbyEnemies)
+{
+    Vector3 offset = enemy.Position - playerPos;
+
+    if (offset.sqrMagnitude &lt;= radiusSqr)
+    {
+        result.Add(enemy);
+    }
+}</code></pre>
+<h2 id="为什么用距离平方">为什么用距离平方</h2>
+<p>判断对象是否在半径内时，可以写：</p>
+<pre><code class="language-csharp">Vector3.Distance(a, b) &lt;= radius</code></pre>
+<p>但 <code>Vector3.Distance</code> 会计算真实距离，内部需要开根号。</p>
+<p>如果只是比较远近，不需要真实距离，可以比较距离平方：</p>
+<pre><code class="language-csharp">float radiusSqr = radius * radius;
+
+if ((a - b).sqrMagnitude &lt;= radiusSqr)
+{
+    // 在范围内
+}</code></pre>
+<p>因为：</p>
+<pre><code class="language-text">距离 &lt;= 5</code></pre>
+<p>等价于：</p>
+<pre><code class="language-text">距离平方 &lt;= 25</code></pre>
+<p>一句话：</p>
+<pre><code class="language-text">只比较范围时，用距离平方。
+需要显示真实距离时，才算 Distance。</code></pre>
+<h2 id="空间-hash">空间 Hash</h2>
+<p>固定网格不一定要真的创建一张二维数组。</p>
+<p>如果地图很大，或者坐标可能有负数，可以用字典保存有对象的格子：</p>
+<pre><code class="language-csharp">Dictionary&lt;Vector2Int, List&lt;Unit&gt;&gt; grids;</code></pre>
+<p>把世界坐标转换成格子坐标：</p>
+<pre><code class="language-csharp">int gx = Mathf.FloorToInt(position.x / cellSize);
+int gy = Mathf.FloorToInt(position.z / cellSize);
+
+Vector2Int cell = new Vector2Int(gx, gy);</code></pre>
+<p>然后把单位放到对应格子：</p>
+<pre><code class="language-csharp">grids[cell].Add(unit);</code></pre>
+<p>这种用坐标算 key，再用字典保存格子的方式，就是常见的空间 Hash 思路。</p>
+<p>它适合：</p>
+<pre><code class="language-text">大地图
+动态单位
+稀疏分布
+不想提前创建整张网格</code></pre>
+<h2 id="四叉树是什么">四叉树是什么</h2>
+<p>四叉树是另一种空间划分方式。</p>
+<p>它把一个二维区域不断切成 4 块：</p>
+<pre><code class="language-text">+---------+---------+
+|   左上   |   右上   |
+|   NW    |   NE    |
++---------+---------+
+|   左下   |   右下   |
+|   SW    |   SE    |
++---------+---------+</code></pre>
+<p>如果某个区域里的对象太多，就继续把这个区域切成 4 块。</p>
+<p>所以四叉树的核心是：</p>
+<pre><code class="language-text">对象多的地方切得更细。
+对象少的地方保持粗粒度。</code></pre>
+<p>它主要适合：</p>
+<pre><code class="language-text">地图很大
+对象分布很不均匀
+静态或半静态对象较多
+查询范围相对局部</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">静态碰撞物粗筛
+地图资源点查找
+场景装饰物裁剪
+编辑器框选对象
+大地图局部范围查询</code></pre>
+<h2 id="四叉树节点结构">四叉树节点结构</h2>
+<p>一个四叉树节点通常包含：</p>
+<pre><code class="language-text">Bounds：当前节点管理的矩形范围
+Units：当前节点保存的对象
+Children：4 个子节点
+Depth：当前深度
+Capacity：当前节点最多容纳多少对象
+MaxDepth：最多切多少层</code></pre>
+<p>伪代码可以理解成：</p>
+<pre><code class="language-csharp">public sealed class QuadTreeNode
+{
+    private readonly Rect bounds;
+    private readonly int depth;
+    private readonly int maxDepth;
+    private readonly int capacity;
+
+    private readonly List&lt;Unit&gt; units = new();
+    private QuadTreeNode[] children;
+}</code></pre>
+<h2 id="四叉树什么时候切分">四叉树什么时候切分</h2>
+<p>通常有两个限制：</p>
+<pre><code class="language-text">每个节点最多放多少对象。
+树最多切到多深。</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">一个节点最多放 8 个对象。
+最多切 5 层。</code></pre>
+<p>当某个节点对象数量超过 8，并且还没到最大深度，就切成 4 个子节点。</p>
+<p>原来的对象会重新分配到子节点里。</p>
+<p>结构会变成：</p>
+<pre><code class="language-text">Root
+├── 左上
+├── 右上
+├── 左下
+└── 右下</code></pre>
+<p>如果左上区域对象还是很多，左上继续切：</p>
+<pre><code class="language-text">Root
+├── 左上
+│   ├── 左上-左上
+│   ├── 左上-右上
+│   ├── 左上-左下
+│   └── 左上-右下
+├── 右上
+├── 左下
+└── 右下</code></pre>
+<p>这就是四叉树的自适应划分。</p>
+<h2 id="插入对象">插入对象</h2>
+<p>插入对象时，从根节点开始：</p>
+<pre><code class="language-text">如果对象不在当前节点范围内，跳过。
+如果当前节点有子节点，尝试插入子节点。
+如果没有子节点，先放到当前节点。
+如果当前节点对象太多，就切分并下放对象。</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-csharp">void Insert(Unit unit)
+{
+    if (!bounds.Contains(unit.Position))
+    {
+        return;
+    }
+
+    if (children != null)
+    {
+        QuadTreeNode child = GetChild(unit.Position);
+        child.Insert(unit);
+        return;
+    }
+
+    units.Add(unit);
+
+    if (units.Count &gt; capacity &amp;&amp; depth &lt; maxDepth)
+    {
+        Split();
+        MoveUnitsToChildren();
+    }
+}</code></pre>
+<p>如果对象是一个点，这个逻辑比较简单。</p>
+<p>如果对象是一个有大小的矩形，例如建筑、大怪物、碰撞盒，它可能跨多个子区域。</p>
+<p>常见处理方式是：</p>
+<pre><code class="language-text">能完整放进某个子节点，就放进子节点。
+不能完整放进任何一个子节点，就留在当前节点。</code></pre>
+<p>这样可以避免同一个对象被重复插入多个节点。</p>
+<h2 id="查询范围">查询范围</h2>
+<p>查询时通常传入一个矩形范围。</p>
+<p>例如玩家在 <code>(10, 10)</code>，技能半径是 <code>5</code>，可以先构造一个包围盒：</p>
+<pre><code class="language-text">x: 5 ~ 15
+y: 5 ~ 15</code></pre>
+<p>查询流程：</p>
+<pre><code class="language-text">从 Root 开始。
+如果当前节点范围和查询范围不相交，直接跳过。
+如果相交，检查当前节点里的对象。
+如果有子节点，继续递归查询子节点。</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-csharp">void Query(Rect searchArea, List&lt;Unit&gt; result)
+{
+    if (!bounds.Overlaps(searchArea))
+    {
+        return;
+    }
+
+    foreach (var unit in units)
+    {
+        if (searchArea.Contains(unit.Position))
+        {
+            result.Add(unit);
+        }
+    }
+
+    if (children == null)
+    {
+        return;
+    }
+
+    foreach (var child in children)
+    {
+        child.Query(searchArea, result);
+    }
+}</code></pre>
+<p>如果最终需要圆形范围，还要再做一次距离平方判断：</p>
+<pre><code class="language-csharp">float radiusSqr = radius * radius;
+
+foreach (var unit in candidates)
+{
+    if ((unit.Position - center).sqrMagnitude &lt;= radiusSqr)
+    {
+        result.Add(unit);
+    }
+}</code></pre>
+<p>所以四叉树查询也分两步：</p>
+<pre><code class="language-text">四叉树找候选对象。
+距离判断确认最终命中对象。</code></pre>
+<h2 id="四叉树为什么能加速">四叉树为什么能加速</h2>
+<p>直接遍历是：</p>
+<pre><code class="language-text">每次查询都检查所有对象。</code></pre>
+<p>四叉树查询是：</p>
+<pre><code class="language-text">只进入和查询范围相交的节点。
+跳过大量无关区域。</code></pre>
+<p>例如你只查地图左上角附近的对象，四叉树可以跳过右半张地图、下半张地图的大量节点。</p>
+<p>它快的原因不是单次距离判断更快，而是：</p>
+<pre><code class="language-text">减少需要判断的对象数量。</code></pre>
+<h2 id="四叉树的常见坑">四叉树的常见坑</h2>
+<p>第一，动态对象维护成本高。</p>
+<p>对象移动后，可能需要：</p>
+<pre><code class="language-text">从旧节点移除。
+插入新节点。
+必要时重新分裂或合并节点。</code></pre>
+<p>如果大量子弹、怪物每帧都在移动，维护四叉树本身可能很麻烦。</p>
+<p>第二，树不能无限切。</p>
+<p>要限制：</p>
+<pre><code class="language-text">最大深度
+最小区域大小
+每个节点容量</code></pre>
+<p>否则节点太多，递归成本和内存成本都会上升。</p>
+<p>第三，频繁分裂和合并会抖动。</p>
+<p>如果对象数量总是在阈值附近变化，节点可能反复拆分、合并。</p>
+<p>项目里常见做法是：</p>
+<pre><code class="language-text">只分裂，不频繁合并。
+定期重建整棵树。
+静态对象用四叉树，动态对象用网格。</code></pre>
+<p>第四，矩形粗筛不等于圆形命中。</p>
+<p>四叉树通常用矩形范围查询，但技能范围经常是圆形。</p>
+<p>所以仍然要做最终距离判断。</p>
+<h2 id="九宫格和四叉树的区别">九宫格和四叉树的区别</h2>
+<p>九宫格 / 空间 Hash 是固定切法：</p>
+<pre><code class="language-text">所有格子一样大。</code></pre>
+<p>四叉树是动态切法：</p>
+<pre><code class="language-text">对象多的区域切得更细。
+对象少的区域保持粗。</code></pre>
+<p>可以这样理解：</p>
+<pre><code class="language-text">九宫格：规则地铺格子。
+四叉树：哪里拥挤，哪里继续切小。</code></pre>
+<p>工程选择上：</p>
+<pre><code class="language-text">动态单位多、高频移动：优先九宫格 / 空间 Hash。
+静态对象多、分布不均：可以考虑四叉树。</code></pre>
+<h2 id="怎么选">怎么选</h2>
+<p>如果只是做：</p>
+<pre><code class="language-text">怪物感知
+AOE 找目标
+自动拾取
+附近单位粗筛
+移动单位高频查询</code></pre>
+<p>优先考虑九宫格或空间 Hash。</p>
+<p>如果是：</p>
+<pre><code class="language-text">超大地图
+对象分布很不均匀
+静态或半静态对象较多
+需要跳过大片空区域</code></pre>
+<p>可以考虑四叉树。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<p>空间划分的本质是：</p>
+<pre><code class="language-text">先缩小候选范围，再做精确判断。</code></pre>
+<p>九宫格适合：</p>
+<pre><code class="language-text">规则网格下的高频动态对象查询。</code></pre>
+<p>四叉树适合：</p>
+<pre><code class="language-text">大空间里对象分布不均的自适应查询。</code></pre>
+<p>四叉树不是“更高级的九宫格”，而是服务于另一类问题：</p>
+<pre><code class="language-text">让空间划分跟着对象密度变化。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E9%9B%86%E7%BE%A4AI%E6%A7%BD%E4%BD%8D%E5%88%86%E9%85%8D%E4%B8%8E%E9%9D%9E%E6%94%BB%E5%87%BB%E6%84%8F%E5%9B%BE/"><small>← PREVIOUS</small>集群 AI 槽位分配与非攻击意图</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/"><small>NEXT →</small>启发式决策模型：怪物集群候选打分</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

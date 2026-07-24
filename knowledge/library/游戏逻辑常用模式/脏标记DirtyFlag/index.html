@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="脏标记的核心是：">
+  <title>脏标记 Dirty Flag · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
+      <h1>脏标记 Dirty Flag</h1>
+      <p class="hero-copy">脏标记的核心是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心思想">核心思想</a>
+    <a data-toc-link href="#不用脏标记的问题">不用脏标记的问题</a>
+    <a data-toc-link href="#基础写法">基础写法</a>
+    <a data-toc-link href="#dirty-的含义">dirty 的含义</a>
+    <a data-toc-link href="#ui-刷新例子">UI 刷新例子</a>
+    <a data-toc-link href="#为什么常放-lateupdate">为什么常放 LateUpdate</a>
+    <a data-toc-link href="#多个-dirty-标记">多个 dirty 标记</a>
+    <a data-toc-link href="#版本号也是一种-dirty">版本号也是一种 dirty</a>
+    <a data-toc-link href="#适合什么">适合什么</a>
+    <a data-toc-link href="#不适合什么">不适合什么</a>
+    <a data-toc-link href="#常见坑">常见坑</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：游戏逻辑常用模式</p>
+<h2 id="核心思想">核心思想</h2>
+<p>脏标记的核心是：</p>
+<pre><code class="language-text">数据变了，不立刻做昂贵刷新。
+先标记 dirty。
+等真正需要结果时，再统一刷新。</code></pre>
+<p>它也叫：</p>
+<pre><code class="language-text">延迟计算
+懒更新
+缓存失效标记</code></pre>
+<h2 id="不用脏标记的问题">不用脏标记的问题</h2>
+<p>例如角色攻击力：</p>
+<pre><code class="language-text">攻击力 = 基础攻击力 + 装备加成 + Buff 加成 + 天赋加成</code></pre>
+<p>如果每次任何数据变化都立刻重算：</p>
+<pre><code class="language-csharp">void OnEquipChanged()
+{
+    RecalculateAttack();
+}
+
+void OnBuffChanged()
+{
+    RecalculateAttack();
+}
+
+void OnTalentChanged()
+{
+    RecalculateAttack();
+}</code></pre>
+<p>短时间内可能重复重算很多次。</p>
+<p>例如换一套装备：</p>
+<pre><code class="language-text">卸下武器
+卸下头盔
+卸下衣服
+装备新武器
+装备新头盔
+装备新衣服</code></pre>
+<p>如果每一步都重算攻击力，就会重算 6 次。</p>
+<p>但 UI 或战斗可能只关心最后结果：</p>
+<pre><code class="language-text">换装结束后的最终攻击力。</code></pre>
+<h2 id="基础写法">基础写法</h2>
+<pre><code class="language-csharp">private bool attackDirty = true;
+private int cachedAttack;
+
+public int Attack
+{
+    get
+    {
+        if (attackDirty)
+        {
+            cachedAttack = CalculateAttack();
+            attackDirty = false;
+        }
+
+        return cachedAttack;
+    }
+}</code></pre>
+<p>当数据变化时：</p>
+<pre><code class="language-csharp">void OnEquipChanged()
+{
+    attackDirty = true;
+}
+
+void OnBuffChanged()
+{
+    attackDirty = true;
+}</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">攻击力相关数据变了。
+旧的 cachedAttack 不可信了。
+但现在先不重算。</code></pre>
+<p>真正有人读取：</p>
+<pre><code class="language-csharp">int attack = player.Attack;</code></pre>
+<p>才会重算。</p>
+<h2 id="dirty-的含义">dirty 的含义</h2>
+<pre><code class="language-text">dirty = 脏了，不可信，需要刷新。</code></pre>
+<pre><code class="language-text">attackDirty = true</code></pre>
+<p>表示：</p>
+<pre><code class="language-text">缓存的攻击力已经过期。</code></pre>
+<pre><code class="language-text">attackDirty = false</code></pre>
+<p>表示：</p>
+<pre><code class="language-text">缓存的攻击力是新的，可以直接用。</code></pre>
+<h2 id="ui-刷新例子">UI 刷新例子</h2>
+<p>金币数量变化。</p>
+<p>不用脏标记：</p>
+<pre><code class="language-csharp">void AddGold(int amount)
+{
+    gold += amount;
+    goldText.text = gold.ToString();
+}</code></pre>
+<p>如果一帧里金币变化很多次：</p>
+<pre><code class="language-text">+10
++20
++5
+-3</code></pre>
+<p>UI 会刷新 4 次。</p>
+<p>用脏标记：</p>
+<pre><code class="language-csharp">private bool goldDirty = true;
+private int gold;
+
+void AddGold(int amount)
+{
+    gold += amount;
+    goldDirty = true;
+}
+
+void LateUpdate()
+{
+    if (!goldDirty)
+    {
+        return;
+    }
+
+    goldDirty = false;
+    goldText.text = gold.ToString();
+}</code></pre>
+<p>这样一帧内变化多次，也只在 <code>LateUpdate</code> 统一刷新一次。</p>
+<h2 id="为什么常放-lateupdate">为什么常放 LateUpdate</h2>
+<p><code>Update</code> 里可能有很多系统改数据：</p>
+<pre><code class="language-text">战斗逻辑
+道具逻辑
+任务逻辑
+网络同步</code></pre>
+<p><code>LateUpdate</code> 在它们之后执行，更适合做最终 UI 刷新：</p>
+<pre><code class="language-text">先让数据变化完。
+最后统一刷新显示。</code></pre>
+<h2 id="多个-dirty-标记">多个 dirty 标记</h2>
+<p>例如角色面板：</p>
+<pre><code class="language-csharp">private bool hpDirty;
+private bool attackDirty;
+private bool equipmentDirty;
+private bool skillDirty;</code></pre>
+<p>刷新时：</p>
+<pre><code class="language-csharp">void LateUpdate()
+{
+    if (hpDirty)
+    {
+        hpDirty = false;
+        RefreshHp();
+    }
+
+    if (attackDirty)
+    {
+        attackDirty = false;
+        RefreshAttack();
+    }
+
+    if (equipmentDirty)
+    {
+        equipmentDirty = false;
+        RefreshEquipment();
+    }
+
+    if (skillDirty)
+    {
+        skillDirty = false;
+        RefreshSkills();
+    }
+}</code></pre>
+<p>哪个模块脏了，就只刷哪个模块。</p>
+<h2 id="版本号也是一种-dirty">版本号也是一种 dirty</h2>
+<p>有时候不用 bool，而用版本号。</p>
+<pre><code class="language-csharp">private int dataVersion;
+private int cachedVersion = -1;
+private int cachedPower;</code></pre>
+<p>数据变化：</p>
+<pre><code class="language-csharp">void MarkDirty()
+{
+    dataVersion++;
+}</code></pre>
+<p>读取时：</p>
+<pre><code class="language-csharp">int GetPower()
+{
+    if (cachedVersion != dataVersion)
+    {
+        cachedPower = CalculatePower();
+        cachedVersion = dataVersion;
+    }
+
+    return cachedPower;
+}</code></pre>
+<p>版本号适合：</p>
+<pre><code class="language-text">多个系统需要知道自己看到的是不是最新版本
+缓存之间有依赖
+需要调试数据改了几次</code></pre>
+<h2 id="适合什么">适合什么</h2>
+<p>适合：</p>
+<pre><code class="language-text">计算昂贵
+变化频繁
+读取没那么频繁
+可以延迟到需要时刷新</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">角色战力重算
+装备属性汇总
+UI 文本刷新
+背包排序
+地图可见区域刷新
+配置缓存重建
+技能候选列表重建
+Shader 参数批量更新</code></pre>
+<h2 id="不适合什么">不适合什么</h2>
+<p>不适合必须立刻生效的核心事实。</p>
+<p>例如：</p>
+<pre><code class="language-text">受到伤害后，HP 必须马上改变。
+死亡判断必须马上执行。
+服务器校验必须立刻处理。</code></pre>
+<p>脏标记适合延迟派生结果：</p>
+<pre><code class="language-text">战力
+显示文本
+排序结果
+缓存列表
+布局结果</code></pre>
+<p>不适合延迟核心事实：</p>
+<pre><code class="language-text">当前 HP
+是否死亡
+是否扣除资源成功
+是否获得物品</code></pre>
+<h2 id="常见坑">常见坑</h2>
+<p>第一，忘记标 dirty。</p>
+<pre><code class="language-csharp">equipment.Attack += 10;
+// 忘记 attackDirty = true</code></pre>
+<p>结果读取到旧缓存。</p>
+<p>第二，忘记清 dirty。</p>
+<pre><code class="language-csharp">if (attackDirty)
+{
+    cachedAttack = CalculateAttack();
+    // 忘记 attackDirty = false
+}</code></pre>
+<p>结果每次读取都重算。</p>
+<p>第三，dirty 依赖关系没处理。</p>
+<p>例如：</p>
+<pre><code class="language-text">装备变了 -&gt; 攻击力脏
+攻击力变了 -&gt; 战力也脏</code></pre>
+<p>如果只标了攻击力，没标战力，战力可能还是旧的。</p>
+<p>可以统一标记：</p>
+<pre><code class="language-csharp">void MarkEquipmentDirty()
+{
+    equipmentDirty = true;
+    attackDirty = true;
+    powerDirty = true;
+}</code></pre>
+<p>第四，延迟刷新导致时序误解。</p>
+<p>例如：</p>
+<pre><code class="language-csharp">AddGold(100);
+Debug.Log(goldText.text);</code></pre>
+<p>但 UI 还没到 <code>LateUpdate</code> 刷新，所以文本还是旧的。</p>
+<p>要区分：</p>
+<pre><code class="language-text">数据已经变了。
+显示可能晚一点刷新。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">脏标记用一个 dirty 标志记录“缓存已经过期”，把昂贵刷新延迟到真正需要时再做。</code></pre>
+<p>它背后的思想是：</p>
+<pre><code class="language-text">不要每次变化都立刻重算。
+把多次变化合并成一次刷新。</code></pre>
+<p>最常用模板：</p>
+<pre><code class="language-csharp">private bool dirty = true;
+private int cachedValue;
+
+public int Value
+{
+    get
+    {
+        if (dirty)
+        {
+            cachedValue = CalculateValue();
+            dirty = false;
+        }
+
+        return cachedValue;
+    }
+}
+
+void MarkDirty()
+{
+    dirty = true;
+}</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E4%BD%8D%E6%A0%87%E8%AE%B0Flags%E4%B8%8EBitMask/"><small>← PREVIOUS</small>位标记 Flags 与 BitMask</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E5%B1%80%E9%83%A8%E9%81%BF%E9%9A%9C-RVO%E4%B8%8EORCA%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>NEXT →</small>局部避障：RVO 与 ORCA 理解笔记</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

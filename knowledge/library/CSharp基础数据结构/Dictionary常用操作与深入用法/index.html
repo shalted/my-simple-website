@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dictionary&lt;TKey, TValue&gt; 可以理解成：">
+  <title>Dictionary 常用操作与深入用法 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
+      <h1>Dictionary 常用操作与深入用法</h1>
+      <p class="hero-copy">Dictionary&lt;TKey, TValue&gt; 可以理解成：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#dictionary-是什么">Dictionary 是什么</a>
+    <a data-toc-link href="#key-不能重复">key 不能重复</a>
+    <a data-toc-link href="#add-和-的区别">Add 和 [] 的区别</a>
+    <a data-toc-link href="#containskey">ContainsKey</a>
+    <a data-toc-link href="#trygetvalue">TryGetValue</a>
+    <a data-toc-link href="#找不到就创建">找不到就创建</a>
+    <a data-toc-link href="#计数器写法">计数器写法</a>
+    <a data-toc-link href="#tryadd">TryAdd</a>
+    <a data-toc-link href="#遍历-dictionary">遍历 Dictionary</a>
+    <a data-toc-link href="#遍历时不要直接删除">遍历时不要直接删除</a>
+    <a data-toc-link href="#string-key-的大小写问题">string key 的大小写问题</a>
+    <a data-toc-link href="#key-要稳定">key 要稳定</a>
+    <a data-toc-link href="#dictionary-快的是按-key-查">Dictionary 快的是按 key 查</a>
+    <a data-toc-link href="#最重要的写法">最重要的写法</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：CSharp 基础数据结构</p>
+<h2 id="dictionary-是什么">Dictionary 是什么</h2>
+<p><code>Dictionary&lt;TKey, TValue&gt;</code> 可以理解成：</p>
+<pre><code class="language-text">用一个 key，快速找到一个 value。</code></pre>
+<p>常见例子：</p>
+<pre><code class="language-text">学生姓名 -&gt; 分数
+怪物 ID -&gt; 怪物对象
+资源路径 -&gt; 资源缓存
+物品 ID -&gt; 物品配置</code></pre>
+<p>声明：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, int&gt; scores = new();</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">key 是 string
+value 是 int</code></pre>
+<p>写入：</p>
+<pre><code class="language-csharp">scores[&quot;Alice&quot;] = 90;
+scores[&quot;Bob&quot;] = 80;</code></pre>
+<p>读取：</p>
+<pre><code class="language-csharp">int aliceScore = scores[&quot;Alice&quot;];</code></pre>
+<h2 id="key-不能重复">key 不能重复</h2>
+<p>如果写：</p>
+<pre><code class="language-csharp">scores[&quot;Alice&quot;] = 90;
+scores[&quot;Alice&quot;] = 95;</code></pre>
+<p>最终结果是：</p>
+<pre><code class="language-text">&quot;Alice&quot; -&gt; 95</code></pre>
+<p>第二次会覆盖第一次。</p>
+<p>所以字典不是存多个 Alice，而是：</p>
+<pre><code class="language-text">一个 key 对应一个 value。</code></pre>
+<h2 id="add-和-的区别">Add 和 [] 的区别</h2>
+<p><code>Add</code>：</p>
+<pre><code class="language-csharp">scores.Add(&quot;Alice&quot;, 90);</code></pre>
+<p><code>[]</code>：</p>
+<pre><code class="language-csharp">scores[&quot;Alice&quot;] = 90;</code></pre>
+<p>区别：</p>
+<pre><code class="language-text">Add：如果 key 已存在，会报错。
+[]：如果 key 不存在，新增；如果 key 已存在，覆盖。</code></pre>
+<h2 id="containskey">ContainsKey</h2>
+<p>直接读取不存在的 key 会报错：</p>
+<pre><code class="language-csharp">int score = scores[&quot;Cindy&quot;]; // KeyNotFoundException</code></pre>
+<p>所以可以先判断：</p>
+<pre><code class="language-csharp">if (scores.ContainsKey(&quot;Alice&quot;))
+{
+    Debug.Log(scores[&quot;Alice&quot;]);
+}</code></pre>
+<p>不过这会查两次：</p>
+<pre><code class="language-text">第一次：ContainsKey 查有没有
+第二次：[] 再查一次取值</code></pre>
+<p>更推荐 <code>TryGetValue</code>。</p>
+<h2 id="trygetvalue">TryGetValue</h2>
+<pre><code class="language-csharp">if (scores.TryGetValue(&quot;Alice&quot;, out int score))
+{
+    Debug.Log(score);
+}
+else
+{
+    Debug.Log(&quot;没找到 Alice&quot;);
+}</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">尝试从字典里找 Alice。
+如果找到了，返回 true，并把 value 放到 score 里。
+如果没找到，返回 false。</code></pre>
+<p><code>out int score</code> 可以理解成：</p>
+<pre><code class="language-text">声明一个变量 score，让 TryGetValue 把结果填进去。</code></pre>
+<h2 id="找不到就创建">找不到就创建</h2>
+<p>项目里很常见的模式：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, List&lt;int&gt;&gt; skillsByUnit = new();
+
+if (!skillsByUnit.TryGetValue(&quot;monster_01&quot;, out List&lt;int&gt; skills))
+{
+    skills = new List&lt;int&gt;();
+    skillsByUnit[&quot;monster_01&quot;] = skills;
+}
+
+skills.Add(1001);</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">我要给 monster_01 添加一个技能 ID。
+先查这个怪有没有技能列表。
+如果没有，就创建一个空列表，并放回字典。
+然后 Add 技能。</code></pre>
+<p>这个模式叫：</p>
+<pre><code class="language-text">按 key 分组收集数据。</code></pre>
+<h2 id="计数器写法">计数器写法</h2>
+<p>统计每种怪物出现次数：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, int&gt; monsterCounts = new();
+
+string monsterType = &quot;Slime&quot;;
+
+if (!monsterCounts.TryGetValue(monsterType, out int count))
+{
+    count = 0;
+}
+
+monsterCounts[monsterType] = count + 1;</code></pre>
+<p>也可以简写：</p>
+<pre><code class="language-csharp">monsterCounts.TryGetValue(monsterType, out int count);
+monsterCounts[monsterType] = count + 1;</code></pre>
+<p>因为 <code>int</code> 找不到时，<code>out count</code> 会是默认值 <code>0</code>。</p>
+<h2 id="tryadd">TryAdd</h2>
+<pre><code class="language-csharp">bool added = scores.TryAdd(&quot;Alice&quot;, 90);</code></pre>
+<p>含义：</p>
+<pre><code class="language-text">如果 Alice 不存在，添加并返回 true。
+如果 Alice 已存在，不覆盖，返回 false。</code></pre>
+<p>和 <code>scores[&quot;Alice&quot;] = 90</code> 不同：</p>
+<pre><code class="language-text">[] 会新增或覆盖。
+TryAdd 只新增，不覆盖。</code></pre>
+<h2 id="遍历-dictionary">遍历 Dictionary</h2>
+<p>遍历 key 和 value：</p>
+<pre><code class="language-csharp">foreach (KeyValuePair&lt;string, int&gt; pair in scores)
+{
+    Debug.Log($&quot;{pair.Key}: {pair.Value}&quot;);
+}</code></pre>
+<p>也可以用 <code>var</code>：</p>
+<pre><code class="language-csharp">foreach (var pair in scores)
+{
+    Debug.Log($&quot;{pair.Key}: {pair.Value}&quot;);
+}</code></pre>
+<p>只遍历 key：</p>
+<pre><code class="language-csharp">foreach (string name in scores.Keys)
+{
+    Debug.Log(name);
+}</code></pre>
+<p>只遍历 value：</p>
+<pre><code class="language-csharp">foreach (int score in scores.Values)
+{
+    Debug.Log(score);
+}</code></pre>
+<h2 id="遍历时不要直接删除">遍历时不要直接删除</h2>
+<p>错误示例：</p>
+<pre><code class="language-csharp">foreach (var pair in scores)
+{
+    if (pair.Value &lt; 60)
+    {
+        scores.Remove(pair.Key); // 危险
+    }
+}</code></pre>
+<p><code>Dictionary</code> 在 <code>foreach</code> 时被修改，通常会报错：</p>
+<pre><code class="language-text">Collection was modified</code></pre>
+<p>安全写法：先收集要删除的 key。</p>
+<pre><code class="language-csharp">List&lt;string&gt; removeKeys = new();
+
+foreach (var pair in scores)
+{
+    if (pair.Value &lt; 60)
+    {
+        removeKeys.Add(pair.Key);
+    }
+}
+
+foreach (string key in removeKeys)
+{
+    scores.Remove(key);
+}</code></pre>
+<h2 id="string-key-的大小写问题">string key 的大小写问题</h2>
+<p>默认情况下：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, int&gt; scores = new();
+
+scores[&quot;Alice&quot;] = 90;
+Debug.Log(scores.ContainsKey(&quot;alice&quot;)); // false</code></pre>
+<p>如果希望忽略大小写：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, int&gt; scores = new(StringComparer.OrdinalIgnoreCase);</code></pre>
+<p>这样：</p>
+<pre><code class="language-csharp">scores[&quot;Alice&quot;] = 90;
+Debug.Log(scores[&quot;alice&quot;]); // 90</code></pre>
+<p>资源路径、配置 key、名字 key 有时会用：</p>
+<pre><code class="language-csharp">new(StringComparer.OrdinalIgnoreCase)</code></pre>
+<p>但不是所有 key 都应该忽略大小写，要看业务语义。</p>
+<h2 id="key-要稳定">key 要稳定</h2>
+<p>适合当 key 的类型：</p>
+<pre><code class="language-text">int
+long
+string
+enum
+稳定的 struct</code></pre>
+<p>不太适合随便拿会变化的对象字段当 key。</p>
+<p>比如：</p>
+<pre><code class="language-csharp">Dictionary&lt;Vector3, Unit&gt; unitsByPosition;</code></pre>
+<p>通常不太好，因为浮点数位置会变化，而且精度问题多。</p>
+<p>更好的 key：</p>
+<pre><code class="language-csharp">Dictionary&lt;int, Unit&gt; unitsByRuntimeId;
+Dictionary&lt;string, Unit&gt; unitsByInstanceId;</code></pre>
+<p>key 的核心要求：</p>
+<pre><code class="language-text">稳定
+唯一
+可比较
+语义清楚</code></pre>
+<h2 id="dictionary-快的是按-key-查">Dictionary 快的是按 key 查</h2>
+<p><code>ContainsValue</code> 是存在的：</p>
+<pre><code class="language-csharp">scores.ContainsValue(90)</code></pre>
+<p>但它要遍历整个字典，复杂度是 <code>O(n)</code>。</p>
+<p><code>Dictionary</code> 快的是：</p>
+<pre><code class="language-csharp">scores.ContainsKey(&quot;Alice&quot;)
+scores.TryGetValue(&quot;Alice&quot;, out int score)</code></pre>
+<p>如果经常要从 value 反查 key，通常需要额外维护反向字典：</p>
+<pre><code class="language-text">location -&gt; asset
+assetInstanceId -&gt; location</code></pre>
+<h2 id="最重要的写法">最重要的写法</h2>
+<p>添加或覆盖：</p>
+<pre><code class="language-csharp">dict[key] = value;</code></pre>
+<p>只新增不覆盖：</p>
+<pre><code class="language-csharp">dict.TryAdd(key, value);</code></pre>
+<p>安全查找：</p>
+<pre><code class="language-csharp">if (dict.TryGetValue(key, out var value))
+{
+    // 使用 value
+}</code></pre>
+<p>找不到就创建：</p>
+<pre><code class="language-csharp">if (!dict.TryGetValue(key, out var list))
+{
+    list = new List&lt;int&gt;();
+    dict[key] = list;
+}
+
+list.Add(item);</code></pre>
+<p>计数器：</p>
+<pre><code class="language-csharp">dict.TryGetValue(key, out int count);
+dict[key] = count + 1;</code></pre>
+<p>删除：</p>
+<pre><code class="language-csharp">dict.Remove(key);</code></pre>
+<p>一句话总结：</p>
+<pre><code class="language-text">List 是一排东西，靠下标和顺序访问。
+Dictionary 是一张映射表，靠 key 快速定位 value。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E6%8E%92%E5%BA%8F%E6%9F%A5%E6%89%BE%E7%AD%9B%E9%80%89/"><small>← PREVIOUS</small>集合排序查找筛选</a>
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/HashSet%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%8E%BB%E9%87%8D%E6%A3%80%E6%B5%8B/"><small>NEXT →</small>HashSet 常用操作与去重检测</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

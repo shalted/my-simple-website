@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="事件系统解决的是：">
+  <title>事件系统与发布订阅 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>事件系统与发布订阅</h1>
+      <p class="hero-copy">事件系统解决的是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#事件系统解决什么问题">事件系统解决什么问题</a>
+    <a data-toc-link href="#发布订阅">发布订阅</a>
+    <a data-toc-link href="#c-简单写法">C# 简单写法</a>
+    <a data-toc-link href="#订阅事件">订阅事件</a>
+    <a data-toc-link href="#为什么要取消订阅">为什么要取消订阅</a>
+    <a data-toc-link href="#适合事件系统的场景">适合事件系统的场景</a>
+    <a data-toc-link href="#不适合事件系统的场景">不适合事件系统的场景</a>
+    <a data-toc-link href="#最大收益">最大收益</a>
+    <a data-toc-link href="#最大风险">最大风险</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：工程设计</p>
+<h2 id="事件系统解决什么问题">事件系统解决什么问题</h2>
+<p>事件系统解决的是：</p>
+<pre><code class="language-text">一个事情发生后，很多系统都想知道；
+但发生事情的人不应该认识所有响应者。</code></pre>
+<p>例如角色扣血后，可能有很多系统要响应：</p>
+<pre><code class="language-text">UI 血条更新
+音效播放
+任务系统检查
+成就系统统计
+伤害飘字显示
+镜头震动</code></pre>
+<p>如果角色血量系统直接调用所有系统，会变成：</p>
+<pre><code class="language-text">血量系统认识 UI
+认识音效
+认识任务
+认识成就
+认识飘字</code></pre>
+<p>这叫耦合太高。</p>
+<h2 id="发布订阅">发布订阅</h2>
+<p>事件系统的思路是：</p>
+<pre><code class="language-text">发布者 Publish：广播一件事情发生了。
+订阅者 Subscribe：自己监听并响应这件事。</code></pre>
+<p>角色扣血时只广播：</p>
+<pre><code class="language-text">我受伤了。</code></pre>
+<p>至于谁关心，谁自己订阅：</p>
+<pre><code class="language-text">血条系统听到 -&gt; 更新 UI
+音效系统听到 -&gt; 播放音效
+任务系统听到 -&gt; 检查任务
+成就系统听到 -&gt; 统计
+飘字系统听到 -&gt; 显示伤害</code></pre>
+<p>发布者不需要知道这些系统存在。</p>
+<h2 id="c-简单写法">C# 简单写法</h2>
+<p>定义事件参数：</p>
+<pre><code class="language-csharp">public struct DamageEvent
+{
+    public int Damage;
+    public int CurrentHp;
+}</code></pre>
+<p>定义事件中心：</p>
+<pre><code class="language-csharp">public static class GameEvents
+{
+    public static Action&lt;DamageEvent&gt; OnDamage;
+}</code></pre>
+<p>发布事件：</p>
+<pre><code class="language-csharp">void TakeDamage(int damage)
+{
+    hp -= damage;
+
+    GameEvents.OnDamage?.Invoke(new DamageEvent
+    {
+        Damage = damage,
+        CurrentHp = hp
+    });
+}</code></pre>
+<p>这里：</p>
+<pre><code class="language-csharp">?.Invoke(...)</code></pre>
+<p>意思是：</p>
+<pre><code class="language-text">如果 OnDamage 不为空，就调用它。
+如果没人监听，就什么都不做。</code></pre>
+<h2 id="订阅事件">订阅事件</h2>
+<p>血条系统：</p>
+<pre><code class="language-csharp">void OnEnable()
+{
+    GameEvents.OnDamage += HandleDamage;
+}
+
+void OnDisable()
+{
+    GameEvents.OnDamage -= HandleDamage;
+}
+
+void HandleDamage(DamageEvent e)
+{
+    hpBar.SetValue(e.CurrentHp);
+}</code></pre>
+<p>音效系统：</p>
+<pre><code class="language-csharp">void OnEnable()
+{
+    GameEvents.OnDamage += HandleDamage;
+}
+
+void OnDisable()
+{
+    GameEvents.OnDamage -= HandleDamage;
+}
+
+void HandleDamage(DamageEvent e)
+{
+    audio.Play(&quot;Hit&quot;);
+}</code></pre>
+<p>同一个事件可以有多个监听者。</p>
+<h2 id="为什么要取消订阅">为什么要取消订阅</h2>
+<p>取消订阅非常重要：</p>
+<pre><code class="language-csharp">GameEvents.OnDamage -= HandleDamage;</code></pre>
+<p>如果对象销毁了，但没有取消订阅，事件中心可能还保存着旧对象的方法引用。</p>
+<p>结果可能是：</p>
+<pre><code class="language-text">事件触发时调用已销毁对象
+空引用报错
+对象无法被 GC 回收
+逻辑重复响应</code></pre>
+<p>Unity 里常见配对写法：</p>
+<pre><code class="language-csharp">void OnEnable()
+{
+    GameEvents.OnDamage += HandleDamage;
+}
+
+void OnDisable()
+{
+    GameEvents.OnDamage -= HandleDamage;
+}</code></pre>
+<p>这和资源生命周期很像：</p>
+<pre><code class="language-text">谁订阅，谁取消。</code></pre>
+<h2 id="适合事件系统的场景">适合事件系统的场景</h2>
+<p>适合一个事件有多个响应者：</p>
+<pre><code class="language-text">角色受伤
+角色死亡
+获得道具
+任务完成
+场景加载完成
+语言切换
+网络断开
+配置刷新
+UI 窗口打开关闭</code></pre>
+<p>例如获得道具：</p>
+<pre><code class="language-text">背包系统添加物品
+UI 提示获得
+任务系统检查收集进度
+音效系统播放提示
+成就系统统计</code></pre>
+<p>获得道具的人不应该挨个调用这些系统。</p>
+<h2 id="不适合事件系统的场景">不适合事件系统的场景</h2>
+<p>事件系统不适合隐藏强流程依赖。</p>
+<p>例如：</p>
+<pre><code class="language-text">必须先扣资源
+再创建单位
+再播放动画
+再进入战斗</code></pre>
+<p>这种强顺序流程如果全靠事件串起来，会导致：</p>
+<pre><code class="language-text">不知道谁先执行
+不知道哪里断了
+Debug 很痛苦
+主流程变隐形</code></pre>
+<p>强流程更适合直接调用、状态机或流程控制器。</p>
+<p>事件适合：</p>
+<pre><code class="language-text">我通知一件事发生了，关心的人自己响应。</code></pre>
+<p>不适合：</p>
+<pre><code class="language-text">我依赖你必须完成，然后我继续下一步。</code></pre>
+<h2 id="最大收益">最大收益</h2>
+<p>事件系统最大的收益是解耦。</p>
+<p>发布者只知道：</p>
+<pre><code class="language-text">我发了一个事件。</code></pre>
+<p>不知道：</p>
+<pre><code class="language-text">谁在听
+听了做什么
+有几个系统在听</code></pre>
+<p>新增响应逻辑时，不用改发布者。</p>
+<p>例如新增受伤震屏：</p>
+<pre><code class="language-csharp">GameEvents.OnDamage += ShakeCamera;</code></pre>
+<p>不用改 <code>TakeDamage</code>。</p>
+<h2 id="最大风险">最大风险</h2>
+<p>事件太多、乱用，会让流程变隐形。</p>
+<p>看到：</p>
+<pre><code class="language-csharp">GameEvents.OnDamage?.Invoke(e);</code></pre>
+<p>但可能不知道：</p>
+<pre><code class="language-text">谁收到？
+执行顺序是什么？
+有没有人取消订阅？
+谁里面又发了别的事件？</code></pre>
+<p>所以事件要有边界：</p>
+<pre><code class="language-text">适合广播事实
+不适合隐藏主流程
+事件名要清楚
+订阅/取消要成对
+重要事件要方便 Debug</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">事件系统让“发生者”和“响应者”解耦。</code></pre>
+<p>最重要的三条：</p>
+<pre><code class="language-text">发布者只广播事实。
+订阅者自己响应。
+谁订阅，谁取消。</code></pre>
+<p>常用模板：</p>
+<pre><code class="language-csharp">void OnEnable()
+{
+    GameEvents.OnDamage += HandleDamage;
+}
+
+void OnDisable()
+{
+    GameEvents.OnDamage -= HandleDamage;
+}</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%B3%9B%E5%9E%8B%E6%B6%88%E9%87%8D/"><small>← PREVIOUS</small>门面模式与泛型消重</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/"><small>NEXT →</small>资源生命周期统一管理</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

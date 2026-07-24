@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GameplayEffectSpec.cs">
+  <title>门面模式与泛型消重 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>门面模式与泛型消重</h1>
+      <p class="hero-copy">GameplayEffectSpec.cs</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心问题">核心问题</a>
+    <a data-toc-link href="#门面模式">门面模式</a>
+    <a data-toc-link href="#为什么-public-api-不暴露-ecs-很重要">为什么 public API 不暴露 ECS 很重要</a>
+    <a data-toc-link href="#泛型-helper-固定流程-传入变化点">泛型 helper：固定流程，传入变化点</a>
+    <a data-toc-link href="#settagsinternal-的价值">SetTagsInternal 的价值</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：工程设计</p>
+<p>关联代码：</p>
+<p><code>GameplayEffectSpec.cs</code></p>
+<h2 id="核心问题">核心问题</h2>
+<p>GAS / ECS 这类系统内部通常很复杂：</p>
+<pre><code class="language-text">Entity
+EntityManager
+IComponentData
+NativeArray
+AddComponent
+RemoveComponent
+SetComponentData
+Dispose</code></pre>
+<p>如果业务代码到处直接操作这些东西，会带来很多问题：</p>
+<pre><code class="language-text">UI、技能、配置、战斗逻辑都要懂 ECS
+NativeArray 释放容易漏
+组件增删时机容易错
+调用方写法不统一
+底层一改，上层到处跟着改</code></pre>
+<p>所以 <code>GameplayEffectSpec</code> 做了一个包装：</p>
+<pre><code class="language-text">外部看到普通 OOP API；
+内部怎么操作 ECS，都藏在类里面。</code></pre>
+<p>这就是门面模式。</p>
+<h2 id="门面模式">门面模式</h2>
+<p>代码里的设计准则是：</p>
+<pre><code class="language-text">门面无 ECS，内部随便用。</code></pre>
+<p>也就是说，<code>public/protected</code> API 不暴露：</p>
+<pre><code class="language-text">Entity
+EntityManager
+NativeArray
+DynamicBuffer
+IComponentData</code></pre>
+<p>外部只需要调用：</p>
+<pre><code class="language-csharp">effect.SetDuration(30);
+effect.SetAssetTags(new[] { 1001, 1002 });
+effect.ApplyTo(target, source);
+effect.Remove();</code></pre>
+<p>而不需要知道底层是哪个 Entity、哪个 Component、哪个 NativeArray。</p>
+<h2 id="为什么-public-api-不暴露-ecs-很重要">为什么 public API 不暴露 ECS 很重要</h2>
+<p>如果接口返回 <code>NativeArray&lt;int&gt;</code>：</p>
+<pre><code class="language-csharp">public NativeArray&lt;int&gt; GetAssetTags()</code></pre>
+<p>调用方就必须理解：</p>
+<pre><code class="language-text">这个 NativeArray 谁释放？
+它能不能跨帧保存？
+它是临时分配还是 Persistent？</code></pre>
+<p>这会把底层复杂性泄露给业务代码。</p>
+<p>现在它返回普通数组：</p>
+<pre><code class="language-csharp">public int[] GetAssetTags()</code></pre>
+<p>调用方更安全，理解成本也更低。</p>
+<p>所以门面模式的核心价值是：</p>
+<pre><code class="language-text">复杂性可以存在，但要被限制在模块内部。</code></pre>
+<h2 id="泛型-helper-固定流程-传入变化点">泛型 helper：固定流程，传入变化点</h2>
+<p>例如 <code>AssetTags</code> 和 <code>GrantedTags</code> 的 public API 很相似：</p>
+<pre><code class="language-csharp">public int[] GetAssetTags() =&gt; GetTagsInternal&lt;CEffectAssetTags&gt;(c =&gt; c.tags);
+public int[] GetGrantedTags() =&gt; GetTagsInternal&lt;CEffectGrantedTags&gt;(c =&gt; c.tags);</code></pre>
+<p>它们流程相同，变化点只有：</p>
+<pre><code class="language-text">组件类型不同
+字段访问方式不同
+组件创建方式不同</code></pre>
+<p>所以底层抽成了泛型 helper：</p>
+<pre><code class="language-csharp">private int[] GetTagsInternal&lt;T&gt;(Func&lt;T, NativeArray&lt;int&gt;&gt; getter)
+
+private void SetTagsInternal&lt;T&gt;(
+    int[] tags,
+    Func&lt;T, NativeArray&lt;int&gt;&gt; getter,
+    Func&lt;NativeArray&lt;int&gt;, T&gt; factory)
+
+private void RemoveTagComponentInternal&lt;T&gt;(Func&lt;T, NativeArray&lt;int&gt;&gt; getter)</code></pre>
+<p>这里的设计思维是：</p>
+<pre><code class="language-text">重复的流程抽成泛型；
+变化的部分用函数参数传进来。</code></pre>
+<h2 id="settagsinternal-的价值">SetTagsInternal 的价值</h2>
+<p>设置 Tag 时，底层要做几件危险操作：</p>
+<pre><code class="language-text">检查 Entity 是否有效
+检查组件是否存在
+释放旧 NativeArray
+添加组件
+创建新 NativeArray
+写回 ECS</code></pre>
+<p>这些操作如果散落在每个 public 方法里，很容易某个方法忘记释放旧数组，导致内存泄露。</p>
+<p>集中到 <code>SetTagsInternal</code> 之后：</p>
+<pre><code class="language-text">所有 Tag 设置逻辑都走同一套规则。
+危险操作集中管理。
+重复代码变少。
+行为更一致。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<p>门面模式负责隔离复杂性。</p>
+<p>泛型 helper 负责消灭重复风险。</p>
+<p>一句话总结：</p>
+<pre><code class="language-text">好的封装不是为了“看起来高级”，而是为了控制复杂性和风险边界。</code></pre>
+<p>尤其当底层涉及 ECS、NativeArray、异步、资源句柄、网络状态这类容易出错的东西时，不应该让业务代码到处直接碰。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/"><small>← PREVIOUS</small>对象池</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/"><small>NEXT →</small>事件系统与发布订阅</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

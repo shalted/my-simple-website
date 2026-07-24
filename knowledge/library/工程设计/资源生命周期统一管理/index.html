@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="YooAssetManager.ResourceAccess.cs">
+  <title>资源生命周期统一管理 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>资源生命周期统一管理</h1>
+      <p class="hero-copy">YooAssetManager.ResourceAccess.cs</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心知识点">核心知识点</a>
+    <a data-toc-link href="#为什么要统一">为什么要统一</a>
+    <a data-toc-link href="#更好的做法">更好的做法</a>
+    <a data-toc-link href="#作用域思维">作用域思维</a>
+    <a data-toc-link href="#设计目标">设计目标</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：工程设计</p>
+<p>关联代码：</p>
+<p><code>YooAssetManager.ResourceAccess.cs</code></p>
+<h2 id="核心知识点">核心知识点</h2>
+<p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。</p>
+<p>可以概括成一句话：</p>
+<pre><code class="language-text">谁 Load，谁负责 Release；
+或者谁创建生命周期作用域，谁负责统一释放这个作用域里的所有资源。</code></pre>
+<p>更进一步说：</p>
+<pre><code class="language-text">不是简单把加载和释放代码放在一起，而是要把资源的所有权设计清楚。</code></pre>
+<h2 id="为什么要统一">为什么要统一</h2>
+<p>如果资源的生命周期分散在多个地方，就会出现账本混乱：</p>
+<pre><code class="language-text">A 地方 Load
+B 地方缓存
+C 地方传给 UI
+D 地方偷偷 Unload
+E 地方忘了 Release</code></pre>
+<p>这样引用计数很容易失真：</p>
+<pre><code class="language-text">引用计数过小：资源还在使用中就被释放
+引用计数过大：资源没人使用了却长期不释放</code></pre>
+<p>前者会导致丢图、空引用、材质失效、句柄失效；后者会导致内存泄露、资源常驻、长时间运行后性能变差。</p>
+<h2 id="更好的做法">更好的做法</h2>
+<p>资源加载入口统一：</p>
+<pre><code class="language-text">所有业务都通过 ResourceManager / YooAssetManager 加载资源。</code></pre>
+<p>资源释放入口统一：</p>
+<pre><code class="language-text">不要让业务随意直接释放底层资源句柄，而是通过统一 Release / Unload / Dispose 入口。</code></pre>
+<p>资源归属清晰：</p>
+<pre><code class="language-text">资源属于哪个 UI 面板、哪个战斗对象、哪个场景、哪个作用域，要能说清楚。</code></pre>
+<p>生命周期边界明确：</p>
+<pre><code class="language-text">UI 打开时加载，UI 关闭时释放。
+场景进入时加载，场景退出时释放。
+特效生成时持有，特效结束时释放。</code></pre>
+<h2 id="作用域思维">作用域思维</h2>
+<p>可以把一组资源绑定到一个作用域：</p>
+<pre><code class="language-csharp">using var scope = resourceManager.CreateScope(&quot;BagPanel&quot;);
+
+scope.Load&lt;Sprite&gt;(&quot;icon_a&quot;);
+scope.Load&lt;Sprite&gt;(&quot;icon_b&quot;);
+scope.Load&lt;GameObject&gt;(&quot;item_prefab&quot;);
+
+// 面板关闭时
+scope.Dispose(); // 统一释放这个 scope 里持有过的资源</code></pre>
+<p>这样就不是靠人脑记：</p>
+<pre><code class="language-text">我刚刚 Load 了哪些？
+哪些要 Release？
+有没有重复 Release？
+有没有漏 Release？</code></pre>
+<p>而是让结构帮忙记账。</p>
+<h2 id="设计目标">设计目标</h2>
+<p>一个稳健的资源系统应该尽量做到：</p>
+<pre><code class="language-text">资源加载入口统一
+资源释放入口统一
+资源归属关系清晰
+生命周期边界明确
+异常、关闭、取消时也能走统一释放</code></pre>
+<p>很多成熟项目里的这些概念，本质上都是在解决同一个问题：</p>
+<pre><code class="language-text">ResourceManager
+AssetHandle
+ResourceScope
+UIWindowResourceTracker
+AutoReleaseHandle</code></pre>
+<p>它们都在避免让每个业务代码自己手写资源账本。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<p>引用计数只是实现手段，所有权才是设计核心。</p>
+<p>如果没有所有权，引用计数就只是一个容易被写错的数字。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/"><small>← PREVIOUS</small>事件系统与发布订阅</a>
+          <a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/"><small>NEXT →</small>二叉堆优先队列</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

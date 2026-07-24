@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="源码位置：">
+  <title>二叉堆优先队列 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">数据结构 / KNOWLEDGE NOTE</div>
+      <h1>二叉堆优先队列</h1>
+      <p class="hero-copy">源码位置：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#解决的问题">解决的问题</a>
+    <a data-toc-link href="#核心结构">核心结构</a>
+    <a data-toc-link href="#bubbleup-入队过程">BubbleUp：入队过程</a>
+    <a data-toc-link href="#bubbledown-出队过程">BubbleDown：出队过程</a>
+    <a data-toc-link href="#为什么不用普通队列">为什么不用普通队列</a>
+    <a data-toc-link href="#为什么不每次排序">为什么不每次排序</a>
+    <a data-toc-link href="#堆适合什么场景">堆适合什么场景</a>
+    <a data-toc-link href="#工程上可以补强的点">工程上可以补强的点</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：数据结构</p>
+<p>源码位置：</p>
+<p><code>UITipsPriorityQueue.cs</code></p>
+<h2 id="解决的问题">解决的问题</h2>
+<p>这个类解决的是：UI Tips 有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+<p>普通做法可能是每次取的时候遍历一遍列表找最大值，复杂度是 <code>O(n)</code>。这里用的是二叉堆，入队和出队都是 <code>O(log n)</code>，更适合 Tips 数量变多、频繁插入弹出的场景。</p>
+<h2 id="核心结构">核心结构</h2>
+<pre><code class="language-csharp">private readonly List&lt;UITipConfig&gt; _heap = new();</code></pre>
+<p>看起来只是一个 <code>List</code>，但它不是普通数组，而是把它当成一棵“隐式二叉树”。</p>
+<p>对数组下标 <code>i</code>：</p>
+<pre><code class="language-text">parent = (i - 1) / 2
+left   = 2 * i + 1
+right  = 2 * i + 2</code></pre>
+<p>举个例子，数组：</p>
+<pre><code class="language-text">index:  0   1   2   3   4   5   6
+value:  9   7   8   3   5   6   4</code></pre>
+<p>对应树：</p>
+<pre><code class="language-text">        9
+      /   \
+     7     8
+    / \   / \
+   3   5 6   4</code></pre>
+<p>这里实现的是最大堆：父节点的优先级永远大于等于子节点。</p>
+<p>所以堆顶 <code>_heap[0]</code> 永远是优先级最高的 Tips。</p>
+<h2 id="bubbleup-入队过程">BubbleUp：入队过程</h2>
+<p>假设现在堆里已经有这些 Tips，数字代表 <code>Priority</code>：</p>
+<pre><code class="language-text">_heap = [90, 70, 80, 30, 50, 60]</code></pre>
+<p>它对应的树是：</p>
+<pre><code class="language-text">          90
+        /    \
+      70      80
+     /  \    /
+   30   50  60</code></pre>
+<p>现在插入一个新 Tips，优先级是 <code>85</code>。</p>
+<p>第一步：先放到数组末尾。</p>
+<pre><code class="language-text">_heap = [90, 70, 80, 30, 50, 60, 85]</code></pre>
+<p>树变成：</p>
+<pre><code class="language-text">          90
+        /    \
+      70      80
+     /  \    /  \
+   30   50  60   85</code></pre>
+<p>新元素下标是 <code>6</code>。</p>
+<p>根据公式：</p>
+<pre><code class="language-text">parent = (i - 1) / 2
+parent = (6 - 1) / 2 = 2</code></pre>
+<p>也就是它的父节点是下标 <code>2</code>，值是 <code>80</code>。</p>
+<p>比较：</p>
+<pre><code class="language-text">85 &gt; 80</code></pre>
+<p>所以交换。</p>
+<pre><code class="language-text">_heap = [90, 70, 85, 30, 50, 60, 80]</code></pre>
+<p>树变成：</p>
+<pre><code class="language-text">          90
+        /    \
+      70      85
+     /  \    /  \
+   30   50  60   80</code></pre>
+<p>现在新元素来到下标 <code>2</code>。</p>
+<p>继续找父节点：</p>
+<pre><code class="language-text">parent = (2 - 1) / 2 = 0</code></pre>
+<p>父节点是 <code>90</code>。</p>
+<p>比较：</p>
+<pre><code class="language-text">85 &lt;= 90</code></pre>
+<p>停。最大堆恢复完成。</p>
+<p>所以 <code>BubbleUp</code> 的本质是：</p>
+<pre><code class="language-text">新来的元素先坐最后一排；
+如果它比上级优先级高，就一路往前换座位；
+直到它不比父节点高，或者到达堆顶。</code></pre>
+<p>对应源码：</p>
+<pre><code class="language-csharp">private void BubbleUp(int i)
+{
+    while (i &gt; 0)
+    {
+        int parent = (i - 1) / 2;
+        if (_heap[i].Priority &lt;= _heap[parent].Priority) break;
+        (_heap[i], _heap[parent]) = (_heap[parent], _heap[i]);
+        i = parent;
+    }
+}</code></pre>
+<h2 id="bubbledown-出队过程">BubbleDown：出队过程</h2>
+<p>现在堆是：</p>
+<pre><code class="language-text">_heap = [90, 70, 85, 30, 50, 60, 80]</code></pre>
+<p>树：</p>
+<pre><code class="language-text">          90
+        /    \
+      70      85
+     /  \    /  \
+   30   50  60   80</code></pre>
+<p>出队时，要取出最高优先级，也就是 <code>90</code>。</p>
+<p>第一步：保存堆顶。</p>
+<pre><code class="language-text">top = 90</code></pre>
+<p>第二步：把最后一个元素 <code>80</code> 放到堆顶，然后删除最后一格。</p>
+<pre><code class="language-text">_heap = [80, 70, 85, 30, 50, 60]</code></pre>
+<p>树暂时变成：</p>
+<pre><code class="language-text">          80
+        /    \
+      70      85
+     /  \    /
+   30   50  60</code></pre>
+<p>现在违反了最大堆规则，因为 <code>80</code> 小于右孩子 <code>85</code>。</p>
+<p>开始 <code>BubbleDown</code>。</p>
+<p>当前位置 <code>i = 0</code>，左右孩子：</p>
+<pre><code class="language-text">left  = 2 * 0 + 1 = 1 -&gt; 70
+right = 2 * 0 + 2 = 2 -&gt; 85</code></pre>
+<p>左右孩子里最大的是 <code>85</code>，所以 <code>80</code> 和 <code>85</code> 交换。</p>
+<pre><code class="language-text">_heap = [85, 70, 80, 30, 50, 60]</code></pre>
+<p>树变成：</p>
+<pre><code class="language-text">          85
+        /    \
+      70      80
+     /  \    /
+   30   50  60</code></pre>
+<p>现在 <code>80</code> 到了下标 <code>2</code>。</p>
+<p>继续找孩子：</p>
+<pre><code class="language-text">left  = 2 * 2 + 1 = 5 -&gt; 60
+right = 2 * 2 + 2 = 6 -&gt; 不存在</code></pre>
+<p>比较：</p>
+<pre><code class="language-text">80 &gt;= 60</code></pre>
+<p>停。最大堆恢复完成。</p>
+<p>返回刚才保存的 <code>top = 90</code>。</p>
+<p>对应源码：</p>
+<pre><code class="language-csharp">private void BubbleDown(int i)
+{
+    int count = _heap.Count;
+    while (true)
+    {
+        int largest = i;
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+
+        if (left &lt; count &amp;&amp; _heap[left].Priority &gt; _heap[largest].Priority)
+            largest = left;
+
+        if (right &lt; count &amp;&amp; _heap[right].Priority &gt; _heap[largest].Priority)
+            largest = right;
+
+        if (largest == i) break;
+
+        (_heap[i], _heap[largest]) = (_heap[largest], _heap[i]);
+        i = largest;
+    }
+}</code></pre>
+<p>这里最关键的一句是：</p>
+<pre><code class="language-csharp">int largest = i;</code></pre>
+<p>它的意思不是“假设当前就是最大”，而是：</p>
+<pre><code class="language-text">先把当前位置当作候选最大值；
+再拿左孩子、右孩子分别挑战它；
+最后谁最大，就让谁上去。</code></pre>
+<h2 id="为什么不用普通队列">为什么不用普通队列</h2>
+<p>普通队列是先进先出：</p>
+<pre><code class="language-text">入队顺序: A(10), B(100), C(30)
+出队顺序: A, B, C</code></pre>
+<p>但 Tips 系统想要的是：</p>
+<pre><code class="language-text">出队顺序: B(100), C(30), A(10)</code></pre>
+<p>所以普通队列适合“顺序公平”，不适合“优先级调度”。</p>
+<p>复杂度：</p>
+<pre><code class="language-text">Enqueue: O(1)
+Dequeue: O(1)
+但不能快速拿最高优先级</code></pre>
+<h2 id="为什么不每次排序">为什么不每次排序</h2>
+<p>可以用排序列表，比如每次插入后排序：</p>
+<pre><code class="language-text">插入 A(10) -&gt; [10]
+插入 B(100) -&gt; [100, 10]
+插入 C(30) -&gt; [100, 30, 10]</code></pre>
+<p>取最高优先级很快，直接拿第一个。</p>
+<p>但问题是：维护排序成本高。</p>
+<p>常见复杂度：</p>
+<pre><code class="language-text">插入后排序: O(n log n)
+取最大值: O(1)
+删除最大值: 如果删头部，可能 O(n)</code></pre>
+<p>如果用二分查找找到插入位置，查找是 <code>O(log n)</code>，但数组中间插入仍然要搬元素，所以整体还是 <code>O(n)</code>。</p>
+<p>排序列表适合：</p>
+<pre><code class="language-text">数据量不大；
+或者插入很少，查询很多；
+或者你需要完整有序遍历。</code></pre>
+<h2 id="堆适合什么场景">堆适合什么场景</h2>
+<p>堆的特点是：它不保证整个数组有序，只保证堆顶最大。</p>
+<p>比如：</p>
+<pre><code class="language-text">[90, 70, 85, 30, 50, 60, 80]</code></pre>
+<p>这不是完整降序数组，因为 <code>80</code> 在最后。</p>
+<p>但它满足：</p>
+<pre><code class="language-text">每个父节点 &gt;= 自己的孩子</code></pre>
+<p>所以它能快速回答一个问题：</p>
+<pre><code class="language-text">当前最高优先级是谁？</code></pre>
+<p>复杂度：</p>
+<pre><code class="language-text">Enqueue: O(log n)
+Dequeue: O(log n)
+看堆顶: O(1)</code></pre>
+<p>堆适合：</p>
+<pre><code class="language-text">Tips 优先级
+任务调度
+战斗 AI 行为选择
+寻路 A* 的 open set
+排行榜取 Top K
+定时器系统取最近到期任务</code></pre>
+<h2 id="工程上可以补强的点">工程上可以补强的点</h2>
+<p>目前这个类已经够干净，但如果继续完善，可以考虑加一个 <code>Peek</code>：</p>
+<pre><code class="language-csharp">public UITipConfig Peek()
+{
+    return _heap.Count == 0 ? null : _heap[0];
+}</code></pre>
+<p>这样可以只看当前最高优先级，不弹出。</p>
+<p>另外，如果两个 Tips 的 <code>Priority</code> 相同，现在谁先出并不稳定。</p>
+<p>如果业务需要“同优先级先来先出”，可以给 <code>UITipConfig</code> 增加一个递增序号，比如 <code>SequenceId</code>，比较时变成：</p>
+<pre><code class="language-text">Priority 越大越靠前；
+Priority 相同，SequenceId 越小越靠前。</code></pre>
+<p>这就是工程里很常见的“主排序键 + 次排序键”。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<p>堆不是为了让全部元素有序。</p>
+<p>堆是为了用更低成本维护“当前最值”。</p>
+<p>很多数据结构的选择，不是问“它能不能做”，而是问：</p>
+<pre><code class="language-text">我最频繁的问题是什么？
+我愿意把成本花在插入、删除、查询的哪一步？</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/"><small>← PREVIOUS</small>资源生命周期统一管理</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E9%9B%86%E7%BE%A4AI%E6%A7%BD%E4%BD%8D%E5%88%86%E9%85%8D%E4%B8%8E%E9%9D%9E%E6%94%BB%E5%87%BB%E6%84%8F%E5%9B%BE/"><small>NEXT →</small>集群 AI 槽位分配与非攻击意图</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

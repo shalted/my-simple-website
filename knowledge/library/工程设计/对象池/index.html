@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="游戏里有很多对象会频繁创建和销毁：">
+  <title>对象池 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>对象池</h1>
+      <p class="hero-copy">游戏里有很多对象会频繁创建和销毁：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#对象池解决什么问题">对象池解决什么问题</a>
+    <a data-toc-link href="#核心结构">核心结构</a>
+    <a data-toc-link href="#取对象">取对象</a>
+    <a data-toc-link href="#回收对象">回收对象</a>
+    <a data-toc-link href="#简化版对象池">简化版对象池</a>
+    <a data-toc-link href="#坑一-取出时要重置状态">坑一：取出时要重置状态</a>
+    <a data-toc-link href="#坑二-防止重复回收">坑二：防止重复回收</a>
+    <a data-toc-link href="#坑三-对象池不是越大越好">坑三：对象池不是越大越好</a>
+    <a data-toc-link href="#适合对象池的场景">适合对象池的场景</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+        <p>分类：工程设计</p>
+<h2 id="对象池解决什么问题">对象池解决什么问题</h2>
+<p>游戏里有很多对象会频繁创建和销毁：</p>
+<pre><code class="language-text">子弹
+伤害数字
+飘字
+命中特效
+掉落物
+音效播放器
+UI 列表项
+怪物预制体</code></pre>
+<p>普通写法：</p>
+<pre><code class="language-csharp">GameObject bullet = Instantiate(bulletPrefab);
+Destroy(bullet);</code></pre>
+<p>偶尔一次没问题，但如果每秒几十次，会带来：</p>
+<pre><code class="language-text">CPU 开销
+内存分配
+GC 压力
+卡顿
+资源加载抖动</code></pre>
+<p>对象池的思路是：</p>
+<pre><code class="language-text">不用了不要销毁，先放回池子。
+下次要用，再从池子里拿出来复用。</code></pre>
+<h2 id="核心结构">核心结构</h2>
+<p>对象池常用 <code>Stack&lt;T&gt;</code> 保存空闲对象：</p>
+<pre><code class="language-csharp">Stack&lt;GameObject&gt; pool = new();</code></pre>
+<p>原因是对象池通常不关心顺序：</p>
+<pre><code class="language-text">拿哪个空闲对象都行。</code></pre>
+<p><code>Stack.Push</code> 和 <code>Stack.Pop</code> 很适合：</p>
+<pre><code class="language-text">回收时 Push
+取出时 Pop</code></pre>
+<h2 id="取对象">取对象</h2>
+<pre><code class="language-csharp">GameObject Get()
+{
+    if (pool.Count &gt; 0)
+    {
+        GameObject obj = pool.Pop();
+        obj.SetActive(true);
+        return obj;
+    }
+
+    return Instantiate(prefab);
+}</code></pre>
+<p>逻辑：</p>
+<pre><code class="language-text">池子里有空闲对象：
+    拿一个出来，激活，返回
+
+池子里没有：
+    创建一个新的</code></pre>
+<h2 id="回收对象">回收对象</h2>
+<pre><code class="language-csharp">void Release(GameObject obj)
+{
+    obj.SetActive(false);
+    pool.Push(obj);
+}</code></pre>
+<p>逻辑：</p>
+<pre><code class="language-text">不用了：
+    先隐藏
+    放回池子</code></pre>
+<p>这里不是 <code>Destroy</code>，而是复用。</p>
+<h2 id="简化版对象池">简化版对象池</h2>
+<pre><code class="language-csharp">public class SimpleGameObjectPool
+{
+    private readonly GameObject prefab;
+    private readonly Stack&lt;GameObject&gt; pool = new();
+
+    public SimpleGameObjectPool(GameObject prefab)
+    {
+        this.prefab = prefab;
+    }
+
+    public GameObject Get()
+    {
+        if (pool.Count &gt; 0)
+        {
+            GameObject obj = pool.Pop();
+            obj.SetActive(true);
+            return obj;
+        }
+
+        return UnityEngine.Object.Instantiate(prefab);
+    }
+
+    public void Release(GameObject obj)
+    {
+        if (obj == null)
+        {
+            return;
+        }
+
+        obj.SetActive(false);
+        pool.Push(obj);
+    }
+}</code></pre>
+<p>使用：</p>
+<pre><code class="language-csharp">SimpleGameObjectPool bulletPool = new(bulletPrefab);
+
+GameObject bullet = bulletPool.Get();
+
+// 子弹飞完或命中后
+bulletPool.Release(bullet);</code></pre>
+<h2 id="坑一-取出时要重置状态">坑一：取出时要重置状态</h2>
+<p>对象复用前一定要清理旧状态。</p>
+<p>例如子弹上次的数据：</p>
+<pre><code class="language-text">速度 = 20
+伤害 = 100
+目标 = enemyA
+已经命中 = true</code></pre>
+<p>如果回收后下次直接拿出来，不重置，就可能：</p>
+<pre><code class="language-text">新子弹一出生就处于“已经命中”
+新子弹还保留旧目标
+新特效还带着旧颜色、旧位置、旧回调</code></pre>
+<p>所以对象池通常会有：</p>
+<pre><code class="language-text">OnSpawn：取出时初始化
+OnDespawn：回收时清理</code></pre>
+<p>示例：</p>
+<pre><code class="language-csharp">public interface IPoolable
+{
+    void OnSpawn();
+    void OnDespawn();
+}</code></pre>
+<h2 id="坑二-防止重复回收">坑二：防止重复回收</h2>
+<p>如果同一个对象被回收两次：</p>
+<pre><code class="language-csharp">pool.Release(bullet);
+pool.Release(bullet);</code></pre>
+<p>池子里会有两个相同引用。</p>
+<p>之后两次 <code>Get()</code> 可能拿到同一个对象：</p>
+<pre><code class="language-text">A 拿到 bullet
+B 也拿到 bullet</code></pre>
+<p>这会非常难查。</p>
+<p>可以用 <code>HashSet&lt;GameObject&gt;</code> 检测：</p>
+<pre><code class="language-csharp">HashSet&lt;GameObject&gt; inPool = new();</code></pre>
+<p>回收时：</p>
+<pre><code class="language-csharp">if (!inPool.Add(obj))
+{
+    Debug.LogWarning(&quot;重复回收&quot;);
+    return;
+}
+
+obj.SetActive(false);
+pool.Push(obj);</code></pre>
+<p>取出时：</p>
+<pre><code class="language-csharp">GameObject obj = pool.Pop();
+inPool.Remove(obj);
+obj.SetActive(true);</code></pre>
+<p>这里用到了 <code>HashSet.Add</code> 的返回值：</p>
+<pre><code class="language-text">false 表示已经存在，说明重复回收。</code></pre>
+<h2 id="坑三-对象池不是越大越好">坑三：对象池不是越大越好</h2>
+<p>对象池减少创建销毁，但也会占内存。</p>
+<p>如果池子里长期堆着大量不用的对象：</p>
+<pre><code class="language-text">不销毁也会占内存。</code></pre>
+<p>成熟对象池通常会有：</p>
+<pre><code class="language-text">初始容量
+最大容量
+超出最大容量时 Destroy
+长时间不用时裁剪
+场景退出时清空</code></pre>
+<p>例如：</p>
+<pre><code class="language-csharp">if (pool.Count &gt;= maxSize)
+{
+    UnityEngine.Object.Destroy(obj);
+    return;
+}</code></pre>
+<h2 id="适合对象池的场景">适合对象池的场景</h2>
+<p>适合：</p>
+<pre><code class="language-text">创建销毁频繁
+对象结构差不多
+生命周期短
+复用成本低</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">子弹
+特效
+伤害数字
+UI 列表项
+音效播放器</code></pre>
+<p>不适合：</p>
+<pre><code class="language-text">很少创建的对象
+状态极其复杂且难以重置
+长期存在的唯一对象</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">对象池用“回收复用”替代“频繁创建销毁”。</code></pre>
+<p>最重要的三个坑：</p>
+<pre><code class="language-text">取出时要初始化。
+回收时要清理。
+防止同一个对象重复回收。</code></pre>
+<p>和前面知识点的连接：</p>
+<pre><code class="language-text">Stack：保存可复用对象。
+HashSet：检测重复回收。
+生命周期管理：谁 Get，谁 Release。
+状态重置：避免旧数据污染新对象。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <span></span>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%B3%9B%E5%9E%8B%E6%B6%88%E9%87%8D/"><small>NEXT →</small>门面模式与泛型消重</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

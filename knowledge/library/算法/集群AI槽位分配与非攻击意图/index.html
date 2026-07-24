@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MonsterClusterControllerRuntime.cs">
+  <title>集群 AI 槽位分配与非攻击意图 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>集群 AI 槽位分配与非攻击意图</h1>
+      <p class="hero-copy">MonsterClusterControllerRuntime.cs</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#核心问题">核心问题</a>
+    <a data-toc-link href="#槽位是什么">槽位是什么</a>
+    <a data-toc-link href="#为什么要分配槽位">为什么要分配槽位</a>
+    <a data-toc-link href="#稳定随机的作用">稳定随机的作用</a>
+    <a data-toc-link href="#没拿到攻击令牌的怪物做什么">没拿到攻击令牌的怪物做什么</a>
+    <a data-toc-link href="#槽位和非攻击意图的关系">槽位和非攻击意图的关系</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>用手动单步或慢速自动模式，观察怪物群体的感知、仲裁与行动。</span>
+        <p><a href="/knowledge/swarm-ai/">打开集群 AI 实验 →</a></p>
+      </aside>
+        <p>分类：算法</p>
+<p>关联代码：</p>
+<p><code>MonsterClusterControllerRuntime.cs</code></p>
+<h2 id="核心问题">核心问题</h2>
+<p>集群怪物不是每一只都应该同时攻击玩家。</p>
+<p>系统需要解决两个问题：</p>
+<pre><code class="language-text">1. 没拿到攻击令牌的怪物应该站在哪里？
+2. 它们没攻击时应该做什么？</code></pre>
+<p>如果没有组织，怪物会变成：</p>
+<pre><code class="language-text">所有怪都往玩家身上挤
+几只怪互相抢位置
+每帧目标点变化，行为抖动
+没拿到攻击机会的怪像在旁边发呆</code></pre>
+<p>所以这里用了两个配套设计：</p>
+<pre><code class="language-text">槽位分配：让怪物在集群队形里有序
+非攻击意图：让没攻击的怪继续制造压力</code></pre>
+<h2 id="槽位是什么">槽位是什么</h2>
+<p>槽位不是地图上预先摆好的固定点，也不是 Unity 里的真实格子。</p>
+<p>它更像是：</p>
+<pre><code class="language-text">怪物在围攻队形里的座位编号。</code></pre>
+<p>比如玩家周围有 5 只怪等待：</p>
+<pre><code class="language-text">A -&gt; 槽位 0
+B -&gt; 槽位 1
+C -&gt; 槽位 2
+D -&gt; 槽位 3
+E -&gt; 槽位 4</code></pre>
+<p>系统会根据：</p>
+<pre><code class="language-text">玩家当前位置
+槽位编号
+围绕半径
+目标角度</code></pre>
+<p>动态计算出怪物应该移动到的世界坐标。</p>
+<p>所以更准确的理解是：</p>
+<pre><code class="language-text">不是固定地图点，而是角色周围动态生成的一圈虚拟点位。
+槽位编号尽量稳定，实际世界坐标会跟着目标移动。</code></pre>
+<h2 id="为什么要分配槽位">为什么要分配槽位</h2>
+<p>最大收益是让集群怪物有序。</p>
+<p>具体来说有三层收益。</p>
+<p>第一，避免互相抢位置：</p>
+<pre><code class="language-text">A 负责左前
+B 负责右前
+C 负责后侧
+D 负责外圈</code></pre>
+<p>第二，避免行为抖动：</p>
+<pre><code class="language-text">只要怪还在等待状态，就尽量保持原来的槽位。</code></pre>
+<p>如果每帧都重新分配，怪物可能这一帧往左，下一帧往右，看起来犹豫、抽搐、乱转向。</p>
+<p>第三，让战斗节奏更可控：</p>
+<pre><code class="language-text">少数怪负责当前进攻
+其他怪在外围制造压力
+整个群体像一个队伍，而不是一堆独立乱跑的单位</code></pre>
+<p>从算法思维上看，这是把问题从：</p>
+<pre><code class="language-text">连续空间里的混乱竞争</code></pre>
+<p>转成：</p>
+<pre><code class="language-text">离散槽位的分配问题</code></pre>
+<p>原问题是：</p>
+<pre><code class="language-text">每只怪都在无限多的位置里找一个点</code></pre>
+<p>转成槽位后：</p>
+<pre><code class="language-text">一共有 N 个槽位
+每只怪占一个槽位
+旧槽位尽量保留
+冲突时再修正</code></pre>
+<p>问题就更清楚，也更好调。</p>
+<h2 id="稳定随机的作用">稳定随机的作用</h2>
+<p>稳定随机本质上是一个公式：</p>
+<pre><code class="language-text">同样的输入，得到同样的随机结果。
+输入变化，结果才变化。</code></pre>
+<p>它不是每帧调用普通随机，而是用怪物 ID、集群 ID、用途、版本号等信息算出一个稳定值。</p>
+<p>它解决的是：</p>
+<pre><code class="language-text">既要有随机感，又不能每帧乱跳。</code></pre>
+<p>可以理解为：</p>
+<pre><code class="language-text">槽位提供秩序。
+稳定随机提供自然感。</code></pre>
+<p>如果只有槽位，没有稳定随机，队形可能过于机械。</p>
+<p>如果只有随机，没有槽位，怪物又容易乱跳、抢位置。</p>
+<h2 id="没拿到攻击令牌的怪物做什么">没拿到攻击令牌的怪物做什么</h2>
+<p>没拿到攻击令牌的怪物不是站着不动。</p>
+<p>系统会给它们分配非攻击意图：</p>
+<pre><code class="language-text">Orbit：绕着目标游走、包围
+Threaten：靠近威胁、施压但不真正出手
+Reposition：重新找一个更合适的位置</code></pre>
+<p>也就是说：</p>
+<pre><code class="language-text">拿到攻击令牌 -&gt; 执行攻击行为
+没拿到攻击令牌 -&gt; 执行非攻击压迫行为</code></pre>
+<p>这让战斗表现更像：</p>
+<pre><code class="language-text">1 只怪正在攻击
+2 只怪在侧面逼近
+1 只怪绕到背后
+1 只怪拉开距离准备下一轮</code></pre>
+<p>玩家感受到的是“被一群怪包围”，但不会同时被所有怪乱砍。</p>
+<h2 id="槽位和非攻击意图的关系">槽位和非攻击意图的关系</h2>
+<p>槽位回答：</p>
+<pre><code class="language-text">你大概应该在哪个位置？</code></pre>
+<p>非攻击意图回答：</p>
+<pre><code class="language-text">你在这个位置附近应该怎么表现？</code></pre>
+<p>所以它们是配套的。</p>
+<p>如果只有槽位：</p>
+<pre><code class="language-text">怪物站得有序，但可能像木桩。</code></pre>
+<p>如果只有非攻击意图：</p>
+<pre><code class="language-text">怪物想绕、想威胁、想重定位，但容易互相抢位置。</code></pre>
+<p>组合起来就是：</p>
+<pre><code class="language-text">主攻怪负责出手。
+其他怪负责占位、包围、威胁、制造空间压力。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<p>这套设计的本质不是“让怪物站成圆形”，而是：</p>
+<pre><code class="language-text">降低混乱度
+降低决策频率
+降低位置冲突
+提升行为可读性
+让 AI 更像团队</code></pre>
+<p>一句话总结：</p>
+<pre><code class="language-text">槽位让集群有秩序，非攻击意图让等待不发呆，稳定随机让秩序里带一点自然变化。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/"><small>← PREVIOUS</small>二叉堆优先队列</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%A9%BA%E9%97%B4%E5%88%92%E5%88%86-%E4%B9%9D%E5%AE%AB%E6%A0%BC%E4%B8%8E%E5%9B%9B%E5%8F%89%E6%A0%91/"><small>NEXT →</small>空间划分：九宫格与四叉树</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

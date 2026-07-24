@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="950" viewBox="0 0 1600 950">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#263238"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .title { font: 700 34px 'Microsoft YaHei', Arial, sans-serif; fill: #111827; }
+      .h { font: 700 24px 'Microsoft YaHei', Arial, sans-serif; fill: #111827; }
+      .t { font: 18px 'Microsoft YaHei', Arial, sans-serif; fill: #374151; }
+      .small { font: 16px 'Microsoft YaHei', Arial, sans-serif; fill: #4b5563; }
+      .note { font: 17px 'Microsoft YaHei', Arial, sans-serif; fill: #6b7280; }
+      .panel { fill: #ffffff; stroke: #d1d5db; stroke-width: 2; rx: 18; }
+      .axis { stroke: #9ca3af; stroke-width: 2; stroke-dasharray: 8 8; }
+      .arrow { stroke: #263238; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrowBlue { stroke: #2563eb; stroke-width: 4; fill: none; marker-end: url(#arrowBlue); }
+      .shapeA { fill: #bfdbfe; stroke: #2563eb; stroke-width: 4; }
+      .shapeB { fill: #fecaca; stroke: #dc2626; stroke-width: 4; }
+      .diff { fill: #dcfce7; stroke: #16a34a; stroke-width: 4; opacity: .92; }
+      .simplex { fill: #fef3c7; stroke: #d97706; stroke-width: 4; }
+      .point { fill: #111827; stroke: white; stroke-width: 3; }
+      .origin { fill: #ef4444; stroke: white; stroke-width: 4; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="950" fill="#f8fafc"/>
+  <text x="64" y="62" class="title">GJK 图解：把“两个凸形状是否碰撞”转换成“差集是否包住原点”</text>
+  <text x="66" y="96" class="note">先看直觉：原空间里的 A 与 B，变成闵可夫斯基差 A - B；GJK 不生成完整差集，只用 Support 点逐步构造 simplex。</text>
+
+  <rect x="60" y="135" width="440" height="660" class="panel"/>
+  <text x="90" y="182" class="h">1. 原空间：两个凸形状</text>
+  <text x="90" y="216" class="t">问题：A 和 B 有没有碰撞？</text>
+  <line x1="110" y1="610" x2="450" y2="610" class="axis"/>
+  <line x1="280" y1="285" x2="280" y2="710" class="axis"/>
+  <polygon points="155,520 245,345 340,540" class="shapeA"/>
+  <text x="205" y="570" class="h" fill="#2563eb">A</text>
+  <g transform="translate(275 420) rotate(-10)">
+    <rect x="0" y="0" width="145" height="125" rx="10" class="shapeB"/>
+  </g>
+  <text x="382" y="570" class="h" fill="#dc2626">B</text>
+  <path d="M345 390 C385 360, 415 370, 437 405" class="arrowBlue"/>
+  <text x="320" y="330" class="small">如果它们有重叠点</text>
+  <text x="320" y="356" class="small">就可能得到 a - b = 0</text>
+
+  <rect x="580" y="135" width="440" height="660" class="panel"/>
+  <text x="610" y="182" class="h">2. 闵可夫斯基差 A - B</text>
+  <text x="610" y="216" class="t">碰撞问题变成：这个新形状是否包含原点 O？</text>
+  <line x1="640" y1="500" x2="960" y2="500" class="axis"/>
+  <line x1="800" y1="300" x2="800" y2="700" class="axis"/>
+  <text x="968" y="507" class="small">x</text>
+  <text x="807" y="294" class="small">y</text>
+  <path d="M665,505 C685,390 775,330 878,360 C965,385 985,485 935,590 C875,705 720,665 675,565 Z" class="diff"/>
+  <circle cx="800" cy="500" r="13" class="origin"/>
+  <text x="818" y="493" class="h" fill="#ef4444">O</text>
+  <text x="692" y="356" class="small">概念上的 A - B</text>
+  <text x="664" y="735" class="t">如果 O 在绿色形状内：A 和 B 碰撞</text>
+  <line x1="800" y1="500" x2="930" y2="410" class="arrowBlue"/>
+  <circle cx="930" cy="410" r="9" class="point"/>
+  <text x="940" y="404" class="small">某方向 Support 点</text>
+
+  <rect x="1100" y="135" width="440" height="660" class="panel"/>
+  <text x="1130" y="182" class="h">3. GJK：用 simplex 试着包住 O</text>
+  <text x="1130" y="216" class="t">不完整生成差集，只摸几个边界点。</text>
+  <line x1="1160" y1="500" x2="1485" y2="500" class="axis"/>
+  <line x1="1322" y1="300" x2="1322" y2="700" class="axis"/>
+  <path d="M1185,505 C1205,390 1295,330 1398,360 C1485,385 1505,485 1455,590 C1395,705 1240,665 1195,565 Z" class="diff" opacity="0.28"/>
+  <polygon points="1245,575 1395,610 1355,390" class="simplex"/>
+  <circle cx="1245" cy="575" r="9" class="point"/>
+  <circle cx="1395" cy="610" r="9" class="point"/>
+  <circle cx="1355" cy="390" r="9" class="point"/>
+  <text x="1218" y="604" class="small">P1</text>
+  <text x="1405" y="635" class="small">P2</text>
+  <text x="1365" y="382" class="small">P3</text>
+  <circle cx="1322" cy="500" r="13" class="origin"/>
+  <text x="1340" y="493" class="h" fill="#ef4444">O</text>
+  <text x="1160" y="735" class="t">simplex 包住 O：判定两个凸形状相交</text>
+
+  <rect x="60" y="820" width="965" height="95" rx="18" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+  <text x="90" y="858" class="h">Support 函数</text>
+  <text x="90" y="895" class="t">Support(A, B, dir) = A 在 dir 方向最远点 - B 在 -dir 方向最远点</text>
+  <path d="M1135 838 L1518 838" class="arrow"/>
+  <text x="1160" y="872" class="h">记忆链路</text>
+  <text x="1160" y="907" class="t">A/B 碰撞 → A - B 包含原点 → Support 找点 → simplex 包住 O</text>
+</svg>
