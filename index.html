@@ -902,6 +902,23 @@
         font-size: 13px;
         line-height: 1.7;
       }
+      .topic-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 22px;
+        color: var(--acid);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+      }
+
+      .topic-link::after {
+        content: "→";
+        transition: transform 160ms ease;
+      }
+
+      .topic-link:hover::after { transform: translateX(4px); }
 
       .topic-card::after {
         position: absolute;
@@ -1418,6 +1435,8 @@
             <span class="topic-number">NODE 02</span>
             <h3>游戏 AI</h3>
             <p>状态机、行为树、效用 AI、GOAP、RVO 与 ORCA。</p>
+            <a class="topic-link" href="knowledge/swarm-ai/">怪物集群 AI 专题</a>
+
           </article>
           <article class="topic-card reveal">
             <span class="topic-number">NODE 03</span>
