@@ -50,6 +50,208 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：空间划分解决什么问题">
+      <span>01</span>
+      <strong>空间划分解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：九宫格查找">
+      <span>02</span>
+      <strong>九宫格查找</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么用距离平方">
+      <span>03</span>
+      <strong>为什么用距离平方</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：空间 Hash">
+      <span>04</span>
+      <strong>空间 Hash</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：四叉树是什么">
+      <span>05</span>
+      <strong>四叉树是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：四叉树节点结构">
+      <span>06</span>
+      <strong>四叉树节点结构</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：四叉树什么时候切分">
+      <span>07</span>
+      <strong>四叉树什么时候切分</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：插入对象">
+      <span>08</span>
+      <strong>插入对象</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：查询范围">
+      <span>09</span>
+      <strong>查询范围</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：四叉树为什么能加速">
+      <span>10</span>
+      <strong>四叉树为什么能加速</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：四叉树的常见坑">
+      <span>11</span>
+      <strong>四叉树的常见坑</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：九宫格和四叉树的区别">
+      <span>12</span>
+      <strong>九宫格和四叉树的区别</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：怎么选">
+      <span>13</span>
+      <strong>怎么选</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
+      <span>14</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>空间划分解决什么问题</h3>
+        <p>空间划分解决的是：</p>
+
+        <pre><code class="language-text">不要为了找附近对象，遍历整个世界。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>九宫格查找</h3>
+        <p>九宫格查找通常基于固定网格。</p>
+
+        <pre><code class="language-text">+---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
+|   | P |   |   |
++---+---+---+---+
+|   |   | E |   |
++---+---+---+---+</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>为什么用距离平方</h3>
+        <p>判断对象是否在半径内时，可以写：</p>
+
+        <pre><code class="language-csharp">Vector3.Distance(a, b) &lt;= radius</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>空间 Hash</h3>
+        <p>固定网格不一定要真的创建一张二维数组。</p>
+
+        <pre><code class="language-csharp">Dictionary&lt;Vector2Int, List&lt;Unit&gt;&gt; grids;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>四叉树是什么</h3>
+        <p>四叉树是另一种空间划分方式。</p>
+
+        <pre><code class="language-text">+---------+---------+
+|   左上   |   右上   |
+|   NW    |   NE    |
++---------+---------+
+|   左下   |   右下   |
+|   SW    |   SE    |
++---------+---------+</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>四叉树节点结构</h3>
+        <p>一个四叉树节点通常包含：</p>
+
+        <pre><code class="language-text">Bounds：当前节点管理的矩形范围
+Units：当前节点保存的对象
+Children：4 个子节点
+Depth：当前深度
+Capacity：当前节点最多容纳多少对象
+MaxDepth：最多切多少层</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>四叉树什么时候切分</h3>
+        <p>通常有两个限制：</p>
+
+        <pre><code class="language-text">每个节点最多放多少对象。
+树最多切到多深。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>插入对象</h3>
+        <p>插入对象时，从根节点开始：</p>
+
+        <pre><code class="language-text">如果对象不在当前节点范围内，跳过。
+如果当前节点有子节点，尝试插入子节点。
+如果没有子节点，先放到当前节点。
+如果当前节点对象太多，就切分并下放对象。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>查询范围</h3>
+        <p>查询时通常传入一个矩形范围。</p>
+
+        <pre><code class="language-text">x: 5 ~ 15
+y: 5 ~ 15</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>四叉树为什么能加速</h3>
+        <p>直接遍历是：</p>
+
+        <pre><code class="language-text">每次查询都检查所有对象。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>四叉树的常见坑</h3>
+        <p>第一，动态对象维护成本高。</p>
+
+        <pre><code class="language-text">从旧节点移除。
+插入新节点。
+必要时重新分裂或合并节点。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>九宫格和四叉树的区别</h3>
+        <p>九宫格 / 空间 Hash 是固定切法：</p>
+
+        <pre><code class="language-text">所有格子一样大。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>怎么选</h3>
+        <p>如果只是做：</p>
+
+        <pre><code class="language-text">怪物感知
+AOE 找目标
+自动拾取
+附近单位粗筛
+移动单位高频查询</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>空间划分的本质是：</p>
+
+        <pre><code class="language-text">先缩小候选范围，再做精确判断。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：算法 / 游戏逻辑常用模式</p>
 <h2 id="空间划分解决什么问题">空间划分解决什么问题</h2>
 <p>空间划分解决的是：</p>

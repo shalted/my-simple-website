@@ -61,6 +61,81 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 05</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：推荐讲解顺序">
+      <span>01</span>
+      <strong>推荐讲解顺序</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：面试题映射学习线">
+      <span>02</span>
+      <strong>面试题映射学习线</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：C# 语法补充线">
+      <span>03</span>
+      <strong>C# 语法补充线</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：算法补充线">
+      <span>04</span>
+      <strong>算法补充线</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：已完成主题索引">
+      <span>05</span>
+      <strong>已完成主题索引</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / FLOW / RULES</div>
+        <h3>推荐讲解顺序</h3>
+        <p>建议分类：游戏逻辑常用模式 / CSharp 基础数据结构</p>
+        <ul><li>用一个 <code>int</code> 或 <code>enum flags</code> 表示多个开关。</li><li>按位或 <code>|</code> 添加标记。</li><li>按位与 <code>&amp;</code> 判断标记。</li><li>按位取反 <code>~</code> 移除标记。</li><li>适合表示 <code>CanMove</code>、<code>CanAttack</code>、<code>Invincible</code>、<code>Stunned</code>、<code>Silenced</code>、<code>Selectable</code> 等状态。</li><li>为什么不用很多 <code>bool</code>？</li><li>Flags 怎么声明？</li><li>如何添加、移除、判断多个状态？</li><li>位标记适合什么，不适合什么？</li><li>普通随机。</li><li>稳定随机。</li><li>加权随机。</li><li>保底随机。</li><li>洗牌袋随机。</li><li>为什么纯随机有时体验不好？</li><li>加权随机怎么写？</li><li>保底机制怎么避免玩家长期倒霉？</li><li>洗牌袋如何保证“随机但不极端”？</li><li>为什么范围查找不能每次遍历所有单位。</li><li>网格 / 九宫格查找。</li><li>四叉树思想。</li><li>空间 Hash。</li><li>怎么快速找到附近敌人？</li><li>为什么先粗筛再精筛？</li><li>距离平方比较为什么比开根号更常用？</li><li>用状态控制对象生命周期。</li><li>常见状态：<code>Created -&gt; Active -&gt; Releasing -&gt; Released</code>。</li><li>防止重复初始化、重复释放、异步回调打到已销毁对象。</li><li>为什么对象销毁前要有 <code>Releasing</code> 状态？</li><li>异步加载回来时对象已经关闭怎么办？</li><li>生命周期状态和资源释放有什么关系？</li><li>缓存什么时候建立。</li><li>缓存什么时候读取。</li><li>缓存什么时候清理。</li><li>缓存什么时候过期或重建。</li><li>和脏标记 Dirty Flag 的关系。</li><li>缓存为什么容易造成旧数据？</li><li>什么是缓存失效？</li><li>怎么用版本号管理缓存？</li><li>怎么区分短期缓存、长期缓存、全局缓存？</li><li>把“要做的事”包装成对象。</li><li>适合技能指令、AI 指令、撤销操作、网络同步。</li><li>为什么要把操作封成命令？</li><li>命令如何排队执行？</li><li>命令如何支持撤销？</li><li>命令和事件有什么区别？</li><li>事件队列。</li><li>延迟事件。</li><li>一次性监听。</li><li>事件调试。</li><li>事件风暴。</li><li>为什么事件过多会让流程变隐形？</li><li>事件是否应该立即执行？</li><li>怎么避免重复订阅？</li><li>怎么定位谁监听了事件？</li><li>用配置表驱动行为，而不是把规则写死在代码里。</li><li>技能、怪物、掉落、关卡、Buff 都可以数据驱动。</li><li>数据驱动和硬编码的区别。</li><li>配置表字段如何映射到运行时行为。</li><li>怎么避免配置变成另一种代码地狱？</li><li>什么时候该配置，什么时候该写代码？</li><li>UI 提示优先级。</li><li>技能优先级。</li><li>AI 行为优先级。</li><li>任务优先级。</li><li>和堆、启发式评分模型的关系。</li><li>优先级和评分有什么区别？</li><li>固定优先级什么时候够用？</li><li>多因素评分什么时候更合适？</li><li>如何避免低优先级永远没有机会？</li><li>怪物攻击令牌。</li><li>下载并发数。</li><li>特效播放上限。</li><li>线程池。</li><li>请求限流。</li><li>什么是令牌？</li><li>为什么不能所有请求同时执行？</li><li>如何分配有限名额？</li><li>如何处理等待队列和公平性？</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / FLOW / RULES</div>
+        <h3>面试题映射学习线</h3>
+        <p>来源：3.28 米哈游线下面试截图中一面、二面提到的问题。</p>
+        <ul><li>NavMesh 的网格烘焙，以及具体寻路算法流程。</li><li>寻路的时候怎么做可跳跃点 / 断点。</li><li>A Star 寻路具体流程。</li><li>刷怪选点时，如果点位刚好在柱子、障碍物附近，怎么规避。</li><li>群体靠近战斗时，一群怪物围绕角色的协同逻辑是什么。</li><li>NavMesh 是什么，和 A Star 是什么关系。</li><li>NavMesh 烘焙出来的数据长什么样。</li><li>A Star 在网格地图和 NavMesh 多边形上的区别。</li><li>动态障碍、不可达点、出生点合法性检测。</li><li>群体站位、槽位分配和空间划分的关系。</li><li>RVO2 避障具体流程。</li><li>RVO 和 ORCA 的区别。</li><li>多个单位同时移动时如何避免互相挤住。</li><li>Steering、RVO、ORCA 分别解决什么问题。</li><li>期望速度、障碍速度、可选速度空间。</li><li>局部避障和全局寻路的分工。</li><li>群体移动里为什么不能只靠 NavMesh。</li><li>物理引擎宽阶段、窄阶段判定流程。</li><li>BVH 是什么。</li><li>AABB、OBB、任意多边形碰撞检测。</li><li>SAT 算法具体流程。</li><li>GJK 算法具体流程。</li><li>CCD 是什么、怎么做。</li><li>碰撞检测为什么要分 Broad Phase 和 Narrow Phase。</li><li>AABB、OBB、圆、胶囊体的适用场景。</li><li>BVH、四叉树、空间 Hash 的区别。</li><li>SAT 如何用投影轴判断分离。</li><li>GJK 如何用闵可夫斯基差和单纯形判断碰撞。</li><li>CCD 如何处理高速物体穿透问题。</li><li>动作游戏伤害判定怎么做。</li><li>受伤、无敌、反击、霸体这些状态怎么互相影响。</li><li>判定盒、受击盒、攻击者和受击者的职责怎么划分。</li><li>动画、特效、UI 反馈如何和战斗判定连接。</li><li>攻击判定盒和受击判定盒。</li><li>伤害流程：命中检测 -&gt; 防御/无敌/霸体判断 -&gt; 伤害结算 -&gt; 反馈播放。</li><li>动画事件驱动判定和逻辑帧驱动判定的区别。</li><li>战斗状态优先级：无敌、霸体、硬直、打断、反击。</li><li>谁负责产生伤害，谁负责承受伤害。</li><li>一个通用 Buff 系统如何设计。</li><li>Buff 怎么影响美术表现。</li><li>Buff、特效、UI 反馈如何联动。</li><li>GAS 类系统里属性、效果、技能之间如何拆分。</li><li>Buff 的生命周期：添加、刷新、叠层、过期、移除。</li><li>Buff 影响属性、行为、表现的三条线。</li><li>Buff 和事件系统、属性系统、技能系统的边界。</li><li>免疫、驱散、叠层、互斥、优先级。</li><li>用 GAS 思路理解 Ability、Effect、Attribute。</li><li>UE 的 Gameplay 框架是什么样的。</li><li>游戏 AI 了解多少：行为树、目标导向行为规划、层次任务网络、蒙特卡洛树搜索。</li><li>ECS 怎么做。</li><li>对话系统表结构怎么设计。</li><li>UE 里的 GameMode、GameState、PlayerController、Pawn、Actor、Component。</li><li>行为树、GOAP、HTN、MCTS 分别适合什么决策问题。</li><li>ECS 的 Entity、Component、System 思想。</li><li>对话系统的数据表：节点、选项、条件、效果、跳转。</li><li>引用和指针。</li><li>数组和链表。</li><li>多态、虚函数底层原理。</li><li>构造函数和析构函数。</li><li>智能指针。</li><li>左值、右值。</li><li>进程和线程。</li><li>多线程用得多不多，实际用在哪里。</li><li>数组内原地构建最小堆。</li><li>C++ 对象模型：虚表、虚指针、动态绑定。</li><li>RAII、构造析构、资源所有权。</li><li><code>unique_ptr</code>、<code>shared_ptr</code>、<code>weak_ptr</code> 的区别。</li><li>左值引用、右值引用、移动语义。</li><li>线程、锁、任务队列、生产者消费者。</li><li>堆结构和原地建堆流程。</li><li>Linux 底层原理。</li><li>malloc 申请内存空间的底层流程。</li><li>shared_ptr 线程安全问题。</li><li>原子变量底层如何做到内存屏障。</li><li>注入、内存屏障等底层概念。</li><li>虚拟内存、页、堆、栈。</li><li>malloc/free 和操作系统内存分配的关系。</li><li>原子操作、可见性、有序性、内存屏障。</li><li>shared_ptr 的引用计数线程安全和对象访问线程安全。</li><li>进程、线程、上下文切换。</li><li>实习主要做活鱼业务还是偏探索、偏业务。</li><li>项目组怎么分配。</li><li>自己做过最难的项目或工作。</li><li>工作流程如何优化。</li><li>平时怎么学习、怎么使用 AI。</li><li>平时玩什么游戏类型。</li><li>大项目里怎么判断队友是否合适。</li><li>团队协作、沟通、预防问题怎么讲。</li><li>项目经历如何按“背景 -&gt; 目标 -&gt; 行动 -&gt; 结果 -&gt; 复盘”表达。</li><li>技术问题如何讲清楚取舍，而不是只背结论。</li><li>怎么准备“最难项目”“流程优化”“团队协作”这类问题。</li><li>怎么把平时学习和 AI 使用讲得专业。</li><li>NavMesh、A Star 和动态障碍。</li><li>RVO / ORCA 局部避障。</li><li>物理碰撞 Broad Phase / Narrow Phase。</li><li>AABB、OBB、SAT、GJK、CCD。</li><li>动作游戏战斗判定流程。</li><li>Buff 系统和 GAS 思路。</li><li>UE Gameplay 框架。</li><li>C++ 虚函数、智能指针、左右值、线程。</li><li>malloc、原子变量、内存屏障。</li><li>项目复盘和面试表达。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / FLOW / RULES</div>
+        <h3>C# 语法补充线</h3>
+        <p>这些可以穿插讲，不一定一次讲完：</p>
+        <ul><li><code>enum</code> 和 <code>[Flags] enum</code></li><li><code>struct</code> 和 <code>class</code> 区别</li><li><code>interface</code> 怎么用</li><li><code>delegate</code> / <code>Action</code> / <code>Func</code></li><li><code>event</code> 关键字</li><li>泛型方法</li><li>属性 <code>get</code> / <code>set</code></li><li><code>readonly</code> / <code>const</code> / <code>static</code></li><li><code>nullable</code> 和 null 判断</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / FLOW / RULES</div>
+        <h3>算法补充线</h3>
+        <p>这些可以按兴趣继续：</p>
+        <ul><li>BFS / DFS</li><li>Dijkstra</li><li>二分查找</li><li>Top K</li><li>环形队列</li><li>并查集</li><li>动态规划入门</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
+        <h3>已完成主题索引</h3>
+        <p>已收录在知识库中的主题包括：</p>
+        <ul><li>数据结构：二叉堆优先队列</li><li>算法：启发式决策模型、集群 AI 槽位分配、A 星寻路中的 G 值与 Parent 回溯、随机系统、空间划分：九宫格与四叉树、物理碰撞检测基础、GJK 凸形状碰撞检测</li><li>工程设计：资源生命周期统一管理、门面模式与泛型消重、对象池、事件系统与发布订阅</li><li>游戏 AI 与逻辑建模：状态机、行为树、效用 AI 与 GOAP 对比、局部避障：RVO 与 ORCA 理解笔记</li><li>游戏逻辑常用模式：时间控制小模式、脏标记 Dirty Flag、位标记 Flags / BitMask、随机系统、空间划分：九宫格与四叉树</li><li>CSharp 基础数据结构：List、Dictionary、HashSet、Queue / Stack、集合配套语法、集合排序查找筛选</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>用途：新线程继续“知识小课堂”时，从这份计划接着讲。建议新线程开场可以说：</p>
 <pre><code class="language-text">继续知识小课堂，请读取 后续学习计划.md，从第一个未完成主题开始讲。</code></pre>
 <h2 id="推荐讲解顺序">推荐讲解顺序</h2>

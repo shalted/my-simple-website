@@ -403,6 +403,128 @@ function renderToc(toc) {
   </nav>`;
 }
 
+function extractDynamicSections(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const sections = [];
+  let section = null;
+  let inCode = false;
+  let codeLanguage = "";
+  let codeLines = [];
+
+  const finishCode = () => {
+    if (!section || !codeLines.length || section.code) {
+      codeLines = [];
+      return;
+    }
+    section.code = codeLines.join("\n");
+    section.codeLanguage = codeLanguage;
+    codeLines = [];
+  };
+
+  const finishSection = () => {
+    if (!section) return;
+    finishCode();
+    const paragraphs = [];
+    let paragraph = [];
+    for (const line of section.body) {
+      const trimmed = line.trim();
+      if (!trimmed || /^#{3,6}\s/.test(trimmed) || /^[-*+]\s/.test(trimmed) || /^\d+[.)]\s/.test(trimmed)) {
+        if (paragraph.length) {
+          paragraphs.push(paragraph.join(" "));
+          paragraph = [];
+        }
+        continue;
+      }
+      paragraph.push(trimmed);
+    }
+    if (paragraph.length) paragraphs.push(paragraph.join(" "));
+    section.summary = paragraphs[0] ?? "";
+    section.bullets = section.body
+      .map((line) => line.match(/^\s*(?:[-*+]|\d+[.)])\s+(.+)$/)?.[1])
+      .filter(Boolean);
+    if (section.summary || section.bullets.length || section.code) sections.push(section);
+    section = null;
+  };
+
+  for (const line of lines) {
+    const fence = line.match(/^\s*```(.*)$/);
+    if (fence) {
+      if (!inCode) {
+        inCode = true;
+        codeLanguage = fence[1].trim();
+        codeLines = [];
+      } else {
+        inCode = false;
+        finishCode();
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+    const heading = line.match(/^##\s+(.+)$/);
+    if (heading) {
+      finishSection();
+      section = { title: heading[1].trim(), body: [], code: "", codeLanguage: "", bullets: [], summary: "" };
+      continue;
+    }
+    if (section) section.body.push(line);
+  }
+  finishSection();
+  return sections;
+}
+
+function renderDynamicDeck(markdown, relativeMarkdown) {
+  const sections = extractDynamicSections(markdown);
+  if (sections.length < 2) return "";
+  const steps = sections.map((section, index) => {
+    const type = section.code ? "CODE / LOGIC" : section.bullets.length ? "FLOW / RULES" : "CONCEPT";
+    const summary = section.summary
+      ? `<p>${renderInline(section.summary, relativeMarkdown)}</p>`
+      : "";
+    const bullets = section.bullets.length
+      ? `<ul>${section.bullets.map((item) => `<li>${renderInline(item, relativeMarkdown)}</li>`).join("")}</ul>`
+      : "";
+    const code = section.code
+      ? `<pre><code${section.codeLanguage ? ` class="language-${escapeHtml(section.codeLanguage)}"` : ""}>${escapeHtml(section.code)}</code></pre>`
+      : "";
+    return `
+      <article class="deck-slide${index === 0 ? " active" : ""}" data-deck-slide="${index}"${index === 0 ? "" : " hidden"}>
+        <div class="deck-step-meta">STEP ${String(index + 1).padStart(2, "0")} / ${type}</div>
+        <h3>${renderInline(section.title, relativeMarkdown)}</h3>
+        ${summary}
+        ${bullets}
+        ${code}
+      </article>`;
+  }).join("");
+  const navigation = sections.map((section, index) => `
+    <button class="${index === 0 ? "active" : ""}" type="button" data-deck-jump="${index}" aria-label="查看第 ${index + 1} 步：${escapeHtml(section.title)}">
+      <span>${String(index + 1).padStart(2, "0")}</span>
+      <strong>${escapeHtml(section.title)}</strong>
+    </button>`).join("");
+
+  return `
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / ${String(sections.length).padStart(2, "0")}</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">${navigation}</nav>
+        <div class="deck-slides">${steps}</div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>`;
+}
 function renderArticlePage(document, markdown, previous, next) {
   const rendered = renderMarkdown(markdown, document.relativeMarkdown, document.title);
   const previousLink = previous
@@ -423,6 +545,7 @@ function renderArticlePage(document, markdown, previous, next) {
       ${renderToc(rendered.toc)}
       <article class="article-body" id="article-start">
         ${interactiveCallout(document)}
+        ${document.isReadme ? "" : renderDynamicDeck(markdown, document.relativeMarkdown)}
         ${rendered.html}
         <nav class="article-pager" aria-label="上下篇">
           ${previousLink}

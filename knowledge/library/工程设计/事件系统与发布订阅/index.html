@@ -46,6 +46,166 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：事件系统解决什么问题">
+      <span>01</span>
+      <strong>事件系统解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：发布订阅">
+      <span>02</span>
+      <strong>发布订阅</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：C# 简单写法">
+      <span>03</span>
+      <strong>C# 简单写法</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：订阅事件">
+      <span>04</span>
+      <strong>订阅事件</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：为什么要取消订阅">
+      <span>05</span>
+      <strong>为什么要取消订阅</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：适合事件系统的场景">
+      <span>06</span>
+      <strong>适合事件系统的场景</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：不适合事件系统的场景">
+      <span>07</span>
+      <strong>不适合事件系统的场景</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最大收益">
+      <span>08</span>
+      <strong>最大收益</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最大风险">
+      <span>09</span>
+      <strong>最大风险</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>事件系统解决什么问题</h3>
+        <p>事件系统解决的是：</p>
+
+        <pre><code class="language-text">一个事情发生后，很多系统都想知道；
+但发生事情的人不应该认识所有响应者。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>发布订阅</h3>
+        <p>事件系统的思路是：</p>
+
+        <pre><code class="language-text">发布者 Publish：广播一件事情发生了。
+订阅者 Subscribe：自己监听并响应这件事。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>C# 简单写法</h3>
+        <p>定义事件参数：</p>
+
+        <pre><code class="language-csharp">public struct DamageEvent
+{
+    public int Damage;
+    public int CurrentHp;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>订阅事件</h3>
+        <p>血条系统：</p>
+
+        <pre><code class="language-csharp">void OnEnable()
+{
+    GameEvents.OnDamage += HandleDamage;
+}
+
+void OnDisable()
+{
+    GameEvents.OnDamage -= HandleDamage;
+}
+
+void HandleDamage(DamageEvent e)
+{
+    hpBar.SetValue(e.CurrentHp);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>为什么要取消订阅</h3>
+        <p>取消订阅非常重要：</p>
+
+        <pre><code class="language-csharp">GameEvents.OnDamage -= HandleDamage;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>适合事件系统的场景</h3>
+        <p>适合一个事件有多个响应者：</p>
+
+        <pre><code class="language-text">角色受伤
+角色死亡
+获得道具
+任务完成
+场景加载完成
+语言切换
+网络断开
+配置刷新
+UI 窗口打开关闭</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>不适合事件系统的场景</h3>
+        <p>事件系统不适合隐藏强流程依赖。</p>
+
+        <pre><code class="language-text">必须先扣资源
+再创建单位
+再播放动画
+再进入战斗</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>最大收益</h3>
+        <p>事件系统最大的收益是解耦。</p>
+
+        <pre><code class="language-text">我发了一个事件。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>最大风险</h3>
+        <p>事件太多、乱用，会让流程变隐形。</p>
+
+        <pre><code class="language-csharp">GameEvents.OnDamage?.Invoke(e);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>最重要的三条：</p>
+
+        <pre><code class="language-text">事件系统让“发生者”和“响应者”解耦。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：工程设计</p>
 <h2 id="事件系统解决什么问题">事件系统解决什么问题</h2>
 <p>事件系统解决的是：</p>

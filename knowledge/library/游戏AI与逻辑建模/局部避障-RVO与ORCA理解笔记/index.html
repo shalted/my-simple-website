@@ -45,6 +45,134 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先记住它解决什么问题">
+      <span>01</span>
+      <strong>先记住它解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：改速度不只是改快慢">
+      <span>02</span>
+      <strong>改速度不只是改快慢</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：它为什么能提前避让">
+      <span>03</span>
+      <strong>它为什么能提前避让</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：RVO 和 ORCA 的直观区别">
+      <span>04</span>
+      <strong>RVO 和 ORCA 的直观区别</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：开阔地里的图解">
+      <span>05</span>
+      <strong>开阔地里的图解</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：左侧有墙时的问题">
+      <span>06</span>
+      <strong>左侧有墙时的问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：窄路时 RVO / ORCA 不够">
+      <span>07</span>
+      <strong>窄路时 RVO / ORCA 不够</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：现在的分层理解">
+      <span>08</span>
+      <strong>现在的分层理解</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
+      <span>09</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先记住它解决什么问题</h3>
+        <p>NavMesh 和 A Star 解决的是：</p>
+
+        <pre><code class="language-text">从哪里走到哪里。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>改速度不只是改快慢</h3>
+        <p>容易误解的一点是：</p>
+
+        <pre><code class="language-text">改变速度是不是只改变跑得快慢？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>它为什么能提前避让</h3>
+        <p>如果只判断当前有没有碰撞，发现时通常已经晚了。</p>
+
+        <pre><code class="language-text">如果我继续用某个速度移动，未来几秒内会不会和附近单位重叠。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>RVO 和 ORCA 的直观区别</h3>
+        <p>RVO 的意思是 Reciprocal Velocity Obstacles。</p>
+
+        <pre><code class="language-text">双方共同承担避让。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>开阔地里的图解</h3>
+        <p>开阔地时，RVO / ORCA 比较适合：</p>
+
+        <pre><code class="language-text">A ---&gt;           &lt;--- B</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>左侧有墙时的问题</h3>
+        <p>如果左侧是墙：</p>
+
+        <pre><code class="language-text">墙
+|
+|   A ---&gt;        &lt;--- B
+|</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>窄路时 RVO / ORCA 不够</h3>
+        <p>如果两侧都是墙：</p>
+
+        <pre><code class="language-text">墙 |  A ---&gt;     &lt;--- B  | 墙</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>现在的分层理解</h3>
+        <p>可以先按这几层记：</p>
+
+        <pre><code class="language-text">NavMesh：哪里能走。
+A Star：从起点到终点经过哪些区域。
+Funnel：把多边形通道拉成自然路径。
+RVO / ORCA：开阔区域里，实时选择安全速度向量。
+墙体 / NavMesh 边界：限制哪些速度不能选。
+通道预约 / 优先级：窄路里决定谁先过。
+物理碰撞：最后防止真的穿模重叠。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>RVO / ORCA 的作用不是：</p>
+
+        <pre><code class="language-text">保证任何情况下都绝不相撞。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：游戏 AI 与逻辑建模 / 算法</p>
 <p>状态：理解笔记，后续还需要继续深入。</p>
 <h2 id="先记住它解决什么问题">先记住它解决什么问题</h2>

@@ -47,6 +47,159 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：GJK 解决什么问题">
+      <span>01</span>
+      <strong>GJK 解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：原点不是选出来的">
+      <span>02</span>
+      <strong>原点不是选出来的</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：一维例子">
+      <span>03</span>
+      <strong>一维例子</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：二维例子">
+      <span>04</span>
+      <strong>二维例子</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：三维里不是只看 x/y/z">
+      <span>05</span>
+      <strong>三维里不是只看 x/y/z</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Support 点是什么">
+      <span>06</span>
+      <strong>Support 点是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：当前方向上最远点怎么找">
+      <span>07</span>
+      <strong>当前方向上最远点怎么找</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：每次都要跑所有点吗">
+      <span>08</span>
+      <strong>每次都要跑所有点吗</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：方向是怎么选的">
+      <span>09</span>
+      <strong>方向是怎么选的</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：Simplex 是什么">
+      <span>10</span>
+      <strong>Simplex 是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>GJK 解决什么问题</h3>
+        <p>GJK 全名：</p>
+
+        <pre><code class="language-text">Gilbert-Johnson-Keerthi</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>原点不是选出来的</h3>
+        <p>GJK 里的原点不是算法随便选的点。</p>
+
+        <pre><code class="language-text">(0, 0)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>一维例子</h3>
+        <p>A 是线段：</p>
+
+        <pre><code class="language-text">A = [2, 5]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>二维例子</h3>
+        <p>A 是正方形：</p>
+
+        <pre><code class="language-text">x: 0 ~ 2
+y: 0 ~ 2</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>三维里不是只看 x/y/z</h3>
+        <p>容易误解的一点：</p>
+
+        <pre><code class="language-text">三维里是不是只要 x、y、z 三个方向的差值集合都包含 0，就相交？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>Support 点是什么</h3>
+        <p>GJK 不会真的生成完整的 A - B。</p>
+
+        <pre><code class="language-text">100 * 100 = 10000 个差值点</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>当前方向上最远点怎么找</h3>
+        <p>最朴素的做法是：</p>
+
+        <pre><code class="language-text">对所有顶点做点积。
+谁的 dot(point, dir) 最大，谁就是这个方向上的最远点。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>每次都要跑所有点吗</h3>
+        <p>朴素实现里，是的。</p>
+
+        <pre><code class="language-text">A：遍历 n 个顶点，找 dir 方向最远点。
+B：遍历 m 个顶点，找 -dir 方向最远点。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>方向是怎么选的</h3>
+        <p>GJK 的方向不是随便选一条边。</p>
+
+        <pre><code class="language-text">当前 Simplex 和原点的位置关系。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>Simplex 是什么</h3>
+        <p>Simplex 是 GJK 当前收集到的少量 Support 点组成的小形状。</p>
+
+        <pre><code class="language-text">点
+线段
+三角形</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">GJK 用于判断两个凸形状是否相交。
+它把问题变成：A - B 是否包含原点。
+原点不是选出来的，而是坐标系里的 0。
+因为重叠点 p - p = 0。
+GJK 不生成完整 A - B，而是用 Support 函数逐步找边界点。
+朴素 Support 每次是 O(n + m)，不是 O(n * m)。
+2D 中三角形 Simplex 包住原点即可判定碰撞。
+3D 中四面体 Simplex 包住原点即可判定碰撞。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：算法 / 物理碰撞</p>
 <p>状态：理解笔记，后续可继续深入 Simplex 更新、EPA 和具体代码实现。</p>
 <h2 id="gjk-解决什么问题">GJK 解决什么问题</h2>

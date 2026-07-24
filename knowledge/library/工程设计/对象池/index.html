@@ -46,6 +46,196 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：对象池解决什么问题">
+      <span>01</span>
+      <strong>对象池解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心结构">
+      <span>02</span>
+      <strong>核心结构</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：取对象">
+      <span>03</span>
+      <strong>取对象</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：回收对象">
+      <span>04</span>
+      <strong>回收对象</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：简化版对象池">
+      <span>05</span>
+      <strong>简化版对象池</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：坑一：取出时要重置状态">
+      <span>06</span>
+      <strong>坑一：取出时要重置状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：坑二：防止重复回收">
+      <span>07</span>
+      <strong>坑二：防止重复回收</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：坑三：对象池不是越大越好">
+      <span>08</span>
+      <strong>坑三：对象池不是越大越好</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：适合对象池的场景">
+      <span>09</span>
+      <strong>适合对象池的场景</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>对象池解决什么问题</h3>
+        <p>游戏里有很多对象会频繁创建和销毁：</p>
+
+        <pre><code class="language-text">子弹
+伤害数字
+飘字
+命中特效
+掉落物
+音效播放器
+UI 列表项
+怪物预制体</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>核心结构</h3>
+        <p>对象池常用 <code>Stack&lt;T&gt;</code> 保存空闲对象：</p>
+
+        <pre><code class="language-csharp">Stack&lt;GameObject&gt; pool = new();</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>取对象</h3>
+        <p>逻辑：</p>
+
+        <pre><code class="language-csharp">GameObject Get()
+{
+    if (pool.Count &gt; 0)
+    {
+        GameObject obj = pool.Pop();
+        obj.SetActive(true);
+        return obj;
+    }
+
+    return Instantiate(prefab);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>回收对象</h3>
+        <p>逻辑：</p>
+
+        <pre><code class="language-csharp">void Release(GameObject obj)
+{
+    obj.SetActive(false);
+    pool.Push(obj);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>简化版对象池</h3>
+        <p>使用：</p>
+
+        <pre><code class="language-csharp">public class SimpleGameObjectPool
+{
+    private readonly GameObject prefab;
+    private readonly Stack&lt;GameObject&gt; pool = new();
+
+    public SimpleGameObjectPool(GameObject prefab)
+    {
+        this.prefab = prefab;
+    }
+
+    public GameObject Get()
+    {
+        if (pool.Count &gt; 0)
+        {
+            GameObject obj = pool.Pop();
+            obj.SetActive(true);
+            return obj;
+        }
+
+        return UnityEngine.Object.Instantiate(prefab);
+    }
+
+    public void Release(GameObject obj)
+    {
+        if (obj == null)
+        {
+            return;
+        }
+
+        obj.SetActive(false);
+        pool.Push(obj);
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>坑一：取出时要重置状态</h3>
+        <p>对象复用前一定要清理旧状态。</p>
+
+        <pre><code class="language-text">速度 = 20
+伤害 = 100
+目标 = enemyA
+已经命中 = true</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>坑二：防止重复回收</h3>
+        <p>如果同一个对象被回收两次：</p>
+
+        <pre><code class="language-csharp">pool.Release(bullet);
+pool.Release(bullet);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>坑三：对象池不是越大越好</h3>
+        <p>对象池减少创建销毁，但也会占内存。</p>
+
+        <pre><code class="language-text">不销毁也会占内存。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>适合对象池的场景</h3>
+        <p>适合：</p>
+
+        <pre><code class="language-text">创建销毁频繁
+对象结构差不多
+生命周期短
+复用成本低</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>最重要的三个坑：</p>
+
+        <pre><code class="language-text">对象池用“回收复用”替代“频繁创建销毁”。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：工程设计</p>
 <h2 id="对象池解决什么问题">对象池解决什么问题</h2>
 <p>游戏里有很多对象会频繁创建和销毁：</p>

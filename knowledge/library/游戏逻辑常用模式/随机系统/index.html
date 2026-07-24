@@ -47,6 +47,175 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心思想">
+      <span>01</span>
+      <strong>核心思想</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：普通随机">
+      <span>02</span>
+      <strong>普通随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：加权随机">
+      <span>03</span>
+      <strong>加权随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：可复现随机">
+      <span>04</span>
+      <strong>可复现随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：稳定随机">
+      <span>05</span>
+      <strong>稳定随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：保底随机">
+      <span>06</span>
+      <strong>保底随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：洗牌袋随机">
+      <span>07</span>
+      <strong>洗牌袋随机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：为什么纯随机有时体验不好">
+      <span>08</span>
+      <strong>为什么纯随机有时体验不好</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：怎么选">
+      <span>09</span>
+      <strong>怎么选</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：常见坑">
+      <span>10</span>
+      <strong>常见坑</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>核心思想</h3>
+        <p>随机系统的核心不是“随便抽一个”，而是：</p>
+
+        <pre><code class="language-text">在不确定性、体验、公平性、可复现之间做取舍。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>普通随机</h3>
+        <p>普通随机就是直接取一个随机值。</p>
+
+        <pre><code class="language-csharp">return clampedMax &lt;= clampedMin ? clampedMin : Random.Range(clampedMin, clampedMax + 1);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>加权随机</h3>
+        <p>加权随机适合从一组候选里按权重抽一个。</p>
+
+        <pre><code class="language-csharp">int totalWeight = 0;
+for (int index = 0; index &lt; entries.Count; index++)
+{
+    totalWeight += Mathf.Max(0, entries[index].Weight);
+}
+
+int rolled = Random.Range(0, totalWeight);
+int cursor = 0;
+for (int index = 0; index &lt; entries.Count; index++)
+{
+    cursor += Mathf.Max(0, entries[index].Weight);
+    if (rolled &lt; cursor)
+    {
+        return entries[index];
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>可复现随机</h3>
+        <p>有些随机必须可以复现，尤其是战斗、GM 测试、回归验证。</p>
+
+        <pre><code class="language-csharp">public interface IAttributeCombatRandom
+{
+    bool Roll(float probability, AttributeAttackRollType rollType);
+    float RollVariance(float min, float max);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>稳定随机</h3>
+        <p>稳定随机不是从随机数发生器里取“下一个随机数”，而是：</p>
+
+        <pre><code class="language-text">把一些稳定输入 hash 成 0~1 的值。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>保底随机</h3>
+        <p>保底机制解决的是：</p>
+
+        <pre><code class="language-text">玩家长期倒霉。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>洗牌袋随机</h3>
+        <p>洗牌袋的思路是：</p>
+
+        <pre><code class="language-text">先把结果按数量放进袋子。
+打乱袋子。
+每次从袋子里拿一个。
+拿空后重新装袋。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>为什么纯随机有时体验不好</h3>
+        <p>纯随机的问题是：</p>
+
+        <pre><code class="language-text">数学公平，不等于玩家体感公平。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>怎么选</h3>
+
+
+        <pre><code class="language-text">普通随机：简单、不需要复现、不怕极端。
+加权随机：配置驱动，按权重抽池子。
+可复现随机：战斗验证、GM 测试、回归测试。
+稳定随机：看起来随机，但同输入下固定。
+保底随机：限制玩家长期倒霉。
+洗牌袋随机：控制短期分布，避免连续重复或极端结果。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>常见坑</h3>
+        <p>第一，概率配置和权重配置混用。</p>
+
+        <pre><code class="language-text">概率通常要求总和有意义。
+权重只关心相对大小。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>项目里最值得学习的三个点：</p>
+
+        <pre><code class="language-text">随机系统不是只有概率，而是在不同场景里选择合适的不确定性。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：游戏逻辑常用模式 / 算法</p>
 <h2 id="核心思想">核心思想</h2>
 <p>随机系统的核心不是“随便抽一个”，而是：</p>

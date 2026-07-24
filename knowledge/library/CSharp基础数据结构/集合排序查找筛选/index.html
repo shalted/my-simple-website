@@ -46,6 +46,171 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：说明">
+      <span>01</span>
+      <strong>说明</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Sort：排序 List">
+      <span>02</span>
+      <strong>Sort：排序 List</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：自定义排序">
+      <span>03</span>
+      <strong>自定义排序</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：多条件排序">
+      <span>04</span>
+      <strong>多条件排序</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Find：找第一个满足条件的元素">
+      <span>05</span>
+      <strong>Find：找第一个满足条件的元素</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：FindAll：找所有满足条件的元素">
+      <span>06</span>
+      <strong>FindAll：找所有满足条件的元素</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Exists：判断有没有满足条件的元素">
+      <span>07</span>
+      <strong>Exists：判断有没有满足条件的元素</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：RemoveAll：删除所有满足条件的元素">
+      <span>08</span>
+      <strong>RemoveAll：删除所有满足条件的元素</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：高频逻辑更推荐手写 for">
+      <span>09</span>
+      <strong>高频逻辑更推荐手写 for</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>说明</h3>
+        <p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p>
+
+        <pre><code class="language-text">Sort
+Find
+FindAll
+Exists
+RemoveAll
+手写 for 循环</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>Sort：排序 List</h3>
+        <p>数字排序：</p>
+
+        <pre><code class="language-csharp">List&lt;int&gt; nums = new() { 3, 1, 5, 2 };
+
+nums.Sort();</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>自定义排序</h3>
+        <p>假设有一个物品类：</p>
+
+        <pre><code class="language-csharp">public class Item
+{
+    public int Id;
+    public int Quality;
+    public int Count;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>多条件排序</h3>
+        <p>例如先按品质降序，再按 ID 升序：</p>
+
+        <pre><code class="language-csharp">items.Sort((a, b) =&gt;
+{
+    int qualityCompare = b.Quality.CompareTo(a.Quality);
+    if (qualityCompare != 0)
+    {
+        return qualityCompare;
+    }
+
+    return a.Id.CompareTo(b.Id);
+});</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>Find：找第一个满足条件的元素</h3>
+        <p>意思是：</p>
+
+        <pre><code class="language-csharp">Item item = items.Find(item =&gt; item.Id == 1001);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>FindAll：找所有满足条件的元素</h3>
+        <p>意思是：</p>
+
+        <pre><code class="language-csharp">List&lt;Item&gt; highQualityItems = items.FindAll(item =&gt; item.Quality &gt;= 4);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>Exists：判断有没有满足条件的元素</h3>
+        <p>意思是：</p>
+
+        <pre><code class="language-csharp">bool hasRareItem = items.Exists(item =&gt; item.Quality &gt;= 5);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>RemoveAll：删除所有满足条件的元素</h3>
+        <p>意思是：</p>
+
+        <pre><code class="language-csharp">int removedCount = items.RemoveAll(item =&gt; item.Count &lt;= 0);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>高频逻辑更推荐手写 for</h3>
+        <p>如果在每帧、战斗、AI、资源热路径里，推荐手写 <code>for</code>：</p>
+
+        <pre><code class="language-csharp">Item found = null;
+
+for (int i = 0; i &lt; items.Count; i++)
+{
+    if (items[i].Id == 1001)
+    {
+        found = items[i];
+        break;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>常用语法：</p>
+
+        <pre><code class="language-text">Sort：排序。
+Find：找第一个。
+FindAll：找多个，但会创建新列表。
+Exists：判断有没有。
+RemoveAll：删除所有满足条件的。
+手写 for：高频逻辑最稳。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：CSharp 基础数据结构</p>
 <h2 id="说明">说明</h2>
 <p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p>

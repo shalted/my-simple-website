@@ -48,6 +48,114 @@
         <span>用手动单步或慢速自动模式，观察怪物群体的感知、仲裁与行动。</span>
         <p><a href="/knowledge/swarm-ai/">打开集群 AI 实验 →</a></p>
       </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心问题">
+      <span>01</span>
+      <strong>核心问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：槽位是什么">
+      <span>02</span>
+      <strong>槽位是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么要分配槽位">
+      <span>03</span>
+      <strong>为什么要分配槽位</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：稳定随机的作用">
+      <span>04</span>
+      <strong>稳定随机的作用</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：没拿到攻击令牌的怪物做什么">
+      <span>05</span>
+      <strong>没拿到攻击令牌的怪物做什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：槽位和非攻击意图的关系">
+      <span>06</span>
+      <strong>槽位和非攻击意图的关系</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最重要的收获">
+      <span>07</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>核心问题</h3>
+        <p>集群怪物不是每一只都应该同时攻击玩家。</p>
+
+        <pre><code class="language-text">1. 没拿到攻击令牌的怪物应该站在哪里？
+2. 它们没攻击时应该做什么？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>槽位是什么</h3>
+        <p>槽位不是地图上预先摆好的固定点，也不是 Unity 里的真实格子。</p>
+
+        <pre><code class="language-text">怪物在围攻队形里的座位编号。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>为什么要分配槽位</h3>
+        <p>最大收益是让集群怪物有序。</p>
+
+        <pre><code class="language-text">A 负责左前
+B 负责右前
+C 负责后侧
+D 负责外圈</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>稳定随机的作用</h3>
+        <p>稳定随机本质上是一个公式：</p>
+
+        <pre><code class="language-text">同样的输入，得到同样的随机结果。
+输入变化，结果才变化。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>没拿到攻击令牌的怪物做什么</h3>
+        <p>没拿到攻击令牌的怪物不是站着不动。</p>
+
+        <pre><code class="language-text">Orbit：绕着目标游走、包围
+Threaten：靠近威胁、施压但不真正出手
+Reposition：重新找一个更合适的位置</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>槽位和非攻击意图的关系</h3>
+        <p>槽位回答：</p>
+
+        <pre><code class="language-text">你大概应该在哪个位置？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>这套设计的本质不是“让怪物站成圆形”，而是：</p>
+
+        <pre><code class="language-text">降低混乱度
+降低决策频率
+降低位置冲突
+提升行为可读性
+让 AI 更像团队</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：算法</p>
 <p>关联代码：</p>
 <p><code>MonsterClusterControllerRuntime.cs</code></p>

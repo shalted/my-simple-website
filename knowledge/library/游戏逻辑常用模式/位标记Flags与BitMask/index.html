@@ -48,6 +48,194 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心思想">
+      <span>01</span>
+      <strong>核心思想</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：基础声明">
+      <span>02</span>
+      <strong>基础声明</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：添加标记">
+      <span>03</span>
+      <strong>添加标记</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：判断标记">
+      <span>04</span>
+      <strong>判断标记</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：移除标记">
+      <span>05</span>
+      <strong>移除标记</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：互斥状态为什么也能放在 Flags 里">
+      <span>06</span>
+      <strong>互斥状态为什么也能放在 Flags 里</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最大好处">
+      <span>07</span>
+      <strong>最大好处</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最多支持多少位">
+      <span>08</span>
+      <strong>最多支持多少位</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：适合什么">
+      <span>09</span>
+      <strong>适合什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：不适合什么">
+      <span>10</span>
+      <strong>不适合什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：常用模板">
+      <span>11</span>
+      <strong>常用模板</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>核心思想</h3>
+        <p>位标记的核心是：</p>
+
+        <pre><code class="language-text">用一个整数里的不同二进制位，表示多个可以同时存在的开关。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>基础声明</h3>
+        <p>项目里的攻击结果标记：</p>
+
+        <pre><code class="language-csharp">[Flags]
+public enum AttributeAttackEffect
+{
+    None = 0,
+    Normal = 1 &lt;&lt; 0,
+    Precision = 1 &lt;&lt; 1,
+    Block = 1 &lt;&lt; 2,
+    Critical = 1 &lt;&lt; 3,
+    Miss = 1 &lt;&lt; 4,
+    Heal = 1 &lt;&lt; 5,
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>添加标记</h3>
+        <p>添加标记用按位或：</p>
+
+        <pre><code class="language-csharp">effects |= AttributeAttackEffect.Precision;
+effects |= AttributeAttackEffect.Critical;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>判断标记</h3>
+        <p>判断有没有某个标记，用按位与：</p>
+
+        <pre><code class="language-csharp">if ((effects &amp; AttributeAttackEffect.Critical) == AttributeAttackEffect.Critical)
+{
+    // 有暴击标记
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>移除标记</h3>
+        <p>移除标记常用：</p>
+
+        <pre><code class="language-csharp">flags &amp;= ~SomeFlag;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>互斥状态为什么也能放在 Flags 里</h3>
+        <p>注意：Flags 只是存储和传递多个标签的方式，不负责保证业务规则。</p>
+
+        <pre><code class="language-text">Miss 和 Critical 通常互斥。
+Miss 和 Block 通常互斥。
+Precision 和 Critical 可以叠加。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>最大好处</h3>
+        <p>最大的好处不是省内存，而是：</p>
+
+        <pre><code class="language-text">把一次结果里可能带的多个信息压成一个字段，传递和判断都很方便。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>最多支持多少位</h3>
+        <p>Flags 能支持多少个标记，取决于底层类型。</p>
+
+        <pre><code class="language-text">int：常用 0 到 30 位，约 31 个常规标记。
+uint：可以更舒服地用满 32 位。
+long：常用 63 个常规标记。
+ulong：可以用满 64 位。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>适合什么</h3>
+        <p>适合：</p>
+
+        <pre><code class="language-text">多个开关互相独立
+一个对象可以同时拥有多个状态
+需要频繁判断、组合、排除状态
+状态数量不太多
+需要轻量传递或保存结果标签</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>不适合什么</h3>
+        <p>不适合：</p>
+
+        <pre><code class="language-text">严格互斥且永远只会有一个值的状态
+需要携带复杂数据的状态
+需要记录来源、持续时间、层数的 Buff
+需要策划动态扩展很多类型的状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>常用模板</h3>
+
+
+        <pre><code class="language-csharp">// 添加
+flags |= SomeFlag;
+
+// 判断
+bool hasFlag = (flags &amp; SomeFlag) == SomeFlag;
+
+// 移除
+flags &amp;= ~SomeFlag;
+
+// 多个组合
+var combined = FlagA | FlagB;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+        <p>它适合表达“多标签结果”，但不自动保证业务合法性。</p>
+
+        <pre><code class="language-text">Flags 是把多个 bool 式开关压进一个字段里，用位运算快速组合、判断、排除。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：游戏逻辑常用模式 / CSharp 基础数据结构</p>
 <h2 id="核心思想">核心思想</h2>
 <p>位标记的核心是：</p>

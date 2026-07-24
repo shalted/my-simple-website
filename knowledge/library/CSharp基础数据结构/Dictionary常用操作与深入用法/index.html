@@ -50,6 +50,221 @@
   </nav>
       <article class="article-body" id="article-start">
 
+
+    <section class="dynamic-deck" data-dynamic-deck>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：Dictionary 是什么">
+      <span>01</span>
+      <strong>Dictionary 是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：key 不能重复">
+      <span>02</span>
+      <strong>key 不能重复</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Add 和 [] 的区别">
+      <span>03</span>
+      <strong>Add 和 [] 的区别</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：ContainsKey">
+      <span>04</span>
+      <strong>ContainsKey</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：TryGetValue">
+      <span>05</span>
+      <strong>TryGetValue</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：找不到就创建">
+      <span>06</span>
+      <strong>找不到就创建</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：计数器写法">
+      <span>07</span>
+      <strong>计数器写法</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：TryAdd">
+      <span>08</span>
+      <strong>TryAdd</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：遍历 Dictionary">
+      <span>09</span>
+      <strong>遍历 Dictionary</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：遍历时不要直接删除">
+      <span>10</span>
+      <strong>遍历时不要直接删除</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：string key 的大小写问题">
+      <span>11</span>
+      <strong>string key 的大小写问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：key 要稳定">
+      <span>12</span>
+      <strong>key 要稳定</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：Dictionary 快的是按 key 查">
+      <span>13</span>
+      <strong>Dictionary 快的是按 key 查</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的写法">
+      <span>14</span>
+      <strong>最重要的写法</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>Dictionary 是什么</h3>
+        <p><code>Dictionary&lt;TKey, TValue&gt;</code> 可以理解成：</p>
+
+        <pre><code class="language-text">用一个 key，快速找到一个 value。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>key 不能重复</h3>
+        <p>如果写：</p>
+
+        <pre><code class="language-csharp">scores[&quot;Alice&quot;] = 90;
+scores[&quot;Alice&quot;] = 95;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>Add 和 [] 的区别</h3>
+        <p><code>Add</code>：</p>
+
+        <pre><code class="language-csharp">scores.Add(&quot;Alice&quot;, 90);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>ContainsKey</h3>
+        <p>直接读取不存在的 key 会报错：</p>
+
+        <pre><code class="language-csharp">int score = scores[&quot;Cindy&quot;]; // KeyNotFoundException</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>TryGetValue</h3>
+        <p>含义：</p>
+
+        <pre><code class="language-csharp">if (scores.TryGetValue(&quot;Alice&quot;, out int score))
+{
+    Debug.Log(score);
+}
+else
+{
+    Debug.Log(&quot;没找到 Alice&quot;);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>找不到就创建</h3>
+        <p>项目里很常见的模式：</p>
+
+        <pre><code class="language-csharp">Dictionary&lt;string, List&lt;int&gt;&gt; skillsByUnit = new();
+
+if (!skillsByUnit.TryGetValue(&quot;monster_01&quot;, out List&lt;int&gt; skills))
+{
+    skills = new List&lt;int&gt;();
+    skillsByUnit[&quot;monster_01&quot;] = skills;
+}
+
+skills.Add(1001);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>计数器写法</h3>
+        <p>统计每种怪物出现次数：</p>
+
+        <pre><code class="language-csharp">Dictionary&lt;string, int&gt; monsterCounts = new();
+
+string monsterType = &quot;Slime&quot;;
+
+if (!monsterCounts.TryGetValue(monsterType, out int count))
+{
+    count = 0;
+}
+
+monsterCounts[monsterType] = count + 1;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>TryAdd</h3>
+        <p>含义：</p>
+
+        <pre><code class="language-csharp">bool added = scores.TryAdd(&quot;Alice&quot;, 90);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>遍历 Dictionary</h3>
+        <p>遍历 key 和 value：</p>
+
+        <pre><code class="language-csharp">foreach (KeyValuePair&lt;string, int&gt; pair in scores)
+{
+    Debug.Log($&quot;{pair.Key}: {pair.Value}&quot;);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>遍历时不要直接删除</h3>
+        <p>错误示例：</p>
+
+        <pre><code class="language-csharp">foreach (var pair in scores)
+{
+    if (pair.Value &lt; 60)
+    {
+        scores.Remove(pair.Key); // 危险
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>string key 的大小写问题</h3>
+        <p>默认情况下：</p>
+
+        <pre><code class="language-csharp">Dictionary&lt;string, int&gt; scores = new();
+
+scores[&quot;Alice&quot;] = 90;
+Debug.Log(scores.ContainsKey(&quot;alice&quot;)); // false</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>key 要稳定</h3>
+        <p>适合当 key 的类型：</p>
+
+        <pre><code class="language-text">int
+long
+string
+enum
+稳定的 struct</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>Dictionary 快的是按 key 查</h3>
+        <p><code>ContainsValue</code> 是存在的：</p>
+
+        <pre><code class="language-csharp">scores.ContainsValue(90)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>最重要的写法</h3>
+        <p>添加或覆盖：</p>
+
+        <pre><code class="language-csharp">dict[key] = value;</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+      </footer>
+    </section>
         <p>分类：CSharp 基础数据结构</p>
 <h2 id="dictionary-是什么">Dictionary 是什么</h2>
 <p><code>Dictionary&lt;TKey, TValue&gt;</code> 可以理解成：</p>
