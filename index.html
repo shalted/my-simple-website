@@ -396,24 +396,39 @@
         line-height: 1.8;
       }
 
+      .lab-section {
+        width: min(1540px, calc(100% - 40px));
+        padding-block: 72px;
+      }
+
+      .lab-section .section-heading {
+        margin-bottom: 28px;
+      }
+
+      .lab-section h2 {
+        font-size: clamp(36px, 4vw, 54px);
+      }
+
       .lab {
-        display: grid;
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 14px;
         background: linear-gradient(145deg, rgba(15, 21, 31, 0.98), rgba(8, 12, 18, 0.98));
         box-shadow: var(--shadow);
-        grid-template-columns: minmax(310px, 0.78fr) 1.22fr;
       }
 
       .lab-copy {
-        display: flex;
+        display: grid;
         min-width: 0;
-        min-height: 580px;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 44px;
-        border-right: 1px solid var(--line);
+        align-items: center;
+        gap: 24px;
+        padding: 20px 26px;
+        border-bottom: 1px solid var(--line);
+        grid-template-columns: minmax(250px, 0.75fr) minmax(360px, 1.35fr) auto;
+      }
+
+      .lab-title {
+        min-width: 0;
       }
 
       .lab-index {
@@ -424,26 +439,38 @@
       }
 
       .lab h3 {
-        max-width: 410px;
-        margin: 20px 0;
+        margin: 6px 0 0;
         font-family: var(--serif);
-        font-size: clamp(34px, 4vw, 52px);
+        font-size: clamp(28px, 2.6vw, 40px);
         font-weight: 500;
-        line-height: 1.12;
+        line-height: 1.08;
+      }
+
+      .lab-summary {
+        display: grid;
+        min-width: 0;
+        gap: 10px;
       }
 
       .lab-description {
-        max-width: 430px;
+        max-width: 680px;
+        margin: 0;
         color: var(--muted);
-        line-height: 1.9;
-        font-size: 16px;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .lab-meta {
+        display: flex;
+        align-items: center;
+        gap: 18px;
       }
 
       .legend {
         display: flex;
         flex-wrap: wrap;
-        gap: 16px;
-        margin-top: 30px;
+        gap: 14px;
+        margin: 0;
         color: var(--muted);
         font-family: var(--mono);
         font-size: 12px;
@@ -469,34 +496,47 @@
       .lab-controls {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 38px;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .lab-controls .button {
+        min-height: 42px;
+        padding: 10px 16px;
       }
 
       .lab-stage {
-        display: grid;
         min-width: 0;
-        min-height: 580px;
-        overflow: hidden;
-        place-items: center;
-        padding: 42px;
+        padding: 22px;
         background:
-          radial-gradient(circle at center, rgba(100, 223, 255, 0.045), transparent 60%),
+          radial-gradient(circle at 24% 50%, rgba(100, 223, 255, 0.05), transparent 38%),
           rgba(7, 10, 15, 0.68);
       }
 
       .astar-wrap {
-        width: min(100%, 720px);
+        width: 100%;
+        min-width: 0;
+      }
+
+      .astar-workbench {
+        display: grid;
+        align-items: start;
+        gap: 18px;
+        grid-template-columns: minmax(400px, 0.86fr) minmax(650px, 1.14fr);
+      }
+
+      .map-pane {
         min-width: 0;
       }
 
       .astar-status {
         display: flex;
-        min-height: 46px;
+        min-height: 38px;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 18px;
+        gap: 14px;
+        margin-bottom: 10px;
         color: var(--muted);
         font-family: var(--mono);
         font-size: 13px;
@@ -504,6 +544,7 @@
 
       .metric {
         color: var(--acid);
+        white-space: nowrap;
       }
 
       .astar-grid {
@@ -541,13 +582,8 @@
           #263a31;
       }
 
-      .cell.open {
-        background: rgba(100, 223, 255, 0.12);
-      }
-
-      .cell.closed {
-        background: rgba(100, 223, 255, 0.26);
-      }
+      .cell.open { background: rgba(100, 223, 255, 0.12); }
+      .cell.closed { background: rgba(100, 223, 255, 0.26); }
 
       .cell.path {
         background: var(--acid);
@@ -579,9 +615,29 @@
         animation: current-cell 620ms ease-in-out infinite alternate;
       }
 
+      .score-key {
+        display: grid;
+        margin-top: 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.018);
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .score-key div {
+        display: grid;
+        gap: 2px;
+        padding: 10px 12px;
+        border-right: 1px solid var(--line);
+      }
+
+      .score-key div:last-child { border-right: 0; }
+      .score-key b { color: var(--acid); font-family: var(--mono); font-size: 13px; }
+      .score-key span { color: var(--muted); font-size: 11px; }
+
       .logic-console {
+        min-width: 0;
         overflow: hidden;
-        margin-top: 18px;
         border: 1px solid var(--line);
         border-radius: 8px;
         background: var(--code-bg);
@@ -590,10 +646,11 @@
 
       .logic-head {
         display: flex;
+        min-height: 42px;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 12px 15px;
+        padding: 9px 14px;
         border-bottom: 1px solid var(--line);
         color: var(--muted);
         font-family: var(--mono);
@@ -605,7 +662,7 @@
 
       .workbench-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(210px, 0.85fr);
+        grid-template-columns: minmax(390px, 1.2fr) minmax(210px, 0.8fr);
       }
 
       .code-pane {
@@ -615,20 +672,20 @@
 
       .logic-code {
         margin: 0;
-        padding: 10px 0;
+        padding: 7px 0;
         list-style: none;
         counter-reset: code-line;
       }
 
       .logic-line {
         display: grid;
-        min-height: 28px;
+        min-height: 24px;
         align-items: center;
-        padding: 3px 14px 3px 0;
+        padding: 2px 12px 2px 0;
         color: #8f9aaa;
         font-family: var(--mono);
         font-size: 13px;
-        grid-template-columns: 34px minmax(0, 1fr);
+        grid-template-columns: 32px minmax(0, 1fr);
         transition: color 120ms ease, background 120ms ease;
         counter-increment: code-line;
       }
@@ -656,35 +713,36 @@
 
       .data-pane {
         display: grid;
+        min-width: 0;
         align-content: start;
-        gap: 16px;
-        padding: 16px;
+        gap: 12px;
+        padding: 13px;
         background: rgba(255, 255, 255, 0.018);
       }
 
       .data-section {
         display: grid;
-        gap: 8px;
+        gap: 6px;
       }
 
       .data-label {
         color: var(--mint);
         font-family: var(--mono);
-        font-size: 12px;
-        letter-spacing: 0.1em;
+        font-size: 11px;
+        letter-spacing: 0.08em;
       }
 
       .current-node {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        gap: 12px;
-        padding: 10px;
+        gap: 8px;
+        padding: 8px;
         border: 1px solid var(--line);
         border-radius: 5px;
         color: var(--paper);
         font-family: var(--mono);
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .current-node small { color: var(--muted); }
@@ -692,7 +750,7 @@
       .node-list,
       .change-list {
         display: grid;
-        gap: 6px;
+        gap: 4px;
         margin: 0;
         padding: 0;
         list-style: none;
@@ -701,23 +759,24 @@
       .node-row {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 8px;
+        gap: 6px;
         color: var(--muted);
         font-family: var(--mono);
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .node-row b { color: var(--paper); font-weight: 500; }
 
       .closed-summary,
       .change-list {
+        margin: 0;
         color: var(--muted);
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 12px;
+        line-height: 1.5;
       }
 
       .change-list li::before {
-        margin-right: 7px;
+        margin-right: 6px;
         color: var(--acid);
         content: "+";
         font-family: var(--mono);
@@ -725,25 +784,71 @@
 
       .logic-explain {
         display: grid;
-        gap: 10px;
-        padding: 14px 15px;
+        min-height: 92px;
         border-top: 1px solid var(--line);
         background: rgba(255, 255, 255, 0.025);
-        grid-template-columns: auto 1fr;
+        grid-template-columns: 112px 1fr;
       }
 
-      .logic-explain span {
-        color: var(--mint);
+      .explain-tabs {
+        display: grid;
+        align-content: center;
+        gap: 2px;
+        padding: 8px;
+        border-right: 1px solid var(--line);
+      }
+
+      .explain-tab {
+        padding: 7px 8px;
+        border: 0;
+        border-radius: 4px;
+        color: var(--muted);
+        cursor: pointer;
+        background: transparent;
         font-family: var(--mono);
-        font-size: 11px;
-        letter-spacing: 0.12em;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-align: left;
       }
 
-      .logic-explain p {
+      .explain-tab.active {
+        color: var(--ink);
+        background: var(--acid);
+      }
+
+      .explain-panel {
+        align-self: center;
+        padding: 12px 15px;
+      }
+
+      .explain-panel p {
         margin: 0;
         color: var(--muted);
         font-size: 13px;
-        line-height: 1.7;
+        line-height: 1.65;
+      }
+
+      .principle-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .principle-grid div {
+        display: grid;
+        gap: 3px;
+      }
+
+      .principle-grid b {
+        color: var(--acid);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .principle-grid span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
       }
       .topics {
         display: grid;
@@ -951,6 +1056,19 @@
         to { opacity: 1; transform: scale(1); }
       }
 
+      @media (max-width: 1100px) {
+        .lab-copy {
+          gap: 14px 24px;
+          grid-template-columns: 1fr auto;
+        }
+
+        .lab-summary { grid-column: 1 / -1; }
+        .astar-workbench { grid-template-columns: 1fr; }
+        .map-pane {
+          width: min(100%, 720px);
+          margin-inline: auto;
+        }
+      }
       @media (max-width: 900px) {
         .hero {
           grid-template-columns: 1fr;
@@ -968,10 +1086,11 @@
         }
 
         .lab-copy {
-          min-height: auto;
-          border-right: 0;
-          border-bottom: 1px solid var(--line);
+          grid-template-columns: 1fr;
         }
+
+        .lab-summary { grid-column: auto; }
+        .lab-controls { justify-content: flex-start; }
 
         .topics {
           grid-template-columns: repeat(2, 1fr);
@@ -1070,6 +1189,13 @@
         }
         .logic-line { font-size: 12px; }
         .data-pane { padding: 12px; }
+        .logic-explain { grid-template-columns: 1fr; }
+        .explain-tabs {
+          display: flex;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .principle-grid { grid-template-columns: 1fr; }
 
         .topics {
           grid-template-columns: 1fr;
@@ -1154,7 +1280,7 @@
         </div>
       </section>
 
-      <section class="section shell" id="lab">
+      <section class="section shell lab-section" id="lab">
         <div class="section-heading reveal">
           <div>
             <p class="kicker">01 / INTERACTIVE EXPLAINER</p>
@@ -1167,18 +1293,21 @@
         </div>
 
         <article class="lab reveal">
-          <div class="lab-copy">
-            <div>
+          <header class="lab-copy">
+            <div class="lab-title">
               <span class="lab-index">LIVE NOTE · A* PATHFINDING</span>
               <h3>G 值与 Parent 回溯</h3>
+            </div>
+            <div class="lab-summary">
               <p class="lab-description">
-                搜索阶段并不是角色移动阶段。A* 为候选格记录“从起点走到这里的代价”，
-                当终点被找到后，再沿 Parent 指针逐步回到起点。
+                A* 先用 F = G + H 选择最值得检查的候选格，找到终点后，再沿 Parent 指针逐步回到起点。
               </p>
-              <div class="legend" aria-label="图例">
-                <span><i class="visited"></i>已检查</span>
-                <span><i class="path"></i>最终路径</span>
-                <span><i class="wall"></i>障碍</span>
+              <div class="lab-meta">
+                <div class="legend" aria-label="图例">
+                  <span><i class="visited"></i>已检查</span>
+                  <span><i class="path"></i>最终路径</span>
+                  <span><i class="wall"></i>障碍</span>
+                </div>
               </div>
             </div>
             <div class="lab-controls">
@@ -1186,61 +1315,82 @@
               <button class="button" id="next-astar" type="button" disabled>下一步</button>
               <button class="button" id="reset-astar" type="button">重置地图</button>
             </div>
-          </div>
+          </header>
           <div class="lab-stage">
             <div class="astar-wrap">
-              <div class="astar-status" aria-live="polite">
-                <span id="astar-message">点击格子调整障碍，然后开始推演。</span>
-                <span class="metric" id="astar-metric">G — · H — · F —</span>
-              </div>
-              <div class="astar-grid" id="astar-grid" aria-label="A 星寻路交互网格"></div>
-              <div class="logic-console" aria-label="A 星逐步调试器">
-                <div class="logic-head">
-                  <span>A* STEP DEBUGGER · C#</span>
-                  <span class="logic-state" id="logic-state">READY · STEP 00</span>
-                </div>
-                <div class="workbench-grid">
-                  <div class="code-pane">
-                    <ol class="logic-code" aria-label="A 星核心代码">
-                      <li class="logic-line" data-step="loop"><code>while (open.Count &gt; 0)</code></li>
-                      <li class="logic-line" data-step="loop"><code>{</code></li>
-                      <li class="logic-line indent-1" data-step="select"><code>var current = open.MinBy(n =&gt; n.F);</code></li>
-                      <li class="logic-line indent-1" data-step="select"><code>open.Remove(current);</code></li>
-                      <li class="logic-line indent-1" data-step="select"><code>closed.Add(current);</code></li>
-                      <li class="logic-line indent-1" data-step="goal"><code>if (current == goal) Backtrack(current);</code></li>
-                      <li class="logic-line indent-1" data-step="expand"><code>foreach (var next in Neighbors(current))</code></li>
-                      <li class="logic-line indent-1" data-step="expand"><code>{</code></li>
-                      <li class="logic-line indent-2" data-step="expand"><code>var newG = current.G + 1;</code></li>
-                      <li class="logic-line indent-2" data-step="expand"><code>if (newG &gt;= next.G) continue;</code></li>
-                      <li class="logic-line indent-2" data-step="expand"><code>next.G = newG;</code></li>
-                      <li class="logic-line indent-2" data-step="expand"><code>next.Parent = current;</code></li>
-                      <li class="logic-line indent-2" data-step="expand"><code>open.AddOrUpdate(next);</code></li>
-                      <li class="logic-line indent-1" data-step="expand"><code>}</code></li>
-                      <li class="logic-line" data-step="loop"><code>}</code></li>
-                    </ol>
+              <div class="astar-workbench">
+                <section class="map-pane" aria-label="A 星寻路地图">
+                  <div class="astar-status" aria-live="polite">
+                    <span id="astar-message">点击格子调整障碍，然后初始化搜索。</span>
+                    <span class="metric" id="astar-metric">G — · H — · F —</span>
                   </div>
-                  <aside class="data-pane" aria-label="关键数据状态">
-                    <div class="data-section">
-                      <span class="data-label">CURRENT / 当前节点</span>
-                      <div class="current-node"><b id="current-value">—</b><small id="current-score">G — · H — · F —</small></div>
+                  <div class="astar-grid" id="astar-grid" aria-label="A 星寻路交互网格"></div>
+                  <div class="score-key" aria-label="A 星评分说明">
+                    <div><b>G</b><span>起点到当前格的实际代价</span></div>
+                    <div><b>H</b><span>当前格到终点的估算代价</span></div>
+                    <div><b>F = G + H</b><span>候选节点的选择优先级</span></div>
+                  </div>
+                </section>
+                <div class="logic-console" aria-label="A 星逐步调试器">
+                  <div class="logic-head">
+                    <span>A* STEP DEBUGGER · C#</span>
+                    <span class="logic-state" id="logic-state">READY · STEP 00</span>
+                  </div>
+                  <div class="workbench-grid">
+                    <div class="code-pane">
+                      <ol class="logic-code" aria-label="A 星核心代码">
+                        <li class="logic-line" data-step="loop"><code>while (open.Count &gt; 0)</code></li>
+                        <li class="logic-line" data-step="loop"><code>{</code></li>
+                        <li class="logic-line indent-1" data-step="select"><code>var current = open.MinBy(n =&gt; n.F);</code></li>
+                        <li class="logic-line indent-1" data-step="select"><code>open.Remove(current);</code></li>
+                        <li class="logic-line indent-1" data-step="select"><code>closed.Add(current);</code></li>
+                        <li class="logic-line indent-1" data-step="goal"><code>if (current == goal) Backtrack(current);</code></li>
+                        <li class="logic-line indent-1" data-step="expand"><code>foreach (var next in Neighbors(current))</code></li>
+                        <li class="logic-line indent-1" data-step="expand"><code>{</code></li>
+                        <li class="logic-line indent-2" data-step="expand"><code>var newG = current.G + 1;</code></li>
+                        <li class="logic-line indent-2" data-step="expand"><code>if (newG &gt;= next.G) continue;</code></li>
+                        <li class="logic-line indent-2" data-step="expand"><code>next.G = newG;</code></li>
+                        <li class="logic-line indent-2" data-step="expand"><code>next.Parent = current;</code></li>
+                        <li class="logic-line indent-2" data-step="expand"><code>open.AddOrUpdate(next);</code></li>
+                        <li class="logic-line indent-1" data-step="expand"><code>}</code></li>
+                        <li class="logic-line" data-step="loop"><code>}</code></li>
+                      </ol>
                     </div>
-                    <div class="data-section">
-                      <span class="data-label">OPEN / 候选 Top 4</span>
-                      <ol class="node-list" id="open-list"><li class="node-row"><span>尚未初始化</span><b>—</b></li></ol>
+                    <aside class="data-pane" aria-label="关键数据状态">
+                      <div class="data-section">
+                        <span class="data-label">CURRENT / 当前节点</span>
+                        <div class="current-node"><b id="current-value">—</b><small id="current-score">G — · H — · F —</small></div>
+                      </div>
+                      <div class="data-section">
+                        <span class="data-label">OPEN / 候选 Top 4</span>
+                        <ol class="node-list" id="open-list"><li class="node-row"><span>尚未初始化</span><b>—</b></li></ol>
+                      </div>
+                      <div class="data-section">
+                        <span class="data-label">CLOSED / 已检查 <b id="closed-count">0</b></span>
+                        <p class="closed-summary" id="closed-summary">暂无</p>
+                      </div>
+                      <div class="data-section">
+                        <span class="data-label">THIS STEP / 本步变化</span>
+                        <ul class="change-list" id="step-changes"><li>等待初始化搜索</li></ul>
+                      </div>
+                    </aside>
+                  </div>
+                  <div class="logic-explain">
+                    <div class="explain-tabs" role="tablist" aria-label="算法解释">
+                      <button class="explain-tab active" id="step-tab" data-panel="step-panel" type="button" role="tab" aria-selected="true">当前步骤</button>
+                      <button class="explain-tab" id="principle-tab" data-panel="principle-panel" type="button" role="tab" aria-selected="false">原理总览</button>
                     </div>
-                    <div class="data-section">
-                      <span class="data-label">CLOSED / 已检查 <b id="closed-count">0</b></span>
-                      <p class="closed-summary" id="closed-summary">暂无</p>
+                    <div class="explain-panel" id="step-panel" role="tabpanel" aria-labelledby="step-tab">
+                      <p id="logic-explain">A* 会重复“选择最优节点”和“展开邻居”两个阶段。每次点击只执行一个阶段。</p>
                     </div>
-                    <div class="data-section">
-                      <span class="data-label">THIS STEP / 本步变化</span>
-                      <ul class="change-list" id="step-changes"><li>等待初始化搜索</li></ul>
+                    <div class="explain-panel" id="principle-panel" role="tabpanel" aria-labelledby="principle-tab" hidden>
+                      <div class="principle-grid">
+                        <div><b>01 · 估价</b><span>F = G + H，优先选择总估价更小的候选节点。</span></div>
+                        <div><b>02 · 搜索</b><span>Open 等待检查，Closed 避免重复，Parent 记录更优来源。</span></div>
+                        <div><b>03 · 回溯</b><span>终点出现后沿 Parent 反向连接，得到起点到终点的路径。</span></div>
+                      </div>
                     </div>
-                  </aside>
-                </div>
-                <div class="logic-explain">
-                  <span>WHY</span>
-                  <p id="logic-explain">A* 会重复“选择最优节点”和“展开邻居”两个阶段。每次点击只执行一个阶段。</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1360,6 +1510,7 @@
       const closedSummary = document.querySelector("#closed-summary");
       const stepChanges = document.querySelector("#step-changes");
       const logicLines = [...document.querySelectorAll(".logic-line")];
+      const explainTabs = [...document.querySelectorAll(".explain-tab")];
       const header = document.querySelector("#site-header");
 
       let walls = new Set();
@@ -1385,6 +1536,15 @@
         logicExplain.textContent = explanation;
         const stepNumber = searchState ? String(searchState.step).padStart(2, "0") : "00";
         logicState.textContent = `${state} · STEP ${stepNumber}`;
+      }
+
+      function setExplainPanel(panelId) {
+        explainTabs.forEach((button) => {
+          const isActive = button.dataset.panel === panelId;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-selected", String(isActive));
+          document.querySelector(`#${button.dataset.panel}`).hidden = !isActive;
+        });
       }
 
       function renderChanges(changes) {
@@ -1640,6 +1800,10 @@
         renderChanges(["等待初始化搜索"]);
         setLogic(null, "A* 会重复“选择最优节点”和“展开邻居”两个阶段。每次点击只执行一个阶段。", "READY");
       }
+
+      explainTabs.forEach((button) => {
+        button.addEventListener("click", () => setExplainPanel(button.dataset.panel));
+      });
 
       startButton.addEventListener("click", initializeSearch);
       nextButton.addEventListener("click", advanceSearch);
