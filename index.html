@@ -436,6 +436,7 @@
         max-width: 430px;
         color: var(--muted);
         line-height: 1.9;
+        font-size: 16px;
       }
 
       .legend {
@@ -445,7 +446,7 @@
         margin-top: 30px;
         color: var(--muted);
         font-family: var(--mono);
-        font-size: 10px;
+        font-size: 12px;
       }
 
       .legend span {
@@ -485,7 +486,7 @@
       }
 
       .astar-wrap {
-        width: min(100%, 600px);
+        width: min(100%, 720px);
         min-width: 0;
       }
 
@@ -498,7 +499,7 @@
         margin-bottom: 18px;
         color: var(--muted);
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: 13px;
       }
 
       .metric {
@@ -587,62 +588,64 @@
         box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
       }
 
-      .logic-head,
-      .logic-vars {
+      .logic-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        font-family: var(--mono);
-      }
-
-      .logic-head {
         padding: 12px 15px;
         border-bottom: 1px solid var(--line);
         color: var(--muted);
-        font-size: 10px;
+        font-family: var(--mono);
+        font-size: 12px;
         letter-spacing: 0.1em;
       }
 
       .logic-state { color: var(--acid); }
 
-      .logic-vars {
-        justify-content: flex-start;
-        padding: 10px 15px;
-        border-bottom: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 10px;
+      .workbench-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(210px, 0.85fr);
       }
 
-      .logic-vars b { color: var(--paper); font-weight: 500; }
+      .code-pane {
+        min-width: 0;
+        border-right: 1px solid var(--line);
+      }
 
       .logic-code {
         margin: 0;
-        padding: 8px 0;
+        padding: 10px 0;
         list-style: none;
         counter-reset: code-line;
       }
 
       .logic-line {
         display: grid;
-        min-height: 27px;
+        min-height: 28px;
         align-items: center;
         padding: 3px 14px 3px 0;
-        color: #7e8997;
+        color: #8f9aaa;
         font-family: var(--mono);
-        font-size: 10px;
-        grid-template-columns: 34px 1fr;
+        font-size: 13px;
+        grid-template-columns: 34px minmax(0, 1fr);
         transition: color 120ms ease, background 120ms ease;
         counter-increment: code-line;
       }
 
       .logic-line::before {
         content: counter(code-line);
-        color: #46505d;
+        color: #566170;
         text-align: center;
       }
 
-      .logic-line code { overflow-wrap: anywhere; }
+      .logic-line code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .logic-line.indent-1 code { padding-left: 18px; }
+      .logic-line.indent-2 code { padding-left: 36px; }
 
       .logic-line.active {
         color: var(--paper);
@@ -651,10 +654,79 @@
 
       .logic-line.active::before { color: var(--acid); }
 
+      .data-pane {
+        display: grid;
+        align-content: start;
+        gap: 16px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.018);
+      }
+
+      .data-section {
+        display: grid;
+        gap: 8px;
+      }
+
+      .data-label {
+        color: var(--mint);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+      }
+
+      .current-node {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .current-node small { color: var(--muted); }
+
+      .node-list,
+      .change-list {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .node-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .node-row b { color: var(--paper); font-weight: 500; }
+
+      .closed-summary,
+      .change-list {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .change-list li::before {
+        margin-right: 7px;
+        color: var(--acid);
+        content: "+";
+        font-family: var(--mono);
+      }
+
       .logic-explain {
         display: grid;
         gap: 10px;
-        padding: 13px 15px;
+        padding: 14px 15px;
         border-top: 1px solid var(--line);
         background: rgba(255, 255, 255, 0.025);
         grid-template-columns: auto 1fr;
@@ -663,17 +735,16 @@
       .logic-explain span {
         color: var(--mint);
         font-family: var(--mono);
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.12em;
       }
 
       .logic-explain p {
         margin: 0;
         color: var(--muted);
-        font-size: 11px;
-        line-height: 1.65;
+        font-size: 13px;
+        line-height: 1.7;
       }
-
       .topics {
         display: grid;
         gap: 14px;
@@ -992,6 +1063,14 @@
           flex-direction: column;
         }
 
+        .workbench-grid { grid-template-columns: 1fr; }
+        .code-pane {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .logic-line { font-size: 12px; }
+        .data-pane { padding: 12px; }
+
         .topics {
           grid-template-columns: 1fr;
         }
@@ -1103,7 +1182,8 @@
               </div>
             </div>
             <div class="lab-controls">
-              <button class="button button-primary" id="run-astar" type="button">开始推演</button>
+              <button class="button button-primary" id="start-astar" type="button">初始化搜索</button>
+              <button class="button" id="next-astar" type="button" disabled>下一步</button>
               <button class="button" id="reset-astar" type="button">重置地图</button>
             </div>
           </div>
@@ -1114,27 +1194,53 @@
                 <span class="metric" id="astar-metric">G — · H — · F —</span>
               </div>
               <div class="astar-grid" id="astar-grid" aria-label="A 星寻路交互网格"></div>
-              <div class="logic-console" aria-label="A 星同步代码逻辑">
+              <div class="logic-console" aria-label="A 星逐步调试器">
                 <div class="logic-head">
-                  <span>SYNCED LOGIC · C#</span>
-                  <span class="logic-state" id="logic-state">READY</span>
+                  <span>A* STEP DEBUGGER · C#</span>
+                  <span class="logic-state" id="logic-state">READY · STEP 00</span>
                 </div>
-                <div class="logic-vars">
-                  <span>OPEN <b id="open-count">1</b></span>
-                  <span>CLOSED <b id="closed-count">0</b></span>
-                  <span>PARENT <b id="parent-value">—</b></span>
+                <div class="workbench-grid">
+                  <div class="code-pane">
+                    <ol class="logic-code" aria-label="A 星核心代码">
+                      <li class="logic-line" data-step="loop"><code>while (open.Count &gt; 0)</code></li>
+                      <li class="logic-line" data-step="loop"><code>{</code></li>
+                      <li class="logic-line indent-1" data-step="select"><code>var current = open.MinBy(n =&gt; n.F);</code></li>
+                      <li class="logic-line indent-1" data-step="select"><code>open.Remove(current);</code></li>
+                      <li class="logic-line indent-1" data-step="select"><code>closed.Add(current);</code></li>
+                      <li class="logic-line indent-1" data-step="goal"><code>if (current == goal) Backtrack(current);</code></li>
+                      <li class="logic-line indent-1" data-step="expand"><code>foreach (var next in Neighbors(current))</code></li>
+                      <li class="logic-line indent-1" data-step="expand"><code>{</code></li>
+                      <li class="logic-line indent-2" data-step="expand"><code>var newG = current.G + 1;</code></li>
+                      <li class="logic-line indent-2" data-step="expand"><code>if (newG &gt;= next.G) continue;</code></li>
+                      <li class="logic-line indent-2" data-step="expand"><code>next.G = newG;</code></li>
+                      <li class="logic-line indent-2" data-step="expand"><code>next.Parent = current;</code></li>
+                      <li class="logic-line indent-2" data-step="expand"><code>open.AddOrUpdate(next);</code></li>
+                      <li class="logic-line indent-1" data-step="expand"><code>}</code></li>
+                      <li class="logic-line" data-step="loop"><code>}</code></li>
+                    </ol>
+                  </div>
+                  <aside class="data-pane" aria-label="关键数据状态">
+                    <div class="data-section">
+                      <span class="data-label">CURRENT / 当前节点</span>
+                      <div class="current-node"><b id="current-value">—</b><small id="current-score">G — · H — · F —</small></div>
+                    </div>
+                    <div class="data-section">
+                      <span class="data-label">OPEN / 候选 Top 4</span>
+                      <ol class="node-list" id="open-list"><li class="node-row"><span>尚未初始化</span><b>—</b></li></ol>
+                    </div>
+                    <div class="data-section">
+                      <span class="data-label">CLOSED / 已检查 <b id="closed-count">0</b></span>
+                      <p class="closed-summary" id="closed-summary">暂无</p>
+                    </div>
+                    <div class="data-section">
+                      <span class="data-label">THIS STEP / 本步变化</span>
+                      <ul class="change-list" id="step-changes"><li>等待初始化搜索</li></ul>
+                    </div>
+                  </aside>
                 </div>
-                <ol class="logic-code">
-                  <li class="logic-line" data-step="pick"><code>current = Open.MinBy(n =&gt; n.G + n.H);</code></li>
-                  <li class="logic-line" data-step="close"><code>Closed.Add(current);</code></li>
-                  <li class="logic-line" data-step="finish"><code>if (current == goal) Backtrack(current);</code></li>
-                  <li class="logic-line" data-step="neighbor"><code>foreach (var next in Neighbors(current))</code></li>
-                  <li class="logic-line" data-step="relax"><code>if (newG &lt; next.G) next.Parent = current;</code></li>
-                  <li class="logic-line" data-step="enqueue"><code>Open.AddOrUpdate(next);</code></li>
-                </ol>
                 <div class="logic-explain">
                   <span>WHY</span>
-                  <p id="logic-explain">Open 从起点开始。运行后，这里会同步解释每一行代码为何执行。</p>
+                  <p id="logic-explain">A* 会重复“选择最优节点”和“展开邻居”两个阶段。每次点击只执行一个阶段。</p>
                 </div>
               </div>
             </div>
@@ -1240,33 +1346,29 @@
       ];
 
       const grid = document.querySelector("#astar-grid");
-      const runButton = document.querySelector("#run-astar");
+      const startButton = document.querySelector("#start-astar");
+      const nextButton = document.querySelector("#next-astar");
       const resetButton = document.querySelector("#reset-astar");
       const message = document.querySelector("#astar-message");
       const metric = document.querySelector("#astar-metric");
       const logicState = document.querySelector("#logic-state");
       const logicExplain = document.querySelector("#logic-explain");
-      const openCount = document.querySelector("#open-count");
+      const currentValue = document.querySelector("#current-value");
+      const currentScore = document.querySelector("#current-score");
+      const openList = document.querySelector("#open-list");
       const closedCount = document.querySelector("#closed-count");
-      const parentValue = document.querySelector("#parent-value");
+      const closedSummary = document.querySelector("#closed-summary");
+      const stepChanges = document.querySelector("#step-changes");
       const logicLines = [...document.querySelectorAll(".logic-line")];
       const header = document.querySelector("#site-header");
 
       let walls = new Set();
-      let running = false;
+      let searchState = null;
 
       const keyOf = (x, y) => `${x},${y}`;
-      const delay = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
       const manhattan = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-
-      function setLogic(step, explanation, state, counts = {}) {
-        logicLines.forEach((line) => line.classList.toggle("active", line.dataset.step === step));
-        logicExplain.textContent = explanation;
-        logicState.textContent = state;
-        if (counts.open !== undefined) openCount.textContent = counts.open;
-        if (counts.closed !== undefined) closedCount.textContent = counts.closed;
-        if (counts.parent !== undefined) parentValue.textContent = counts.parent;
-      }
+      const scoreOf = (node) => node.g + node.h;
+      const formatNode = (node) => `(${node.x}, ${node.y})`;
 
       function cellAt(x, y) {
         return grid.querySelector(`[data-key="${keyOf(x, y)}"]`);
@@ -1276,6 +1378,56 @@
         grid.querySelectorAll(".cell").forEach((cell) => {
           cell.classList.remove("open", "closed", "path", "current");
         });
+      }
+
+      function setLogic(step, explanation, state) {
+        logicLines.forEach((line) => line.classList.toggle("active", line.dataset.step === step));
+        logicExplain.textContent = explanation;
+        const stepNumber = searchState ? String(searchState.step).padStart(2, "0") : "00";
+        logicState.textContent = `${state} · STEP ${stepNumber}`;
+      }
+
+      function renderChanges(changes) {
+        stepChanges.innerHTML = "";
+        changes.forEach((change) => {
+          const item = document.createElement("li");
+          item.textContent = change;
+          stepChanges.appendChild(item);
+        });
+      }
+
+      function renderKeyData() {
+        if (!searchState) {
+          currentValue.textContent = "—";
+          currentScore.textContent = "G — · H — · F —";
+          openList.innerHTML = '<li class="node-row"><span>尚未初始化</span><b>—</b></li>';
+          closedCount.textContent = "0";
+          closedSummary.textContent = "暂无";
+          return;
+        }
+
+        const current = searchState.current;
+        currentValue.textContent = current ? formatNode(current) : "—";
+        currentScore.textContent = current ? `G ${current.g} · H ${current.h} · F ${scoreOf(current)}` : "G — · H — · F —";
+
+        const rankedOpen = [...searchState.open]
+          .sort((a, b) => scoreOf(a) - scoreOf(b) || a.h - b.h)
+          .slice(0, 4);
+        openList.innerHTML = "";
+        if (rankedOpen.length === 0) {
+          openList.innerHTML = '<li class="node-row"><span>空</span><b>—</b></li>';
+        } else {
+          rankedOpen.forEach((node) => {
+            const item = document.createElement("li");
+            item.className = "node-row";
+            item.innerHTML = `<span>${formatNode(node)}</span><b>F ${scoreOf(node)}</b>`;
+            openList.appendChild(item);
+          });
+        }
+
+        const recentClosed = [...searchState.closed].slice(-5).map((key) => `(${key})`);
+        closedCount.textContent = searchState.closed.size;
+        closedSummary.textContent = recentClosed.length > 0 ? `最近：${recentClosed.join("  ")}` : "暂无";
       }
 
       function renderGrid() {
@@ -1300,7 +1452,7 @@
             }
 
             cell.addEventListener("click", () => {
-              if (running || cell.classList.contains("start") || cell.classList.contains("end")) return;
+              if (searchState || cell.classList.contains("start") || cell.classList.contains("end")) return;
               if (walls.has(key)) {
                 walls.delete(key);
                 cell.classList.remove("wall");
@@ -1308,24 +1460,13 @@
                 walls.add(key);
                 cell.classList.add("wall");
               }
-              clearSearchClasses();
-              message.textContent = "地图已改变，可以重新开始推演。";
-              metric.textContent = "G — · H — · F —";
-              setLogic(null, "障碍发生变化，Open 与 Closed 会在下一次运行时重新建立。", "MAP EDITED", { open: 1, closed: 0, parent: "—" });
+              message.textContent = "地图已改变，可以初始化新的搜索。";
+              setLogic(null, "障碍发生变化。点击“初始化搜索”后，Open、Closed 与 Parent 会重新建立。", "MAP EDITED");
+              renderChanges([`障碍 ${formatNode({ x, y })} 已切换`]);
             });
             grid.appendChild(cell);
           }
         }
-      }
-
-      function resetGrid() {
-        walls = new Set(INITIAL_WALLS.map(([x, y]) => keyOf(x, y)));
-        running = false;
-        renderGrid();
-        message.textContent = "点击格子调整障碍，然后开始推演。";
-        metric.textContent = "G — · H — · F —";
-        setLogic(null, "Open 从起点开始。运行后，这里会同步解释每一行代码为何执行。", "READY", { open: 1, closed: 0, parent: "—" });
-        runButton.disabled = false;
       }
 
       function getNeighbors(node) {
@@ -1341,106 +1482,167 @@
         ));
       }
 
-      async function runAstar() {
-        if (running) return;
-        running = true;
-        runButton.disabled = true;
+      function initializeSearch() {
         clearSearchClasses();
-
-        const startKey = keyOf(START.x, START.y);
-        const endKey = keyOf(END.x, END.y);
-        const open = [{ ...START, g: 0, h: manhattan(START, END), parent: null }];
-        const bestCost = new Map([[startKey, 0]]);
-        const closed = new Set();
-        let found = null;
-        let previousCell = null;
-
-        message.textContent = "正在扩展代价最低的候选节点…";
-        setLogic("pick", "Open 里只有起点。每轮都选择 F = G + H 最小的节点。", "SEARCHING", { open: open.length, closed: 0, parent: "—" });
-
-        while (open.length > 0) {
-          open.sort((a, b) => (a.g + a.h) - (b.g + b.h) || a.h - b.h);
-          const current = open.shift();
-          const currentKey = keyOf(current.x, current.y);
-
-          setLogic("pick", `选中 (${current.x}, ${current.y})：它是当前 Open 中 F 最小的节点。`, "PICK NODE", { open: open.length, closed: closed.size, parent: current.parent ? `(${current.parent.x},${current.parent.y})` : "起点" });
-          await delay(55);
-
-          if (closed.has(currentKey)) continue;
-          closed.add(currentKey);
-
-          if (previousCell) previousCell.classList.remove("current");
-          const currentCell = cellAt(current.x, current.y);
-          currentCell.classList.add("current");
-          if (currentKey !== startKey && currentKey !== endKey) currentCell.classList.add("closed");
-          previousCell = currentCell;
-
-          metric.textContent = `G ${current.g} · H ${current.h} · F ${current.g + current.h}`;
-          message.textContent = `检查坐标 (${current.x}, ${current.y})，当前累计检查 ${closed.size} 个节点。`;
-          setLogic("close", "节点已被正式检查，移入 Closed，后续不会重复扩展。", "CLOSE NODE", { open: open.length, closed: closed.size });
-          await delay(55);
-
-          if (currentKey === endKey) {
-            found = current;
-            setLogic("finish", "current 已经是终点。搜索停止，接下来沿 Parent 链反向还原路径。", "GOAL FOUND", { open: open.length, closed: closed.size });
-            break;
-          }
-
-          const neighbors = getNeighbors(current);
-          setLogic("neighbor", `读取 (${current.x}, ${current.y}) 的 ${neighbors.length} 个可通行相邻格。`, "SCAN NEIGHBORS", { open: open.length, closed: closed.size });
-          await delay(45);
-
-          for (const neighbor of neighbors) {
-            const neighborKey = keyOf(neighbor.x, neighbor.y);
-            const nextG = current.g + 1;
-            if (closed.has(neighborKey) || nextG >= (bestCost.get(neighborKey) ?? Infinity)) continue;
-
-            bestCost.set(neighborKey, nextG);
-            const nextNode = {
-              ...neighbor,
-              g: nextG,
-              h: manhattan(neighbor, END),
-              parent: current
-            };
-            setLogic("relax", `到 (${neighbor.x}, ${neighbor.y}) 的新 G 更小，因此 Parent 更新为 (${current.x}, ${current.y})。`, "UPDATE PARENT", { open: open.length, closed: closed.size, parent: `(${current.x},${current.y})` });
-            await delay(24);
-            open.push(nextNode);
-            const neighborCell = cellAt(neighbor.x, neighbor.y);
-            if (neighborKey !== startKey && neighborKey !== endKey) neighborCell.classList.add("open");
-            setLogic("enqueue", `节点 (${neighbor.x}, ${neighbor.y}) 已进入 Open，等待按 F 值参与下一轮选择。`, "QUEUE NODE", { open: open.length, closed: closed.size });
-          }
-        }
-
-        if (previousCell) previousCell.classList.remove("current");
-
-        if (found) {
-          const path = [];
-          let cursor = found.parent;
-          while (cursor && keyOf(cursor.x, cursor.y) !== startKey) {
-            path.unshift(cursor);
-            cursor = cursor.parent;
-          }
-          setLogic("finish", "从终点反复读取 Parent，直到回到起点；黄色格子就是反向得到的完整路径。", "BACKTRACK", { open: open.length, closed: closed.size, parent: "逐级回溯" });
-          for (const node of path) {
-            const pathCell = cellAt(node.x, node.y);
-            pathCell.classList.remove("open", "closed");
-            pathCell.classList.add("path");
-            await delay(80);
-          }
-          message.textContent = `找到路径：${path.length + 1} 步，检查了 ${closed.size} 个节点。`;
-          metric.textContent = "沿 Parent 链完成回溯";
-          setLogic("finish", `完成：路径 ${path.length + 1} 步，Closed 共 ${closed.size} 个节点。`, "COMPLETE", { open: open.length, closed: closed.size, parent: "完成" });
-        } else {
-          message.textContent = "当前障碍布局下没有可达路径。";
-          metric.textContent = "搜索结束";
-          setLogic(null, "Open 已为空，说明没有任何候选节点可以继续抵达终点。", "NO PATH", { open: 0, closed: closed.size, parent: "—" });
-        }
-
-        running = false;
-        runButton.disabled = false;
+        const startNode = { ...START, g: 0, h: manhattan(START, END), parent: null };
+        searchState = {
+          open: [startNode],
+          bestCost: new Map([[keyOf(START.x, START.y), 0]]),
+          closed: new Set(),
+          current: null,
+          previousCell: null,
+          phase: "select",
+          backtrackCursor: null,
+          step: 0,
+          complete: false
+        };
+        message.textContent = "搜索已初始化。下一步将从 Open 选择 F 最小的节点。";
+        metric.textContent = `起点 H ${startNode.h} · F ${scoreOf(startNode)}`;
+        nextButton.disabled = false;
+        nextButton.textContent = "选择最优节点";
+        startButton.disabled = true;
+        renderKeyData();
+        renderChanges(["Open + START", "bestCost[START] = 0"]);
+        setLogic("loop", "Open 保存待检查的候选节点；Closed 保存已经检查过的节点；每个节点的 Parent 用来还原最终路径。", "INITIALIZED");
       }
 
-      runButton.addEventListener("click", runAstar);
+      function selectBestNode() {
+        const state = searchState;
+        if (state.open.length === 0) {
+          state.complete = true;
+          message.textContent = "Open 已为空，当前障碍布局下没有可达路径。";
+          metric.textContent = "搜索结束";
+          nextButton.disabled = true;
+          nextButton.textContent = "没有路径";
+          startButton.disabled = false;
+          setLogic("loop", "Open 为空，说明没有任何候选节点可以继续抵达终点。", "NO PATH");
+          renderChanges(["Open = 空", "搜索终止：没有路径"]);
+          renderKeyData();
+          return;
+        }
+
+        state.step += 1;
+        state.open.sort((a, b) => scoreOf(a) - scoreOf(b) || a.h - b.h);
+        const current = state.open.shift();
+        state.current = current;
+        state.closed.add(keyOf(current.x, current.y));
+
+        if (state.previousCell) state.previousCell.classList.remove("current");
+        const currentCell = cellAt(current.x, current.y);
+        currentCell.classList.remove("open");
+        currentCell.classList.add("current");
+        if (keyOf(current.x, current.y) !== keyOf(START.x, START.y) && keyOf(current.x, current.y) !== keyOf(END.x, END.y)) {
+          currentCell.classList.add("closed");
+        }
+        state.previousCell = currentCell;
+
+        message.textContent = `选择 ${formatNode(current)}：它的 F 值在 Open 中最小。`;
+        metric.textContent = `G ${current.g} · H ${current.h} · F ${scoreOf(current)}`;
+        renderChanges([`Open - ${formatNode(current)}`, `Closed + ${formatNode(current)}`, `Current = ${formatNode(current)}`]);
+        renderKeyData();
+
+        if (keyOf(current.x, current.y) === keyOf(END.x, END.y)) {
+          state.phase = "backtrack";
+          state.backtrackCursor = current.parent;
+          nextButton.textContent = "回溯一个 Parent";
+          setLogic("goal", "Current 已经是终点。搜索阶段结束；之后每次点击沿一个 Parent 向起点回溯。", "GOAL FOUND");
+        } else {
+          state.phase = "expand";
+          nextButton.textContent = "展开当前邻居";
+          setLogic("select", "从 Open 取出 F = G + H 最小的节点，移入 Closed，并把它设为 Current。", "SELECT");
+        }
+      }
+
+      function expandCurrentNode() {
+        const state = searchState;
+        state.step += 1;
+        const current = state.current;
+        const changes = [];
+        let updated = 0;
+
+        getNeighbors(current).forEach((neighbor) => {
+          const neighborKey = keyOf(neighbor.x, neighbor.y);
+          const newG = current.g + 1;
+          if (state.closed.has(neighborKey) || newG >= (state.bestCost.get(neighborKey) ?? Infinity)) return;
+
+          state.bestCost.set(neighborKey, newG);
+          const nextNode = {
+            ...neighbor,
+            g: newG,
+            h: manhattan(neighbor, END),
+            parent: current
+          };
+          state.open = state.open.filter((node) => keyOf(node.x, node.y) !== neighborKey);
+          state.open.push(nextNode);
+          const neighborCell = cellAt(neighbor.x, neighbor.y);
+          if (neighborKey !== keyOf(START.x, START.y) && neighborKey !== keyOf(END.x, END.y)) neighborCell.classList.add("open");
+          updated += 1;
+          if (changes.length < 4) changes.push(`Open + ${formatNode(nextNode)}；Parent = ${formatNode(current)}`);
+        });
+
+        if (state.previousCell) state.previousCell.classList.remove("current");
+        if (updated === 0) changes.push("没有更优的邻居需要写入");
+        if (updated > changes.length) changes.push(`另有 ${updated - changes.length} 个节点已更新`);
+        state.phase = "select";
+        nextButton.textContent = "选择最优节点";
+        message.textContent = `展开 ${formatNode(current)}：更新了 ${updated} 个候选节点。`;
+        renderChanges(changes);
+        renderKeyData();
+        setLogic("expand", "检查 Current 的可通行邻居。只有更小的 G 才会更新节点的 G、Parent，并写回 Open。", "EXPAND");
+      }
+
+      function backtrackOneParent() {
+        const state = searchState;
+        state.step += 1;
+        const cursor = state.backtrackCursor;
+
+        if (!cursor || keyOf(cursor.x, cursor.y) === keyOf(START.x, START.y)) {
+          state.complete = true;
+          if (state.previousCell) state.previousCell.classList.remove("current");
+          message.textContent = `路径回溯完成：共 ${state.current.g} 步，检查了 ${state.closed.size} 个节点。`;
+          metric.textContent = "沿 Parent 链完成回溯";
+          nextButton.disabled = true;
+          nextButton.textContent = "已完成";
+          startButton.disabled = false;
+          renderChanges(["到达 START", "Parent 链回溯完成"]);
+          renderKeyData();
+          setLogic("goal", "Parent 链已经回到起点；黄色格子连接成最终路径。", "COMPLETE");
+          return;
+        }
+
+        const pathCell = cellAt(cursor.x, cursor.y);
+        pathCell.classList.remove("open", "closed");
+        pathCell.classList.add("path");
+        state.backtrackCursor = cursor.parent;
+        message.textContent = `沿 Parent 回溯到 ${formatNode(cursor)}。`;
+        renderChanges([`Path + ${formatNode(cursor)}`, `下一个 Parent = ${cursor.parent ? formatNode(cursor.parent) : "—"}`]);
+        renderKeyData();
+        setLogic("goal", "当前只读取一个 Parent 并标记一个路径节点；再次点击才会继续向起点回溯。", "BACKTRACK");
+      }
+
+      function advanceSearch() {
+        if (!searchState || searchState.complete) return;
+        if (searchState.phase === "select") selectBestNode();
+        else if (searchState.phase === "expand") expandCurrentNode();
+        else backtrackOneParent();
+      }
+
+      function resetGrid() {
+        walls = new Set(INITIAL_WALLS.map(([x, y]) => keyOf(x, y)));
+        searchState = null;
+        renderGrid();
+        message.textContent = "点击格子调整障碍，然后初始化搜索。";
+        metric.textContent = "G — · H — · F —";
+        startButton.disabled = false;
+        nextButton.disabled = true;
+        nextButton.textContent = "下一步";
+        renderKeyData();
+        renderChanges(["等待初始化搜索"]);
+        setLogic(null, "A* 会重复“选择最优节点”和“展开邻居”两个阶段。每次点击只执行一个阶段。", "READY");
+      }
+
+      startButton.addEventListener("click", initializeSearch);
+      nextButton.addEventListener("click", advanceSearch);
       resetButton.addEventListener("click", resetGrid);
       window.addEventListener("scroll", () => {
         header.classList.toggle("scrolled", window.scrollY > 20);
