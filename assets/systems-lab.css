@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Source+Han+Sans+SC:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&display=swap");
 
 :root {
   --bg: #06100c;
@@ -14,7 +14,7 @@
   --danger: #ff776f;
   --mono: "IBM Plex Mono", Consolas, monospace;
   --serif: "Noto Serif SC", serif;
-  --sans: "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --sans: "Noto Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -582,3 +582,93 @@ body {
 .hash-flow-step.is-active { background: rgba(85, 214, 255, .065); }
 .hash-bucket.is-current { border-color: rgba(186, 242, 74, .32); background: rgba(186, 242, 74, .045); }
 .hash-sparse-note { background: rgba(85, 224, 190, .035); }
+
+/* READABLE_SYSTEMS_TYPOGRAPHY */
+body {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+.eyebrow,
+.panel-label,
+.section-kicker { font-size: 11px; }
+.scenario-tab small { font-size: 10px; }
+.scenario-tab span { font-size: 16px; }
+.lab-head h2 { font-size: 24px; }
+.step-readout span { font-size: 12px; }
+.step-readout strong { font-size: 14px; }
+.case-tab {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.principle-lenses span { font-size: 10px; }
+.principle-lenses p { font-size: 14px; line-height: 1.75; }
+.phase { font-size: 11px; }
+.explain-panel > p { font-size: 16px; line-height: 1.9; }
+.why-box span { font-size: 10px; }
+.why-box p { font-size: 14px; line-height: 1.8; }
+.article-link { font-family: var(--sans); font-size: 13px; }
+.visual-head h2 { font-size: 27px; }
+.bit small { font-size: 10px; }
+.flag-tag { font-size: 12px; }
+.sandbox-head span {
+  font-family: var(--sans);
+  font-size: 11px;
+}
+.sandbox-head strong { font-size: 12px; }
+.sandbox-actions button,
+.flag-switches button {
+  font-family: var(--sans);
+  font-size: 11px;
+}
+.sandbox-message { font-family: var(--sans); font-size: 13px; line-height: 1.7; }
+.bit-equation { font-size: 13px; }
+.method-chip { font-size: 10px; }
+.weight-bar div { font-size: 12px; }
+.roll-label { font-family: var(--sans); font-size: 12px; }
+.roll-input { font-size: 13px; }
+.roll-axis { font-size: 10px; }
+.roll-result { font-family: var(--sans); font-size: 13px; }
+.random-note { font-size: 15px; }
+.bag-item,
+.pity-step { font-size: 11px; }
+.seed-box { font-size: 12px; }
+.space-contract span { font-size: 11px; }
+.cell-coordinate,
+.hash-sandbox .cell-coordinate { font-size: 10px; }
+.grid-prompt span {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.grid-prompt strong { font-size: 12px; }
+.grid-prompt em {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.grid-comparison span { font-size: 10px; }
+.grid-comparison strong { font-size: 15px; }
+.space-formula { font-size: 13px; }
+.tree-node-box,
+.candidate { font-family: var(--sans); font-size: 12px; }
+.metrics dt { font-size: 10px; }
+.metrics dd { font-size: 13px; }
+.code-head { font-size: 10px; }
+.code-block li { font-size: 12px; line-height: 1.65; }
+.control-buttons button { font-family: var(--sans); font-size: 12px; }
+.hash-flow-step span { font-size: 11px; }
+.hash-flow-step strong { font-family: var(--sans); font-size: 13px; line-height: 1.6; }
+.hash-key-trace span,
+.hash-bucket span { font-size: 11px; }
+.hash-key-trace strong { font-size: 15px; }
+.hash-key-trace small { font-family: var(--sans); font-size: 12px; }
+.hash-bucket strong { font-size: 12px; }
+.hash-bucket code { font-size: 15px; }
+.hash-transfer strong { font-size: 12px; }
+.hash-transfer span { font-family: var(--sans); font-size: 12px; }
+.hash-sparse-note { font-family: var(--sans); font-size: 12px; line-height: 1.75; }
