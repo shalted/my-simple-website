@@ -117,9 +117,7 @@ const refs = {
 };
 
 let scenarioName = "insert";
-let stepIndex = 0;
-let autoTimer = null;
-const AUTO_STEP_MS = 2000;
+let heapPlayer;
 
 function nodePosition(index) {
   const level = Math.floor(Math.log2(index + 1));
@@ -190,27 +188,8 @@ function renderCode(scenario, step) {
   });
 }
 
-function renderDots(stepCount) {
-  refs.dots.replaceChildren();
-  for (let index = 0; index < stepCount; index += 1) {
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "step-dot";
-    dot.setAttribute("aria-label", `跳到第 ${index + 1} 步`);
-    if (index < stepIndex) dot.classList.add("is-past");
-    if (index === stepIndex) dot.classList.add("is-active");
-    dot.addEventListener("click", () => {
-      stopAuto();
-      stepIndex = index;
-      render();
-    });
-    refs.dots.append(dot);
-  }
-}
-
-function render() {
+function render({ step, index, total }) {
   const scenario = scenarios[scenarioName];
-  const step = scenario.steps[stepIndex];
   refs.phase.textContent = step.phase;
   refs.title.textContent = step.title;
   refs.copy.textContent = step.copy;
@@ -221,72 +200,52 @@ function render() {
   refs.right.textContent = formatIndex(step.right, step.heap);
   refs.output.textContent = Number.isFinite(step.output) ? step.output : "—";
   refs.codeStatus.textContent = step.status;
-  refs.stepLabel.textContent = `STEP ${String(stepIndex + 1).padStart(2, "0")}`;
-  refs.stepCount.textContent = `${stepIndex + 1} / ${scenario.steps.length}`;
-  refs.prev.disabled = stepIndex === 0;
-  refs.next.disabled = stepIndex === scenario.steps.length - 1;
+  refs.stepLabel.textContent = `STEP ${String(index + 1).padStart(2, "0")}`;
+  refs.stepCount.textContent = `${index + 1} / ${total}`;
   renderTree(step);
   renderArray(step);
   renderCode(scenario, step);
-  renderDots(scenario.steps.length);
 }
 
-function stopAuto() {
-  if (autoTimer) window.clearInterval(autoTimer);
-  autoTimer = null;
-  refs.auto.classList.remove("is-playing");
-  refs.auto.textContent = "自动演示";
-}
-
-function startAuto() {
-  if (stepIndex === scenarios[scenarioName].steps.length - 1) stepIndex = 0;
-  refs.auto.classList.add("is-playing");
-  refs.auto.textContent = "暂停演示";
-  render();
-  autoTimer = window.setInterval(() => {
-    const lastIndex = scenarios[scenarioName].steps.length - 1;
-    if (stepIndex >= lastIndex) {
-      stopAuto();
-      return;
-    }
-    stepIndex += 1;
-    render();
-    if (stepIndex === lastIndex) stopAuto();
-  }, AUTO_STEP_MS);
-}
+heapPlayer = window.XianyuInteractiveLab.createStepPlayer({
+  steps: scenarios[scenarioName].steps,
+  autoStepMs: 2000,
+  endBehavior: "restart",
+  dotElement: "button",
+  dotsInteractive: true,
+  controls: {
+    previous: refs.prev,
+    next: refs.next,
+    auto: refs.auto,
+    reset: refs.reset,
+    dots: refs.dots
+  },
+  labels: {
+    play: "自动演示",
+    pause: "暂停演示",
+    complete: "自动完成",
+    next: "下一步 →",
+    done: "下一步 →",
+    dot: (index) => `跳到第 ${index + 1} 步`
+  },
+  classes: {
+    playing: "is-playing",
+    dot: "step-dot",
+    dotActive: "is-active",
+    dotPast: "is-past"
+  },
+  renderStep: render,
+  onModeChange: () => {}
+});
 
 document.querySelectorAll("[data-scenario]").forEach((button) => {
   button.addEventListener("click", () => {
-    stopAuto();
     scenarioName = button.dataset.scenario;
-    stepIndex = 0;
     document.querySelectorAll("[data-scenario]").forEach((tab) => {
       const active = tab === button;
       tab.classList.toggle("is-active", active);
       tab.setAttribute("aria-pressed", String(active));
     });
-    render();
+    heapPlayer.replaceSteps(scenarios[scenarioName].steps);
   });
 });
-
-refs.prev.addEventListener("click", () => {
-  stopAuto();
-  stepIndex = Math.max(0, stepIndex - 1);
-  render();
-});
-refs.next.addEventListener("click", () => {
-  stopAuto();
-  stepIndex = Math.min(scenarios[scenarioName].steps.length - 1, stepIndex + 1);
-  render();
-});
-refs.reset.addEventListener("click", () => {
-  stopAuto();
-  stepIndex = 0;
-  render();
-});
-refs.auto.addEventListener("click", () => {
-  if (autoTimer) stopAuto();
-  else startAuto();
-});
-
-render();

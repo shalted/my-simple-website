@@ -68,6 +68,7 @@
     @media(max-width:760px){.shell{width:min(100% - 24px,1320px)}.brand span:last-child{display:none}.hero{min-height:auto;gap:34px;padding-block:54px}h1{font-size:clamp(48px,16vw,72px)}.hero-flow{grid-template-columns:1fr}.flow-node{padding:12px 12px 12px 42px;border-right:0;border-bottom:1px solid var(--line)}.flow-node::before{top:15px;left:13px}.reading-layout{grid-template-columns:1fr}.toc{position:static;display:flex;overflow-x:auto}.toc-label{display:none}.toc a{flex:0 0 auto}.arena{min-height:390px}.agent{width:50px}.player{width:62px}.pipeline,.factor-grid,.intent-grid,.layer-grid{grid-template-columns:1fr}.demo-controls{grid-template-columns:1fr 1fr}.step-dots{grid-column:1/-1;grid-row:1}.next-topic{align-items:flex-start;flex-direction:column}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
   </style>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
 </head>
 <body>
   <header class="site-header"><nav class="nav shell" aria-label="专题导航"><a class="brand" href="../../index.html#top"><span class="brand-mark">X</span><span>XIANYUWO / KNOWLEDGE LAB</span></a><a class="back-link" href="../../index.html#topics">← 返回知识地图</a></nav></header>
@@ -83,9 +84,9 @@
           <div class="pipeline"><article><span>FILTER</span><h3>附近有谁</h3><p>空间 Hash 或九宫格先缩小候选范围，再做精确判断。</p></article><article><span>SCORE</span><h3>谁更合适</h3><p>距离、等待、类型、少量随机与历史惩罚形成偏好。</p></article><article><span>TOKEN</span><h3>谁能进攻</h3><p>最高偏好获得下一张攻击票，但仍受节奏限制。</p></article><article><span>INTENT</span><h3>其他怪做什么</h3><p>Orbit、Threaten、Reposition 让等待不等于发呆。</p></article><article><span>MOVE</span><h3>怎样移动</h3><p>RVO / ORCA 在局部范围内选择更安全的速度。</p></article></div>
         </section>
         <section class="article-section" id="demo"><p class="section-label">02 / INTERACTIVE WALKTHROUGH</p><h2>用四只怪，看完整条决策链</h2><p class="lead">这是概念演示，不代表项目生产参数。手动模式用于逐步调试；自动模式每两秒推进一步，到末尾停止。</p>
-          <div class="demo-shell"><div class="demo-head"><span>MONSTER CLUSTER · CONCEPT DEBUGGER</span><span class="phase-counter" id="phase-counter">STEP 01 / 05</span></div><div class="demo-grid">
+          <div class="demo-shell" data-interactive-lab style="--lab-focus-color: var(--acid)"><div class="demo-head"><span>MONSTER CLUSTER · CONCEPT DEBUGGER</span><span class="phase-counter" id="phase-counter">STEP 01 / 05</span></div><div class="demo-grid">
             <div class="arena show-query" id="arena" aria-label="怪物集群概念演示区"><div class="query-ring"></div><div class="slot-ring"></div><i class="slot slot-a"></i><i class="slot slot-b"></i><i class="slot slot-c"></i><i class="slot slot-d"></i><div class="player">PLAYER</div><div class="agent agent-a" data-agent="A"><strong>A</strong><small>附近成员</small><i class="velocity"></i></div><div class="agent agent-b" data-agent="B"><strong>B</strong><small>附近成员</small><i class="velocity"></i></div><div class="agent agent-c" data-agent="C"><strong>C</strong><small>附近成员</small><i class="velocity"></i></div><div class="agent agent-d" data-agent="D"><strong>D</strong><small>附近成员</small><i class="velocity"></i></div></div>
-            <div class="demo-panel"><div class="phase-copy"><p class="phase-kicker" id="phase-kicker">SPATIAL QUERY</p><h3 id="phase-title">先缩小候选范围</h3><p id="phase-description">空间结构只负责找出附近成员。进入查询范围不代表一定能攻击。</p></div><div class="state-list" id="state-list"></div><div class="mode-row"><span>MODE · <b class="mode-status" id="mode-status">MANUAL</b></span><button class="auto-button" id="auto-play" type="button" aria-pressed="false">▶ 自动播放</button></div><div class="demo-controls"><button class="demo-button" id="previous-step" type="button" disabled>← 上一步</button><div class="step-dots" id="step-dots" aria-hidden="true"></div><button class="demo-button primary" id="next-step" type="button">下一步 →</button></div></div>
+            <div class="demo-panel"><div class="phase-copy"><p class="phase-kicker" id="phase-kicker">SPATIAL QUERY</p><h3 id="phase-title">先缩小候选范围</h3><p id="phase-description">空间结构只负责找出附近成员。进入查询范围不代表一定能攻击。</p></div><div class="state-list" id="state-list"></div><div class="mode-row"><span>MODE · <b class="mode-status" id="mode-status">MANUAL</b></span><button class="auto-button" id="auto-play" type="button" data-lab-control aria-pressed="false">▶ 自动播放</button></div><div class="demo-controls"><button class="demo-button" id="previous-step" type="button" data-lab-control disabled>← 上一步</button><div class="step-dots" id="step-dots" data-lab-dots aria-hidden="true"></div><button class="demo-button primary" id="next-step" type="button" data-lab-control>下一步 →</button></div></div>
           </div></div>
         </section>
 
@@ -108,8 +109,8 @@ RVO / ORCA：下一小段时间选择什么速度
       </article>
     </div>
   </main>
+  <script src="/assets/interactive-lab.js"></script>
   <script>
-    const AUTO_STEP_MS = 2000;
     const phases = [
       {kicker:"SPATIAL QUERY",title:"先缩小候选范围",description:"空间结构只负责找出附近成员。进入查询范围不代表一定能攻击，后面仍要经过资格过滤。",arenaClass:"show-query",positions:{A:[22,30],B:[78,28],C:[25,76],D:[80,72]},agents:{A:["附近成员","nearby"],B:["附近成员","nearby"],C:["附近成员","nearby"],D:["附近成员","nearby"]},rows:[["范围","九宫格 / Hash","粗筛"],["结果","4 个附近成员","候选集"],["下一层","资格过滤","未执行"]]},
       {kicker:"FILTER · SCORE",title:"资格和偏好分开判断",description:"先排除不具备条件的成员，再组合距离、等待、类型和历史等可解释因素。这里只展示因素方向，不展示项目权重。",arenaClass:"",positions:{A:[28,34],B:[70,30],C:[29,70],D:[73,70]},agents:{A:["距离 + / 最近攻击 −","candidate cooldown"],B:["等待 ++ / 距离 +","candidate"],C:["类型 + / 距离 −","candidate"],D:["等待 + / 随机 +","candidate"]},rows:[["A","近期攻击惩罚","降权"],["B","等待与距离","优先"],["C / D","仍可竞争","候选"]]},
@@ -120,42 +121,30 @@ RVO / ORCA：下一小段时间选择什么速度
 
     const arena=document.querySelector("#arena"),phaseCounter=document.querySelector("#phase-counter"),phaseKicker=document.querySelector("#phase-kicker"),phaseTitle=document.querySelector("#phase-title"),phaseDescription=document.querySelector("#phase-description"),stateList=document.querySelector("#state-list"),previousButton=document.querySelector("#previous-step"),nextButton=document.querySelector("#next-step"),autoButton=document.querySelector("#auto-play"),modeStatus=document.querySelector("#mode-status"),dots=document.querySelector("#step-dots");
     const agents=[...document.querySelectorAll(".agent")],tocLinks=[...document.querySelectorAll(".toc a")];
-    let phaseIndex=0,autoTimer=null;
 
-    phases.forEach((_,index)=>{const dot=document.createElement("i");dot.className="step-dot";dot.dataset.index=index;dots.appendChild(dot)});
-
-    function renderPhase(){
-      const phase=phases[phaseIndex];
+    function renderPhase({step:phase,index,total}){
       arena.className=`arena ${phase.arenaClass}`.trim();
-      phaseCounter.textContent=`STEP ${String(phaseIndex+1).padStart(2,"0")} / ${String(phases.length).padStart(2,"0")}`;
+      phaseCounter.textContent=`STEP ${String(index+1).padStart(2,"0")} / ${String(total).padStart(2,"0")}`;
       phaseKicker.textContent=phase.kicker;phaseTitle.textContent=phase.title;phaseDescription.textContent=phase.description;
       agents.forEach(agent=>{const id=agent.dataset.agent,[left,top]=phase.positions[id],[label,className]=phase.agents[id];agent.style.left=`${left}%`;agent.style.top=`${top}%`;agent.className=`agent agent-${id.toLowerCase()} ${className}`.trim();agent.querySelector("small").textContent=label});
-      stateList.innerHTML="";phase.rows.forEach(([label,value,state])=>{const row=document.createElement("div");row.className="state-row";row.innerHTML=`<i></i><span>${label} · ${value}</span><b>${state}</b>`;stateList.appendChild(row)});
-      [...dots.children].forEach((dot,index)=>dot.classList.toggle("active",index===phaseIndex));
-      previousButton.disabled=phaseIndex===0;nextButton.disabled=phaseIndex===phases.length-1;nextButton.textContent=phaseIndex===phases.length-1?"演示完成":"下一步 →";
-      if(phaseIndex===phases.length-1){if(autoTimer)stopAuto();autoButton.disabled=true;autoButton.textContent="自动完成";modeStatus.textContent="COMPLETE"}
-      else{autoButton.disabled=false}
+      stateList.replaceChildren();phase.rows.forEach(([label,value,state])=>{const row=document.createElement("div");row.className="state-row";row.innerHTML=`<i></i><span>${label} · ${value}</span><b>${state}</b>`;stateList.appendChild(row)});
     }
 
-    function stopAuto(){
-      if(autoTimer){window.clearInterval(autoTimer);autoTimer=null}
-      autoButton.classList.remove("playing");autoButton.setAttribute("aria-pressed","false");autoButton.textContent="▶ 自动播放";modeStatus.textContent="MANUAL";
-    }
-
-    function startAuto(){
-      if(phaseIndex===phases.length-1)return;
-      autoButton.classList.add("playing");autoButton.setAttribute("aria-pressed","true");autoButton.textContent="Ⅱ 暂停";modeStatus.textContent="AUTO · 2S";
-      autoTimer=window.setInterval(()=>{if(phaseIndex>=phases.length-1){stopAuto();return}phaseIndex+=1;renderPhase()},AUTO_STEP_MS);
-    }
-
-    previousButton.addEventListener("click",()=>{stopAuto();if(phaseIndex===0)return;phaseIndex-=1;renderPhase()});
-    nextButton.addEventListener("click",()=>{stopAuto();if(phaseIndex===phases.length-1)return;phaseIndex+=1;renderPhase()});
-    autoButton.addEventListener("click",()=>{if(autoTimer)stopAuto();else startAuto()});
-    document.addEventListener("visibilitychange",()=>{if(document.hidden)stopAuto()});
-
+    const swarmPlayer=window.XianyuInteractiveLab.createStepPlayer({
+      steps:phases,
+      autoStepMs:2000,
+      endBehavior:"disable",
+      dotElement:"i",
+      dotsInteractive:false,
+      controls:{previous:previousButton,next:nextButton,auto:autoButton,reset:null,dots},
+      labels:{play:"▶ 自动播放",pause:"Ⅱ 暂停",complete:"自动完成",next:"下一步 →",done:"演示完成",dot:index=>`第 ${index+1} 步`},
+      classes:{playing:"playing",dot:"step-dot",dotActive:"active",dotPast:"past"},
+      renderStep:renderPhase,
+      onModeChange:({mode,atEnd})=>{modeStatus.textContent=atEnd?"COMPLETE":mode==="auto"?"AUTO · 2S":"MANUAL"}
+    });
     const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(!entry.isIntersecting)return;tocLinks.forEach(link=>link.classList.toggle("active",link.getAttribute("href")===`#${entry.target.id}`))})},{rootMargin:"-20% 0px -65%",threshold:0});
     document.querySelectorAll(".article-section").forEach(section=>observer.observe(section));
-    renderPhase();
+
   </script>
 </body>
 </html>

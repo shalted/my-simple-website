@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="可单步调试的二叉堆优先队列实验：同步观察数组、树结构、关键数据与 C# 代码。">
   <title>二叉堆优先队列 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
   <link rel="stylesheet" href="/assets/heap-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
   <script src="/assets/heap-lab.js" defer></script>
 </head>
 <body>
@@ -27,7 +29,7 @@
       <p>数组、隐式二叉树、关键下标和 C# 代码保持同步。手动模式适合逐步调试，自动模式每两秒推进一步。</p>
     </section>
 
-    <section class="lab" aria-label="二叉堆交互实验">
+    <section class="lab" data-interactive-lab style="--lab-focus-color: var(--acid)" aria-label="二叉堆交互实验">
       <div class="lab-toolbar">
         <div class="scenario-tabs" role="group" aria-label="选择演示过程">
           <button class="scenario-tab is-active" type="button" data-scenario="insert" aria-pressed="true">
@@ -89,12 +91,12 @@
       </div>
 
       <div class="controls">
-        <div class="step-dots" id="step-dots" aria-label="步骤进度"></div>
+        <div class="step-dots" id="step-dots" data-lab-dots aria-label="步骤进度"></div>
         <div class="control-buttons">
-          <button type="button" id="reset-button">重置</button>
-          <button type="button" id="prev-button">← 上一步</button>
-          <button class="auto-button" type="button" id="auto-button">自动演示</button>
-          <button class="next-button" type="button" id="next-button">下一步 →</button>
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button class="auto-button" type="button" id="auto-button" data-lab-control aria-pressed="false">自动演示</button>
+          <button class="next-button" type="button" id="next-button" data-lab-control>下一步 →</button>
         </div>
       </div>
     </section>

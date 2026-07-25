@@ -1,0 +1,36 @@
+:where([data-interactive-lab]) [data-lab-control] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:where([data-interactive-lab]) [data-lab-control]:focus-visible,
+:where([data-interactive-lab]) [data-lab-dot]:focus-visible {
+  outline: 2px solid var(--lab-focus-color);
+  outline-offset: 3px;
+}
+
+:where([data-interactive-lab]) [data-lab-control][aria-pressed="true"] {
+  box-shadow: 0 0 0 1px var(--lab-focus-color);
+}
+
+:where([data-interactive-lab]) [data-lab-control]:disabled {
+  cursor: not-allowed;
+}
+
+:where([data-interactive-lab]) [data-lab-dots] {
+  user-select: none;
+}
+
+:where([data-interactive-lab]) [data-lab-dot] {
+  padding: 0;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-interactive-lab]) *,
+  :where([data-interactive-lab]) *::before,
+  :where([data-interactive-lab]) *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
