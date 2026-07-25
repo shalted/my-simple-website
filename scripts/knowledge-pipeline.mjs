@@ -340,7 +340,7 @@ function siteHeader() {
       <div class="knowledge-nav-links">
         <a href="/#lab">交互实验</a>
         <a href="/knowledge/library/">知识库</a>
-        <a href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
   </header>`;
