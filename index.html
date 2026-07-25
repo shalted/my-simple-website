@@ -506,6 +506,23 @@
         padding: 10px 16px;
       }
 
+      .lab-mode {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        padding: 0 10px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+      }
+
+      .lab-controls .button.is-playing {
+        color: var(--ink);
+        border-color: var(--acid);
+        background: var(--acid);
+      }
+
       .lab-stage {
         min-width: 0;
         padding: 22px;
@@ -1253,6 +1270,7 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="/assets/interactive-lab.css" />
   </head>
   <body>
     <header class="site-header" id="site-header">
@@ -1317,7 +1335,7 @@
           </p>
         </div>
 
-        <article class="lab reveal">
+        <article class="lab reveal" data-interactive-lab style="--lab-focus-color: var(--acid)">
           <header class="lab-copy">
             <div class="lab-title">
               <span class="lab-index">LIVE NOTE · A* PATHFINDING</span>
@@ -1336,9 +1354,11 @@
               </div>
             </div>
             <div class="lab-controls">
-              <button class="button button-primary" id="start-astar" type="button">初始化搜索</button>
-              <button class="button" id="next-astar" type="button" disabled>下一步</button>
-              <button class="button" id="reset-astar" type="button">重置地图</button>
+              <span class="lab-mode" id="astar-mode">MODE · MANUAL</span>
+              <button class="button button-primary" id="start-astar" type="button" data-lab-control>初始化搜索</button>
+              <button class="button" id="next-astar" type="button" data-lab-control disabled>下一步</button>
+              <button class="button" id="auto-astar" type="button" data-lab-control aria-pressed="false" disabled>自动演示</button>
+              <button class="button" id="reset-astar" type="button" data-lab-control>重置地图</button>
             </div>
           </header>
           <div class="lab-stage">
@@ -1515,6 +1535,7 @@
       </div>
     </footer>
 
+    <script src="/assets/interactive-lab.js"></script>
     <script>
       const COLS = 10;
       const ROWS = 7;
@@ -1529,7 +1550,9 @@
       const grid = document.querySelector("#astar-grid");
       const startButton = document.querySelector("#start-astar");
       const nextButton = document.querySelector("#next-astar");
+      const autoButton = document.querySelector("#auto-astar");
       const resetButton = document.querySelector("#reset-astar");
+      const astarMode = document.querySelector("#astar-mode");
       const message = document.querySelector("#astar-message");
       const metric = document.querySelector("#astar-metric");
       const logicState = document.querySelector("#logic-state");
@@ -1689,9 +1712,7 @@
         };
         message.textContent = "搜索已初始化。下一步将从 Open 选择 F 最小的节点。";
         metric.textContent = `起点 H ${startNode.h} · F ${scoreOf(startNode)}`;
-        nextButton.disabled = false;
         nextButton.textContent = "选择最优节点";
-        startButton.disabled = true;
         renderKeyData();
         renderChanges(["Open + START", "bestCost[START] = 0"]);
         setLogic("loop", "Open 保存待检查的候选节点；Closed 保存已经检查过的节点；每个节点的 Parent 用来还原最终路径。", "INITIALIZED");
@@ -1703,9 +1724,7 @@
           state.complete = true;
           message.textContent = "Open 已为空，当前障碍布局下没有可达路径。";
           metric.textContent = "搜索结束";
-          nextButton.disabled = true;
           nextButton.textContent = "没有路径";
-          startButton.disabled = false;
           setLogic("loop", "Open 为空，说明没有任何候选节点可以继续抵达终点。", "NO PATH");
           renderChanges(["Open = 空", "搜索终止：没有路径"]);
           renderKeyData();
@@ -1792,9 +1811,7 @@
           if (state.previousCell) state.previousCell.classList.remove("current");
           message.textContent = `路径回溯完成：共 ${state.current.g} 步，检查了 ${state.closed.size} 个节点。`;
           metric.textContent = "沿 Parent 链完成回溯";
-          nextButton.disabled = true;
           nextButton.textContent = "已完成";
-          startButton.disabled = false;
           renderChanges(["到达 START", "Parent 链回溯完成"]);
           renderKeyData();
           setLogic("goal", "Parent 链已经回到起点；黄色格子连接成最终路径。", "COMPLETE");
@@ -1824,8 +1841,6 @@
         renderGrid();
         message.textContent = "点击格子调整障碍，然后初始化搜索。";
         metric.textContent = "G — · H — · F —";
-        startButton.disabled = false;
-        nextButton.disabled = true;
         nextButton.textContent = "下一步";
         renderKeyData();
         renderChanges(["等待初始化搜索"]);
@@ -1836,9 +1851,36 @@
         button.addEventListener("click", () => setExplainPanel(button.dataset.panel));
       });
 
-      startButton.addEventListener("click", initializeSearch);
-      nextButton.addEventListener("click", advanceSearch);
-      resetButton.addEventListener("click", resetGrid);
+      const astarPlayer = window.XianyuInteractiveLab.createProcessPlayer({
+        autoStepMs: 2000,
+        controls: {
+          initialize: startButton,
+          next: nextButton,
+          auto: autoButton,
+          reset: resetButton
+        },
+        labels: {
+          play: "自动演示",
+          pause: "暂停演示",
+          complete: "自动完成"
+        },
+        classes: {
+          playing: "is-playing"
+        },
+        initializeProcess: initializeSearch,
+        advanceProcess: advanceSearch,
+        resetProcess: resetGrid,
+        readState: () => ({
+          initialized: searchState !== null,
+          complete: searchState ? searchState.complete : false
+        }),
+        onStateChange: ({ mode, initialized, complete }) => {
+          if (complete) astarMode.textContent = "MODE · COMPLETE";
+          else if (mode === "auto") astarMode.textContent = "MODE · AUTO · 2S";
+          else if (initialized) astarMode.textContent = "MODE · MANUAL DEBUG";
+          else astarMode.textContent = "MODE · MANUAL";
+        }
+      });
       window.addEventListener("scroll", () => {
         header.classList.toggle("scrolled", window.scrollY > 20);
       }, { passive: true });
@@ -1853,7 +1895,7 @@
       }, { threshold: 0.12 });
 
       document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
-      resetGrid();
+      astarPlayer.reset();
     </script>
   </body>
 </html>

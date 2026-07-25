@@ -262,5 +262,153 @@
     });
   }
 
-  global.XianyuInteractiveLab = Object.freeze({ createStepPlayer });
+  function createProcessPlayer(config) {
+    if (!config || typeof config !== "object") fail("createProcessPlayer 需要配置对象");
+
+    const {
+      autoStepMs,
+      controls,
+      labels,
+      classes,
+      initializeProcess,
+      advanceProcess,
+      resetProcess,
+      readState,
+      onStateChange
+    } = config;
+
+    if (!Number.isInteger(autoStepMs) || autoStepMs <= 0) fail("autoStepMs 必须是正整数");
+    if (!controls || typeof controls !== "object") fail("controls 配置缺失");
+    if (!labels || typeof labels !== "object") fail("labels 配置缺失");
+    if (!classes || typeof classes !== "object") fail("classes 配置缺失");
+    requireElement(controls.initialize, "controls.initialize", false);
+    requireElement(controls.next, "controls.next", false);
+    requireElement(controls.auto, "controls.auto", false);
+    requireElement(controls.reset, "controls.reset", false);
+    requireString(labels.play, "labels.play");
+    requireString(labels.pause, "labels.pause");
+    requireString(labels.complete, "labels.complete");
+    requireString(classes.playing, "classes.playing");
+    requireFunction(initializeProcess, "initializeProcess");
+    requireFunction(advanceProcess, "advanceProcess");
+    requireFunction(resetProcess, "resetProcess");
+    requireFunction(readState, "readState");
+    requireFunction(onStateChange, "onStateChange");
+
+    let timer = null;
+    let destroyed = false;
+    const listeners = [];
+
+    function assertAlive() {
+      if (destroyed) fail("动态过程播放器已经销毁");
+    }
+
+    function state() {
+      const value = readState();
+      if (!value || typeof value !== "object") fail("readState 必须返回状态对象");
+      if (typeof value.initialized !== "boolean") fail("readState.initialized 必须是布尔值");
+      if (typeof value.complete !== "boolean") fail("readState.complete 必须是布尔值");
+      if (!value.initialized && value.complete) fail("未初始化的过程不能标记为完成");
+      return value;
+    }
+
+    function mode() {
+      return timer === null ? "manual" : "auto";
+    }
+
+    function sync(reason) {
+      assertAlive();
+      const current = state();
+      controls.initialize.disabled = current.initialized && !current.complete;
+      controls.next.disabled = !current.initialized || current.complete;
+      controls.auto.disabled = !current.initialized || current.complete;
+      controls.auto.classList.toggle(classes.playing, mode() === "auto");
+      controls.auto.setAttribute("aria-pressed", String(mode() === "auto"));
+      if (mode() === "auto") controls.auto.textContent = labels.pause;
+      else if (current.complete) controls.auto.textContent = labels.complete;
+      else controls.auto.textContent = labels.play;
+      onStateChange({ ...current, mode: mode(), reason });
+      return current;
+    }
+
+    function pause(reason) {
+      assertAlive();
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+      sync(reason);
+    }
+
+    function initialize() {
+      pause("initialize");
+      initializeProcess();
+      sync("initialize");
+    }
+
+    function advanceOnce(reason) {
+      const before = state();
+      if (!before.initialized || before.complete) return;
+      advanceProcess();
+      const after = sync(reason);
+      if (after.complete && timer !== null) pause("complete");
+    }
+
+    function next() {
+      pause("manual-step");
+      advanceOnce("manual-step");
+    }
+
+    function play() {
+      assertAlive();
+      const current = state();
+      if (!current.initialized || current.complete || timer !== null) return;
+      timer = window.setInterval(() => advanceOnce("auto-step"), autoStepMs);
+      sync("play");
+    }
+
+    function toggleAuto() {
+      if (timer === null) play();
+      else pause("pause");
+    }
+
+    function reset() {
+      pause("reset");
+      resetProcess();
+      sync("reset");
+    }
+
+    function listen(element, type, handler) {
+      element.addEventListener(type, handler);
+      listeners.push(() => element.removeEventListener(type, handler));
+    }
+
+    listen(controls.initialize, "click", initialize);
+    listen(controls.next, "click", next);
+    listen(controls.auto, "click", toggleAuto);
+    listen(controls.reset, "click", reset);
+    listen(document, "visibilitychange", () => {
+      if (document.hidden) pause("document-hidden");
+    });
+
+    function destroy() {
+      if (destroyed) return;
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+      listeners.splice(0).forEach((remove) => remove());
+      destroyed = true;
+    }
+
+    sync("initial");
+
+    return Object.freeze({
+      destroy,
+      initialize,
+      next,
+      pause,
+      play,
+      reset,
+      state: () => Object.freeze({ ...state(), mode: mode() })
+    });
+  }
+
+  global.XianyuInteractiveLab = Object.freeze({ createStepPlayer, createProcessPlayer });
 })(window);

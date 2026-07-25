@@ -71,6 +71,32 @@ player.replaceSteps(nextScenario.steps);
 
 播放器会暂停当前自动播放、回到第一步、重建进度点并重新渲染。
 
+## 动态过程
+
+运行时才能知道下一步的算法（例如 A*）使用 `createProcessPlayer`。专题继续负责真实计算，框架只管理初始化、手动推进、自动推进、重置与完成状态。
+
+```js
+const player = XianyuInteractiveLab.createProcessPlayer({
+  autoStepMs: 2000,
+  controls: { initialize, next, auto, reset },
+  labels: {
+    play: "自动演示",
+    pause: "暂停演示",
+    complete: "自动完成"
+  },
+  classes: { playing: "is-playing" },
+  initializeProcess,
+  advanceProcess,
+  resetProcess,
+  readState: () => ({
+    initialized: processState !== null,
+    complete: processState ? processState.complete : false
+  }),
+  onStateChange
+});
+```
+
+`readState` 是完成条件的唯一来源。框架不会猜测总步数，也不会把异常转换成“完成”。
 ## 专题边界
 
 框架不理解 A*、二叉堆、集群 AI 等领域数据，也不接管 SVG、网格、代码高亮或角色动画。领域逻辑保留在各自适配器中，避免把公共运行时变成难维护的万能组件。
