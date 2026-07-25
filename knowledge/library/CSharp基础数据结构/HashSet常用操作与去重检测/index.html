@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="HashSet&lt;T&gt; 可以理解成：">
-  <title>HashSet 常用操作与去重检测 · XIANYUWO</title>
+  <meta name="description" content="HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。">
+  <title>HashSet：把“是否见过”变成可观察的状态 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
   <link rel="stylesheet" href="/assets/knowledge.css">
@@ -29,355 +29,234 @@
   <main>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
-      <h1>HashSet 常用操作与去重检测</h1>
-      <p class="hero-copy">HashSet&lt;T&gt; 可以理解成：</p>
+      <h1>HashSet：把“是否见过”变成可观察的状态</h1>
+      <p class="hero-copy">HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
     <strong>CONTENTS</strong>
-    <a data-toc-link href="#hashset-是什么">HashSet 是什么</a>
-    <a data-toc-link href="#基础声明">基础声明</a>
-    <a data-toc-link href="#add-有返回值">Add 有返回值</a>
-    <a data-toc-link href="#判断是否存在">判断是否存在</a>
-    <a data-toc-link href="#删除">删除</a>
-    <a data-toc-link href="#去重例子">去重例子</a>
-    <a data-toc-link href="#标记已访问">标记已访问</a>
-    <a data-toc-link href="#冲突检测">冲突检测</a>
-    <a data-toc-link href="#和-list-的区别">和 List 的区别</a>
-    <a data-toc-link href="#和-dictionary-的区别">和 Dictionary 的区别</a>
-    <a data-toc-link href="#string-忽略大小写">string 忽略大小写</a>
-    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+    <a data-toc-link href="#先建立一个准确的画面">先建立一个准确的画面</a>
+    <a data-toc-link href="#add-其实同时做了两件事">Add 其实同时做了两件事</a>
+    <a data-toc-link href="#contains-只提问-不修改">Contains 只提问，不修改</a>
+    <a data-toc-link href="#remove-只有找到时才改变集合">Remove 只有找到时才改变集合</a>
+    <a data-toc-link href="#为什么算法里经常用-visited">为什么算法里经常用 visited</a>
+    <a data-toc-link href="#去重时发生了什么">去重时发生了什么</a>
+    <a data-toc-link href="#list-hashset-dictionary-怎么选">List、HashSet、Dictionary 怎么选</a>
+    <a data-toc-link href="#谁算-同一个值">谁算“同一个值”</a>
+    <a data-toc-link href="#最后只记住这一个判断">最后只记住这一个判断</a>
   </nav>
       <article class="article-body" id="article-start">
 
+      <aside class="article-callout">
+        <strong>先看状态，不背 API</strong>
+        <span>下方实验会把每次 Add 拆成“查重 → 返回结果 → 是否写入”，并同步展示集合与代码。</span>
+      </aside>
 
-    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
-      <header class="deck-header">
+    <section class="hashset-lab" data-hashset-lab aria-labelledby="hashset-lab-title">
+      <header class="hashset-lab__header">
         <div>
-          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
-          <h2>把章节变成可单步观察的过程</h2>
+          <span>HASHSET / STATE DEBUGGER</span>
+          <h2 id="hashset-lab-title">同一个值为什么加不进去？</h2>
+          <p>输入序列固定为 A → B → A → C → B。手动逐步观察：HashSet 会先询问“见过吗”，只有没见过时才改变集合。</p>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <strong><b data-hashset-current>01</b> / 11</strong>
       </header>
-      <div class="deck-stage">
-        <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：HashSet 是什么">
-      <span>01</span>
-      <strong>HashSet 是什么</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：基础声明">
-      <span>02</span>
-      <strong>基础声明</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Add 有返回值">
-      <span>03</span>
-      <strong>Add 有返回值</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：判断是否存在">
-      <span>04</span>
-      <strong>判断是否存在</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：删除">
-      <span>05</span>
-      <strong>删除</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：去重例子">
-      <span>06</span>
-      <strong>去重例子</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：标记已访问">
-      <span>07</span>
-      <strong>标记已访问</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：冲突检测">
-      <span>08</span>
-      <strong>冲突检测</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：和 List 的区别">
-      <span>09</span>
-      <strong>和 List 的区别</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：和 Dictionary 的区别">
-      <span>10</span>
-      <strong>和 Dictionary 的区别</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：string 忽略大小写">
-      <span>11</span>
-      <strong>string 忽略大小写</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
-      <strong>最重要的收获</strong>
-    </button></nav>
-        <div class="deck-slides">
-      <article class="deck-slide active" data-deck-slide="0">
-        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
-        <h3>HashSet 是什么</h3>
-        <p><code>HashSet&lt;T&gt;</code> 可以理解成：</p>
-
-        <pre><code class="language-text">一组不重复的东西。</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
-        <h3>基础声明</h3>
-        <p>添加元素：</p>
-
-        <pre><code class="language-csharp">HashSet&lt;string&gt; names = new();</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
-        <h3>Add 有返回值</h3>
-        <p>含义：</p>
-
-        <pre><code class="language-csharp">bool added = names.Add(&quot;Alice&quot;);</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
-        <h3>判断是否存在</h3>
-        <p><code>HashSet.Contains</code> 很快，和 <code>Dictionary.ContainsKey</code> 类似。</p>
-
-        <pre><code class="language-csharp">if (names.Contains(&quot;Alice&quot;))
-{
-    Debug.Log(&quot;存在 Alice&quot;);
-}</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
-        <h3>删除</h3>
-        <p>也有返回值：</p>
-
-        <pre><code class="language-csharp">names.Remove(&quot;Alice&quot;);</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
-        <h3>去重例子</h3>
-        <p>假设有一个列表：</p>
-
-        <pre><code class="language-csharp">List&lt;int&gt; ids = new() { 1, 2, 2, 3, 3, 3, 4 };</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
-        <h3>标记已访问</h3>
-        <p>这是 <code>HashSet</code> 最常见的算法用途。</p>
-
-        <pre><code class="language-csharp">HashSet&lt;int&gt; visited = new();
-
-void Visit(int nodeId)
-{
-    if (!visited.Add(nodeId))
-    {
-        return; // 已经访问过，直接跳过
-    }
-
-    Debug.Log($&quot;处理节点: {nodeId}&quot;);
-
-    // 继续处理它关联的其他节点
-}</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
-        <h3>冲突检测</h3>
-        <p>例如槽位占用检测：</p>
-
-        <pre><code class="language-csharp">HashSet&lt;int&gt; usedSlots = new();
-
-if (!usedSlots.Add(slotIndex))
-{
-    Debug.Log(&quot;这个槽位已经被占用了&quot;);
-}</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
-        <h3>和 List 的区别</h3>
-        <p><code>List&lt;T&gt;</code>：</p>
-
-        <pre><code class="language-text">可以有重复
-有顺序
-可以用下标访问
-Contains 通常要从头找，O(n)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
-        <h3>和 Dictionary 的区别</h3>
-        <p><code>Dictionary&lt;TKey, TValue&gt;</code>：</p>
-
-        <pre><code class="language-text">key -&gt; value</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
-        <h3>string 忽略大小写</h3>
-        <p>和 <code>Dictionary</code> 一样，<code>HashSet&lt;string&gt;</code> 也可以指定比较方式：</p>
-
-        <pre><code class="language-csharp">HashSet&lt;string&gt; paths = new(StringComparer.OrdinalIgnoreCase);
-
-paths.Add(&quot;UI/Icon/Player&quot;);
-Debug.Log(paths.Contains(&quot;ui/icon/player&quot;)); // true</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
-        <h3>最重要的收获</h3>
-        <p>最值得记住的写法：</p>
-
-        <pre><code class="language-text">List：存一排东西，允许重复，适合顺序遍历。
-Dictionary：按 key 找 value。
-HashSet：只关心有没有，自动去重，适合标记、去重、冲突检测。</code></pre>
-      </article></div>
+      <div class="hashset-stream" aria-label="待处理输入序列">
+        <span>输入序列</span>
+        <div data-hashset-stream></div>
       </div>
-      <footer class="deck-controls">
-        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
-        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
-        <button type="button" data-deck-next data-lab-control>下一步 →</button>
-        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
-        <div data-deck-runtime-dots hidden></div>
-      </footer>
+      <div class="hashset-lab__stage">
+        <div class="hashset-state">
+          <span class="hashset-label">BEFORE / 操作前</span>
+          <div class="hashset-values" data-hashset-before></div>
+        </div>
+        <div class="hashset-operation">
+          <span class="hashset-label">CURRENT OPERATION</span>
+          <strong data-hashset-operation>等待开始</strong>
+          <p data-hashset-explanation></p>
+          <div class="hashset-verdict" data-hashset-verdict></div>
+        </div>
+        <div class="hashset-state">
+          <span class="hashset-label">AFTER / 操作后</span>
+          <div class="hashset-values" data-hashset-after></div>
+        </div>
+      </div>
+      <div class="hashset-code">
+        <div><span>1</span><code>foreach (string value in input)</code></div>
+        <div><span>2</span><code>bool added = seen.Add(value);</code></div>
+        <div><span>3</span><code>if (!added) duplicates++;</code></div>
+        <div><span>4</span><code>else uniqueValues.Add(value);</code></div>
+      </div>
+      <div class="hashset-controls">
+        <button type="button" data-hashset-reset>重置</button>
+        <button type="button" data-hashset-prev>← 上一步</button>
+        <button type="button" data-hashset-auto aria-pressed="false">自动演示</button>
+        <button class="is-primary" type="button" data-hashset-next>下一步 →</button>
+        <div class="hashset-dots" data-hashset-dots></div>
+      </div>
+      <div class="hashset-playground">
+        <div>
+          <span class="hashset-label">TRY IT / 自由操作</span>
+          <h3>亲手试一次 Add、Contains、Remove</h3>
+          <p>输入一个值后选择操作。空输入会明确提示，不会被悄悄写入集合。</p>
+        </div>
+        <div class="hashset-playground__actions">
+          <label for="hashset-value">值</label>
+          <input id="hashset-value" data-hashset-input type="text" autocomplete="off" placeholder="例如 Alice">
+          <button type="button" data-hashset-action="add">Add</button>
+          <button type="button" data-hashset-action="contains">Contains</button>
+          <button type="button" data-hashset-action="remove">Remove</button>
+          <button type="button" data-hashset-clear>Clear</button>
+        </div>
+        <div class="hashset-playground__result">
+          <div><span>当前集合</span><div class="hashset-values" data-hashset-live-set></div></div>
+          <p data-hashset-live-result aria-live="polite">集合目前为空，请输入一个值。</p>
+        </div>
+      </div>
     </section>
         <p>分类：CSharp 基础数据结构</p>
-<h2 id="hashset-是什么">HashSet 是什么</h2>
-<p><code>HashSet&lt;T&gt;</code> 可以理解成：</p>
-<pre><code class="language-text">一组不重复的东西。</code></pre>
-<p>也可以理解成：</p>
-<pre><code class="language-text">只存 key，不存 value 的 Dictionary。</code></pre>
-<p>如果只关心“有没有”，不关心“对应什么值”，就很适合用 <code>HashSet&lt;T&gt;</code>。</p>
-<h2 id="基础声明">基础声明</h2>
-<pre><code class="language-csharp">HashSet&lt;string&gt; names = new();</code></pre>
-<p>添加元素：</p>
-<pre><code class="language-csharp">names.Add(&quot;Alice&quot;);
-names.Add(&quot;Bob&quot;);
-names.Add(&quot;Alice&quot;);</code></pre>
-<p>最后集合里只有：</p>
-<pre><code class="language-text">Alice
-Bob</code></pre>
-<p>因为 <code>HashSet</code> 自动去重。</p>
-<h2 id="add-有返回值">Add 有返回值</h2>
-<pre><code class="language-csharp">bool added = names.Add(&quot;Alice&quot;);</code></pre>
-<p>含义：</p>
-<pre><code class="language-text">true：之前没有，添加成功
-false：之前已经有了，没有重复添加</code></pre>
-<p>例子：</p>
-<pre><code class="language-csharp">HashSet&lt;string&gt; names = new();
-
-bool first = names.Add(&quot;Alice&quot;);  // true
-bool second = names.Add(&quot;Alice&quot;); // false</code></pre>
-<p>这个返回值很常用，可以顺便做重复检测：</p>
-<pre><code class="language-csharp">if (!names.Add(&quot;Alice&quot;))
+<h2 id="先建立一个准确的画面">先建立一个准确的画面</h2>
+<p><code>HashSet&lt;T&gt;</code> 不是“一排数据”，而是一张<strong>只登记某个值是否出现过</strong>的表。</p>
+<p>它始终遵守一条规则：同一个值最多登记一次。</p>
+<p>假设输入依次到来：</p>
+<pre><code class="language-text">A → B → A → C → B</code></pre>
+<p>处理结束后，集合是：</p>
+<pre><code class="language-text">{ A, B, C }</code></pre>
+<p>第二个 <code>A</code> 和第二个 <code>B</code> 没有被再次写入。页面上方的实验会把这个过程拆成 11 个状态，建议先手动点完一遍。</p>
+<h2 id="add-其实同时做了两件事">Add 其实同时做了两件事</h2>
+<p>这一行不是单纯的“添加”：</p>
+<pre><code class="language-csharp">bool added = seen.Add(value);</code></pre>
+<p>它会完成：</p>
+<ol>
+<li>检查 <code>value</code> 是否已经存在。</li>
+<li>不存在时写入，并返回 <code>true</code>。</li>
+<li>已存在时保持集合不变，并返回 <code>false</code>。</li>
+</ol>
+<p>所以这段代码可以直接检测重复：</p>
+<pre><code class="language-csharp">if (!seen.Add(value))
 {
-    Debug.Log(&quot;Alice 已经存在&quot;);
+    duplicates++;
 }</code></pre>
-<h2 id="判断是否存在">判断是否存在</h2>
-<pre><code class="language-csharp">if (names.Contains(&quot;Alice&quot;))
-{
-    Debug.Log(&quot;存在 Alice&quot;);
-}</code></pre>
-<p><code>HashSet.Contains</code> 很快，和 <code>Dictionary.ContainsKey</code> 类似。</p>
-<p>适合回答：</p>
-<pre><code class="language-text">这个 ID 是否出现过？
-这个怪物是否已经处理过？
-这个槽位是否已经被占用？
-这个资源路径是否已经收集过？</code></pre>
-<h2 id="删除">删除</h2>
-<pre><code class="language-csharp">names.Remove(&quot;Alice&quot;);</code></pre>
-<p>也有返回值：</p>
-<pre><code class="language-csharp">bool removed = names.Remove(&quot;Alice&quot;);</code></pre>
-<p>含义：</p>
-<pre><code class="language-text">true：找到了并删除
-false：没找到</code></pre>
-<p>清空：</p>
-<pre><code class="language-csharp">names.Clear();</code></pre>
-<h2 id="去重例子">去重例子</h2>
-<p>假设有一个列表：</p>
-<pre><code class="language-csharp">List&lt;int&gt; ids = new() { 1, 2, 2, 3, 3, 3, 4 };</code></pre>
-<p>想得到不重复的 ID：</p>
-<pre><code class="language-csharp">HashSet&lt;int&gt; uniqueIds = new();
-
-foreach (int id in ids)
-{
-    uniqueIds.Add(id);
-}</code></pre>
-<p>结果：</p>
-<pre><code class="language-text">1, 2, 3, 4</code></pre>
-<p>如果还想变回 <code>List</code>：</p>
-<pre><code class="language-csharp">List&lt;int&gt; result = new(uniqueIds);</code></pre>
-<h2 id="标记已访问">标记已访问</h2>
-<p>这是 <code>HashSet</code> 最常见的算法用途。</p>
-<p>比如遍历一组节点，避免重复处理：</p>
+<p>最关键的不是背住 <code>Add</code>，而是记住：</p>
+<pre><code class="language-text">Add 返回 true  → 第一次见到 → 集合发生变化
+Add 返回 false → 以前见过   → 集合保持不变</code></pre>
+<h2 id="contains-只提问-不修改">Contains 只提问，不修改</h2>
+<p><code>Contains</code> 回答“这个值现在是否在集合中”：</p>
+<pre><code class="language-csharp">bool exists = seen.Contains(&quot;A&quot;);</code></pre>
+<p>如果集合是 <code>{ A, B }</code>，查询 <code>A</code> 返回 <code>true</code>，但集合仍然是 <code>{ A, B }</code>。</p>
+<p>它适合用于只想判断、暂时不想修改状态的地方。</p>
+<h2 id="remove-只有找到时才改变集合">Remove 只有找到时才改变集合</h2>
+<pre><code class="language-csharp">bool removed = seen.Remove(&quot;A&quot;);</code></pre>
+<ul>
+<li>存在 <code>A</code>：删除它，返回 <code>true</code>。</li>
+<li>不存在 <code>A</code>：什么也不改，返回 <code>false</code>。</li>
+</ul>
+<p><code>Add</code>、<code>Contains</code>、<code>Remove</code> 的区别可以压缩成一张表：</p>
+<table><thead><tr>
+<th>操作</th>
+<th>回答的问题</th>
+<th>可能修改集合</th>
+</tr></thead><tbody>
+<tr>
+<td><code>Add(value)</code></td>
+<td>这是第一次出现吗？</td>
+<td>是</td>
+</tr>
+<tr>
+<td><code>Contains(value)</code></td>
+<td>它现在存在吗？</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>Remove(value)</code></td>
+<td>它刚才存在并被删掉了吗？</td>
+<td>是</td>
+</tr>
+</tbody></table>
+<h2 id="为什么算法里经常用-visited">为什么算法里经常用 visited</h2>
+<p>遍历节点时，同一个节点可能从不同路径再次到达。<code>visited</code> 用来阻止重复处理：</p>
 <pre><code class="language-csharp">HashSet&lt;int&gt; visited = new();
 
 void Visit(int nodeId)
 {
     if (!visited.Add(nodeId))
     {
-        return; // 已经访问过，直接跳过
+        return; // 已处理过：不再沿它继续展开
     }
 
-    Debug.Log($&quot;处理节点: {nodeId}&quot;);
+    Process(nodeId);
+}</code></pre>
+<p>这里把“检查”和“登记”合并成一次操作：</p>
+<pre><code class="language-text">第一次到达节点 → Add 返回 true  → 继续处理
+再次到达节点   → Add 返回 false → 立即停止</code></pre>
+<p>这可以避免重复计算，也能阻止环形关系导致无限递归。</p>
+<h2 id="去重时发生了什么">去重时发生了什么</h2>
+<p>列表允许重复：</p>
+<pre><code class="language-csharp">List&lt;int&gt; input = new() { 1, 2, 2, 3, 3, 3, 4 };</code></pre>
+<p>把每个值交给 <code>HashSet</code>：</p>
+<pre><code class="language-csharp">HashSet&lt;int&gt; unique = new();
 
-    // 继续处理它关联的其他节点
+foreach (int id in input)
+{
+    unique.Add(id);
 }</code></pre>
-<p>这里用的是 <code>Add</code> 的返回值：</p>
-<pre><code class="language-text">第一次 Add 成功：说明没访问过，继续处理
-第二次 Add 失败：说明访问过，跳过</code></pre>
-<p>这在图遍历、递归、防止死循环里特别常见。</p>
-<h2 id="冲突检测">冲突检测</h2>
-<p>例如槽位占用检测：</p>
-<pre><code class="language-csharp">HashSet&lt;int&gt; usedSlots = new();
+<p>第一次出现的值写入，后续相同值被拒绝，最终得到 <code>{ 1, 2, 3, 4 }</code>。</p>
+<p>注意：<code>HashSet</code> 的职责是唯一性与快速查找，不应该依赖它的枚举顺序。如果业务需要稳定顺序，可以保留原列表，并用 <code>HashSet</code> 辅助判断是否首次出现：</p>
+<pre><code class="language-csharp">HashSet&lt;int&gt; seen = new();
+List&lt;int&gt; orderedUnique = new();
 
-if (!usedSlots.Add(slotIndex))
+foreach (int id in input)
 {
-    Debug.Log(&quot;这个槽位已经被占用了&quot;);
+    if (seen.Add(id))
+    {
+        orderedUnique.Add(id);
+    }
 }</code></pre>
-<p>因为 <code>Add</code> 返回 <code>false</code>，说明这个槽位已经存在。</p>
-<p>所以 <code>HashSet</code> 可以同时完成两件事：</p>
-<pre><code class="language-text">记录已使用
-检测重复</code></pre>
-<p>比先 <code>Contains</code> 再 <code>Add</code> 更简洁：</p>
-<pre><code class="language-csharp">if (!usedSlots.Add(slotIndex))
-{
-    // 冲突
-}</code></pre>
-<h2 id="和-list-的区别">和 List 的区别</h2>
-<p><code>List&lt;T&gt;</code>：</p>
-<pre><code class="language-text">可以有重复
-有顺序
-可以用下标访问
-Contains 通常要从头找，O(n)</code></pre>
-<p><code>HashSet&lt;T&gt;</code>：</p>
-<pre><code class="language-text">不能有重复
-不关心顺序
-不能用下标访问
-Contains 很快，通常接近 O(1)</code></pre>
-<p>例子：</p>
-<pre><code class="language-csharp">List&lt;string&gt; list = new() { &quot;A&quot;, &quot;A&quot;, &quot;B&quot; };
-HashSet&lt;string&gt; set = new() { &quot;A&quot;, &quot;A&quot;, &quot;B&quot; };</code></pre>
-<p>结果：</p>
-<pre><code class="language-text">list: A, A, B
-set:  A, B</code></pre>
-<h2 id="和-dictionary-的区别">和 Dictionary 的区别</h2>
-<p><code>Dictionary&lt;TKey, TValue&gt;</code>：</p>
-<pre><code class="language-text">key -&gt; value</code></pre>
-<p>例如：</p>
-<pre><code class="language-text">&quot;monster_01&quot; -&gt; monsterObject</code></pre>
-<p><code>HashSet&lt;T&gt;</code>：</p>
-<pre><code class="language-text">只有 key，没有 value</code></pre>
-<p>例如：</p>
-<pre><code class="language-text">&quot;monster_01&quot; 是否存在</code></pre>
-<p>如果只关心“有没有”，用 <code>HashSet</code>。</p>
-<p>如果关心“这个 key 对应什么值”，用 <code>Dictionary</code>。</p>
-<h2 id="string-忽略大小写">string 忽略大小写</h2>
-<p>和 <code>Dictionary</code> 一样，<code>HashSet&lt;string&gt;</code> 也可以指定比较方式：</p>
+<h2 id="list-hashset-dictionary-怎么选">List、HashSet、Dictionary 怎么选</h2>
+<table><thead><tr>
+<th>结构</th>
+<th>最适合回答</th>
+<th>重复</th>
+<th>典型用途</th>
+</tr></thead><tbody>
+<tr>
+<td><code>List&lt;T&gt;</code></td>
+<td>第几个是什么？</td>
+<td>允许</td>
+<td>有序序列、按下标访问</td>
+</tr>
+<tr>
+<td><code>HashSet&lt;T&gt;</code></td>
+<td>有没有这个值？</td>
+<td>不允许</td>
+<td>去重、visited、占用检测</td>
+</tr>
+<tr>
+<td><code>Dictionary&lt;TKey, TValue&gt;</code></td>
+<td>这个 key 对应什么？</td>
+<td>key 不重复</td>
+<td>ID 到对象的映射</td>
+</tr>
+</tbody></table>
+<p><code>HashSet.Contains</code>、<code>Add</code>、<code>Remove</code> 的平均时间复杂度通常接近 <code>O(1)</code>；<code>List.Contains</code> 通常需要逐个比较，是 <code>O(n)</code>。</p>
+<h2 id="谁算-同一个值">谁算“同一个值”</h2>
+<p>是否重复由相等比较规则决定。字符串默认区分大小写：</p>
+<pre><code class="language-csharp">HashSet&lt;string&gt; names = new();
+names.Add(&quot;Alice&quot;);
+
+names.Contains(&quot;alice&quot;); // false</code></pre>
+<p>如果业务明确要求忽略大小写，可以在创建集合时指定规则：</p>
 <pre><code class="language-csharp">HashSet&lt;string&gt; paths = new(StringComparer.OrdinalIgnoreCase);
 
 paths.Add(&quot;UI/Icon/Player&quot;);
-Debug.Log(paths.Contains(&quot;ui/icon/player&quot;)); // true</code></pre>
-<p>适合资源路径、大小写不敏感的 key。</p>
-<h2 id="最重要的收获">最重要的收获</h2>
-<pre><code class="language-text">List：存一排东西，允许重复，适合顺序遍历。
-Dictionary：按 key 找 value。
-HashSet：只关心有没有，自动去重，适合标记、去重、冲突检测。</code></pre>
-<p>最值得记住的写法：</p>
+paths.Contains(&quot;ui/icon/player&quot;); // true</code></pre>
+<p>比较规则一旦确定，<code>Add</code>、<code>Contains</code>、<code>Remove</code> 都会使用同一套规则。</p>
+<h2 id="最后只记住这一个判断">最后只记住这一个判断</h2>
 <pre><code class="language-csharp">if (!set.Add(value))
 {
-    // 已经存在，发生重复或冲突
+    // value 已经存在：这是重复、冲突或再次访问
 }</code></pre>
+<p>先看 <code>Add</code> 的返回值，再看集合有没有变化，HashSet 的核心就不会混乱。</p>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Dictionary%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%B7%B1%E5%85%A5%E7%94%A8%E6%B3%95/"><small>← PREVIOUS</small>Dictionary 常用操作与深入用法</a>
           <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/List%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%88%A0%E9%99%A4%E8%A7%84%E5%88%99/"><small>NEXT →</small>List 常用操作与删除规则</a>

@@ -1,158 +1,89 @@
-# HashSet 常用操作与去重检测
+# HashSet：把“是否见过”变成可观察的状态
 
 分类：CSharp 基础数据结构
 
-## HashSet 是什么
+## 先建立一个准确的画面
 
-`HashSet<T>` 可以理解成：
+`HashSet<T>` 不是“一排数据”，而是一张**只登记某个值是否出现过**的表。
 
-```text
-一组不重复的东西。
-```
+它始终遵守一条规则：同一个值最多登记一次。
 
-也可以理解成：
+假设输入依次到来：
 
 ```text
-只存 key，不存 value 的 Dictionary。
+A → B → A → C → B
 ```
 
-如果只关心“有没有”，不关心“对应什么值”，就很适合用 `HashSet<T>`。
-
-## 基础声明
-
-```csharp
-HashSet<string> names = new();
-```
-
-添加元素：
-
-```csharp
-names.Add("Alice");
-names.Add("Bob");
-names.Add("Alice");
-```
-
-最后集合里只有：
+处理结束后，集合是：
 
 ```text
-Alice
-Bob
+{ A, B, C }
 ```
 
-因为 `HashSet` 自动去重。
+第二个 `A` 和第二个 `B` 没有被再次写入。页面上方的实验会把这个过程拆成 11 个状态，建议先手动点完一遍。
 
-## Add 有返回值
+## Add 其实同时做了两件事
+
+这一行不是单纯的“添加”：
 
 ```csharp
-bool added = names.Add("Alice");
+bool added = seen.Add(value);
 ```
 
-含义：
+它会完成：
 
-```text
-true：之前没有，添加成功
-false：之前已经有了，没有重复添加
-```
+1. 检查 `value` 是否已经存在。
+2. 不存在时写入，并返回 `true`。
+3. 已存在时保持集合不变，并返回 `false`。
 
-例子：
+所以这段代码可以直接检测重复：
 
 ```csharp
-HashSet<string> names = new();
-
-bool first = names.Add("Alice");  // true
-bool second = names.Add("Alice"); // false
-```
-
-这个返回值很常用，可以顺便做重复检测：
-
-```csharp
-if (!names.Add("Alice"))
+if (!seen.Add(value))
 {
-    Debug.Log("Alice 已经存在");
+    duplicates++;
 }
 ```
 
-## 判断是否存在
-
-```csharp
-if (names.Contains("Alice"))
-{
-    Debug.Log("存在 Alice");
-}
-```
-
-`HashSet.Contains` 很快，和 `Dictionary.ContainsKey` 类似。
-
-适合回答：
+最关键的不是背住 `Add`，而是记住：
 
 ```text
-这个 ID 是否出现过？
-这个怪物是否已经处理过？
-这个槽位是否已经被占用？
-这个资源路径是否已经收集过？
+Add 返回 true  → 第一次见到 → 集合发生变化
+Add 返回 false → 以前见过   → 集合保持不变
 ```
 
-## 删除
+## Contains 只提问，不修改
+
+`Contains` 回答“这个值现在是否在集合中”：
 
 ```csharp
-names.Remove("Alice");
+bool exists = seen.Contains("A");
 ```
 
-也有返回值：
+如果集合是 `{ A, B }`，查询 `A` 返回 `true`，但集合仍然是 `{ A, B }`。
+
+它适合用于只想判断、暂时不想修改状态的地方。
+
+## Remove 只有找到时才改变集合
 
 ```csharp
-bool removed = names.Remove("Alice");
+bool removed = seen.Remove("A");
 ```
 
-含义：
+- 存在 `A`：删除它，返回 `true`。
+- 不存在 `A`：什么也不改，返回 `false`。
 
-```text
-true：找到了并删除
-false：没找到
-```
+`Add`、`Contains`、`Remove` 的区别可以压缩成一张表：
 
-清空：
+| 操作 | 回答的问题 | 可能修改集合 |
+| --- | --- | --- |
+| `Add(value)` | 这是第一次出现吗？ | 是 |
+| `Contains(value)` | 它现在存在吗？ | 否 |
+| `Remove(value)` | 它刚才存在并被删掉了吗？ | 是 |
 
-```csharp
-names.Clear();
-```
+## 为什么算法里经常用 visited
 
-## 去重例子
-
-假设有一个列表：
-
-```csharp
-List<int> ids = new() { 1, 2, 2, 3, 3, 3, 4 };
-```
-
-想得到不重复的 ID：
-
-```csharp
-HashSet<int> uniqueIds = new();
-
-foreach (int id in ids)
-{
-    uniqueIds.Add(id);
-}
-```
-
-结果：
-
-```text
-1, 2, 3, 4
-```
-
-如果还想变回 `List`：
-
-```csharp
-List<int> result = new(uniqueIds);
-```
-
-## 标记已访问
-
-这是 `HashSet` 最常见的算法用途。
-
-比如遍历一组节点，避免重复处理：
+遍历节点时，同一个节点可能从不同路径再次到达。`visited` 用来阻止重复处理：
 
 ```csharp
 HashSet<int> visited = new();
@@ -161,145 +92,97 @@ void Visit(int nodeId)
 {
     if (!visited.Add(nodeId))
     {
-        return; // 已经访问过，直接跳过
+        return; // 已处理过：不再沿它继续展开
     }
 
-    Debug.Log($"处理节点: {nodeId}");
-
-    // 继续处理它关联的其他节点
+    Process(nodeId);
 }
 ```
 
-这里用的是 `Add` 的返回值：
+这里把“检查”和“登记”合并成一次操作：
 
 ```text
-第一次 Add 成功：说明没访问过，继续处理
-第二次 Add 失败：说明访问过，跳过
+第一次到达节点 → Add 返回 true  → 继续处理
+再次到达节点   → Add 返回 false → 立即停止
 ```
 
-这在图遍历、递归、防止死循环里特别常见。
+这可以避免重复计算，也能阻止环形关系导致无限递归。
 
-## 冲突检测
+## 去重时发生了什么
 
-例如槽位占用检测：
+列表允许重复：
 
 ```csharp
-HashSet<int> usedSlots = new();
+List<int> input = new() { 1, 2, 2, 3, 3, 3, 4 };
+```
 
-if (!usedSlots.Add(slotIndex))
+把每个值交给 `HashSet`：
+
+```csharp
+HashSet<int> unique = new();
+
+foreach (int id in input)
 {
-    Debug.Log("这个槽位已经被占用了");
+    unique.Add(id);
 }
 ```
 
-因为 `Add` 返回 `false`，说明这个槽位已经存在。
+第一次出现的值写入，后续相同值被拒绝，最终得到 `{ 1, 2, 3, 4 }`。
 
-所以 `HashSet` 可以同时完成两件事：
-
-```text
-记录已使用
-检测重复
-```
-
-比先 `Contains` 再 `Add` 更简洁：
+注意：`HashSet` 的职责是唯一性与快速查找，不应该依赖它的枚举顺序。如果业务需要稳定顺序，可以保留原列表，并用 `HashSet` 辅助判断是否首次出现：
 
 ```csharp
-if (!usedSlots.Add(slotIndex))
+HashSet<int> seen = new();
+List<int> orderedUnique = new();
+
+foreach (int id in input)
 {
-    // 冲突
+    if (seen.Add(id))
+    {
+        orderedUnique.Add(id);
+    }
 }
 ```
 
-## 和 List 的区别
+## List、HashSet、Dictionary 怎么选
 
-`List<T>`：
+| 结构 | 最适合回答 | 重复 | 典型用途 |
+| --- | --- | --- | --- |
+| `List<T>` | 第几个是什么？ | 允许 | 有序序列、按下标访问 |
+| `HashSet<T>` | 有没有这个值？ | 不允许 | 去重、visited、占用检测 |
+| `Dictionary<TKey, TValue>` | 这个 key 对应什么？ | key 不重复 | ID 到对象的映射 |
 
-```text
-可以有重复
-有顺序
-可以用下标访问
-Contains 通常要从头找，O(n)
-```
+`HashSet.Contains`、`Add`、`Remove` 的平均时间复杂度通常接近 `O(1)`；`List.Contains` 通常需要逐个比较，是 `O(n)`。
 
-`HashSet<T>`：
+## 谁算“同一个值”
 
-```text
-不能有重复
-不关心顺序
-不能用下标访问
-Contains 很快，通常接近 O(1)
-```
-
-例子：
+是否重复由相等比较规则决定。字符串默认区分大小写：
 
 ```csharp
-List<string> list = new() { "A", "A", "B" };
-HashSet<string> set = new() { "A", "A", "B" };
+HashSet<string> names = new();
+names.Add("Alice");
+
+names.Contains("alice"); // false
 ```
 
-结果：
-
-```text
-list: A, A, B
-set:  A, B
-```
-
-## 和 Dictionary 的区别
-
-`Dictionary<TKey, TValue>`：
-
-```text
-key -> value
-```
-
-例如：
-
-```text
-"monster_01" -> monsterObject
-```
-
-`HashSet<T>`：
-
-```text
-只有 key，没有 value
-```
-
-例如：
-
-```text
-"monster_01" 是否存在
-```
-
-如果只关心“有没有”，用 `HashSet`。
-
-如果关心“这个 key 对应什么值”，用 `Dictionary`。
-
-## string 忽略大小写
-
-和 `Dictionary` 一样，`HashSet<string>` 也可以指定比较方式：
+如果业务明确要求忽略大小写，可以在创建集合时指定规则：
 
 ```csharp
 HashSet<string> paths = new(StringComparer.OrdinalIgnoreCase);
 
 paths.Add("UI/Icon/Player");
-Debug.Log(paths.Contains("ui/icon/player")); // true
+paths.Contains("ui/icon/player"); // true
 ```
 
-适合资源路径、大小写不敏感的 key。
+比较规则一旦确定，`Add`、`Contains`、`Remove` 都会使用同一套规则。
 
-## 最重要的收获
-
-```text
-List：存一排东西，允许重复，适合顺序遍历。
-Dictionary：按 key 找 value。
-HashSet：只关心有没有，自动去重，适合标记、去重、冲突检测。
-```
-
-最值得记住的写法：
+## 最后只记住这一个判断
 
 ```csharp
 if (!set.Add(value))
 {
-    // 已经存在，发生重复或冲突
+    // value 已经存在：这是重复、冲突或再次访问
 }
 ```
+
+先看 `Add` 的返回值，再看集合有没有变化，HashSet 的核心就不会混乱。

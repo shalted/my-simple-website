@@ -416,6 +416,13 @@ function interactiveCallout(document) {
         <p><a href="/knowledge/binary-heap/">打开二叉堆实验 →</a></p>
       </aside>`;
   }
+  if (/HashSet/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>先看状态，不背 API</strong>
+        <span>下方实验会把每次 Add 拆成“查重 → 返回结果 → 是否写入”，并同步展示集合与代码。</span>
+      </aside>`;
+  }
   if (/集群|群体|怪物.*AI/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -567,6 +574,76 @@ function renderDynamicDeck(markdown, relativeMarkdown) {
       </footer>
     </section>`;
 }
+function isHashSetDocument(document) {
+  return /HashSet/i.test(`${document.title} ${document.relativeMarkdown}`);
+}
+
+function renderHashSetLab() {
+  return `
+    <section class="hashset-lab" data-hashset-lab aria-labelledby="hashset-lab-title">
+      <header class="hashset-lab__header">
+        <div>
+          <span>HASHSET / STATE DEBUGGER</span>
+          <h2 id="hashset-lab-title">同一个值为什么加不进去？</h2>
+          <p>输入序列固定为 A → B → A → C → B。手动逐步观察：HashSet 会先询问“见过吗”，只有没见过时才改变集合。</p>
+        </div>
+        <strong><b data-hashset-current>01</b> / 11</strong>
+      </header>
+      <div class="hashset-stream" aria-label="待处理输入序列">
+        <span>输入序列</span>
+        <div data-hashset-stream></div>
+      </div>
+      <div class="hashset-lab__stage">
+        <div class="hashset-state">
+          <span class="hashset-label">BEFORE / 操作前</span>
+          <div class="hashset-values" data-hashset-before></div>
+        </div>
+        <div class="hashset-operation">
+          <span class="hashset-label">CURRENT OPERATION</span>
+          <strong data-hashset-operation>等待开始</strong>
+          <p data-hashset-explanation></p>
+          <div class="hashset-verdict" data-hashset-verdict></div>
+        </div>
+        <div class="hashset-state">
+          <span class="hashset-label">AFTER / 操作后</span>
+          <div class="hashset-values" data-hashset-after></div>
+        </div>
+      </div>
+      <div class="hashset-code">
+        <div><span>1</span><code>foreach (string value in input)</code></div>
+        <div><span>2</span><code>bool added = seen.Add(value);</code></div>
+        <div><span>3</span><code>if (!added) duplicates++;</code></div>
+        <div><span>4</span><code>else uniqueValues.Add(value);</code></div>
+      </div>
+      <div class="hashset-controls">
+        <button type="button" data-hashset-reset>重置</button>
+        <button type="button" data-hashset-prev>← 上一步</button>
+        <button type="button" data-hashset-auto aria-pressed="false">自动演示</button>
+        <button class="is-primary" type="button" data-hashset-next>下一步 →</button>
+        <div class="hashset-dots" data-hashset-dots></div>
+      </div>
+      <div class="hashset-playground">
+        <div>
+          <span class="hashset-label">TRY IT / 自由操作</span>
+          <h3>亲手试一次 Add、Contains、Remove</h3>
+          <p>输入一个值后选择操作。空输入会明确提示，不会被悄悄写入集合。</p>
+        </div>
+        <div class="hashset-playground__actions">
+          <label for="hashset-value">值</label>
+          <input id="hashset-value" data-hashset-input type="text" autocomplete="off" placeholder="例如 Alice">
+          <button type="button" data-hashset-action="add">Add</button>
+          <button type="button" data-hashset-action="contains">Contains</button>
+          <button type="button" data-hashset-action="remove">Remove</button>
+          <button type="button" data-hashset-clear>Clear</button>
+        </div>
+        <div class="hashset-playground__result">
+          <div><span>当前集合</span><div class="hashset-values" data-hashset-live-set></div></div>
+          <p data-hashset-live-result aria-live="polite">集合目前为空，请输入一个值。</p>
+        </div>
+      </div>
+    </section>`;
+}
+
 function renderArticlePage(document, markdown, previous, next) {
   const rendered = renderMarkdown(markdown, document.relativeMarkdown, document.title);
   const previousLink = previous
@@ -587,7 +664,7 @@ function renderArticlePage(document, markdown, previous, next) {
       ${renderToc(rendered.toc)}
       <article class="article-body" id="article-start">
         ${interactiveCallout(document)}
-        ${document.isReadme ? "" : renderDynamicDeck(markdown, document.relativeMarkdown)}
+        ${document.isReadme ? "" : isHashSetDocument(document) ? renderHashSetLab() : renderDynamicDeck(markdown, document.relativeMarkdown)}
         ${rendered.html}
         <nav class="article-pager" aria-label="上下篇">
           ${previousLink}

@@ -844,3 +844,285 @@ input {
     transition: none;
   }
 }
+
+/* HASHSET_STATE_EXPLAINER */
+.hashset-lab {
+  margin: 0 0 56px;
+  border: 1px solid rgba(103, 213, 243, 0.28);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(18, 33, 27, 0.96), rgba(7, 17, 14, 0.98));
+}
+.hashset-lab__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.hashset-lab__header span,
+.hashset-label {
+  color: var(--cyan);
+  font: 700 11px/1.4 var(--mono);
+  letter-spacing: .12em;
+}
+.hashset-lab__header h2 {
+  margin: 8px 0 8px;
+  font: 500 clamp(28px, 4vw, 44px)/1.1 var(--serif);
+}
+.hashset-lab__header p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+}
+.hashset-lab__header > strong {
+  flex: none;
+  color: var(--muted);
+  font: 500 13px/1 var(--mono);
+}
+.hashset-lab__header > strong b {
+  color: var(--acid);
+  font-size: 30px;
+}
+.hashset-stream {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font: 600 12px/1 var(--mono);
+}
+.hashset-stream > div {
+  display: flex;
+  gap: 8px;
+}
+.hashset-token,
+.hashset-value {
+  min-width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .025);
+  font: 700 13px/1 var(--mono);
+}
+.hashset-token.is-past {
+  border-color: rgba(102, 221, 180, .45);
+  color: var(--mint);
+}
+.hashset-token.is-current {
+  border-color: var(--acid);
+  color: #07110e;
+  background: var(--acid);
+  box-shadow: 0 0 0 4px rgba(197, 245, 74, .1);
+}
+.hashset-lab__stage {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  min-height: 230px;
+}
+.hashset-state,
+.hashset-operation {
+  padding: 28px;
+}
+.hashset-operation {
+  border-inline: 1px solid var(--line);
+}
+.hashset-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 9px;
+  min-height: 58px;
+  margin-top: 18px;
+}
+.hashset-values.is-empty::before {
+  content: "∅  空集合";
+  color: var(--muted);
+  font: 500 13px/1.4 var(--mono);
+}
+.hashset-operation > strong {
+  display: block;
+  margin: 18px 0 10px;
+  color: var(--ink);
+  font: 700 clamp(18px, 3vw, 27px)/1.2 var(--mono);
+}
+.hashset-operation p {
+  min-height: 54px;
+  margin: 0;
+  color: var(--muted);
+}
+.hashset-verdict {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, .04);
+  font: 700 12px/1 var(--mono);
+}
+.hashset-verdict.is-true {
+  color: var(--acid);
+  background: rgba(197, 245, 74, .1);
+}
+.hashset-verdict.is-false {
+  color: #ff9a8f;
+  background: rgba(255, 106, 96, .1);
+}
+.hashset-code {
+  padding: 16px 28px;
+  border-block: 1px solid var(--line);
+  background: rgba(0, 0, 0, .2);
+  font: 500 13px/1.65 var(--mono);
+}
+.hashset-code > div {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  padding: 5px 10px;
+  border-left: 2px solid transparent;
+  color: #819188;
+}
+.hashset-code > div.is-active {
+  border-left-color: var(--acid);
+  color: var(--ink);
+  background: rgba(197, 245, 74, .07);
+}
+.hashset-code span {
+  color: #617169;
+}
+.hashset-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+}
+.hashset-controls button,
+.hashset-playground button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+.hashset-controls button:hover,
+.hashset-playground button:hover {
+  border-color: var(--mint);
+}
+.hashset-controls button.is-primary,
+.hashset-controls button.is-playing {
+  border-color: var(--acid);
+  color: #07110e;
+  background: var(--acid);
+}
+.hashset-controls button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+.hashset-dots {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.hashset-dots button {
+  min-width: 0;
+  width: 8px;
+  height: 8px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #314139;
+}
+.hashset-dots button.is-past { background: var(--mint); }
+.hashset-dots button.is-active {
+  width: 22px;
+  border-radius: 5px;
+  background: var(--acid);
+}
+.hashset-playground {
+  display: grid;
+  grid-template-columns: minmax(210px, .8fr) 1.2fr;
+  gap: 24px;
+  padding: 28px;
+  background: rgba(102, 221, 180, .035);
+}
+.hashset-playground h3 {
+  margin: 8px 0;
+  font: 500 25px/1.2 var(--serif);
+}
+.hashset-playground p {
+  margin: 0;
+  color: var(--muted);
+}
+.hashset-playground__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.hashset-playground__actions label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.hashset-playground__actions input {
+  min-width: 180px;
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+  color: var(--ink);
+  background: #07110e;
+}
+.hashset-playground__actions input:focus {
+  border-color: var(--cyan);
+}
+.hashset-playground__result {
+  grid-column: 2;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .18);
+}
+.hashset-playground__result > div > span {
+  color: var(--muted);
+  font: 600 11px/1 var(--mono);
+}
+.hashset-playground__result p {
+  margin-top: 12px;
+  color: var(--cyan);
+  font-family: var(--mono);
+}
+@media (max-width: 900px) {
+  .hashset-lab__stage { grid-template-columns: 1fr; }
+  .hashset-operation { border-inline: 0; border-block: 1px solid var(--line); }
+  .hashset-playground { grid-template-columns: 1fr; }
+  .hashset-playground__result { grid-column: 1; }
+}
+@media (max-width: 620px) {
+  .hashset-lab__header,
+  .hashset-state,
+  .hashset-operation,
+  .hashset-playground { padding: 20px; }
+  .hashset-lab__header { display: block; }
+  .hashset-lab__header > strong { display: block; margin-top: 18px; }
+  .hashset-stream,
+  .hashset-controls,
+  .hashset-code { padding-inline: 20px; }
+  .hashset-stream { align-items: flex-start; flex-direction: column; }
+  .hashset-dots { flex-basis: 100%; justify-content: flex-start; }
+  .hashset-playground__actions input { width: 100%; }
+}
