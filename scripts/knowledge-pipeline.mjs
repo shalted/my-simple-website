@@ -296,7 +296,7 @@ function extractDocument(markdown, relativeMarkdown) {
   const titleMatch = markdown.match(/^#\s+(.+)$/m);
   if (!titleMatch) throw new Error(`缺少一级标题：${relativeMarkdown}`);
   const title = titleMatch[1].trim();
-  const category = relativeMarkdown.includes("/") ? relativeMarkdown.split("/")[0] : "学习计划";
+  const category = relativeMarkdown.includes("/") ? relativeMarkdown.split("/")[0] : "知识路线";
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   let inCode = false;
   let summary = "";

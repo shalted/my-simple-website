@@ -47,7 +47,7 @@
     <a data-toc-link href="#sat-流程">SAT 流程</a>
     <a data-toc-link href="#sat-的限制">SAT 的限制</a>
     <a data-toc-link href="#sat-还能得到穿透方向">SAT 还能得到穿透方向</a>
-    <a data-toc-link href="#面试表达">面试表达</a>
+    <a data-toc-link href="#知识总结">知识总结</a>
     <a data-toc-link href="#最重要的收获">最重要的收获</a>
   </nav>
       <article class="article-body" id="article-start">
@@ -111,9 +111,9 @@
       <span>12</span>
       <strong>SAT 还能得到穿透方向</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：面试表达">
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：知识总结">
       <span>13</span>
-      <strong>面试表达</strong>
+      <strong>知识总结</strong>
     </button>
     <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
       <span>14</span>
@@ -229,8 +229,8 @@ Bounds.Intersects(...)</code></pre>
       </article>
       <article class="deck-slide" data-deck-slide="12" hidden>
         <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
-        <h3>面试表达</h3>
-        <p>如果被问物理引擎碰撞流程，可以说：</p>
+        <h3>知识总结</h3>
+        <p>碰撞检测流程：</p>
 
         <pre><code class="language-text">碰撞检测通常分 Broad Phase 和 Narrow Phase。Broad Phase 用 AABB、空间划分、BVH、Sweep and Prune 等方法快速筛出可能碰撞的对象对，目标是减少候选数量。Narrow Phase 再对候选对做精确形状检测，比如球、胶囊体、OBB、凸多边形，可能用 SAT、GJK 等算法。确认碰撞后，会生成碰撞点、法线、穿透深度等信息，后续交给物理求解器或游戏逻辑处理。</code></pre>
       </article>
@@ -481,12 +481,12 @@ U 形
 <pre><code class="language-text">把两个物体沿最小方向分开。
 计算碰撞法线。
 估计穿透深度。</code></pre>
-<h2 id="面试表达">面试表达</h2>
-<p>如果被问物理引擎碰撞流程，可以说：</p>
+<h2 id="知识总结">知识总结</h2>
+<p>碰撞检测流程：</p>
 <pre><code class="language-text">碰撞检测通常分 Broad Phase 和 Narrow Phase。Broad Phase 用 AABB、空间划分、BVH、Sweep and Prune 等方法快速筛出可能碰撞的对象对，目标是减少候选数量。Narrow Phase 再对候选对做精确形状检测，比如球、胶囊体、OBB、凸多边形，可能用 SAT、GJK 等算法。确认碰撞后，会生成碰撞点、法线、穿透深度等信息，后续交给物理求解器或游戏逻辑处理。</code></pre>
-<p>如果被问 AABB、OBB、BVH，可以说：</p>
+<p>AABB、OBB 与 BVH：</p>
 <pre><code class="language-text">AABB 是轴对齐包围盒，判断便宜但对旋转物体包得较松；OBB 是有方向包围盒，可以跟随物体旋转，包得更紧但检测更贵；BVH 是包围体层次结构，用一棵包围盒树组织对象，可以快速跳过大量不相交对象。</code></pre>
-<p>如果被问 SAT，可以说：</p>
+<p>SAT：</p>
 <pre><code class="language-text">SAT 用于凸形状碰撞检测。它会把两个形状投影到候选分离轴上，如果任意一条轴上的投影区间不重叠，就说明不碰撞；如果所有候选轴上都重叠，就说明碰撞。候选轴通常来自多边形边的法线方向，也可以通过最小重叠轴得到碰撞法线和穿透深度。</code></pre>
 <h2 id="最重要的收获">最重要的收获</h2>
 <pre><code class="language-text">Broad Phase 负责少算。
