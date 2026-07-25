@@ -321,9 +321,9 @@ for (int index = 0; index &lt; entries.Count; index++)
 <p>稳定随机可以把一组稳定输入映射成 <code>0~1</code>：</p>
 <pre><code class="language-csharp">float roll = StableHash01(groupId, instanceId, purpose, version, index) * totalWeight;</code></pre>
 <p>它内部把这些输入混合成一个 hash：</p>
-<pre><code class="language-text">clusterId
+<pre><code class="language-text">groupId
 instanceId
-salt
+purpose
 version
 index</code></pre>
 <p>再转成 <code>0~1</code>。</p>

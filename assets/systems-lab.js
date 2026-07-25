@@ -121,9 +121,10 @@ const scenarios = Object.freeze({
         code: [
           "totalWeight = 10 + 30 + 60;",
           "rolled = Random.Range(0, totalWeight);",
+          "cursor = 0;",
           "cursor += entry.Weight;",
           "if (rolled < cursor) return entry;",
-          "10 / 30 / 60 == 1 / 3 / 6;"
+          "probability = entry.Weight / totalWeight;"
         ],
         steps: [
           {
@@ -135,28 +136,44 @@ const scenarios = Object.freeze({
             view: { type: "random", method: "weighted", mode: "weights", note: "10 + 30 + 60" }
           },
           {
-            phase: "求和", title: "总区间长度是 100",
-            copy: "所有正权重相加得到 totalWeight，后续随机只在这个总区间里取值。",
+            phase: "求和", title: "先把权重拼成总区间",
+            copy: "10 + 30 + 60 得到 totalWeight = 100；这一步只确定随机刻度的总长度。",
             why: "总权重定义了整条刻度的长度。",
-            status: "TOTAL", activeLines: [0, 1],
+            status: "TOTAL", activeLines: [0],
             metrics: [["totalWeight", "100"], ["range", "0..99"], ["entries", "3"]],
             view: { type: "random", method: "weighted", mode: "range", note: "roll ∈ [0, 100)" }
           },
           {
-            phase: "映射区间", title: "每个候选占据连续区间",
-            copy: "0~9 对应金币，10~39 对应药水，40~99 对应装备。",
-            why: "随机值落在哪段，就返回哪一个候选。",
-            status: "MAP", activeLines: [2, 3],
-            metrics: [["gold", "0..9"], ["potion", "10..39"], ["equipment", "40..99"]],
-            view: { type: "random", method: "weighted", mode: "intervals", note: "cursor 累加切分区间" }
+            phase: "生成输入", title: "只生成一个 roll",
+            copy: "随机源在 [0, 100) 中给出一个整数。它不是结果，只是等待被区间解释的输入。",
+            why: "把随机输入和候选选择分开，才能明确检查边界是否正确。",
+            status: "ROLL", activeLines: [1],
+            metrics: [["input", "roll"], ["domain", "0..99"], ["selected", "not yet"]],
+            view: { type: "random", method: "weighted", mode: "range", note: "先有 roll，再解释它落在哪段" }
           },
           {
-            phase: "等比例缩放", title: "1 / 3 / 6 得到相同比例",
-            copy: "权重整体同比缩放不会改变抽取比例，只会改变区间刻度。",
-            why: "加权随机只比较相对份额。",
-            status: "RATIO", activeLines: [4],
-            metrics: [["10:30:60", "1:3:6"], ["ratio", "same"], ["probability", "10% / 30% / 60%"]],
-            view: { type: "random", method: "weighted", mode: "ratio", note: "relative weights stay equal" }
+            phase: "建立游标", title: "cursor 从 0 开始累加",
+            copy: "遍历候选前把 cursor 设为 0；每遇到一项，就把该项权重加到累计边界。",
+            why: "cursor 表示当前候选区间的右边界。",
+            status: "CURSOR", activeLines: [2, 3],
+            metrics: [["start", "0"], ["after gold", "10"], ["interval", "0..9"]],
+            view: { type: "random", method: "weighted", mode: "intervals", note: "金币把 cursor 从 0 推到 10" }
+          },
+          {
+            phase: "逐段判断", title: "roll 小于 cursor 时命中",
+            copy: "金币检查 roll < 10；未命中就继续累加到 40，再检查药水，最后累加到 100。",
+            why: "半开区间让 10 归入药水、40 归入装备，边界不会重叠。",
+            status: "SELECT", activeLines: [3, 4],
+            metrics: [["gold", "roll < 10"], ["potion", "roll < 40"], ["equipment", "roll < 100"]],
+            view: { type: "random", method: "weighted", mode: "intervals", note: "0–9 / 10–39 / 40–99" }
+          },
+          {
+            phase: "理解概率", title: "概率来自权重占总量的比例",
+            copy: "单项概率等于 weight / totalWeight，因此三项分别是 10%、30%、60%。",
+            why: "把所有权重同比缩放，份额不变，最终概率也不变。",
+            status: "RATIO", activeLines: [5],
+            metrics: [["10:30:60", "1:3:6"], ["probability", "10% / 30% / 60%"], ["short term", "not guaranteed"]],
+            view: { type: "random", method: "weighted", mode: "ratio", note: "长期份额 ≠ 短期必然分布" }
           }
         ]
       },
@@ -268,8 +285,9 @@ const scenarios = Object.freeze({
         label: "Seed / 稳定随机",
         code: [
           "new Random(seed);",
-          "same seed => same sequence;",
-          "ResolveStable01(clusterId, instanceId, salt, version, index);",
+          "same seed + same call order => same sequence;",
+          "StableHash01(groupId, instanceId, purpose, version, index);",
+          "purpose separates random channels;",
           "same inputs => same value;",
           "version changes => reroll;"
         ],
@@ -283,26 +301,42 @@ const scenarios = Object.freeze({
             view: { type: "random", method: "reproducible", mode: "seed", left: "随机源\n未记录", right: "结果\n不可复盘", note: "context is missing" }
           },
           {
-            phase: "固定 Seed", title: "同一个 Seed 产生同一串序列",
-            copy: "测试与回放保存 seed，就能重新走过相同的随机轨迹。",
+            phase: "记录 Seed", title: "先保存随机序列的起点",
+            copy: "创建随机源时记录 seed，测试和回放才能从同一个起点重新开始。",
             why: "可复现随机把偶发问题变成可以重复验证的问题。",
-            status: "SEEDED", activeLines: [0, 1],
-            metrics: [["input", "seed"], ["sequence", "repeatable"], ["use", "test / replay"]],
-            view: { type: "random", method: "reproducible", mode: "seed", left: "Seed\n固定输入", right: "Sequence\n固定序列", note: "same seed → same sequence" }
+            status: "CAPTURE", activeLines: [0],
+            metrics: [["input", "seed"], ["saved", "yes"], ["sequence", "not replayed yet"]],
+            view: { type: "random", method: "reproducible", mode: "seed", left: "Seed\n已记录", right: "Random Source\n同一起点", note: "记录起点是复现的第一步" }
+          },
+          {
+            phase: "重放序列", title: "调用顺序也必须保持一致",
+            copy: "相同 seed 只有在随机调用次数和顺序也相同时，才会得到相同序列。",
+            why: "中途多调用或少调用一次，后续所有结果都会错位。",
+            status: "REPLAY", activeLines: [1],
+            metrics: [["seed", "same"], ["call order", "same"], ["sequence", "repeatable"]],
+            view: { type: "random", method: "reproducible", mode: "seed", left: "Seed + Calls\n同样输入", right: "Sequence\n同样顺序", note: "seed 相同只是必要条件" }
           },
           {
             phase: "稳定输入", title: "Hash 输入决定个体差异",
-            copy: "clusterId、instanceId、salt、version、index 混合成稳定的 0~1 值。",
+            copy: "groupId、instanceId、purpose、version、index 混合成稳定的 0~1 值。",
             why: "同一轮里角色差异存在，但不会每帧乱跳。",
-            status: "STABLE", activeLines: [2, 3],
+            status: "STABLE", activeLines: [2, 4],
             metrics: [["inputs", "5 stable fields"], ["output", "0..1"], ["frame jitter", "none"]],
-            view: { type: "random", method: "reproducible", mode: "seed", left: "Stable Inputs\nID + salt + version", right: "Stable 01\n同轮固定", note: "same inputs → same value" }
+            view: { type: "random", method: "reproducible", mode: "seed", left: "Stable Inputs\nID + purpose + version", right: "Stable 01\n同轮固定", note: "same inputs → same value" }
+          },
+          {
+            phase: "用途隔离", title: "purpose 防止不同随机互相串扰",
+            copy: "站位、掉落、动画偏移使用不同 purpose；其他输入相同，也会进入不同随机通道。",
+            why: "新增一种随机用途，不应该悄悄改变已有用途的结果。",
+            status: "CHANNEL", activeLines: [3],
+            metrics: [["shared ids", "same"], ["purpose", "different"], ["channels", "isolated"]],
+            view: { type: "random", method: "reproducible", mode: "seed", left: "purpose = position\nStable A", right: "purpose = loot\nStable B", note: "用途是稳定输入的一部分" }
           },
           {
             phase: "版本变化", title: "只在语义变化时重新随机",
             copy: "意图版本改变后输入发生变化，系统才生成新的稳定结果。",
             why: "version 是显式的刷新开关，避免把随机更新绑在每一帧。",
-            status: "REROLL", activeLines: [4],
+            status: "REROLL", activeLines: [5],
             metrics: [["trigger", "version changes"], ["old value", "discarded"], ["new value", "stable again"]],
             view: { type: "random", method: "reproducible", mode: "seed", left: "Version N\nStable 01", right: "Version N+1\nNew Stable 01", note: "semantic change → reroll" }
           }
@@ -318,70 +352,80 @@ const scenarios = Object.freeze({
       grid: {
         label: "九宫格查询",
         code: [
-          "cell = WorldToCell(position);",
-          "grid[cell].Add(unit);",
-          "foreach (cell in NineCells(center))",
-          "    candidates.AddRange(grid[cell]);",
-          "if (offset.sqrMagnitude <= radiusSqr) result.Add(unit);"
+          "cell = WorldToCell(player.position);",
+          "grid[cell].Add(player);",
+          "foreach (key in NineCells(cell))",
+          "    candidates.AddRange(grid[key]);",
+          "saved = allUnits.Count - candidates.Count;",
+          "foreach (unit in candidates) PreciseTest(unit);"
         ],
         steps: [
           {
-            phase: "直接遍历", title: "世界里的所有对象都是候选",
-            copy: "不使用空间结构时，每次范围查询都必须检查整个对象集合。",
-            why: "问题不在单次距离判断，而在需要判断的对象数量。",
-            status: "ALL", activeLines: [],
-            metrics: [["broad phase", "all objects"], ["cells", "none"], ["cost", "global scan"]],
-            view: { type: "space", mode: "grid", stage: "all", note: "GRID / HASH" }
+            phase: "基线", title: "先看不分区时要检查多少对象",
+            copy: "每个非玩家格放一个待查询单位。没有空间索引时，查询必须检查其余全部对象。",
+            why: "只有先建立全量扫描基线，后面才能量化空间划分究竟省了多少计算。",
+            status: "GLOBAL", activeLines: [],
+            metrics: [["baseline", "all non-player units"], ["index", "none"], ["action", "scan everything"]],
+            view: { type: "space", mode: "grid", stage: "all", note: "GLOBAL SCAN" }
           },
           {
-            phase: "登记入格", title: "单位只登记到所在格子",
-            copy: "玩家 P 与敌人 E 根据世界位置映射到固定网格。",
-            why: "格子坐标把连续空间转换成可索引的离散 key。",
-            status: "INSERT", activeLines: [0, 1],
-            metrics: [["player cell", "(1, 1)"], ["enemy cell", "(2, 2)"], ["structure", "fixed grid"]],
-            view: { type: "space", mode: "grid", stage: "insert", note: "GRID / HASH" }
+            phase: "交互输入", title: "点击任意格放置玩家",
+            copy: "把玩家放到角落、边缘或内部，邻接范围会随位置变化。每次点击都会重新计算。",
+            why: "算法相同，但输入位置不同，候选数量和节省比例也会不同。",
+            status: "PLACE PLAYER", activeLines: [0],
+            metrics: [["input", "player cell"], ["editable", "click any cell"], ["output", "cell key"]],
+            view: { type: "space", mode: "grid", stage: "insert", note: "CLICK A CELL" }
           },
           {
-            phase: "九宫格粗筛", title: "只访问中心格和周围八格",
-            copy: "查询从全世界收缩到玩家所在格与八个相邻格。",
-            why: "附近目标只可能来自有限的邻接区域。",
-            status: "BROAD", activeLines: [2, 3],
-            metrics: [["visited cells", "center + 8"], ["enemy E", "candidate"], ["final hit", "unknown"]],
-            view: { type: "space", mode: "grid", stage: "near", note: "GRID / HASH" }
+            phase: "建立索引", title: "世界位置映射成格子 key",
+            copy: "玩家位置先转换为离散格子坐标，对象也登记在各自格子的列表中。",
+            why: "连续世界坐标必须先变成可枚举、可查找的空间索引。",
+            status: "INDEX", activeLines: [0, 1],
+            metrics: [["world position", "continuous"], ["cell key", "discrete"], ["lookup", "direct"]],
+            view: { type: "space", mode: "grid", stage: "insert", note: "WORLD → CELL KEY" }
           },
           {
-            phase: "候选集合", title: "格子命中不等于技能命中",
-            copy: "E 位于被访问格子，因此进入候选集合，但仍需要精确距离判断。",
-            why: "网格是矩形粗筛，技能范围可能是圆形。",
-            status: "CANDIDATE", activeLines: [3],
-            metrics: [["candidates", "E"], ["shape", "grid cells"], ["next", "distance test"]],
-            view: { type: "space", mode: "grid", stage: "candidate", note: "GRID / HASH" }
+            phase: "邻格粗筛", title: "只枚举玩家周围的有效格子",
+            copy: "九宫格以玩家格为中心，但位于地图边缘时，越界格会被自然排除。",
+            why: "角落最多访问 4 格，边缘最多访问 6 格，内部最多访问 9 格。",
+            status: "NEIGHBORS", activeLines: [2],
+            metrics: [["center", "player cell"], ["range", "adjacent keys"], ["out of bounds", "skip"]],
+            view: { type: "space", mode: "grid", stage: "near", note: "ENUMERATE VALID NEIGHBORS" }
           },
           {
-            phase: "距离平方精筛", title: "用 d² ≤ 25 确认最终结果",
-            copy: "文章示例半径为 5，因此比较 offset.sqrMagnitude 与 radiusSqr = 25。",
-            why: "只比较范围时无需开根号，距离平方更直接。",
-            status: "NARROW", activeLines: [4],
-            metrics: [["radius", "5"], ["radiusSqr", "25"], ["condition", "d² <= 25"]],
-            view: { type: "space", mode: "grid", stage: "precise", note: "GRID / HASH" }
+            phase: "候选对比", title: "把全量检查缩小成邻格候选",
+            copy: "只收集有效邻格里的单位；下方会实时显示候选数、减少次数和减少比例。",
+            why: "空间结构并没有让单次检测更快，而是让需要检测的对象变少。",
+            status: "COMPARE", activeLines: [3, 4],
+            metrics: [["baseline", "global checks"], ["optimized", "candidate checks"], ["difference", "live comparison"]],
+            view: { type: "space", mode: "grid", stage: "candidate", note: "GLOBAL vs NEIGHBOR CANDIDATES" }
+          },
+          {
+            phase: "精确阶段", title: "候选仍然需要真实规则确认",
+            copy: "邻格只负责减少候选；距离、视野、阵营等精确条件仍要逐个检查候选对象。",
+            why: "Broad Phase 负责少算，Narrow Phase 负责算准，两者不能互相替代。",
+            status: "HANDOFF", activeLines: [5],
+            metrics: [["broad phase", "grid candidates"], ["narrow phase", "precise rule"], ["final result", "after testing"]],
+            view: { type: "space", mode: "grid", stage: "precise", note: "CANDIDATES → PRECISE TEST" }
           }
         ]
-      },
-      hash: {
+      },      hash: {
         label: "空间 Hash 与移动",
         code: [
+          "Dictionary<Vector2Int, List<Unit>> grids;",
           "gx = FloorToInt(position.x / cellSize);",
           "gy = FloorToInt(position.z / cellSize);",
+          "grids[cell].Add(unit);",
+          "if (newCell == oldCell) return;",
           "oldCell.Remove(unit);",
-          "newCell.Add(unit);",
-          "Dictionary<Vector2Int, List<Unit>> grids;"
+          "newCell.Add(unit);"
         ],
         steps: [
           {
             phase: "稀疏地图", title: "不提前创建整张二维数组",
             copy: "空间 Hash 只保存真正有对象的格子，空区域不占据格子容器。",
             why: "大地图和负坐标更适合用坐标 key 访问字典。",
-            status: "SPARSE", activeLines: [4],
+            status: "SPARSE", activeLines: [0],
             metrics: [["container", "Dictionary"], ["empty cells", "not stored"], ["distribution", "sparse"]],
             view: { type: "space", mode: "grid", stage: "insert", note: "only occupied cells have keys" }
           },
@@ -389,24 +433,40 @@ const scenarios = Object.freeze({
             phase: "坐标映射", title: "世界位置通过 cellSize 映射为 key",
             copy: "gx 与 gy 使用 floor(position / cellSize) 计算，结果可直接作为字典键。",
             why: "同一格内的连续坐标共享同一个离散索引。",
-            status: "HASH", activeLines: [0, 1],
+            status: "HASH", activeLines: [1, 2],
             metrics: [["input", "world position"], ["operation", "floor / cellSize"], ["output", "Vector2Int key"]],
             view: { type: "space", mode: "grid", stage: "insert", note: "world → cell key" }
           },
           {
-            phase: "单位移动", title: "跨格时先从旧 key 移除",
+            phase: "首次登记", title: "把对象加入当前格子的列表",
+            copy: "坐标 key 只负责定位容器；对象仍需要显式加入该 key 对应的列表。",
+            why: "建立 key 与对象列表的关联后，查询才能按格子收集候选。",
+            status: "INSERT", activeLines: [3],
+            metrics: [["cell key", "resolved"], ["unit", "added"], ["index", "current"]],
+            view: { type: "space", mode: "grid", stage: "insert", note: "cell key → unit list" }
+          },
+          {
+            phase: "同格移动", title: "key 没变就不更新索引",
+            copy: "对象在同一个格子内部移动时，newCell 与 oldCell 相同，可以直接结束索引更新。",
+            why: "空间索引关心跨格变化，不需要响应每一小段世界坐标变化。",
+            status: "UNCHANGED", activeLines: [4],
+            metrics: [["old cell", "same"], ["new cell", "same"], ["reindex", "skip"]],
+            view: { type: "space", mode: "grid", stage: "insert", note: "same key → no index mutation" }
+          },
+          {
+            phase: "跨格移动", title: "先从旧 key 移除",
             copy: "动态对象离开原格子后，旧格子的列表必须同步更新。",
             why: "不移除会产生幽灵候选，同一个对象还可能重复出现。",
-            status: "REMOVE OLD", activeLines: [2],
+            status: "REMOVE OLD", activeLines: [5],
             metrics: [["old cell", "remove"], ["new cell", "pending"], ["duplicate risk", "blocked"]],
             view: { type: "space", mode: "grid", stage: "near", note: "remove from old cell" }
           },
           {
-            phase: "重新登记", title: "把单位加入新的格子列表",
-            copy: "只有跨越格子边界时才需要更新索引；同格内移动不改变 key。",
-            why: "更新频率由格子变化决定，而不是每一帧都重建整个结构。",
-            status: "ADD NEW", activeLines: [3],
-            metrics: [["new cell", "add"], ["same-cell move", "no reindex"], ["query", "current data"]],
+            phase: "重新登记", title: "把对象加入新 key",
+            copy: "旧索引清理完成后，把对象加入新格子的列表，查询才能读到最新位置。",
+            why: "更新动作由“旧格移除 + 新格加入”共同组成，缺一不可。",
+            status: "ADD NEW", activeLines: [6],
+            metrics: [["new cell", "add"], ["old cell", "clean"], ["query", "current data"]],
             view: { type: "space", mode: "grid", stage: "candidate", note: "register in new cell" }
           }
         ]
@@ -631,6 +691,13 @@ const spaceContracts = Object.freeze({
 });
 
 let weightedRoll = null;
+let gridPlayerIndex = 5;
+let manualFlagValue = 0;
+let pitySandboxFailures = 0;
+let bagSandboxCursor = -1;
+let hashUnitIndex = 5;
+let hashPreviousIndex = 5;
+let quadtreeSandboxCount = 8;
 let scenarioName = location.hash.length > 1 ? location.hash.slice(1) : root.dataset.initialScenario;
 if (!Object.hasOwn(scenarios, scenarioName)) {
   throw new Error(`[SystemsLab] 未知专题：${scenarioName}`);
@@ -643,6 +710,49 @@ function element(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+function createFlagSandbox() {
+  const panel = element("section", "inline-sandbox");
+  const head = element("div", "sandbox-head");
+  head.append(element("span", "", "TRY IT / 直接切换标记"));
+  const readout = element("strong");
+  head.append(readout);
+  const controls = element("div", "flag-switches");
+  const warning = element("p", "sandbox-message");
+
+  function update() {
+    const binary = manualFlagValue.toString(2).padStart(6, "0");
+    readout.textContent = `${binary} / ${manualFlagValue}`;
+    controls.querySelectorAll("[data-flag-bit]").forEach((button) => {
+      const bit = Number(button.dataset.flagBit);
+      const on = (manualFlagValue & (1 << bit)) !== 0;
+      button.classList.toggle("is-active", on);
+      button.setAttribute("aria-pressed", String(on));
+    });
+    const hasMiss = (manualFlagValue & (1 << 4)) !== 0;
+    const hasCritical = (manualFlagValue & (1 << 3)) !== 0;
+    warning.className = `sandbox-message${hasMiss && hasCritical ? " is-warning" : ""}`;
+    warning.textContent = hasMiss && hasCritical
+      ? "容器允许 Miss + Critical，但业务流程应拒绝这个组合。"
+      : "点击标签观察二进制位如何独立打开与关闭。";
+  }
+
+  flagLabels.forEach((label, bit) => {
+    const button = element("button", "", label);
+    button.type = "button";
+    button.dataset.flagBit = String(bit);
+    button.dataset.labControl = "";
+    button.setAttribute("aria-pressed", "false");
+    button.addEventListener("click", () => {
+      manualFlagValue ^= 1 << bit;
+      update();
+    });
+    controls.append(button);
+  });
+  panel.append(head, controls, warning);
+  update();
+  return panel;
 }
 
 function renderFlags(view, status) {
@@ -667,6 +777,7 @@ function renderFlags(view, status) {
   });
   wrapper.append(tags);
   wrapper.append(element("div", "bit-equation", flagEquations[status]));
+  wrapper.append(createFlagSandbox());
   if (view.note) wrapper.append(element("div", "space-formula", view.note));
   refs.stage.replaceChildren(wrapper);
 }
@@ -733,6 +844,84 @@ function createWeightedRollLab(bar) {
   return lab;
 }
 
+function createPitySandbox() {
+  const panel = element("section", "inline-sandbox");
+  const head = element("div", "sandbox-head");
+  head.append(element("span", "", "TRY IT / 手动推进保底状态"));
+  const readout = element("strong");
+  head.append(readout);
+  const controls = element("div", "sandbox-actions");
+  const fail = element("button", "", "记录一次失败");
+  const success = element("button", "", "命中并重置");
+  fail.type = "button";
+  success.type = "button";
+  fail.dataset.labControl = "";
+  success.dataset.labControl = "";
+  const message = element("p", "sandbox-message");
+
+  function update() {
+    readout.textContent = `failCount = ${pitySandboxFailures}`;
+    fail.disabled = pitySandboxFailures >= 5;
+    message.className = `sandbox-message${pitySandboxFailures >= 5 ? " is-hit" : ""}`;
+    message.textContent = pitySandboxFailures >= 5
+      ? "达到演示上限：下一次由硬保底直接产出。"
+      : `还可以继续记录失败；成功时计数会回到 0。`;
+  }
+
+  fail.addEventListener("click", () => {
+    if (pitySandboxFailures < 5) pitySandboxFailures += 1;
+    update();
+  });
+  success.addEventListener("click", () => {
+    pitySandboxFailures = 0;
+    update();
+  });
+  controls.append(fail, success);
+  panel.append(head, controls, message);
+  update();
+  return panel;
+}
+
+function createBagSandbox() {
+  const panel = element("section", "inline-sandbox");
+  const head = element("div", "sandbox-head");
+  head.append(element("span", "", "TRY IT / 无放回抽取"));
+  const readout = element("strong");
+  head.append(readout);
+  const controls = element("div", "sandbox-actions");
+  const draw = element("button", "", "抽取下一个");
+  const refill = element("button", "", "重新装袋");
+  draw.type = "button";
+  refill.type = "button";
+  draw.dataset.labControl = "";
+  refill.dataset.labControl = "";
+  const message = element("p", "sandbox-message");
+
+  function update() {
+    if (bagSandboxCursor < 0) {
+      readout.textContent = "READY / 10";
+      message.textContent = "袋内配额固定，但抽取顺序已经打乱。";
+      return;
+    }
+    const remaining = bagSequence.length - bagSandboxCursor - 1;
+    readout.textContent = `${bagSequence[bagSandboxCursor]} / 剩余 ${remaining}`;
+    message.textContent = remaining === 0 ? "本周期用完；再次抽取会开始新周期。" : "已抽出的结果不会在本周期再次出现。";
+  }
+
+  draw.addEventListener("click", () => {
+    bagSandboxCursor = bagSandboxCursor >= bagSequence.length - 1 ? 0 : bagSandboxCursor + 1;
+    update();
+  });
+  refill.addEventListener("click", () => {
+    bagSandboxCursor = -1;
+    update();
+  });
+  controls.append(draw, refill);
+  panel.append(head, controls, message);
+  update();
+  return panel;
+}
+
 function renderRandom(view) {
   refs.visualTitle.textContent = "随机策略剖面";
   refs.visualStatus.textContent = view.note;
@@ -758,7 +947,7 @@ function renderRandom(view) {
     for (let index = 0; index < 6; index += 1) {
       track.append(element("div", `pity-step${index <= view.level ? " is-active" : ""}`, index === 5 ? "MAX" : `FAIL ${index}`));
     }
-    wrapper.append(track, element("div", "random-note", view.note));
+    wrapper.append(track, createPitySandbox(), element("div", "random-note", view.note));
   } else if (view.mode === "bag") {
     const bag = element("div", "bag-row");
     bagSequence.forEach((value, index) => {
@@ -767,7 +956,7 @@ function renderRandom(view) {
       if (index === view.cursor) item.style.outline = "2px solid var(--acid)";
       bag.append(item);
     });
-    wrapper.append(bag, element("div", "random-note", view.note));
+    wrapper.append(bag, createBagSandbox(), element("div", "random-note", view.note));
   } else if (view.mode === "seed") {
     const seed = element("div", "seed-panel");
     seed.append(element("div", "seed-box", view.left), element("div", "seed-arrow", "→"), element("div", "seed-box", view.right));
@@ -793,9 +982,189 @@ function createSpaceGrid(stage, note) {
     grid.append(cell);
   }
   wrapper.append(grid);
-  const formula = stage === "precise" ? "radius = 5  →  radius² = 25  →  compare d² ≤ 25" : note;
-  if (formula) wrapper.append(element("div", "space-formula", formula));
+  if (note) wrapper.append(element("div", "space-formula", note));
   return wrapper;
+}
+
+function createInteractiveGrid(stage) {
+  const width = 4;
+  const height = 3;
+  const cellCount = width * height;
+  const playerRow = Math.floor(gridPlayerIndex / width);
+  const playerColumn = gridPlayerIndex % width;
+  const globalChecks = cellCount - 1;
+  let candidateChecks = 0;
+  let visitedCells = 0;
+
+  for (let index = 0; index < cellCount; index += 1) {
+    const row = Math.floor(index / width);
+    const column = index % width;
+    const near = Math.abs(row - playerRow) <= 1 && Math.abs(column - playerColumn) <= 1;
+    if (near) visitedCells += 1;
+    if (near && index !== gridPlayerIndex) candidateChecks += 1;
+  }
+
+  const onHorizontalEdge = playerColumn === 0 || playerColumn === width - 1;
+  const onVerticalEdge = playerRow === 0 || playerRow === height - 1;
+  const positionType = onHorizontalEdge && onVerticalEdge ? "角落" : onHorizontalEdge || onVerticalEdge ? "边缘" : "内部";
+  const savedChecks = globalChecks - candidateChecks;
+  const reduction = Math.round((savedChecks / globalChecks) * 100);
+
+  const wrapper = element("div", "space-map interactive-grid");
+  const prompt = element("div", "grid-prompt");
+  prompt.append(
+    element("span", "", "INPUT / 点击格子移动玩家"),
+    element("strong", "", `当前位置：(${playerColumn}, ${playerRow}) · ${positionType}`)
+  );
+  const grid = element("div", "space-grid");
+
+  for (let index = 0; index < cellCount; index += 1) {
+    const row = Math.floor(index / width);
+    const column = index % width;
+    const isPlayer = index === gridPlayerIndex;
+    const near = Math.abs(row - playerRow) <= 1 && Math.abs(column - playerColumn) <= 1;
+    let classes = "space-cell is-interactive";
+    if (stage === "all") classes += " is-scan";
+    if (["near", "candidate", "precise"].includes(stage) && near) classes += " is-near";
+    if (["candidate", "precise"].includes(stage) && near && !isPlayer) classes += " is-candidate";
+    const cell = element("button", classes);
+    cell.type = "button";
+    cell.dataset.labControl = "";
+    cell.setAttribute("aria-label", `把玩家放到格子 ${column}, ${row}`);
+    cell.append(element("small", "cell-coordinate", `${column},${row}`));
+    cell.append(element("span", `unit ${isPlayer ? "player" : "enemy"}`, isPlayer ? "P" : "E"));
+    cell.addEventListener("click", () => {
+      gridPlayerIndex = index;
+      renderSpace({ type: "space", mode: "grid", stage, note: "INTERACTIVE GRID" }, "grid");
+    });
+    grid.append(cell);
+  }
+
+  const comparison = element("div", "grid-comparison");
+  [
+    ["全量检查", String(globalChecks)],
+    ["访问格子", String(visitedCells)],
+    ["候选检查", String(candidateChecks)],
+    ["减少计算", `${savedChecks} / ${reduction}%`]
+  ].forEach(([label, value]) => {
+    const item = element("div");
+    item.append(element("span", "", label), element("strong", "", value));
+    comparison.append(item);
+  });
+
+  const stageNotes = Object.freeze({
+    all: `未使用索引：需要检查其余 ${globalChecks} 个单位`,
+    insert: `玩家位于 (${playerColumn}, ${playerRow})，点击其他格可以改变输入`,
+    near: `${positionType}位置：有效邻格 ${visitedCells} 个`,
+    candidate: `从 ${globalChecks} 次全量检查缩小为 ${candidateChecks} 次候选检查`,
+    precise: `把 ${candidateChecks} 个候选交给距离、视野或阵营规则`
+  });
+  if (!Object.hasOwn(stageNotes, stage)) {
+    throw new Error(`[SystemsLab] 九宫格交互缺少阶段说明：${stage}`);
+  }
+
+  wrapper.append(grid);
+  prompt.append(element("em", "", stageNotes[stage]));
+  wrapper.prepend(prompt);
+  wrapper.append(comparison);
+  return wrapper;
+}
+
+function createHashSandbox(stage) {
+  const width = 4;
+  const height = 3;
+  const wrapper = element("div", "space-map interactive-grid");
+  const prompt = element("div", "grid-prompt");
+  prompt.append(element("span", "", "TRY IT / 点击目标格移动单位"));
+  const grid = element("div", "space-grid");
+  const oldRow = Math.floor(hashPreviousIndex / width);
+  const oldColumn = hashPreviousIndex % width;
+  const currentRow = Math.floor(hashUnitIndex / width);
+  const currentColumn = hashUnitIndex % width;
+
+  for (let index = 0; index < width * height; index += 1) {
+    const row = Math.floor(index / width);
+    const column = index % width;
+    let classes = "space-cell is-interactive";
+    if (index === hashPreviousIndex && hashPreviousIndex !== hashUnitIndex) classes += " is-previous";
+    if (index === hashUnitIndex) classes += " is-current";
+    const cell = element("button", classes);
+    cell.type = "button";
+    cell.dataset.labControl = "";
+    cell.setAttribute("aria-label", `把单位移动到格子 ${column}, ${row}`);
+    cell.append(element("small", "cell-coordinate", `${column},${row}`));
+    if (index === hashUnitIndex) cell.append(element("span", "unit enemy", "U"));
+    cell.addEventListener("click", () => {
+      hashPreviousIndex = hashUnitIndex;
+      hashUnitIndex = index;
+      renderSpace({ type: "space", mode: "grid", stage, note: "INTERACTIVE HASH" }, "hash");
+    });
+    grid.append(cell);
+  }
+
+  const unchanged = hashPreviousIndex === hashUnitIndex;
+  const comparison = element("div", "grid-comparison hash-comparison");
+  [
+    ["旧 key", `(${oldColumn},${oldRow})`],
+    ["新 key", `(${currentColumn},${currentRow})`],
+    ["移除旧索引", unchanged ? "跳过" : "执行"],
+    ["加入新索引", unchanged ? "跳过" : "执行"]
+  ].forEach(([label, value]) => {
+    const item = element("div");
+    item.append(element("span", "", label), element("strong", "", value));
+    comparison.append(item);
+  });
+  prompt.append(
+    element("strong", "", unchanged ? "SAME KEY / 不更新" : "KEY CHANGED / 更新索引"),
+    element("em", "", unchanged ? "同格移动不会改变空间索引。" : "先从旧格移除，再加入新格。")
+  );
+  wrapper.append(prompt, grid, comparison);
+  return wrapper;
+}
+
+function renderTreeSandbox(container) {
+  const panel = element("section", "inline-sandbox tree-sandbox");
+  const head = element("div", "sandbox-head");
+  head.append(element("span", "", "TRY IT / 改变节点对象数"));
+  const readout = element("strong");
+  head.append(readout);
+  const controls = element("div", "sandbox-actions");
+  const remove = element("button", "", "移除 1 个");
+  const add = element("button", "", "加入 1 个");
+  remove.type = "button";
+  add.type = "button";
+  remove.dataset.labControl = "";
+  add.dataset.labControl = "";
+  const live = element("div", "tree-live");
+  const message = element("p", "sandbox-message");
+
+  function update() {
+    const split = quadtreeSandboxCount > 8;
+    readout.textContent = `${quadtreeSandboxCount} / capacity 8`;
+    remove.disabled = quadtreeSandboxCount === 0;
+    live.replaceChildren();
+    live.append(element("div", `tree-node-box${split ? "" : " is-active"}`, `ROOT · ${quadtreeSandboxCount} units`));
+    if (split) {
+      const children = element("div", "tree-children");
+      ["NW", "NE", "SW", "SE"].forEach((name) => children.append(element("div", "tree-node-box is-active", name)));
+      live.append(children);
+    }
+    message.className = `sandbox-message${split ? " is-hit" : ""}`;
+    message.textContent = split ? "对象数超过容量：Root 分裂为四个子节点。" : "对象数未超过容量：继续保留在 Root。";
+  }
+
+  remove.addEventListener("click", () => {
+    if (quadtreeSandboxCount > 0) quadtreeSandboxCount -= 1;
+    update();
+  });
+  add.addEventListener("click", () => {
+    quadtreeSandboxCount += 1;
+    update();
+  });
+  controls.append(remove, add);
+  panel.append(head, controls, live, message);
+  update();
+  container.append(panel);
 }
 
 function renderTree(view) {
@@ -812,6 +1181,7 @@ function renderTree(view) {
   } else if (view.stage === "capacity") {
     wrapper.append(element("div", "space-formula", "units.Count > 8  &&  depth < 5"));
   }
+  renderTreeSandbox(wrapper);
   return wrapper;
 }
 
@@ -844,6 +1214,8 @@ function renderSpace(view, selectedCase) {
   let visual;
   if (view.mode === "tree") visual = renderTree(view);
   else if (view.mode === "candidates") visual = renderCandidates(view);
+  else if (selectedCase === "grid") visual = createInteractiveGrid(view.stage);
+  else if (selectedCase === "hash") visual = createHashSandbox(view.stage);
   else visual = createSpaceGrid(view.stage, view.note);
   const contract = element("div", "space-contract");
   spaceContracts[selectedCase].forEach((item) => contract.append(element("span", "", item)));
