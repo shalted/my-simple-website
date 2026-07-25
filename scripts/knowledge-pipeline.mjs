@@ -353,7 +353,15 @@ function siteFooter() {
   </footer>`;
 }
 
-function pageDocument({ title, description, body }) {
+function pageDocument({ title, description, body, interactive }) {
+  if (typeof interactive !== "boolean") {
+    throw new Error("pageDocument 需要明确指定 interactive。");
+  }
+  const interactiveAssets = interactive
+    ? `  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+`
+    : "";
   const document = `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -361,7 +369,7 @@ function pageDocument({ title, description, body }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(description)}">
   <title>${escapeHtml(title)} · XIANYUWO</title>
-  <link rel="stylesheet" href="/assets/knowledge.css">
+${interactiveAssets}  <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
 <body>
@@ -485,7 +493,8 @@ function extractDynamicSections(markdown) {
 
 function renderDynamicDeck(markdown, relativeMarkdown) {
   const sections = extractDynamicSections(markdown);
-  if (sections.length < 2) return "";
+  const hasObservableStructure = sections.some((section) => section.code || section.bullets.length);
+  if (sections.length < 2 || !hasObservableStructure) return "";
   const steps = sections.map((section, index) => {
     const type = section.code ? "CODE / LOGIC" : section.bullets.length ? "FLOW / RULES" : "CONCEPT";
     const summary = section.summary
@@ -513,7 +522,7 @@ function renderDynamicDeck(markdown, relativeMarkdown) {
     </button>`).join("");
 
   return `
-    <section class="dynamic-deck" data-dynamic-deck>
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
       <header class="deck-header">
         <div>
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
@@ -526,10 +535,11 @@ function renderDynamicDeck(markdown, relativeMarkdown) {
         <div class="deck-slides">${steps}</div>
       </div>
       <footer class="deck-controls">
-        <button type="button" data-deck-prev>← 上一步</button>
-        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
-        <button type="button" data-deck-next>下一步 →</button>
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
         <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>`;
 }
@@ -562,7 +572,7 @@ function renderArticlePage(document, markdown, previous, next) {
       </article>
     </div>
   </main>`;
-  return pageDocument({ title: document.title, description: document.summary, body });
+  return pageDocument({ title: document.title, description: document.summary, body, interactive: !document.isReadme });
 }
 
 function renderLibraryIndex(documents) {
@@ -640,6 +650,7 @@ function renderLibraryIndex(documents) {
     title: "知识库",
     description: "XIANYUWO 的算法、数据结构、游戏 AI 与工程设计知识库。",
     body,
+    interactive: false,
   });
 }
 

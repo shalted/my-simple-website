@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="MonsterClusterControllerRuntime.cs">
   <title>启发式决策模型：怪物集群候选打分 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -57,7 +59,7 @@
         <p><a href="/knowledge/swarm-ai/">打开集群 AI 实验 →</a></p>
       </aside>
 
-    <section class="dynamic-deck" data-dynamic-deck>
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
       <header class="deck-header">
         <div>
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
@@ -196,10 +198,11 @@ UI Tips 显示策略
       </article></div>
       </div>
       <footer class="deck-controls">
-        <button type="button" data-deck-prev>← 上一步</button>
-        <button class="deck-play" type="button" data-deck-play aria-pressed="false">自动播放</button>
-        <button type="button" data-deck-next>下一步 →</button>
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
         <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
         <p>分类：算法</p>
