@@ -280,9 +280,15 @@ input {
     var(--panel);
 }
 
-.feature-card:nth-child(2) {
+.feature-card:nth-child(3n + 2) {
   background:
     linear-gradient(135deg, rgba(103, 213, 243, 0.12), transparent 55%),
+    var(--panel);
+}
+
+.feature-card:nth-child(3n) {
+  background:
+    linear-gradient(135deg, rgba(255, 189, 107, 0.1), transparent 55%),
     var(--panel);
 }
 

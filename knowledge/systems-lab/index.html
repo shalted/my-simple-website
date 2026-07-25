@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Flags、随机系统与空间划分的可单步交互实验。">
+  <title>基础系统实验室 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/systems-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/systems-lab.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/后续学习计划/">知识路线</a>
+      <a class="github-link" href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">FOUNDATION SYSTEMS / LIVE STATE</span>
+        <h1>把隐藏在代码里的<br><em>状态变化</em>摆到桌面上</h1>
+      </div>
+      <p>同一套单步播放器连接三种基础系统：位标记看二进制变化，随机系统看分布策略，空间划分看候选集如何缩小。</p>
+    </section>
+
+    <section class="lab" data-interactive-lab data-initial-scenario="flags" style="--lab-focus-color: var(--acid)" aria-label="基础系统交互实验">
+      <div class="scenario-tabs" role="group" aria-label="选择知识专题">
+        <button class="scenario-tab is-active" type="button" data-scenario="flags" data-lab-control aria-pressed="true">
+          <small>01 / STATE</small><span>Flags / BitMask</span>
+        </button>
+        <button class="scenario-tab" type="button" data-scenario="random" data-lab-control aria-pressed="false">
+          <small>02 / DISTRIBUTION</small><span>随机系统</span>
+        </button>
+        <button class="scenario-tab" type="button" data-scenario="space" data-lab-control aria-pressed="false">
+          <small>03 / QUERY</small><span>空间划分</span>
+        </button>
+      </div>
+
+      <div class="lab-head">
+        <div><span class="panel-label">CURRENT PROCESS</span><h2 id="lab-title">Flags / BitMask</h2></div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 5</strong></div>
+      </div>
+      <div class="case-tabs" id="case-tabs" role="group" aria-label="选择演示案例"></div>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <span class="phase" id="phase">初始化</span>
+          <h2 id="step-title">一个整数承载多个开关</h2>
+          <p id="step-copy">每一个标记占据独立二进制位，因此多个状态可以同时存在。</p>
+          <div class="why-box"><span>WHY</span><p id="step-why">Flags 负责存储与传递标签，业务流程负责保证组合是否合法。</p></div>
+          <a id="article-link" class="article-link" href="/knowledge/library/游戏逻辑常用模式/位标记Flags与BitMask/">阅读完整原理 →</a>
+        </article>
+
+        <section class="visual-panel">
+          <div class="visual-head">
+            <div><span class="panel-label">OBSERVABLE STATE</span><h2 id="visual-title">二进制寄存器</h2></div>
+            <span class="visual-status" id="visual-status">000000</span>
+          </div>
+          <div class="visual-stage" id="visual-stage" aria-live="polite"></div>
+        </section>
+
+        <aside class="inspect-panel">
+          <div>
+            <span class="panel-label">KEY DATA</span>
+            <dl class="metrics" id="metrics"></dl>
+          </div>
+          <div class="code-block">
+            <div class="code-head"><span>SYNCED LOGIC · C#</span><strong id="code-status">READY</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="step-dots" id="step-dots" data-lab-dots aria-label="步骤进度"></div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button class="auto-button" type="button" id="auto-button" data-lab-control aria-pressed="false">自动演示</button>
+          <button class="next-button" type="button" id="next-button" data-lab-control>下一步 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="principle">
+      <span class="section-kicker">ONE SHARED PATTERN</span>
+      <h2>先暴露状态，<br>再解释<em>为什么变化</em>。</h2>
+      <div class="principle-grid">
+        <div><span>01</span><h3>状态可见</h3><p>当前值、候选集合和输出结果不藏在代码背后。</p></div>
+        <div><span>02</span><h3>逻辑同步</h3><p>每一步只突出真正执行的规则，避免动画与代码脱节。</p></div>
+        <div><span>03</span><h3>手动优先</h3><p>手动模式用于调试，自动模式以两秒节奏复习完整过程。</p></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

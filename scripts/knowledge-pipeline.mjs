@@ -384,6 +384,30 @@ ${siteFooter()}
 
 function interactiveCallout(document) {
   const combined = `${document.title} ${document.relativeMarkdown}`;
+  if (/Flags|BitMask|位标记/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>观察二进制位如何组合、判断和移除，并对比合法组合与互斥业务结果。</span>
+        <p><a href="/knowledge/systems-lab/#flags">打开 Flags 状态实验 →</a></p>
+      </aside>`;
+  }
+  if (/随机系统/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>切换加权、保底、洗牌袋和稳定随机案例，逐步查看分布策略。</span>
+        <p><a href="/knowledge/systems-lab/#random">打开随机策略实验 →</a></p>
+      </aside>`;
+  }
+  if (/空间划分|九宫格|四叉树/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>观察九宫格、空间 Hash、四叉树和粗筛到精筛的候选集变化。</span>
+        <p><a href="/knowledge/systems-lab/#space">打开空间查询实验 →</a></p>
+      </aside>`;
+  }
   if (/二叉堆|优先队列/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -632,6 +656,21 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/binary-heap/">
           <small>BINARY HEAP / LIVE STRUCTURE</small>
           <div><h3>二叉堆优先队列</h3><p>同步观察数组与树，逐步调试 BubbleUp 和 BubbleDown。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/systems-lab/#flags">
+          <small>BITMASK / LIVE STATE</small>
+          <div><h3>Flags / BitMask</h3><p>覆盖组合、判断、移除、合法叠加与互斥结果建模。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/systems-lab/#random">
+          <small>RANDOM / DISTRIBUTION</small>
+          <div><h3>随机系统</h3><p>对比权重、保底、洗牌袋、Seed 与稳定随机。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/systems-lab/#space">
+          <small>SPATIAL / QUERY PIPELINE</small>
+          <div><h3>空间划分</h3><p>覆盖九宫格、空间 Hash、四叉树和两阶段范围查询。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
       </div>
