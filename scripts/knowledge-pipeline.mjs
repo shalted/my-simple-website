@@ -376,6 +376,14 @@ ${siteFooter()}
 
 function interactiveCallout(document) {
   const combined = `${document.title} ${document.relativeMarkdown}`;
+  if (/二叉堆|优先队列/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>同步观察数组、隐式树、关键下标和代码，逐步调试 BubbleUp 与 BubbleDown。</span>
+        <p><a href="/knowledge/binary-heap/">打开二叉堆实验 →</a></p>
+      </aside>`;
+  }
   if (/集群|群体|怪物.*AI/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -609,6 +617,11 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/swarm-ai/">
           <small>SWARM AI / LIVE LOGIC</small>
           <div><h3>怪物集群 AI</h3><p>在手动与自动模式间切换，观察群体决策的最小闭环。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/binary-heap/">
+          <small>BINARY HEAP / LIVE STRUCTURE</small>
+          <div><h3>二叉堆优先队列</h3><p>同步观察数组与树，逐步调试 BubbleUp 和 BubbleDown。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
       </div>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="可单步调试的二叉堆优先队列实验：同步观察数组、树结构、关键数据与 C# 代码。">
+  <title>二叉堆优先队列 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/heap-lab.css">
+  <script src="/assets/heap-lab.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/数据结构/二叉堆优先队列/">原理文章</a>
+      <a class="github-link" href="https://github.com/shalted" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">DATA STRUCTURE / LIVE DEBUGGER</div>
+        <h1>让堆的每一次<br><em>交换</em>都看得见</h1>
+      </div>
+      <p>数组、隐式二叉树、关键下标和 C# 代码保持同步。手动模式适合逐步调试，自动模式每两秒推进一步。</p>
+    </section>
+
+    <section class="lab" aria-label="二叉堆交互实验">
+      <div class="lab-toolbar">
+        <div class="scenario-tabs" role="group" aria-label="选择演示过程">
+          <button class="scenario-tab is-active" type="button" data-scenario="insert" aria-pressed="true">
+            <small>01 / BUBBLE UP</small><span>插入优先级 85</span>
+          </button>
+          <button class="scenario-tab" type="button" data-scenario="pop" aria-pressed="false">
+            <small>02 / BUBBLE DOWN</small><span>弹出最高优先级</span>
+          </button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 5</strong></div>
+      </div>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <div class="panel-label">当前逻辑</div>
+          <p class="phase" id="phase">插入前</p>
+          <h2 id="step-title">最大堆已经就绪</h2>
+          <p class="step-copy" id="step-copy">父节点的优先级都大于等于它的孩子，因此堆顶 90 是当前最大值。</p>
+          <div class="why-box">
+            <span>WHY</span>
+            <p id="step-why">堆不要求整个数组有序，只维护“父节点 ≥ 子节点”。</p>
+          </div>
+          <div class="rule-card">
+            <span>INDEX RULE</span>
+            <code>parent = (i - 1) / 2</code>
+            <code>left = 2 * i + 1</code>
+            <code>right = 2 * i + 2</code>
+          </div>
+        </article>
+
+        <section class="visual-panel">
+          <div class="panel-head">
+            <div><span class="panel-label">同步结构</span><h2>数组是一棵隐式树</h2></div>
+            <div class="legend"><span><i class="current-dot"></i>当前位置</span><span><i class="compare-dot"></i>参与比较</span></div>
+          </div>
+          <div class="tree-stage" id="heap-tree" aria-label="二叉堆树结构"></div>
+          <div class="array-section">
+            <div class="array-caption"><span>LIST / HEAP</span><code id="heap-string">[90, 70, 80, 30, 50, 60]</code></div>
+            <div class="heap-array" id="heap-array" aria-label="二叉堆数组"></div>
+          </div>
+        </section>
+
+        <aside class="inspect-panel">
+          <div>
+            <div class="panel-label">关键数据</div>
+            <dl class="metrics">
+              <div><dt>current / i</dt><dd id="current-index">—</dd></div>
+              <div><dt>parent</dt><dd id="parent-index">—</dd></div>
+              <div><dt>left</dt><dd id="left-index">—</dd></div>
+              <div><dt>right</dt><dd id="right-index">—</dd></div>
+              <div class="output-metric"><dt>output / top</dt><dd id="output-value">—</dd></div>
+            </dl>
+          </div>
+          <div class="code-block">
+            <div class="code-head"><span>SYNCED LOGIC · C#</span><strong id="code-status">READY</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="step-dots" id="step-dots" aria-label="步骤进度"></div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button">重置</button>
+          <button type="button" id="prev-button">← 上一步</button>
+          <button class="auto-button" type="button" id="auto-button">自动演示</button>
+          <button class="next-button" type="button" id="next-button">下一步 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="principle">
+      <div class="section-kicker">THE CORE IDEA</div>
+      <h2>堆维护的不是完整顺序，<br>而是<em>当前最值</em>。</h2>
+      <div class="principle-grid">
+        <div><span>01</span><h3>结构映射</h3><p>完全二叉树按层写进数组，因此不需要额外保存节点和指针。</p></div>
+        <div><span>02</span><h3>局部修复</h3><p>插入只向父节点移动，弹出只向更大的孩子移动，每次最多走一条树高。</p></div>
+        <div><span>03</span><h3>时间复杂度</h3><p>查看堆顶是 O(1)，插入与弹出是 O(log n)，适合持续变化的优先级队列。</p></div>
+      </div>
+      <a class="article-link" href="/knowledge/library/数据结构/二叉堆优先队列/">阅读完整原理与工程应用 →</a>
+    </section>
+  </main>
+</body>
+</html>
