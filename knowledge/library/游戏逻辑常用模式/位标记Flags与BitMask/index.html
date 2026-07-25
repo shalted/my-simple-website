@@ -125,7 +125,7 @@
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>基础声明</h3>
-        <p>项目里的攻击结果标记：</p>
+        <p>以攻击结果为例，可以这样声明标记：</p>
 
         <pre><code class="language-csharp">[Flags]
 public enum AttributeAttackEffect
@@ -268,7 +268,7 @@ bool isHeal;</code></pre>
 <p>用 Flags 可以集中成一个字段：</p>
 <pre><code class="language-csharp">AttributeAttackEffect effects;</code></pre>
 <h2 id="基础声明">基础声明</h2>
-<p>项目里的攻击结果标记：</p>
+<p>以攻击结果为例，可以这样声明标记：</p>
 <pre><code class="language-csharp">[Flags]
 public enum AttributeAttackEffect
 {
@@ -318,7 +318,7 @@ Critical =                      001000
 &amp;001000
 =001000</code></pre>
 <p>结果等于 <code>Critical</code>，说明 <code>effects</code> 里面包含暴击。</p>
-<p>项目里的结果对象也封装了这个判断：</p>
+<p>也可以把判断封装进结果对象：</p>
 <pre><code class="language-csharp">public bool HasEffect(AttributeAttackEffect effect)
 {
     return (Effects &amp; effect) == effect;
@@ -329,7 +329,7 @@ Critical =                      001000
 <p>其中：</p>
 <pre><code class="language-text">~SomeFlag：把 SomeFlag 这一位取反。
 &amp;=：保留其他位，关掉目标位。</code></pre>
-<p>项目里的移动组件有类似写法：</p>
+<p>射线检测层也常用同样的位清除写法：</p>
 <pre><code class="language-csharp">int fallbackMask = Physics.DefaultRaycastLayers &amp; ~GetPreferredGroundLayerMask();</code></pre>
 <p>意思是：</p>
 <pre><code class="language-text">从默认射线检测层里，排除掉已经优先检测过的地面层。</code></pre>
@@ -352,7 +352,7 @@ Precision 和 Critical 可以叠加。</code></pre>
 <p>更严格的设计也可以拆成：</p>
 <pre><code class="language-csharp">AttackOutcome outcome;       // Hit / Miss / Block
 AttackModifiers modifiers;   // Critical / Precision / Heal</code></pre>
-<p>但如果项目更需要把结果轻量传给表现层，一个 Flags 字段也很方便。</p>
+<p>但如果更需要把结果轻量传给表现层，一个 Flags 字段也很方便。</p>
 <h2 id="最大好处">最大好处</h2>
 <p>最大的好处不是省内存，而是：</p>
 <pre><code class="language-text">把一次结果里可能带的多个信息压成一个字段，传递和判断都很方便。</code></pre>

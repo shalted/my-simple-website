@@ -536,6 +536,9 @@ const refs = Object.freeze({
   stepLabel: document.querySelector("#step-label"),
   stepCount: document.querySelector("#step-count"),
   cases: document.querySelector("#case-tabs"),
+  principleProblem: document.querySelector("#principle-problem"),
+  principleMechanism: document.querySelector("#principle-mechanism"),
+  principleBoundary: document.querySelector("#principle-boundary"),
   dots: document.querySelector("#step-dots"),
   previous: document.querySelector("#prev-button"),
   next: document.querySelector("#next-button"),
@@ -548,6 +551,86 @@ const randomMethods = ["weighted", "pity", "bag", "reproducible", "stable", "pla
 const randomMethodLabels = ["WEIGHT", "PITY", "BAG", "SEED", "STABLE", "PLAIN"];
 const bagSequence = ["普通", "稀有", "普通", "普通", "史诗", "普通", "普通", "稀有", "普通", "普通"];
 
+const principles = Object.freeze({
+  flags: Object.freeze({
+    operations: Object.freeze({
+      problem: "多个独立开关需要一起存储、传递和判断。",
+      mechanism: "每个标记占一位，用 OR 组合、AND 判断、AND NOT 移除。",
+      boundary: "位容器只记录状态，不会自动阻止业务上的非法组合。"
+    }),
+    rules: Object.freeze({
+      problem: "Miss、Critical 等标签有些可叠加，有些互斥。",
+      mechanism: "流程先确定主结果，再追加修饰标签；更严格时拆成 Outcome 与 Modifiers。",
+      boundary: "能写进同一个整数，不代表这个状态在业务上有效。"
+    })
+  }),
+  random: Object.freeze({
+    weighted: Object.freeze({
+      problem: "候选的出现机会不同，但仍要只抽出一个结果。",
+      mechanism: "权重累加成连续区间，一个 roll 落入哪段就选择哪项。",
+      boundary: "权重表达相对份额；它不保证短期内一定符合比例。"
+    }),
+    pity: Object.freeze({
+      problem: "固定概率允许某个人连续失败很久。",
+      mechanism: "记录 failCount，逐步补偿概率或在上限处直接产出。",
+      boundary: "保底改变的是最坏体验，不等于每次抽取都失去随机性。"
+    }),
+    bag: Object.freeze({
+      problem: "独立随机在短周期里可能分布极不均匀。",
+      mechanism: "先按配额装袋、打乱，再无放回地逐个抽取。",
+      boundary: "配额只在一个袋子周期内成立，跨周期顺序仍会变化。"
+    }),
+    reproducible: Object.freeze({
+      problem: "偶发随机结果难以复盘，也容易让每帧表现抖动。",
+      mechanism: "保存 seed 重放序列，或把稳定输入 Hash 成固定的 0~1 值。",
+      boundary: "输入或版本变化就会得到新结果，因此输入集合本身也是规则。"
+    })
+  }),
+  space: Object.freeze({
+    grid: Object.freeze({
+      problem: "范围查询若扫描所有对象，成本会随总对象数增长。",
+      mechanism: "先访问附近格子形成候选集，再用距离平方确认命中。",
+      boundary: "进入邻格只代表可能命中，不能替代圆形范围的精确判断。"
+    }),
+    hash: Object.freeze({
+      problem: "大而稀疏的动态地图不适合预建完整二维数组。",
+      mechanism: "把世界坐标映射成字典 key，对象跨格时同步移除和加入。",
+      boundary: "索引若未随移动更新，查询会出现幽灵对象或重复对象。"
+    }),
+    quadtree: Object.freeze({
+      problem: "对象分布不均时，固定格子不是所有区域都合适。",
+      mechanism: "拥挤节点递归分裂，查询时整块跳过不相交的子树。",
+      boundary: "跨越多个子区的对象不能强行塞进单个子节点。"
+    }),
+    query: Object.freeze({
+      problem: "精确检测很准，但对所有对象执行会浪费计算。",
+      mechanism: "Broad Phase 批量排除，Narrow Phase 只精算候选对象。",
+      boundary: "粗筛结果不是最终命中；两阶段必须保持职责分离。"
+    })
+  })
+});
+
+const flagEquations = Object.freeze({
+  NONE: "000000",
+  OR: "000000  |  000010  =  000010",
+  COMBINE: "000010  |  001000  =  001010",
+  "HAS FLAG": "001010  &  001000  =  001000  →  true",
+  REMOVE: "001010  &  ~000010  =  001000",
+  STORAGE: "位容器  ≠  业务校验器",
+  VALID: "Precision  |  Critical  →  合法组合",
+  "EARLY RETURN": "Miss  →  return  →  不再追加修饰",
+  REJECT: "Miss  |  Critical  →  可表示，但应拒绝",
+  "SPLIT MODEL": "Outcome  ×  Modifiers"
+});
+
+const spaceContracts = Object.freeze({
+  grid: Object.freeze(["BROAD / 邻格粗筛", "NARROW / 距离确认"]),
+  hash: Object.freeze(["INDEX / 坐标映射", "UPDATE / 跨格同步"]),
+  quadtree: Object.freeze(["SPLIT / 密集区细分", "PRUNE / 跳过整块区域"]),
+  query: Object.freeze(["BROAD / 少算", "NARROW / 算准"])
+});
+
+let weightedRoll = null;
 let scenarioName = location.hash.length > 1 ? location.hash.slice(1) : root.dataset.initialScenario;
 if (!Object.hasOwn(scenarios, scenarioName)) {
   throw new Error(`[SystemsLab] 未知专题：${scenarioName}`);
@@ -562,8 +645,11 @@ function element(tag, className, text) {
   return node;
 }
 
-function renderFlags(view) {
+function renderFlags(view, status) {
   refs.visualTitle.textContent = "二进制寄存器";
+  if (!Object.hasOwn(flagEquations, status)) {
+    throw new Error(`[SystemsLab] Flags 状态缺少运算式：${status}`);
+  }
   refs.visualStatus.textContent = view.value.toString(2).padStart(6, "0");
   const wrapper = element("div", "bit-register");
   const row = element("div", "bit-row");
@@ -580,8 +666,71 @@ function renderFlags(view) {
     tags.append(element("span", `flag-tag${on ? " is-on" : ""}`, label));
   });
   wrapper.append(tags);
+  wrapper.append(element("div", "bit-equation", flagEquations[status]));
   if (view.note) wrapper.append(element("div", "space-formula", view.note));
   refs.stage.replaceChildren(wrapper);
+}
+
+function resolveWeightedRoll(roll) {
+  if (!Number.isInteger(roll) || roll < 0 || roll > 99) {
+    throw new RangeError(`[SystemsLab] roll 必须是 0 到 99 的整数，收到：${roll}`);
+  }
+  if (roll <= 9) return Object.freeze({ name: "金币", interval: "0–9" });
+  if (roll <= 39) return Object.freeze({ name: "药水", interval: "10–39" });
+  return Object.freeze({ name: "装备", interval: "40–99" });
+}
+
+function createWeightedRollLab(bar) {
+  const lab = element("div", "roll-lab");
+  const label = element("label", "roll-label", "输入本次 roll");
+  label.htmlFor = "weighted-roll-input";
+  const input = element("input", "roll-input");
+  input.id = "weighted-roll-input";
+  input.type = "number";
+  input.min = "0";
+  input.max = "99";
+  input.step = "1";
+  input.placeholder = "0 – 99";
+  input.inputMode = "numeric";
+  if (weightedRoll !== null) input.value = String(weightedRoll);
+  const result = element("output", "roll-result");
+  result.htmlFor = input.id;
+  const axis = element("div", "roll-axis");
+  ["0", "10", "40", "100"].forEach((value) => axis.append(element("span", "", value)));
+  const marker = element("span", "roll-marker");
+  bar.append(marker);
+
+  function updateSelection() {
+    const raw = input.value.trim();
+    if (raw.length === 0) {
+      weightedRoll = null;
+      marker.classList.remove("is-visible");
+      result.className = "roll-result";
+      result.textContent = "输入一个整数，观察它命中哪段累计区间。";
+      return;
+    }
+    const roll = Number(raw);
+    if (!Number.isInteger(roll) || roll < 0 || roll > 99) {
+      weightedRoll = null;
+      marker.classList.remove("is-visible");
+      result.className = "roll-result is-error";
+      result.textContent = "roll 必须是 0 到 99 的整数。";
+      return;
+    }
+    weightedRoll = roll;
+    const selected = resolveWeightedRoll(roll);
+    marker.style.left = `${(roll / 99) * 100}%`;
+    marker.classList.add("is-visible");
+    result.className = "roll-result is-hit";
+    result.textContent = `roll = ${roll} → 落入 ${selected.interval} → 选择「${selected.name}」`;
+  }
+
+  input.addEventListener("input", updateSelection);
+  const inputRow = element("div", "roll-input-row");
+  inputRow.append(label, input);
+  lab.append(inputRow, axis, result);
+  updateSelection();
+  return lab;
 }
 
 function renderRandom(view) {
@@ -601,7 +750,9 @@ function renderRandom(view) {
       item.append(element("span", "", `${name}\n${value}`));
       bar.append(item);
     });
-    wrapper.append(bar, element("div", "random-note", view.note));
+    wrapper.append(bar);
+    if (view.method === "weighted") wrapper.append(createWeightedRollLab(bar));
+    wrapper.append(element("div", "random-note", view.note));
   } else if (view.mode === "pity") {
     const track = element("div", "pity-track");
     for (let index = 0; index < 6; index += 1) {
@@ -681,15 +832,24 @@ function renderCandidates(view) {
   return wrapper;
 }
 
-function renderSpace(view) {
+function renderSpace(view, selectedCase) {
   refs.visualTitle.textContent = view.mode === "tree" ? "自适应空间树" : view.mode === "candidates" ? "两阶段范围查询" : "固定网格索引";
+  if (!Object.hasOwn(spaceContracts, selectedCase)) {
+    throw new Error(`[SystemsLab] 空间案例缺少职责说明：${selectedCase}`);
+  }
   if (typeof view.note !== "string" || view.note.length === 0) {
     throw new Error("[SystemsLab] 空间视图必须明确提供状态标签");
   }
   refs.visualStatus.textContent = view.note;
-  if (view.mode === "tree") refs.stage.replaceChildren(renderTree(view));
-  else if (view.mode === "candidates") refs.stage.replaceChildren(renderCandidates(view));
-  else refs.stage.replaceChildren(createSpaceGrid(view.stage, view.note));
+  let visual;
+  if (view.mode === "tree") visual = renderTree(view);
+  else if (view.mode === "candidates") visual = renderCandidates(view);
+  else visual = createSpaceGrid(view.stage, view.note);
+  const contract = element("div", "space-contract");
+  spaceContracts[selectedCase].forEach((item) => contract.append(element("span", "", item)));
+  const stack = element("div", "space-stack");
+  stack.append(visual, contract);
+  refs.stage.replaceChildren(stack);
 }
 
 function renderMetrics(items) {
@@ -727,11 +887,19 @@ function render({ step, index, total }) {
   refs.codeStatus.textContent = step.status;
   refs.stepLabel.textContent = `STEP ${String(index + 1).padStart(2, "0")}`;
   refs.stepCount.textContent = `${index + 1} / ${total}`;
+  const scenarioPrinciples = principles[scenarioName];
+  if (!scenarioPrinciples || !Object.hasOwn(scenarioPrinciples, caseName)) {
+    throw new Error(`[SystemsLab] 案例缺少原理摘要：${scenarioName}.${caseName}`);
+  }
+  const currentPrinciples = scenarioPrinciples[caseName];
+  refs.principleProblem.textContent = currentPrinciples.problem;
+  refs.principleMechanism.textContent = currentPrinciples.mechanism;
+  refs.principleBoundary.textContent = currentPrinciples.boundary;
   renderMetrics(step.metrics);
   renderCode(currentCase(), step);
-  if (step.view.type === "flags") renderFlags(step.view);
+  if (step.view.type === "flags") renderFlags(step.view, step.status);
   else if (step.view.type === "random") renderRandom(step.view);
-  else if (step.view.type === "space") renderSpace(step.view);
+  else if (step.view.type === "space") renderSpace(step.view, caseName);
   else throw new Error(`[SystemsLab] 未知视图：${step.view.type}`);
 }
 

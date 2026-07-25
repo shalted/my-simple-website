@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="MonsterClusterControllerRuntime.cs">
+  <meta name="description" content="一群怪物都想攻击玩家，但不能所有怪一起攻击。">
   <title>启发式决策模型：怪物集群候选打分 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>启发式决策模型：怪物集群候选打分</h1>
-      <p class="hero-copy">MonsterClusterControllerRuntime.cs</p>
+      <p class="hero-copy">一群怪物都想攻击玩家，但不能所有怪一起攻击。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -206,8 +206,6 @@ UI Tips 显示策略
       </footer>
     </section>
         <p>分类：算法</p>
-<p>关联代码：</p>
-<p><code>MonsterClusterControllerRuntime.cs</code></p>
 <h2 id="解决的问题">解决的问题</h2>
 <p>一群怪物都想攻击玩家，但不能所有怪一起攻击。</p>
 <p>系统要决定：</p>
@@ -264,7 +262,7 @@ UI Tips 显示策略
   + 少量随机
   - 最近攻击过的惩罚
   - 最近同角色攻击过的惩罚</code></pre>
-<p>代码里的公式大意是：</p>
+<p>评分公式可以写成：</p>
 <pre><code class="language-csharp">candidate.Score =
     distanceScore * Config.ScoreDistanceWeight +
     waitScore * Config.ScoreWaitTimeWeight +

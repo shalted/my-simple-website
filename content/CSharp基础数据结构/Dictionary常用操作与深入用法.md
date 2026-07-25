@@ -144,7 +144,7 @@ else
 
 ## 找不到就创建
 
-项目里很常见的模式：
+“找不到就创建”是一种常见模式：
 
 ```csharp
 Dictionary<string, List<int>> skillsByUnit = new();

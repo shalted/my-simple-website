@@ -47,7 +47,7 @@ AttributeAttackEffect effects;
 
 ## 基础声明
 
-项目里的攻击结果标记：
+以攻击结果为例，可以这样声明标记：
 
 ```csharp
 [Flags]
@@ -138,7 +138,7 @@ Critical =                      001000
 
 结果等于 `Critical`，说明 `effects` 里面包含暴击。
 
-项目里的结果对象也封装了这个判断：
+也可以把判断封装进结果对象：
 
 ```csharp
 public bool HasEffect(AttributeAttackEffect effect)
@@ -162,7 +162,7 @@ flags &= ~SomeFlag;
 &=：保留其他位，关掉目标位。
 ```
 
-项目里的移动组件有类似写法：
+射线检测层也常用同样的位清除写法：
 
 ```csharp
 int fallbackMask = Physics.DefaultRaycastLayers & ~GetPreferredGroundLayerMask();
@@ -213,7 +213,7 @@ AttackOutcome outcome;       // Hit / Miss / Block
 AttackModifiers modifiers;   // Critical / Precision / Heal
 ```
 
-但如果项目更需要把结果轻量传给表现层，一个 Flags 字段也很方便。
+但如果更需要把结果轻量传给表现层，一个 Flags 字段也很方便。
 
 ## 最大好处
 

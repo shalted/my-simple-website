@@ -166,7 +166,7 @@ else
       <article class="deck-slide" data-deck-slide="5" hidden>
         <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>找不到就创建</h3>
-        <p>项目里很常见的模式：</p>
+        <p>“找不到就创建”是一种常见模式：</p>
 
         <pre><code class="language-csharp">Dictionary&lt;string, List&lt;int&gt;&gt; skillsByUnit = new();
 
@@ -332,7 +332,7 @@ else
 <p><code>out int score</code> 可以理解成：</p>
 <pre><code class="language-text">声明一个变量 score，让 TryGetValue 把结果填进去。</code></pre>
 <h2 id="找不到就创建">找不到就创建</h2>
-<p>项目里很常见的模式：</p>
+<p>“找不到就创建”是一种常见模式：</p>
 <pre><code class="language-csharp">Dictionary&lt;string, List&lt;int&gt;&gt; skillsByUnit = new();
 
 if (!skillsByUnit.TryGetValue(&quot;monster_01&quot;, out List&lt;int&gt; skills))

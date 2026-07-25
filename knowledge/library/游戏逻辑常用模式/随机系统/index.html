@@ -151,7 +151,7 @@ for (int index = 0; index &lt; entries.Count; index++)
         <h3>可复现随机</h3>
         <p>有些随机必须可以复现，尤其是战斗、GM 测试、回归验证。</p>
 
-        <pre><code class="language-csharp">public interface IAttributeCombatRandom
+        <pre><code class="language-csharp">public interface IRandomSource
 {
     bool Roll(float probability, AttributeAttackRollType rollType);
     float RollVariance(float min, float max);
@@ -211,7 +211,7 @@ for (int index = 0; index &lt; entries.Count; index++)
       <article class="deck-slide" data-deck-slide="10" hidden>
         <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
-        <p>项目里最值得学习的三个点：</p>
+        <p>理解随机系统时，可以抓住三个核心模型：</p>
 
         <pre><code class="language-text">随机系统不是只有概率，而是在不同场景里选择合适的不确定性。</code></pre>
       </article></div>
@@ -228,7 +228,7 @@ for (int index = 0; index &lt; entries.Count; index++)
 <h2 id="核心思想">核心思想</h2>
 <p>随机系统的核心不是“随便抽一个”，而是：</p>
 <pre><code class="language-text">在不确定性、体验、公平性、可复现之间做取舍。</code></pre>
-<p>同样是随机，实际项目里会有很多种形态：</p>
+<p>同样是随机，常见实现可以分成多种形态：</p>
 <pre><code class="language-text">普通随机
 可复现随机
 加权随机
@@ -238,7 +238,7 @@ for (int index = 0; index &lt; entries.Count; index++)
 <p>它们解决的问题不一样。</p>
 <h2 id="普通随机">普通随机</h2>
 <p>普通随机就是直接取一个随机值。</p>
-<p>项目里的掉落数量使用了 <code>Random.Range</code>：</p>
+<p>整数区间抽取可以直接使用 <code>Random.Range</code>：</p>
 <pre><code class="language-csharp">return clampedMax &lt;= clampedMin ? clampedMin : Random.Range(clampedMin, clampedMax + 1);</code></pre>
 <p>适合：</p>
 <pre><code class="language-text">掉落数量
@@ -252,7 +252,7 @@ for (int index = 0; index &lt; entries.Count; index++)
 <p>这在数学上正常，但在体验上可能很糟。</p>
 <h2 id="加权随机">加权随机</h2>
 <p>加权随机适合从一组候选里按权重抽一个。</p>
-<p>项目里的掉落随机就是加权随机：</p>
+<p>一个典型的加权抽取流程如下：</p>
 <pre><code class="language-csharp">int totalWeight = 0;
 for (int index = 0; index &lt; entries.Count; index++)
 {
@@ -291,20 +291,20 @@ for (int index = 0; index &lt; entries.Count; index++)
 宝箱奖励</code></pre>
 <h2 id="可复现随机">可复现随机</h2>
 <p>有些随机必须可以复现，尤其是战斗、GM 测试、回归验证。</p>
-<p>项目里的战斗属性随机先抽象成接口：</p>
-<pre><code class="language-csharp">public interface IAttributeCombatRandom
+<p>需要测试与回放时，可以先把随机源抽象成接口：</p>
+<pre><code class="language-csharp">public interface IRandomSource
 {
     bool Roll(float probability, AttributeAttackRollType rollType);
     float RollVariance(float min, float max);
 }</code></pre>
 <p>运行时可以用默认随机：</p>
-<pre><code class="language-csharp">public sealed class SystemAttributeCombatRandom : IAttributeCombatRandom</code></pre>
+<pre><code class="language-csharp">public sealed class RuntimeRandomSource : IRandomSource</code></pre>
 <p>测试时可以用固定 seed：</p>
-<pre><code class="language-csharp">public sealed class SeededAttributeCombatRandom : IAttributeCombatRandom
+<pre><code class="language-csharp">public sealed class SeededRandomSource : IRandomSource
 {
     private readonly Random _random;
 
-    public SeededAttributeCombatRandom(int seed)
+    public SeededRandomSource(int seed)
     {
         _random = new Random(seed);
     }
@@ -318,8 +318,8 @@ for (int index = 0; index &lt; entries.Count; index++)
 <h2 id="稳定随机">稳定随机</h2>
 <p>稳定随机不是从随机数发生器里取“下一个随机数”，而是：</p>
 <pre><code class="language-text">把一些稳定输入 hash 成 0~1 的值。</code></pre>
-<p>项目里的怪物集群使用了 <code>ResolveStable01</code>：</p>
-<pre><code class="language-csharp">float roll = ResolveStable01(Config.ClusterId, instanceId, &quot;range_intent&quot;, m_intentVersion, index) * totalWeight;</code></pre>
+<p>稳定随机可以把一组稳定输入映射成 <code>0~1</code>：</p>
+<pre><code class="language-csharp">float roll = StableHash01(groupId, instanceId, purpose, version, index) * totalWeight;</code></pre>
 <p>它内部把这些输入混合成一个 hash：</p>
 <pre><code class="language-text">clusterId
 instanceId
@@ -421,10 +421,10 @@ if (Random.value &lt; chance || failCount &gt;= maxFailCount)
 <p>稀有掉落、抽卡、关键材料，通常需要保底或洗牌袋。</p>
 <h2 id="最重要的收获">最重要的收获</h2>
 <pre><code class="language-text">随机系统不是只有概率，而是在不同场景里选择合适的不确定性。</code></pre>
-<p>项目里最值得学习的三个点：</p>
-<pre><code class="language-text">LootRewardResolver：加权随机。
-IAttributeCombatRandom：用接口隔离随机源，支持 seed 复现。
-ResolveStable01：用稳定 hash 做不会乱跳的伪随机。</code></pre>
+<p>理解随机系统时，可以抓住三个核心模型：</p>
+<pre><code class="language-text">累计区间：把权重映射为可命中的连续范围。
+随机源接口：隔离取值方式，支持 seed 复现。
+稳定 Hash：同样的输入得到同样的伪随机值。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E6%97%B6%E9%97%B4%E6%8E%A7%E5%88%B6%E5%B0%8F%E6%A8%A1%E5%BC%8F-%E5%86%B7%E5%8D%B4%E8%AE%A1%E6%97%B6%E5%99%A8%E5%BB%B6%E8%BF%9F%E4%B8%8ETick/"><small>← PREVIOUS</small>时间控制小模式：冷却、计时器、延迟与 Tick</a>
           <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E4%BD%8D%E6%A0%87%E8%AE%B0Flags%E4%B8%8EBitMask/"><small>NEXT →</small>位标记 Flags 与 BitMask</a>

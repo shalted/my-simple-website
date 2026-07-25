@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="GameplayEffectSpec.cs">
+  <meta name="description" content="GAS / ECS 这类系统内部通常很复杂：">
   <title>门面模式与泛型消重 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>门面模式与泛型消重</h1>
-      <p class="hero-copy">GameplayEffectSpec.cs</p>
+      <p class="hero-copy">GAS / ECS 这类系统内部通常很复杂：</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -97,7 +97,7 @@ Dispose</code></pre>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>门面模式</h3>
-        <p>代码里的设计准则是：</p>
+        <p>门面的设计准则是：</p>
 
         <pre><code class="language-text">门面无 ECS，内部随便用。</code></pre>
       </article>
@@ -145,8 +145,6 @@ public int[] GetGrantedTags() =&gt; GetTagsInternal&lt;CEffectGrantedTags&gt;(c 
       </footer>
     </section>
         <p>分类：工程设计</p>
-<p>关联代码：</p>
-<p><code>GameplayEffectSpec.cs</code></p>
 <h2 id="核心问题">核心问题</h2>
 <p>GAS / ECS 这类系统内部通常很复杂：</p>
 <pre><code class="language-text">Entity
@@ -163,12 +161,12 @@ NativeArray 释放容易漏
 组件增删时机容易错
 调用方写法不统一
 底层一改，上层到处跟着改</code></pre>
-<p>所以 <code>GameplayEffectSpec</code> 做了一个包装：</p>
+<p>因此可以在复杂子系统外增加一层门面包装：</p>
 <pre><code class="language-text">外部看到普通 OOP API；
 内部怎么操作 ECS，都藏在类里面。</code></pre>
 <p>这就是门面模式。</p>
 <h2 id="门面模式">门面模式</h2>
-<p>代码里的设计准则是：</p>
+<p>门面的设计准则是：</p>
 <pre><code class="language-text">门面无 ECS，内部随便用。</code></pre>
 <p>也就是说，<code>public/protected</code> API 不暴露：</p>
 <pre><code class="language-text">Entity

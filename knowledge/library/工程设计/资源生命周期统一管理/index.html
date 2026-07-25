@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="YooAssetManager.ResourceAccess.cs">
+  <meta name="description" content="资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。">
   <title>资源生命周期统一管理 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>资源生命周期统一管理</h1>
-      <p class="hero-copy">YooAssetManager.ResourceAccess.cs</p>
+      <p class="hero-copy">资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -104,7 +104,7 @@ E 地方忘了 Release</code></pre>
         <h3>更好的做法</h3>
         <p>资源加载入口统一：</p>
 
-        <pre><code class="language-text">所有业务都通过 ResourceManager / YooAssetManager 加载资源。</code></pre>
+        <pre><code class="language-text">所有业务都通过统一的 ResourceManager 加载资源。</code></pre>
       </article>
       <article class="deck-slide" data-deck-slide="3" hidden>
         <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
@@ -148,8 +148,6 @@ scope.Dispose(); // 统一释放这个 scope 里持有过的资源</code></pre>
       </footer>
     </section>
         <p>分类：工程设计</p>
-<p>关联代码：</p>
-<p><code>YooAssetManager.ResourceAccess.cs</code></p>
 <h2 id="核心知识点">核心知识点</h2>
 <p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。</p>
 <p>可以概括成一句话：</p>
@@ -170,7 +168,7 @@ E 地方忘了 Release</code></pre>
 <p>前者会导致丢图、空引用、材质失效、句柄失效；后者会导致内存泄露、资源常驻、长时间运行后性能变差。</p>
 <h2 id="更好的做法">更好的做法</h2>
 <p>资源加载入口统一：</p>
-<pre><code class="language-text">所有业务都通过 ResourceManager / YooAssetManager 加载资源。</code></pre>
+<pre><code class="language-text">所有业务都通过统一的 ResourceManager 加载资源。</code></pre>
 <p>资源释放入口统一：</p>
 <pre><code class="language-text">不要让业务随意直接释放底层资源句柄，而是通过统一 Release / Unload / Dispose 入口。</code></pre>
 <p>资源归属清晰：</p>
@@ -202,7 +200,7 @@ scope.Dispose(); // 统一释放这个 scope 里持有过的资源</code></pre>
 资源归属关系清晰
 生命周期边界明确
 异常、关闭、取消时也能走统一释放</code></pre>
-<p>很多成熟项目里的这些概念，本质上都是在解决同一个问题：</p>
+<p>下面这些常见工程概念，本质上都在解决同一个问题：</p>
 <pre><code class="language-text">ResourceManager
 AssetHandle
 ResourceScope

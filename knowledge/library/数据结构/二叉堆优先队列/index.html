@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="源码位置：">
+  <meta name="description" content="优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。">
   <title>二叉堆优先队列 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">数据结构 / KNOWLEDGE NOTE</div>
       <h1>二叉堆优先队列</h1>
-      <p class="hero-copy">源码位置：</p>
+      <p class="hero-copy">优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -103,7 +103,7 @@
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CONCEPT</div>
         <h3>解决的问题</h3>
-        <p>这个类解决的是：UI Tips 有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+        <p>优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
 
 
       </article>
@@ -155,7 +155,7 @@
       <article class="deck-slide" data-deck-slide="7" hidden>
         <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>工程上可以补强的点</h3>
-        <p>目前这个类已经够干净，但如果继续完善，可以考虑加一个 <code>Peek</code>：</p>
+        <p>这个实现已经足够完整；如果继续扩展，可以加入一个 <code>Peek</code>：</p>
 
         <pre><code class="language-csharp">public UITipConfig Peek()
 {
@@ -180,10 +180,8 @@
       </footer>
     </section>
         <p>分类：数据结构</p>
-<p>源码位置：</p>
-<p><code>UITipsPriorityQueue.cs</code></p>
 <h2 id="解决的问题">解决的问题</h2>
-<p>这个类解决的是：UI Tips 有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+<p>优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
 <p>普通做法可能是每次取的时候遍历一遍列表找最大值，复杂度是 <code>O(n)</code>。这里用的是二叉堆，入队和出队都是 <code>O(log n)</code>，更适合 Tips 数量变多、频繁插入弹出的场景。</p>
 <h2 id="核心结构">核心结构</h2>
 <pre><code class="language-csharp">private readonly List&lt;UITipConfig&gt; _heap = new();</code></pre>
@@ -247,7 +245,7 @@ parent = (6 - 1) / 2 = 2</code></pre>
 <pre><code class="language-text">新来的元素先坐最后一排；
 如果它比上级优先级高，就一路往前换座位；
 直到它不比父节点高，或者到达堆顶。</code></pre>
-<p>对应源码：</p>
+<p>对应实现：</p>
 <pre><code class="language-csharp">private void BubbleUp(int i)
 {
     while (i &gt; 0)
@@ -299,7 +297,7 @@ right = 2 * 2 + 2 = 6 -&gt; 不存在</code></pre>
 <pre><code class="language-text">80 &gt;= 60</code></pre>
 <p>停。最大堆恢复完成。</p>
 <p>返回刚才保存的 <code>top = 90</code>。</p>
-<p>对应源码：</p>
+<p>对应实现：</p>
 <pre><code class="language-csharp">private void BubbleDown(int i)
 {
     int count = _heap.Count;
@@ -375,7 +373,7 @@ Dequeue: O(log n)
 排行榜取 Top K
 定时器系统取最近到期任务</code></pre>
 <h2 id="工程上可以补强的点">工程上可以补强的点</h2>
-<p>目前这个类已经够干净，但如果继续完善，可以考虑加一个 <code>Peek</code>：</p>
+<p>这个实现已经足够完整；如果继续扩展，可以加入一个 <code>Peek</code>：</p>
 <pre><code class="language-csharp">public UITipConfig Peek()
 {
     return _heap.Count == 0 ? null : _heap[0];

@@ -2,10 +2,6 @@
 
 分类：算法
 
-关联代码：
-
-`MonsterClusterControllerRuntime.cs`
-
 ## 核心问题
 
 集群怪物不是每一只都应该同时攻击玩家。
