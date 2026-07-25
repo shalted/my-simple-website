@@ -393,3 +393,120 @@ main { width: min(1500px, calc(100% - 40px)); margin: 0 auto; }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* SPATIAL_HASH_BUCKET_EXPLAINER */
+.hash-sandbox { gap: 18px; }
+.hash-flow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid var(--line);
+}
+.hash-flow-step {
+  min-width: 0;
+  padding: 11px 12px;
+  border-right: 1px solid var(--line);
+  background: rgba(255, 255, 255, .015);
+}
+.hash-flow-step:nth-child(2n) { border-right: 0; }
+.hash-flow-step:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+.hash-flow-step span,
+.hash-key-trace span,
+.hash-bucket span {
+  display: block;
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+.hash-flow-step strong {
+  display: block;
+  margin-top: 7px;
+  color: #71877b;
+  font: 11px/1.5 var(--mono);
+}
+.hash-flow-step.is-active {
+  background: rgba(103, 213, 243, .07);
+  box-shadow: inset 0 -2px var(--cyan);
+}
+.hash-flow-step.is-active span { color: var(--cyan); }
+.hash-flow-step.is-active strong { color: var(--ink); }
+.hash-sandbox .cell-coordinate { color: #587064; font-size: 9px; }
+.hash-key-trace {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line);
+}
+.hash-key-trace > div {
+  padding: 11px 12px;
+  border-right: 1px solid var(--line);
+}
+.hash-key-trace > div:last-child { border-right: 0; }
+.hash-key-trace strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--acid);
+  font: 13px var(--mono);
+}
+.hash-key-trace small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+.hash-buckets {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 14px;
+}
+.hash-bucket {
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .02);
+}
+.hash-bucket.is-current {
+  border-color: rgba(184, 255, 61, .35);
+  background: rgba(184, 255, 61, .05);
+}
+.hash-bucket strong {
+  display: block;
+  margin: 7px 0;
+  color: var(--cyan);
+  font: 10px var(--mono);
+}
+.hash-bucket code {
+  display: block;
+  color: var(--acid);
+  font: 700 13px var(--mono);
+}
+.hash-transfer {
+  min-width: 112px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.hash-transfer strong {
+  color: var(--warm);
+  font: 11px var(--mono);
+}
+.hash-transfer span {
+  margin-top: 7px;
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+.hash-transfer.is-skip strong { color: var(--mint); }
+.hash-sparse-note {
+  margin: 0;
+  padding: 11px 12px;
+  border-left: 2px solid var(--mint);
+  color: var(--muted);
+  background: rgba(102, 221, 180, .05);
+  font: 10px/1.6 var(--mono);
+}
+
+/* SPATIAL_HASH_BUCKET_MOBILE */
+@media (max-width: 760px) {
+  .hash-flow { grid-template-columns: 1fr; }
+  .hash-flow-step:nth-child(n) { border-right: 0; }
+  .hash-flow-step:nth-child(-n + 3) { border-bottom: 1px solid var(--line); }
+  .hash-buckets { grid-template-columns: 1fr; }
+  .hash-transfer { min-height: 60px; }
+}

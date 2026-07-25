@@ -409,65 +409,100 @@ const scenarios = Object.freeze({
             view: { type: "space", mode: "grid", stage: "precise", note: "CANDIDATES → PRECISE TEST" }
           }
         ]
-      },      hash: {
-        label: "空间 Hash 与移动",
+      },
+      hash: {
+        label: "空间 Hash：坐标到字典桶",
         code: [
-          "Dictionary<Vector2Int, List<Unit>> grids;",
-          "gx = FloorToInt(position.x / cellSize);",
-          "gy = FloorToInt(position.z / cellSize);",
-          "grids[cell].Add(unit);",
-          "if (newCell == oldCell) return;",
-          "oldCell.Remove(unit);",
-          "newCell.Add(unit);"
+          "Vector2Int ToCell(Vector3 position)",
+          "    gx = FloorToInt(position.x / cellSize);",
+          "    gy = FloorToInt(position.z / cellSize);",
+          "    return new Vector2Int(gx, gy);",
+          "oldKey = ToCell(oldPosition);",
+          "newKey = ToCell(newPosition);",
+          "if (newKey == oldKey) return;",
+          "grids[oldKey].Remove(unit);",
+          "grids[newKey].Add(unit);"
         ],
         steps: [
           {
-            phase: "稀疏地图", title: "不提前创建整张二维数组",
-            copy: "空间 Hash 只保存真正有对象的格子，空区域不占据格子容器。",
-            why: "大地图和负坐标更适合用坐标 key 访问字典。",
-            status: "SPARSE", activeLines: [0],
-            metrics: [["container", "Dictionary"], ["empty cells", "not stored"], ["distribution", "sparse"]],
-            view: { type: "space", mode: "grid", stage: "insert", note: "only occupied cells have keys" }
+            phase: "先看地图", title: "把世界切成带编号的格子",
+            copy: "每个格子都有一个离散编号，例如 (1,1)。连续世界中的单位总会落进其中一个格子。",
+            why: "格子编号像抽屉地址：以后可以直接按地址寻找这一小块区域里的单位。",
+            status: "WORLD", activeLines: [0],
+            metrics: [["world", "continuous"], ["grid", "discrete cells"], ["purpose", "give addresses"]],
+            view: { type: "space", mode: "grid", stage: "world", note: "WORLD → NUMBERED CELLS" }
           },
           {
-            phase: "坐标映射", title: "世界位置通过 cellSize 映射为 key",
-            copy: "gx 与 gy 使用 floor(position / cellSize) 计算，结果可直接作为字典键。",
-            why: "同一格内的连续坐标共享同一个离散索引。",
-            status: "HASH", activeLines: [1, 2],
-            metrics: [["input", "world position"], ["operation", "floor / cellSize"], ["output", "Vector2Int key"]],
-            view: { type: "space", mode: "grid", stage: "insert", note: "world → cell key" }
+            phase: "找到格子", title: "先问单位落在哪一个格子",
+            copy: "单位 U 当前位于高亮格内。此时只观察归属，不需要理解字典。",
+            why: "空间 Hash 的第一件事不是存对象，而是把连续位置归到一个稳定的格子。",
+            status: "LOCATE", activeLines: [0],
+            metrics: [["unit", "U"], ["question", "which cell?"], ["answer", "highlighted cell"]],
+            view: { type: "space", mode: "grid", stage: "locate", note: "POSITION → CELL" }
           },
           {
-            phase: "首次登记", title: "把对象加入当前格子的列表",
-            copy: "坐标 key 只负责定位容器；对象仍需要显式加入该 key 对应的列表。",
-            why: "建立 key 与对象列表的关联后，查询才能按格子收集候选。",
-            status: "INSERT", activeLines: [3],
-            metrics: [["cell key", "resolved"], ["unit", "added"], ["index", "current"]],
-            view: { type: "space", mode: "grid", stage: "insert", note: "cell key → unit list" }
+            phase: "计算编号", title: "位置除以 cellSize，再向下取整",
+            copy: "x 与 z 分别执行 floor(position / cellSize)，得到格子的整数编号 gx、gy。",
+            why: "同一个格子内的许多连续位置，最终会得到同一个 key。",
+            status: "MAP", activeLines: [1, 2, 3],
+            metrics: [["input", "world position"], ["operation", "divide + floor"], ["output", "(gx, gy)"]],
+            view: { type: "space", mode: "grid", stage: "map", note: "POSITION → FLOOR → KEY" }
           },
           {
-            phase: "同格移动", title: "key 没变就不更新索引",
-            copy: "对象在同一个格子内部移动时，newCell 与 oldCell 相同，可以直接结束索引更新。",
-            why: "空间索引关心跨格变化，不需要响应每一小段世界坐标变化。",
-            status: "UNCHANGED", activeLines: [4],
-            metrics: [["old cell", "same"], ["new cell", "same"], ["reindex", "skip"]],
-            view: { type: "space", mode: "grid", stage: "insert", note: "same key → no index mutation" }
+            phase: "打开抽屉", title: "格子编号就是 Dictionary 的 key",
+            copy: "得到 key 后，字典会打开对应的桶；桶里的 List 保存当前属于这个格子的单位。",
+            why: "key 负责找到格子，List 负责保存这个格子里可能有多个单位。",
+            status: "BUCKET", activeLines: [3, 8],
+            metrics: [["key", "(gx, gy)"], ["value", "List<Unit>"], ["stored", "occupied cells only"]],
+            view: { type: "space", mode: "grid", stage: "bucket", note: "KEY → LIST OF UNITS" }
           },
           {
-            phase: "跨格移动", title: "先从旧 key 移除",
-            copy: "动态对象离开原格子后，旧格子的列表必须同步更新。",
-            why: "不移除会产生幽灵候选，同一个对象还可能重复出现。",
-            status: "REMOVE OLD", activeLines: [5],
-            metrics: [["old cell", "remove"], ["new cell", "pending"], ["duplicate risk", "blocked"]],
-            view: { type: "space", mode: "grid", stage: "near", note: "remove from old cell" }
+            phase: "稀疏存储", title: "空格子没有桶，也不会提前创建",
+            copy: "画面有很多格子，但字典只显示装有 U 的那一个 key。空格既没有 List，也不占一条字典记录。",
+            why: "这就是“稀疏”：地图可以很大，存储量主要跟有对象的格子数量相关。",
+            status: "SPARSE", activeLines: [8],
+            metrics: [["visible cells", "many"], ["dictionary keys", "occupied only"], ["empty bucket", "not created"]],
+            view: { type: "space", mode: "grid", stage: "sparse", note: "EMPTY CELL → NO DICTIONARY ENTRY" }
           },
           {
-            phase: "重新登记", title: "把对象加入新 key",
-            copy: "旧索引清理完成后，把对象加入新格子的列表，查询才能读到最新位置。",
-            why: "更新动作由“旧格移除 + 新格加入”共同组成，缺一不可。",
-            status: "ADD NEW", activeLines: [6],
-            metrics: [["new cell", "add"], ["old cell", "clean"], ["query", "current data"]],
-            view: { type: "space", mode: "grid", stage: "candidate", note: "register in new cell" }
+            phase: "格内移动", title: "位置变了，但 key 可能没有变",
+            copy: "点击 U 当前所在的格子，模拟格内移动。世界位置发生变化，重新计算后仍是同一个格子 key。",
+            why: "索引只关心单位属于哪个格子，不需要为格内的每一小步改写字典。",
+            status: "SAME CELL", activeLines: [4, 5],
+            metrics: [["position", "changed"], ["old key", "same as new"], ["bucket", "unchanged"]],
+            view: { type: "space", mode: "grid", stage: "same", note: "MOVE INSIDE CELL → SAME KEY" }
+          },
+          {
+            phase: "比较 key", title: "oldKey 等于 newKey 就直接结束",
+            copy: "同格移动时，比较结果为相等，代码在修改字典之前 return。",
+            why: "先比较 key，可以避开无意义的 Remove 和 Add。",
+            status: "SKIP", activeLines: [6],
+            metrics: [["comparison", "old == new"], ["remove", "0"], ["add", "0"]],
+            view: { type: "space", mode: "grid", stage: "compare", note: "SAME KEY → ZERO BUCKET WRITES" }
+          },
+          {
+            phase: "跨格移动", title: "点击其他格子，产生新的 key",
+            copy: "当 U 进入另一格，newKey 与 oldKey 不再相等，字典必须同步归属。",
+            why: "不更新索引，后续查询会在旧格找到幽灵对象，并在新格漏掉真实对象。",
+            status: "KEY CHANGED", activeLines: [4, 5, 6],
+            metrics: [["old key", "previous cell"], ["new key", "clicked cell"], ["reindex", "required"]],
+            view: { type: "space", mode: "grid", stage: "target", note: "CLICK ANOTHER CELL → NEW KEY" }
+          },
+          {
+            phase: "搬出旧桶", title: "先从 oldKey 的 List 移除 U",
+            copy: "旧桶清空后，这条 key 如果不再保存任何单位，就可以删除对应字典记录。",
+            why: "旧桶必须清理，否则同一个单位会同时出现在两个空间位置。",
+            status: "REMOVE OLD", activeLines: [7],
+            metrics: [["old bucket", "remove U"], ["ghost candidate", "prevented"], ["old entry", "empty"]],
+            view: { type: "space", mode: "grid", stage: "remove", note: "OLD BUCKET − U" }
+          },
+          {
+            phase: "搬进新桶", title: "再把 U 加入 newKey 的 List",
+            copy: "新桶现在保存 U。以后查询新格及其邻格时，就能从正确的字典记录中取得它。",
+            why: "一次跨格更新必须同时完成“旧桶移除”和“新桶加入”。",
+            status: "ADD NEW", activeLines: [8],
+            metrics: [["new bucket", "add U"], ["dictionary", "current"], ["query", "reads new cell"]],
+            view: { type: "space", mode: "grid", stage: "add", note: "NEW BUCKET + U" }
           }
         ]
       },
@@ -653,9 +688,9 @@ const principles = Object.freeze({
       boundary: "进入邻格只代表可能命中，不能替代圆形范围的精确判断。"
     }),
     hash: Object.freeze({
-      problem: "大而稀疏的动态地图不适合预建完整二维数组。",
-      mechanism: "把世界坐标映射成字典 key，对象跨格时同步移除和加入。",
-      boundary: "索引若未随移动更新，查询会出现幽灵对象或重复对象。"
+      problem: "连续世界没有可直接查询的“地址”，寻找附近单位时容易退化成全量扫描。",
+      mechanism: "先把位置映射成格子 key，再用 Dictionary<key, List<Unit>> 保存占用该格的单位。",
+      boundary: "格内移动不改桶；跨格移动必须同时清理旧桶并写入新桶。"
     }),
     quadtree: Object.freeze({
       problem: "对象分布不均时，固定格子不是所有区域都合适。",
@@ -685,7 +720,7 @@ const flagEquations = Object.freeze({
 
 const spaceContracts = Object.freeze({
   grid: Object.freeze(["BROAD / 邻格粗筛", "NARROW / 距离确认"]),
-  hash: Object.freeze(["INDEX / 坐标映射", "UPDATE / 跨格同步"]),
+  hash: Object.freeze(["MAP / 位置变格子 key", "BUCKET / key 找单位列表", "MOVE / 跨格搬桶"]),
   quadtree: Object.freeze(["SPLIT / 密集区细分", "PRUNE / 跳过整块区域"]),
   query: Object.freeze(["BROAD / 少算", "NARROW / 算准"])
 });
@@ -697,6 +732,7 @@ let pitySandboxFailures = 0;
 let bagSandboxCursor = -1;
 let hashUnitIndex = 5;
 let hashPreviousIndex = 5;
+let hashLastAction = "initial";
 let quadtreeSandboxCount = 8;
 let scenarioName = location.hash.length > 1 ? location.hash.slice(1) : root.dataset.initialScenario;
 if (!Object.hasOwn(scenarios, scenarioName)) {
@@ -1073,9 +1109,50 @@ function createInteractiveGrid(stage) {
 function createHashSandbox(stage) {
   const width = 4;
   const height = 3;
-  const wrapper = element("div", "space-map interactive-grid");
+  const stageDescriptions = Object.freeze({
+    world: "先把格子看成地址，不需要先理解代码。",
+    locate: "U 落在高亮格；格子左上角是它的离散编号。",
+    map: "世界位置经过除法与向下取整，最终只留下格子 key。",
+    bucket: "Dictionary 用 key 打开 List<Unit>，U 存在这个列表里。",
+    sparse: "只有装有单位的格子才出现在 Dictionary 中。",
+    same: "点击 U 当前所在格，模拟位置变化但仍留在同一格。",
+    compare: "oldKey 与 newKey 相同，所以不会修改任何桶。",
+    target: "点击其他格子，观察 oldKey 与 newKey 分离。",
+    remove: "跨格时先清理旧桶，避免旧位置继续返回 U。",
+    add: "再写入新桶，空间查询从此读取最新归属。"
+  });
+  if (!Object.hasOwn(stageDescriptions, stage)) {
+    throw new Error(`[SystemsLab] 空间 Hash 缺少阶段说明：${stage}`);
+  }
+  const actionLabels = Object.freeze({
+    initial: "UNIT U / 已登记",
+    same: "SAME KEY / 不搬桶",
+    cross: "KEY CHANGED / 搬桶"
+  });
+  if (!Object.hasOwn(actionLabels, hashLastAction)) {
+    throw new Error(`[SystemsLab] 空间 Hash 未知操作状态：${hashLastAction}`);
+  }
+
+  const wrapper = element("div", "space-map interactive-grid hash-sandbox");
   const prompt = element("div", "grid-prompt");
-  prompt.append(element("span", "", "TRY IT / 点击目标格移动单位"));
+  prompt.append(
+    element("span", "", "TRY IT / 点击当前格模拟格内移动，点击其他格模拟跨格"),
+    element("strong", "", actionLabels[hashLastAction]),
+    element("em", "", stageDescriptions[stage])
+  );
+
+  const flow = element("div", "hash-flow");
+  [
+    ["01 / 世界位置", "U 落入某个格子", stage === "world" || stage === "locate"],
+    ["02 / 映射", "position ÷ cellSize → floor", stage === "map"],
+    ["03 / KEY", "得到整数格子编号", stage === "bucket" || stage === "sparse"],
+    ["04 / BUCKET", "grids[key] → [ U ]", ["same", "compare", "target", "remove", "add"].includes(stage)]
+  ].forEach(([label, value, active]) => {
+    const item = element("div", `hash-flow-step${active ? " is-active" : ""}`);
+    item.append(element("span", "", label), element("strong", "", value));
+    flow.append(item);
+  });
+
   const grid = element("div", "space-grid");
   const oldRow = Math.floor(hashPreviousIndex / width);
   const oldColumn = hashPreviousIndex % width;
@@ -1091,37 +1168,61 @@ function createHashSandbox(stage) {
     const cell = element("button", classes);
     cell.type = "button";
     cell.dataset.labControl = "";
-    cell.setAttribute("aria-label", `把单位移动到格子 ${column}, ${row}`);
-    cell.append(element("small", "cell-coordinate", `${column},${row}`));
+    cell.setAttribute("aria-label", index === hashUnitIndex
+      ? `在格子 ${column}, ${row} 内移动单位`
+      : `把单位跨格移动到 ${column}, ${row}`);
+    cell.append(element("small", "cell-coordinate", `key (${column},${row})`));
     if (index === hashUnitIndex) cell.append(element("span", "unit enemy", "U"));
     cell.addEventListener("click", () => {
       hashPreviousIndex = hashUnitIndex;
-      hashUnitIndex = index;
-      renderSpace({ type: "space", mode: "grid", stage, note: "INTERACTIVE HASH" }, "hash");
+      if (index === hashUnitIndex) {
+        hashLastAction = "same";
+      } else {
+        hashUnitIndex = index;
+        hashLastAction = "cross";
+      }
+      renderSpace({ type: "space", mode: "grid", stage, note: "INTERACTIVE / KEY AND BUCKET" }, "hash");
     });
     grid.append(cell);
   }
 
   const unchanged = hashPreviousIndex === hashUnitIndex;
-  const comparison = element("div", "grid-comparison hash-comparison");
+  const keyTrace = element("div", "hash-key-trace");
   [
-    ["旧 key", `(${oldColumn},${oldRow})`],
-    ["新 key", `(${currentColumn},${currentRow})`],
-    ["移除旧索引", unchanged ? "跳过" : "执行"],
-    ["加入新索引", unchanged ? "跳过" : "执行"]
-  ].forEach(([label, value]) => {
+    ["OLD KEY", `(${oldColumn},${oldRow})`, "旧归属"],
+    ["NEW KEY", `(${currentColumn},${currentRow})`, unchanged ? "仍在同格" : "进入新格"],
+    ["COMPARE", unchanged ? "相等" : "不相等", unchanged ? "直接 return" : "需要搬桶"]
+  ].forEach(([label, value, note]) => {
     const item = element("div");
-    item.append(element("span", "", label), element("strong", "", value));
-    comparison.append(item);
+    item.append(element("span", "", label), element("strong", "", value), element("small", "", note));
+    keyTrace.append(item);
   });
-  prompt.append(
-    element("strong", "", unchanged ? "SAME KEY / 不更新" : "KEY CHANGED / 更新索引"),
-    element("em", "", unchanged ? "同格移动不会改变空间索引。" : "先从旧格移除，再加入新格。")
+
+  const buckets = element("div", "hash-buckets");
+  const bucketBefore = element("div", "hash-bucket");
+  bucketBefore.append(
+    element("span", "", "操作前 Dictionary"),
+    element("strong", "", `grids[(${oldColumn},${oldRow})]`),
+    element("code", "", "[ U ]")
   );
-  wrapper.append(prompt, grid, comparison);
+  const transfer = element("div", `hash-transfer${unchanged ? " is-skip" : ""}`);
+  transfer.append(
+    element("strong", "", unchanged ? "0 次写入" : "REMOVE → ADD"),
+    element("span", "", unchanged ? "同一个 key，不搬桶" : "从旧桶搬到新桶")
+  );
+  const bucketAfter = element("div", "hash-bucket is-current");
+  bucketAfter.append(
+    element("span", "", "操作后 Dictionary"),
+    element("strong", "", `grids[(${currentColumn},${currentRow})]`),
+    element("code", "", "[ U ]")
+  );
+  buckets.append(bucketBefore, transfer, bucketAfter);
+
+  const sparseNote = element("p", "hash-sparse-note");
+  sparseNote.textContent = "其余空格没有 Dictionary key，也没有空 List。";
+  wrapper.append(prompt, flow, grid, keyTrace, buckets, sparseNote);
   return wrapper;
 }
-
 function renderTreeSandbox(container) {
   const panel = element("section", "inline-sandbox tree-sandbox");
   const head = element("div", "sandbox-head");
@@ -1203,7 +1304,13 @@ function renderCandidates(view) {
 }
 
 function renderSpace(view, selectedCase) {
-  refs.visualTitle.textContent = view.mode === "tree" ? "自适应空间树" : view.mode === "candidates" ? "两阶段范围查询" : "固定网格索引";
+  refs.visualTitle.textContent = view.mode === "tree"
+    ? "自适应空间树"
+    : view.mode === "candidates"
+      ? "两阶段范围查询"
+      : selectedCase === "hash"
+        ? "坐标 → key → 字典桶"
+        : "固定网格索引";
   if (!Object.hasOwn(spaceContracts, selectedCase)) {
     throw new Error(`[SystemsLab] 空间案例缺少职责说明：${selectedCase}`);
   }
