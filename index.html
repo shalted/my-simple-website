@@ -857,6 +857,7 @@
       }
 
       .topic-card {
+        display: block;
         position: relative;
         min-height: 240px;
         overflow: hidden;
@@ -865,6 +866,13 @@
         border-radius: 9px;
         background: rgba(13, 18, 26, 0.94);
         transition: transform 260ms ease, border-color 260ms ease, background 260ms ease;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .topic-card:focus-visible {
+        outline: 2px solid var(--acid);
+        outline-offset: 4px;
       }
 
       .topic-card:nth-child(2),
@@ -1426,38 +1434,42 @@
           </p>
         </div>
         <div class="topics">
-          <article class="topic-card reveal">
+          <a class="topic-card reveal" href="knowledge/library/算法/">
             <span class="topic-number">NODE 01</span>
             <h3>算法</h3>
             <p>A* 寻路、GJK、空间划分、碰撞检测与集群 AI。</p>
-          </article>
-          <article class="topic-card reveal">
+            <span class="topic-link">进入算法专题 →</span>
+          </a>
+          <a class="topic-card reveal" href="knowledge/library/游戏AI与逻辑建模/">
             <span class="topic-number">NODE 02</span>
             <h3>游戏 AI</h3>
             <p>状态机、行为树、效用 AI、GOAP、RVO 与 ORCA。</p>
-            <a class="topic-link" href="knowledge/swarm-ai/">怪物集群 AI 专题</a>
-
-          </article>
-          <article class="topic-card reveal">
+            <span class="topic-link">进入游戏 AI 专题 →</span>
+          </a>
+          <a class="topic-card reveal" href="knowledge/library/工程设计/">
             <span class="topic-number">NODE 03</span>
             <h3>工程设计</h3>
             <p>对象池、事件系统、资源生命周期与泛型消重。</p>
-          </article>
-          <article class="topic-card reveal">
+            <span class="topic-link">进入工程设计专题 →</span>
+          </a>
+          <a class="topic-card reveal" href="knowledge/library/游戏逻辑常用模式/">
             <span class="topic-number">NODE 04</span>
             <h3>逻辑模式</h3>
             <p>冷却、计时器、Tick、随机系统、Flags 与脏标记。</p>
-          </article>
-          <article class="topic-card reveal">
+            <span class="topic-link">进入逻辑模式专题 →</span>
+          </a>
+          <a class="topic-card reveal" href="knowledge/library/数据结构/">
             <span class="topic-number">NODE 05</span>
             <h3>数据结构</h3>
             <p>从二叉堆和优先队列，理解数据如何影响运行效率。</p>
-          </article>
-          <article class="topic-card reveal">
+            <span class="topic-link">进入数据结构专题 →</span>
+          </a>
+          <a class="topic-card reveal" href="knowledge/library/CSharp基础数据结构/">
             <span class="topic-number">NODE 06</span>
             <h3>C# 集合</h3>
             <p>List、Dictionary、HashSet、Queue 与 Stack 的使用边界。</p>
-          </article>
+            <span class="topic-link">进入 C# 集合专题 →</span>
+          </a>
         </div>
       </section>
 
