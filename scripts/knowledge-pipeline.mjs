@@ -384,6 +384,22 @@ ${siteFooter()}
 
 function interactiveCallout(document) {
   const combined = `${document.title} ${document.relativeMarkdown}`;
+  if (/一次技能从输入到结束/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套全链路调试器</strong>
+        <span>切换正常、资源不足、标签阻止与高优先级打断，逐步观察资源、标签、冷却、实例和清理状态。</span>
+        <p><a href="/knowledge/ability-flow/">打开技能运行地图 →</a></p>
+      </aside>`;
+  }
+  if (/Effect.*Buff|Buff.*Effect/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套生命周期实验</strong>
+        <span>切换叠层、刷新与过期策略，同步比较基础值、最终值、层数、剩余时间和周期事件。</span>
+        <p><a href="/knowledge/effect-lifecycle/">打开 Effect / Buff 实验 →</a></p>
+      </aside>`;
+  }
   if (/Flags|BitMask|位标记/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -790,6 +806,16 @@ function renderLibraryIndex(documents) {
     <section class="section knowledge-shell">
       <div class="section-heading"><h2>交互专题</h2><span>LEARN BY DOING</span></div>
       <div class="feature-grid">
+        <a class="feature-card" href="/knowledge/ability-flow/">
+          <small>ABILITY / END-TO-END FLOW</small>
+          <div><h3>一次技能从输入到结束</h3><p>沿激活闸门、运行实例、编排、命中、结算与清理逐步调试完整链路。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/effect-lifecycle/">
+          <small>EFFECT / LIFECYCLE</small>
+          <div><h3>Effect / Buff 生命周期</h3><p>对比瞬时、持续、周期、叠层、刷新、到期和主动移除。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
         <a class="feature-card" href="/#lab">
           <small>PATHFINDING / STEP DEBUG</small>
           <div><h3>A* 寻路</h3><p>逐步观察代价、Open / Closed 集合与 Parent 回溯。</p></div>

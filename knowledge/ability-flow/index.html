@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="单步观察一次技能如何从输入请求经过资源、标签、冷却与优先级裁决，进入编排、命中、结算，再正常结束或中断清理。">
+  <title>一次技能从输入到结束 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/ability-flow.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/ability-flow.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / RUNTIME MAP</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/工程设计/一次技能从输入到结束/">完整文章</a>
+      <a class="github-link" href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">ABILITY TRANSACTION / STEP DEBUGGER</p>
+        <h1>一次按键，<br><em>十段状态交接</em></h1>
+        <p class="hero-intro">技能不是“调用一个播放函数”。它是一段可以被拒绝、排队、执行、打断并最终清理的运行事务。</p>
+      </div>
+      <div class="hero-note">
+        <span>教学场景参数</span>
+        <strong>资源 100 · 花费 30 · 冷却 6 秒</strong>
+        <p>页面数字只用于解释状态变化，不代表任何产品配置。</p>
+      </div>
+    </section>
+
+    <section class="run-map" aria-labelledby="run-map-title">
+      <div class="section-heading">
+        <div><p class="section-kicker">THE WHOLE ROUTE</p><h2 id="run-map-title">先看完整运行地图</h2></div>
+        <p>高亮节点随步骤推进。失败会停在对应闸门，中断会转入清理支线。</p>
+      </div>
+      <div class="map-track" id="run-map" aria-label="技能运行阶段">
+        <div class="map-node" data-stage="input"><b>01</b><span>输入请求</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="gate"><b>02</b><span>激活裁决</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="instance"><b>03</b><span>运行实例</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="orchestrate"><b>04</b><span>Flow / Timeline</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="target"><b>05</b><span>目标命中</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="effect"><b>06</b><span>Effect / 反馈</span></div>
+        <i>→</i>
+        <div class="map-node" data-stage="cleanup"><b>07</b><span>结束 / 中断</span></div>
+      </div>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="技能运行流程交互实验">
+      <div class="lab-toolbar">
+        <div class="scenario-tabs" role="group" aria-label="选择技能运行场景">
+          <button class="scenario-tab is-active" type="button" data-scenario="normal" aria-pressed="true"><small>01 / SUCCESS</small><span>正常释放</span></button>
+          <button class="scenario-tab" type="button" data-scenario="resource" aria-pressed="false"><small>02 / REJECT</small><span>资源不足</span></button>
+          <button class="scenario-tab" type="button" data-scenario="tag" aria-pressed="false"><small>03 / BLOCK</small><span>标签阻止</span></button>
+          <button class="scenario-tab" type="button" data-scenario="interrupt" aria-pressed="false"><small>04 / INTERRUPT</small><span>高优先级打断</span></button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 10</strong></div>
+      </div>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <div>
+            <p class="panel-label">当前闸门 / CURRENT GATE</p>
+            <p class="phase" id="phase">INPUT</p>
+            <h2 id="step-title">输入只提交意图</h2>
+            <p class="step-copy" id="step-copy">按键被翻译为激活请求，此时不扣资源，也不创建运行实例。</p>
+          </div>
+          <div class="change-box">
+            <span>本步改变</span>
+            <p id="step-change">request：无 → 待处理</p>
+          </div>
+          <div class="why-box">
+            <span>WHY</span>
+            <p id="step-why">把输入与副作用分开，才能排队、合并并在系统更新时二次裁决。</p>
+          </div>
+          <div class="result-banner" id="result-banner" data-tone="running">
+            <span>RESULT</span><strong id="result-text">请求已入队</strong>
+          </div>
+        </article>
+
+        <section class="state-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">LIVE STATE</p><h2>这一次运行的状态快照</h2></div>
+            <span class="scenario-parameter" id="scenario-parameter">场景参数 · 资源 100 / 花费 30 / CD 6s</span>
+          </div>
+          <div class="state-grid">
+            <div class="meter-card">
+              <div class="meter-head"><span>RESOURCE</span><strong id="resource-value">100 / 100</strong></div>
+              <div class="meter"><i id="resource-meter"></i></div>
+              <p id="cost-status">花费 30 · 尚未扣除</p>
+            </div>
+            <dl class="state-list">
+              <div><dt>REQUEST</dt><dd id="request-state">待处理</dd></div>
+              <div><dt>TAGS</dt><dd id="tag-state">可释放</dd></div>
+              <div><dt>COOLDOWN</dt><dd id="cooldown-state">就绪 · 1 次</dd></div>
+              <div><dt>ACTIVE</dt><dd id="active-state">false</dd></div>
+              <div><dt>INSTANCE</dt><dd id="instance-state">—</dd></div>
+              <div><dt>CONTEXT</dt><dd id="context-state">—</dd></div>
+            </dl>
+          </div>
+          <div class="event-strip">
+            <span>EVENT TRACE</span>
+            <ol id="event-trace"></ol>
+          </div>
+        </section>
+
+        <aside class="code-panel">
+          <div class="code-head">
+            <div><p class="panel-label">SYNCED PSEUDOCODE</p><h2 id="code-title">提交请求</h2></div>
+            <strong id="code-status">QUEUE</strong>
+          </div>
+          <ol class="code-lines" id="code-lines"></ol>
+          <p class="code-note">高亮行是本步正在执行的最小逻辑单元。</p>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="progress-wrap">
+          <div class="step-dots" id="step-dots" data-lab-dots aria-label="步骤进度"></div>
+          <label class="speed-control" for="speed-seconds">自动播放 · 每步
+            <input id="speed-seconds" type="number" value="2" inputmode="decimal" aria-describedby="speed-message">
+            秒
+          </label>
+          <span id="speed-message" role="status">沿用站内实验的 2 秒基准</span>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button class="auto-button" type="button" id="auto-button" data-lab-control aria-pressed="false">自动播放</button>
+          <button class="next-button" type="button" id="next-button" data-lab-control>下一步 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading-path">
+      <div class="section-heading">
+        <div><p class="section-kicker">FOLLOW THE LINKS</p><h2>总览负责串联，细节交给子专题</h2></div>
+      </div>
+      <div class="reading-grid">
+        <a href="/knowledge/library/工程设计/数据驱动Timeline-从编辑器到实体消费/">
+          <small>ORCHESTRATION</small><h3>数据驱动 Timeline</h3><p>继续拆解轨道、Clip、Begin / Tick / Finish / Interrupt 与实体消费。</p><span>进入 Timeline 文章 →</span>
+        </a>
+        <a href="/knowledge/effect-lifecycle/">
+          <small>SETTLEMENT</small><h3>Effect / Buff 生命周期</h3><p>继续观察属性捕获、持续、周期、叠层、刷新、到期与主动移除。</p><span>进入 Effect 子专题 →</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="limits">
+      <div><p class="section-kicker">BOUNDARIES & COST</p><h2>什么时候会失效？</h2></div>
+      <div class="limit-grid">
+        <article><span>01</span><h3>预检不是承诺</h3><p>请求排队后，标签、资源或活动技能仍可能变化，所以消费请求时必须二次裁决。</p></article>
+        <article><span>02</span><h3>费用与冷却分开</h3><p>费用可以在编排节点扣除；若在该节点前中断，仍要明确处理已经消费的使用次数与冷却。</p></article>
+        <article><span>03</span><h3>持续效果独立存活</h3><p>技能结束不自动等于持续 Effect 消失。二者是否绑定，必须由明确规则决定。</p></article>
+        <article><span>04</span><h3>主要运行代价</h3><p>激活裁决取决于活动技能、标签与 Modifier 数；命中成本主要取决于空间粗筛后的候选数。</p></article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

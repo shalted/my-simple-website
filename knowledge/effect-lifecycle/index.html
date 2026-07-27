@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐步观察 Effect 与 Buff 从创建、应用、属性结算、周期叠层到移除清理的完整生命周期。">
+  <title>Effect 与 Buff 生命周期 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/effect-lifecycle.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/effect-lifecycle.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/ability-flow/">技能运行地图</a>
+      <a href="/knowledge/library/工程设计/数据驱动Timeline-从编辑器到实体消费/">Timeline</a>
+      <a class="github-link" href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">RUNTIME EFFECT / VISIBLE LIFECYCLE</span>
+        <h1>一个 Buff，<br>为什么能<em>正确结束</em>？</h1>
+      </div>
+      <p>从定义创建独立运行对象，通过 Apply Gate，在 Instant 与 Duration 处分叉；继续观察 Modifier、周期、叠层、到期和资源清理。</p>
+    </section>
+
+    <section class="runtime-map" aria-label="Effect 完整运行地图">
+      <span>Definition</span><i>→</i><span>RuntimeEffect</span><i>→</i><span>Apply Gate</span><i>→</i>
+      <span>Instant / Duration</span><i>→</i><span>Activate Modifier</span><i>→</i>
+      <span>Period / Stack</span><i>→</i><span>Expire / Remove</span><i>→</i><span>Release</span>
+    </section>
+
+    <section class="lab" data-effect-lab aria-label="Effect 与 Buff 生命周期实验">
+      <div class="lab-head">
+        <div><span class="panel-label">CURRENT RUN</span><h2>RuntimeEffect 状态机</h2></div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 10</strong></div>
+      </div>
+
+      <div class="case-tabs" role="group" aria-label="选择演示案例">
+        <button class="case-tab is-active" type="button" data-case="normal" aria-pressed="true">正常 · 持续与周期</button>
+        <button class="case-tab" type="button" data-case="boundary" aria-pressed="false">边界 · 目标提前失效</button>
+        <button class="case-tab" type="button" data-case="overflow" aria-pressed="false">冲突 · 叠层溢出</button>
+      </div>
+
+      <section class="scenario-parameters" aria-label="教学场景参数">
+        <div class="parameter-note"><strong>教学场景参数</strong><span>Base 100 · 单层 +20 · Duration 6 · Period 2 · 上限 3</span></div>
+        <label>属性捕获
+          <select id="capture-policy">
+            <option value="snapshot">Snapshot · 首次计算缓存</option>
+            <option value="track">Track · 每次实时读取</option>
+          </select>
+        </label>
+        <label>叠层范围
+          <select id="stack-policy">
+            <option value="source">按来源独立</option>
+            <option value="target">按目标共享</option>
+          </select>
+        </label>
+        <label>Duration
+          <select id="duration-policy">
+            <option value="refresh">成功申请时刷新</option>
+            <option value="keep">不刷新</option>
+          </select>
+        </label>
+        <label>Period
+          <select id="period-policy">
+            <option value="keep">不重置</option>
+            <option value="reset">成功申请时重置</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="principle-lenses" aria-label="当前案例说明">
+        <article><span>PROBLEM / 为什么</span><p id="principle-problem"></p></article>
+        <article><span>MECHANISM / 怎么做</span><p id="principle-mechanism"></p></article>
+        <article><span>BOUNDARY / 何时失效</span><p id="principle-boundary"></p></article>
+      </section>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <span class="phase" id="phase"></span>
+          <h2 id="step-title"></h2>
+          <p id="step-copy"></p>
+          <div class="change-box"><span>这一步改变了什么</span><p id="step-change"></p></div>
+          <div class="why-box"><span>WHY</span><p id="step-why"></p></div>
+          <a class="article-link" href="/knowledge/library/工程设计/Effect与Buff生命周期/">阅读完整原理 →</a>
+        </article>
+
+        <section class="visual-panel">
+          <div class="visual-head">
+            <div><span class="panel-label">OBSERVABLE STATE</span><h2 id="visual-title">运行对象</h2></div>
+            <span class="visual-status" id="visual-status">CREATED</span>
+          </div>
+          <div class="effect-state">
+            <div class="value-ring"><small>CURRENT</small><strong id="current-value">100</strong><span>BASE <b id="base-value">100</b></span></div>
+            <div class="state-cards">
+              <div><span>RuntimeEffect</span><strong id="runtime-state">未创建</strong></div>
+              <div><span>ACTIVE</span><strong id="active-state">false</strong></div>
+              <div><span>STACK</span><strong id="stack-count">0 / 3</strong></div>
+              <div><span>REMAIN</span><strong id="remain-time">—</strong></div>
+            </div>
+          </div>
+          <ol class="lifecycle-track" id="lifecycle-track" aria-label="生命周期阶段"></ol>
+          <div class="period-log">
+            <span>PERIOD EVENTS</span>
+            <ul id="period-events"><li>尚未产生周期事件</li></ul>
+          </div>
+        </section>
+
+        <aside class="inspect-panel">
+          <section>
+            <span class="panel-label">KEY DATA</span>
+            <dl class="metrics" id="metrics"></dl>
+          </section>
+          <section class="comparison">
+            <span class="panel-label">POLICY COMPARISON</span>
+            <div class="compare-grid">
+              <div><small>不刷新</small><strong id="compare-keep">—</strong></div>
+              <div><small>刷新</small><strong id="compare-refresh">—</strong></div>
+            </div>
+            <p id="compare-copy"></p>
+          </section>
+          <div class="code-block">
+            <div class="code-head"><span>同步伪代码</span><strong id="code-status">READY</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="speed-control">
+          <label for="speed-select">自动速度</label>
+          <select id="speed-select">
+            <option value="3000">慢 · 3.0s</option>
+            <option value="2100" selected>标准 · 2.1s</option>
+            <option value="1300">快 · 1.3s</option>
+          </select>
+        </div>
+        <div class="step-dots" id="step-dots" data-lab-dots aria-label="步骤进度"></div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button">重置</button>
+          <button type="button" id="prev-button">← 上一步</button>
+          <button class="auto-button" type="button" id="auto-button" aria-pressed="false">自动演示</button>
+          <button class="next-button" type="button" id="next-button">下一步 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading-notes">
+      <div><span>01</span><h2>Spec 不是共享状态</h2><p>每次申请创建独立 RuntimeEffect，来源、目标、计时和层数都属于本次运行。</p></div>
+      <div><span>02</span><h2>Snapshot 的准确时机</h2><p>Snapshot 在第一次计算 Magnitude 时缓存；Track 每次读取，并在停用时注销监听。</p></div>
+      <div><span>03</span><h2>清理也是生命周期</h2><p>停用、标脏、移出活动集合、释放运行资源和销毁必须形成一条可观察链路。</p></div>
+    </section>
+  </main>
+</body>
+</html>
