@@ -101,6 +101,47 @@
       </div>
     </section>
 
+    <section class="scheduler-lab" data-interactive-lab aria-label="提示消息调度策略实验">
+      <div class="scheduler-head">
+        <div><span class="section-kicker">FIFO → HEAP SCHEDULER</span><h2>堆已经存在，<br>为什么顺序可能没变？</h2></div>
+        <p>当前可验证链路消费两级 FIFO。下面的堆模式与稳定序号是教学演进；默认不抢占活动消息，也不实现老化。</p>
+      </div>
+      <div class="scheduler-tabs" role="group" aria-label="调度策略">
+        <button class="scheduler-tab is-active" type="button" data-schedule="fifo" aria-pressed="true">FIFO 现状</button>
+        <button class="scheduler-tab" type="button" data-schedule="heap" aria-pressed="false">Priority-only heap</button>
+        <button class="scheduler-tab" type="button" data-schedule="stable" aria-pressed="false">Priority + sequence</button>
+        <button class="scheduler-tab" type="button" data-schedule="disconnected" aria-pressed="false">堆未接消费点</button>
+      </div>
+      <div class="scheduler-grid">
+        <article class="scheduler-copy">
+          <span id="schedule-phase">01 / ARRIVE</span>
+          <h3 id="schedule-title"></h3>
+          <p id="schedule-copy"></p>
+          <div><b>这一步改变了什么</b><p id="schedule-change"></p></div>
+          <div class="schedule-why"><b>WHY</b><p id="schedule-why"></p></div>
+        </article>
+        <section class="scheduler-state">
+          <header><div><span>WAITING / ACTIVE / POOL</span><h3>提示生命周期</h3></div><strong id="schedule-status"></strong></header>
+          <div class="message-columns">
+            <article><h4>等待区</h4><ol id="schedule-waiting"></ol></article>
+            <article><h4>活动区</h4><ol id="schedule-active"></ol></article>
+            <article><h4>对象池</h4><ol id="schedule-pool"></ol></article>
+          </div>
+          <div class="heap-strip"><span>HEAP ARRAY</span><code id="schedule-heap"></code></div>
+          <ol class="schedule-events" id="schedule-events"></ol>
+        </section>
+        <aside class="scheduler-inspect">
+          <dl id="schedule-metrics"></dl>
+          <div class="schedule-code"><div><span>同步伪代码</span><strong id="schedule-code-status"></strong></div><ol id="schedule-code-lines"></ol></div>
+        </aside>
+      </div>
+      <div class="scheduler-controls">
+        <label>自动速度<select id="schedule-speed"><option value="3200">慢 · 3.2s</option><option value="2200" selected>标准 · 2.2s</option><option value="1400">快 · 1.4s</option></select></label>
+        <div id="schedule-dots" data-lab-dots></div>
+        <div><button type="button" id="schedule-reset" data-lab-control>重置</button><button type="button" id="schedule-prev" data-lab-control>← 上一步</button><button class="auto-button" type="button" id="schedule-auto" data-lab-control aria-pressed="false">自动演示</button><button class="next-button" type="button" id="schedule-next" data-lab-control>下一步 →</button></div>
+      </div>
+    </section>
+
     <section class="principle">
       <div class="section-kicker">THE CORE IDEA</div>
       <h2>堆维护的不是完整顺序，<br>而是<em>当前最值</em>。</h2>

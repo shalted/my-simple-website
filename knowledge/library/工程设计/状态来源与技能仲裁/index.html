@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。">
+  <title>状态来源与技能仲裁 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>状态来源与技能仲裁</h1>
+      <p class="hero-copy">“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先把标签理解成来源账本">先把标签理解成来源账本</a>
+    <a data-toc-link href="#标签层级改变的是查询-不是所有权">标签层级改变的是查询，不是所有权</a>
+    <a data-toc-link href="#普通激活-先允许新实例成立-再取消低级旧实例">普通激活：先允许新实例成立，再取消低级旧实例</a>
+    <a data-toc-link href="#预输入窗口-阶段规则比数字更重要">预输入窗口：阶段规则比数字更重要</a>
+    <a data-toc-link href="#外部强制打断-另一条轨道">外部强制打断：另一条轨道</a>
+    <a data-toc-link href="#六个最小调试场景">六个最小调试场景</a>
+    <a data-toc-link href="#代价与边界">代价与边界</a>
+    <a data-toc-link href="#最后记住">最后记住</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套来源与仲裁实验</strong>
+        <span>观察固定状态、临时来源、层级查询，以及普通激活、预输入窗口和外部强制打断的分轨决策。</span>
+        <p><a href="/knowledge/tag-arbitration/">打开技能仲裁实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把标签理解成来源账本">
+      <span>01</span>
+      <strong>先把标签理解成来源账本</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：标签层级改变的是查询，不是所有权">
+      <span>02</span>
+      <strong>标签层级改变的是查询，不是所有权</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：普通激活：先允许新实例成立，再取消低级旧实例">
+      <span>03</span>
+      <strong>普通激活：先允许新实例成立，再取消低级旧实例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：预输入窗口：阶段规则比数字更重要">
+      <span>04</span>
+      <strong>预输入窗口：阶段规则比数字更重要</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：外部强制打断：另一条轨道">
+      <span>05</span>
+      <strong>外部强制打断：另一条轨道</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：六个最小调试场景">
+      <span>06</span>
+      <strong>六个最小调试场景</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：代价与边界">
+      <span>07</span>
+      <strong>代价与边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最后记住">
+      <span>08</span>
+      <strong>最后记住</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先把标签理解成来源账本</h3>
+        <p>固定标签适合描述对象长期拥有的能力，例如“可以移动”。临时标签则应记录来源，例如某个运行实例和某个持续状态都提供“控制受限”。</p>
+
+        <pre><code class="language-text">控制受限
+├─ 固定来源：角色规则
+├─ 临时来源：运行实例 A
+└─ 临时来源：持续状态 B</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>标签层级改变的是查询，不是所有权</h3>
+        <p>标签可以有父子关系。拥有“动作.施法”时，查询“动作”可以返回真；但账本仍应保存真正添加的叶子标签和来源。</p>
+        <ul><li><code>all</code>：所有要求都能由当前有效标签满足；</li><li><code>any</code>：至少一个要求被满足；</li><li><code>none</code>：要求中的标签一个也不能被满足。</li><li>临时标签加入后，是否一定产生聚合状态 Add 通知，取决于通知机制是否覆盖该写入路径；</li><li>把临时状态提升为固定状态时，层级匹配与精确删除若使用不同规则，可能留下来源记录。</li></ul>
+        <pre><code class="language-text">动作
+└─ 动作.施法</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>普通激活：先允许新实例成立，再取消低级旧实例</h3>
+        <p>普通激活的优先级规则可以抽象为：</p>
+        <ul><li>新请求完成资源、标签和冷却等全部裁决；</li><li>新运行实例成功建立；</li><li>严格低于新实例的旧能力收到取消请求；</li><li>旧能力执行中断语义并按来源清理；</li><li>新实例继续运行。</li></ul>
+        <pre><code class="language-csharp">ActivationResult CheckDirectActivation(
+    Priority incoming,
+    IReadOnlyList&lt;RunningAbility&gt; active)
+{
+    foreach (RunningAbility current in active)
+    {
+        if (current.Priority &gt; Priority.None
+            &amp;&amp; current.Priority &gt;= incoming)
+            return ActivationResult.PriorityBlocked;
+    }
+
+    return ActivationResult.Allowed;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>预输入窗口：阶段规则比数字更重要</h3>
+        <p>同级切换不能简单绕过普通激活规则。预输入窗口保存当前能力、当前优先级、已排队输入和窗口阶段，并使用独立决策表。</p>
+
+        <pre><code class="language-csharp">QueueResult QueueDuringWindow(Input next)
+{
+    if (phase == Phase.InWindow &amp;&amp; queuedInput == null)
+    {
+        queuedInput = next;
+        return QueueResult.Buffered;
+    }
+
+    if (phase == Phase.InWindow)
+        return QueueResult.FirstInputWins;
+
+    // PostWindow 的切换由阶段规则决定，不比较优先级。
+    RequestCancel(current);
+    queuedInput = next;
+    return QueueResult.CancelAndQueue;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>外部强制打断：另一条轨道</h3>
+        <p>Effect 或环境规则发起的强制打断不是“某个新技能完成普通激活”。它没有新技能实例接管，而是用过滤条件选择当前能力，再提交取消请求。</p>
+        <ul><li>普通激活：新输入与活动能力比较；</li><li>预输入窗口：由窗口阶段决定缓存、替换或取消；</li><li>外部强制打断：按目标优先级区间与打断强度过滤。</li></ul>
+        <pre><code class="language-csharp">bool TryExternalInterrupt(
+    RunningAbility target,
+    PriorityRange range,
+    InterruptStrength strength)
+{
+    if (!range.Contains(target.Priority))
+        return false;
+
+    if (strength.IsLimited
+        &amp;&amp; target.Priority &gt; strength.Maximum)
+        return false;
+
+    target.RequestCancel();
+    return true;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+        <h3>六个最小调试场景</h3>
+        <p>| 场景 | 观察重点 | |---|---| | 来源账本 | 固定标签与两个临时来源共同维持有效状态 | | 高优先级接管 | 新实例成立后，低级旧实例才进入取消 | | 同级首个缓存 | 窗口内首个同级输入被缓存，后续输入被拒绝 | | 低级输入阻挡 | 普通激活在产生副作用前明确拒绝 | | PostWindow 切换 | 较低输入仍进入取消与排队，不进行优先级比较 | | 来源清理冲突 | 一个来源结束时只删除自己，其他来源继续维持状态 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+        <h3>代价与边界</h3>
+
+        <ul><li>标签查询若直接扫描固定与临时缓冲，成本约为 <code>O(查询标签数 × 当前标签记录数)</code>；频繁查询可建立索引，但来源账本仍是清理依据。</li><li>普通激活扫描活动能力，成本约为 <code>O(活动能力数)</code>。</li><li>预输入窗口应保持每个拥有者常量级状态；事件监听必须在结束、取消和全局清理时对称注销。</li><li>外部批量打断扫描活动能力，成本约为 <code>O(活动能力数)</code>，并应保留每个目标未通过的具体过滤原因。</li><li>固定标签、临时标签和层级关系是三种不同维度。查询可以聚合，写入与删除不能靠查询结果反推。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
+        <h3>最后记住</h3>
+        <p>标签负责描述“当前世界认为对象处于什么状态”，来源账本负责回答“谁有权撤销它”；普通激活、预输入窗口和外部强制打断则分别回答三种不同的冲突问题。</p>
+
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
+<p>一个可靠的运行时需要同时回答：</p>
+<ol>
+<li>这个状态由谁提供，还有多少来源没有释放？</li>
+<li>当前输入走的是普通激活、预输入窗口，还是外部强制打断？</li>
+<li>被拒绝、排队或取消时，哪一条规则做出了决定？</li>
+<li>旧状态结束后，清理会不会误伤其他来源？</li>
+</ol>
+<h2 id="先把标签理解成来源账本">先把标签理解成来源账本</h2>
+<p>固定标签适合描述对象长期拥有的能力，例如“可以移动”。临时标签则应记录来源，例如某个运行实例和某个持续状态都提供“控制受限”。</p>
+<pre><code class="language-text">控制受限
+├─ 固定来源：角色规则
+├─ 临时来源：运行实例 A
+└─ 临时来源：持续状态 B</code></pre>
+<p>有效状态不是简单的一个布尔值：</p>
+<pre><code class="language-csharp">bool HasEffectiveTag(Tag tag)
+{
+    return fixedTags.Contains(tag)
+        || temporarySources[tag].Count &gt; 0;
+}</code></pre>
+<p>临时来源更适合保存为集合而不是裸计数。集合既能回答“还有几个来源”，也能回答“该清理谁”。</p>
+<pre><code class="language-csharp">bool AddTemporaryTag(Source source, Tag tag)
+{
+    // 同一来源重复提供同一状态，不重复记账。
+    return temporarySources[tag].Add(source);
+}
+
+void RemoveTemporaryTags(Source source)
+{
+    foreach (SourceSet sources in temporarySources.Values)
+        sources.Remove(source);
+}</code></pre>
+<p>这样，运行实例 A 结束时只移除 A；持续状态 B 仍在，聚合标签就仍然有效。直接按标签值清空会让不同系统互相误删状态。</p>
+<h2 id="标签层级改变的是查询-不是所有权">标签层级改变的是查询，不是所有权</h2>
+<p>标签可以有父子关系。拥有“动作.施法”时，查询“动作”可以返回真；但账本仍应保存真正添加的叶子标签和来源。</p>
+<pre><code class="language-text">动作
+└─ 动作.施法</code></pre>
+<p>层级查询适合判断规则：</p>
+<ul>
+<li><code>all</code>：所有要求都能由当前有效标签满足；</li>
+<li><code>any</code>：至少一个要求被满足；</li>
+<li><code>none</code>：要求中的标签一个也不能被满足。</li>
+</ul>
+<p>清理则仍应按精确来源进行。不要因为父标签查询命中，就猜测应该删除哪些子标签。</p>
+<p>有两个实现边界需要保留为可观察问题，而不是写成保证：</p>
+<ul>
+<li>临时标签加入后，是否一定产生聚合状态 Add 通知，取决于通知机制是否覆盖该写入路径；</li>
+<li>把临时状态提升为固定状态时，层级匹配与精确删除若使用不同规则，可能留下来源记录。</li>
+</ul>
+<p>因此调试工具应同时展示“原始账本”“层级查询结果”和“已发布的状态事件”。</p>
+<h2 id="普通激活-先允许新实例成立-再取消低级旧实例">普通激活：先允许新实例成立，再取消低级旧实例</h2>
+<p>普通激活的优先级规则可以抽象为：</p>
+<pre><code class="language-csharp">ActivationResult CheckDirectActivation(
+    Priority incoming,
+    IReadOnlyList&lt;RunningAbility&gt; active)
+{
+    foreach (RunningAbility current in active)
+    {
+        if (current.Priority &gt; Priority.None
+            &amp;&amp; current.Priority &gt;= incoming)
+            return ActivationResult.PriorityBlocked;
+    }
+
+    return ActivationResult.Allowed;
+}</code></pre>
+<p>高优先级输入通过，不代表立即删除旧实例。更安全的交接顺序是：</p>
+<ol>
+<li>新请求完成资源、标签和冷却等全部裁决；</li>
+<li>新运行实例成功建立；</li>
+<li>严格低于新实例的旧能力收到取消请求；</li>
+<li>旧能力执行中断语义并按来源清理；</li>
+<li>新实例继续运行。</li>
+</ol>
+<p>这避免了“先取消旧技能，新技能随后因其他条件失败，结果两边都没有”的空窗。</p>
+<p>教学页面使用 <code>LOW / MID / HIGH</code> 表示相对顺序。它们只是场景值，不代表任何产品配置。</p>
+<h2 id="预输入窗口-阶段规则比数字更重要">预输入窗口：阶段规则比数字更重要</h2>
+<p>同级切换不能简单绕过普通激活规则。预输入窗口保存当前能力、当前优先级、已排队输入和窗口阶段，并使用独立决策表。</p>
+<table><thead><tr>
+<th>阶段</th>
+<th>更高输入</th>
+<th>同级输入</th>
+<th>更低输入</th>
+</tr></thead><tbody>
+<tr>
+<td>窗口内 <code>InWindow</code></td>
+<td>请求取消当前能力</td>
+<td>队列为空时缓存首个</td>
+<td>队列为空时缓存首个</td>
+</tr>
+<tr>
+<td>窗口后 <code>PostWindow</code></td>
+<td>取消并排队</td>
+<td>取消并排队</td>
+<td>取消并排队</td>
+</tr>
+<tr>
+<td>等待释放 <code>AwaitingRelease</code></td>
+<td>替换已排队输入</td>
+<td>拒绝替换</td>
+<td>拒绝替换</td>
+</tr>
+</tbody></table>
+<p>特别要注意：<code>PostWindow</code> 不比较优先级。此时较低输入仍会进入取消与排队流程。这是阶段语义，不应被普通激活的“大于等于阻挡”规则覆盖。</p>
+<p>窗口内的同级输入通常采用“首个缓存”：</p>
+<pre><code class="language-csharp">QueueResult QueueDuringWindow(Input next)
+{
+    if (phase == Phase.InWindow &amp;&amp; queuedInput == null)
+    {
+        queuedInput = next;
+        return QueueResult.Buffered;
+    }
+
+    if (phase == Phase.InWindow)
+        return QueueResult.FirstInputWins;
+
+    // PostWindow 的切换由阶段规则决定，不比较优先级。
+    RequestCancel(current);
+    queuedInput = next;
+    return QueueResult.CancelAndQueue;
+}</code></pre>
+<p>旧能力结束或取消后，窗口控制器要注销结束与取消监听，移除旧状态，然后释放缓存动作。先释放动作再移除监听，容易让重入事件再次消费同一输入。</p>
+<h2 id="外部强制打断-另一条轨道">外部强制打断：另一条轨道</h2>
+<p>Effect 或环境规则发起的强制打断不是“某个新技能完成普通激活”。它没有新技能实例接管，而是用过滤条件选择当前能力，再提交取消请求。</p>
+<pre><code class="language-csharp">bool TryExternalInterrupt(
+    RunningAbility target,
+    PriorityRange range,
+    InterruptStrength strength)
+{
+    if (!range.Contains(target.Priority))
+        return false;
+
+    if (strength.IsLimited
+        &amp;&amp; target.Priority &gt; strength.Maximum)
+        return false;
+
+    target.RequestCancel();
+    return true;
+}</code></pre>
+<p>因此调试页面应把三条轨道分开：</p>
+<ul>
+<li>普通激活：新输入与活动能力比较；</li>
+<li>预输入窗口：由窗口阶段决定缓存、替换或取消；</li>
+<li>外部强制打断：按目标优先级区间与打断强度过滤。</li>
+</ul>
+<p>把它们合成一个 <code>CanInterrupt</code> 会隐藏调用语义，也难以解释为什么相同优先级在不同阶段得到不同结果。</p>
+<h2 id="六个最小调试场景">六个最小调试场景</h2>
+<table><thead><tr>
+<th>场景</th>
+<th>观察重点</th>
+</tr></thead><tbody>
+<tr>
+<td>来源账本</td>
+<td>固定标签与两个临时来源共同维持有效状态</td>
+</tr>
+<tr>
+<td>高优先级接管</td>
+<td>新实例成立后，低级旧实例才进入取消</td>
+</tr>
+<tr>
+<td>同级首个缓存</td>
+<td>窗口内首个同级输入被缓存，后续输入被拒绝</td>
+</tr>
+<tr>
+<td>低级输入阻挡</td>
+<td>普通激活在产生副作用前明确拒绝</td>
+</tr>
+<tr>
+<td>PostWindow 切换</td>
+<td>较低输入仍进入取消与排队，不进行优先级比较</td>
+</tr>
+<tr>
+<td>来源清理冲突</td>
+<td>一个来源结束时只删除自己，其他来源继续维持状态</td>
+</tr>
+</tbody></table>
+<p>失败场景不能只显示“false”。至少要同步呈现当前阶段、比较双方、命中的规则、状态变化前后、对应代码和下一步清理责任。</p>
+<h2 id="代价与边界">代价与边界</h2>
+<ul>
+<li>标签查询若直接扫描固定与临时缓冲，成本约为 <code>O(查询标签数 × 当前标签记录数)</code>；频繁查询可建立索引，但来源账本仍是清理依据。</li>
+<li>普通激活扫描活动能力，成本约为 <code>O(活动能力数)</code>。</li>
+<li>预输入窗口应保持每个拥有者常量级状态；事件监听必须在结束、取消和全局清理时对称注销。</li>
+<li>外部批量打断扫描活动能力，成本约为 <code>O(活动能力数)</code>，并应保留每个目标未通过的具体过滤原因。</li>
+<li>固定标签、临时标签和层级关系是三种不同维度。查询可以聚合，写入与删除不能靠查询结果反推。</li>
+</ul>
+<h2 id="最后记住">最后记住</h2>
+<p>标签负责描述“当前世界认为对象处于什么状态”，来源账本负责回答“谁有权撤销它”；普通激活、预输入窗口和外部强制打断则分别回答三种不同的冲突问题。</p>
+<p>把来源、阶段和决策理由同时保留下来，技能仲裁才不会退化成一组无法解释的布尔值。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/"><small>← PREVIOUS</small>一次技能从输入到结束</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/"><small>NEXT →</small>资源生命周期统一管理</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

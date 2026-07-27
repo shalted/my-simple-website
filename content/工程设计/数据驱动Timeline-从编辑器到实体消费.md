@@ -367,6 +367,28 @@ TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
 
 部分 Task 的真实持续时间可能由曲线或资源长度决定，因此允许 Task 在实例化阶段修正结束帧，但修正结果只能属于本次运行时 Clip。
 
+### 一个生命周期核心，两种宿主适配
+
+Clip 的 Begin、Tick、Finish、Interrupt 不需要因为上层流程不同而重写；变化的是“谁拥有播放器、从哪里开始、完成后通知谁”。
+
+| 适配方式 | 起播位置 | 完成后的去向 | 循环责任 |
+| --- | --- | --- | --- |
+| 独立 Timeline | 固定从第 0 帧建立实例 | 直接结束当前宿主 | 不在该适配层循环 |
+| Flow 宿主 | 可从指定 `startFrame` 建立本轮运行 | 把完成结果交还当前流程节点 | 流程上下文保存循环模板与重播锚点 |
+
+从指定帧开始，不等于先偷偷执行前面的所有帧。已经在起播帧之前结束的 Clip 保持未开始；仍然跨越起播帧的 Clip 会在该帧补 Begin，然后继续 Tick。这样恢复的是“从此刻应当有效的状态”，不是伪造完整历史。
+
+```pseudo
+runStart = host == Flow ? requestedStartFrame : 0
+currentFrame = runStart - 1
+
+for each frame from runStart:
+    if clip has not begun and frame is inside clip.range:
+        clip.begin(frame)  // 从中段起播时允许晚 Begin
+```
+
+循环重播也需要明确锚点。本页只从有限、已识别的循环表现标记中选择最早开始帧；没有这种标记时明确回到第 0 帧，不从任意逻辑 Clip 的名字或外观猜测锚点。这个规则属于 Flow 适配边界，不是 Timeline 文档的新字段。
+
 ## 第九步：用固定帧推进并补齐丢帧
 
 播放器通常把真实时间转换成逻辑帧。一次渲染帧可能跨过多个逻辑帧，因此不能只处理目标帧，必须依次补齐中间帧。
@@ -470,6 +492,17 @@ void InterruptTimeline()
 ```
 
 把 `Finished` 设为 true 是为了阻止同一个 Task 在后续销毁流程里再次清理。正常完成与中断可以产生不同业务结果，但二者都必须释放持续状态。
+
+### Flow 作用域 Task 还要经过 Dispose
+
+Flow 作用域 Task 与普通 Timeline Clip 是两类所有权。作用域 Task 在创建时登记到当前流程上下文，宿主退出时按相反顺序统一处理：
+
+```text
+正常结束：Begin → Finish → Dispose
+显式取消：Begin → Interrupt → Dispose
+```
+
+Finish 或 Interrupt 负责语义清理，Dispose 负责释放由流程作用域持有的对象资源。两步不能合成一个模糊的“清掉”。页面实验中的 FLOW SCOPED TASK 面板只说明这一条明确的托管路径；普通 Clip 只展示 Finish 或 Interrupt，不能据此宣称所有 Timeline Task 都会自动 Dispose。
 
 ## 第十一步：Task 只发语义命令
 
@@ -597,6 +630,10 @@ void Consume(EntityCommand command)
 5. 语义命令是否被接收
 6. 实体组件是否因优先级、锁或状态拒绝
 7. 最终执行结果是否符合请求
+
+页面折叠边界卡还保留四个不能被成功路径掩盖的事实：Flow 在同一次 Tick 连续推进节点时必须有安全预算；没有下一节点与找不到下一节点引用在当前运行模型中都会结束宿主；命令桥返回失败不会自动阻止宿主启动；普通 Clip 的生命周期结束不能泛化为对象已经 Dispose。这里不添加重试、默认成功或断链转取消之类未经确认的补偿。
+
+控制锁同样不是一个布尔值。它保存来源集合：A 与 B 同时持有时，释放 A 后集合仍有 B，控制必须继续锁定；只有最后一个来源离开才恢复。页面的 CONTROL LOCK OWNERS 面板可以逐个获取和释放两个来源，直接观察这个差异。
 
 最重要的原则是：Timeline 负责确定性顺序，Task 负责翻译意图，实体组件负责世界规则。三层各自可观察，问题才不会全部堆进一个巨大的播放器。
 

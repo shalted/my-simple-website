@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。">
+  <meta name="description" content="优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。">
   <title>二叉堆优先队列 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">数据结构 / KNOWLEDGE NOTE</div>
       <h1>二叉堆优先队列</h1>
-      <p class="hero-copy">优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+      <p class="hero-copy">优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -42,6 +42,9 @@
     <a data-toc-link href="#为什么不用普通队列">为什么不用普通队列</a>
     <a data-toc-link href="#为什么不每次排序">为什么不每次排序</a>
     <a data-toc-link href="#堆适合什么场景">堆适合什么场景</a>
+    <a data-toc-link href="#从-fifo-到堆调度-先确认消费点">从 FIFO 到堆调度：先确认消费点</a>
+    <a class="sub" data-toc-link href="#三种可比较的策略">三种可比较的策略</a>
+    <a class="sub" data-toc-link href="#不默认实现抢占与老化">不默认实现抢占与老化</a>
     <a data-toc-link href="#工程上可以补强的点">工程上可以补强的点</a>
     <a data-toc-link href="#最重要的收获">最重要的收获</a>
   </nav>
@@ -59,7 +62,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -91,19 +94,23 @@
       <span>07</span>
       <strong>堆适合什么场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：工程上可以补强的点">
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从 FIFO 到堆调度：先确认消费点">
       <span>08</span>
+      <strong>从 FIFO 到堆调度：先确认消费点</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：工程上可以补强的点">
+      <span>09</span>
       <strong>工程上可以补强的点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CONCEPT</div>
         <h3>解决的问题</h3>
-        <p>优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+        <p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
 
 
       </article>
@@ -112,7 +119,7 @@
         <h3>核心结构</h3>
         <p>看起来只是一个 <code>List</code>，但它不是普通数组，而是把它当成一棵“隐式二叉树”。</p>
 
-        <pre><code class="language-csharp">private readonly List&lt;UITipConfig&gt; _heap = new();</code></pre>
+        <pre><code class="language-csharp">private readonly List&lt;MessageConfig&gt; _heap = new();</code></pre>
       </article>
       <article class="deck-slide" data-deck-slide="2" hidden>
         <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
@@ -154,16 +161,23 @@
       </article>
       <article class="deck-slide" data-deck-slide="7" hidden>
         <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>从 FIFO 到堆调度：先确认消费点</h3>
+        <p>提示系统可以分成四个角色：</p>
+        <ul><li>入口 FIFO 汇聚并发到达的消息，并避免重复打开显示面板；</li><li>面板 FIFO 依次取出消息，维护活动视图与对象池；</li><li>已实现的最大堆没有接到这条消费链上。</li><li>抢占：高优先消息是否立即替换正在显示的低优先消息；</li><li>老化：等待越久是否逐渐提高有效优先级；</li><li>防饥饿：低优先消息等待多久后必须获得机会。</li></ul>
+        <pre><code class="language-text">生产者 → 等待区 → 调度器 → 活动区 → 到期回对象池</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>工程上可以补强的点</h3>
         <p>这个实现已经足够完整；如果继续扩展，可以加入一个 <code>Peek</code>：</p>
 
-        <pre><code class="language-csharp">public UITipConfig Peek()
+        <pre><code class="language-csharp">public MessageConfig Peek()
 {
     return _heap.Count == 0 ? null : _heap[0];
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>堆不是为了让全部元素有序。</p>
 
@@ -181,10 +195,10 @@
     </section>
         <p>分类：数据结构</p>
 <h2 id="解决的问题">解决的问题</h2>
-<p>优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
-<p>普通做法可能是每次取的时候遍历一遍列表找最大值，复杂度是 <code>O(n)</code>。这里用的是二叉堆，入队和出队都是 <code>O(log n)</code>，更适合 Tips 数量变多、频繁插入弹出的场景。</p>
+<p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
+<p>普通做法可能是每次取的时候遍历一遍列表找最大值，复杂度是 <code>O(n)</code>。二叉堆把入队和出队控制在 <code>O(log n)</code>，适合元素持续进入、调度器持续取最大值的场景。提示消息是一个容易理解的教学例子，但是否真的按优先级显示，必须继续验证展示端消费的是 FIFO 还是堆。</p>
 <h2 id="核心结构">核心结构</h2>
-<pre><code class="language-csharp">private readonly List&lt;UITipConfig&gt; _heap = new();</code></pre>
+<pre><code class="language-csharp">private readonly List&lt;MessageConfig&gt; _heap = new();</code></pre>
 <p>看起来只是一个 <code>List</code>，但它不是普通数组，而是把它当成一棵“隐式二叉树”。</p>
 <p>对数组下标 <code>i</code>：</p>
 <pre><code class="language-text">parent = (i - 1) / 2
@@ -200,7 +214,7 @@ value:  9   7   8   3   5   6   4</code></pre>
     / \   / \
    3   5 6   4</code></pre>
 <p>这里实现的是最大堆：父节点的优先级永远大于等于子节点。</p>
-<p>所以堆顶 <code>_heap[0]</code> 永远是优先级最高的 Tips。</p>
+<p>所以堆顶 <code>_heap[0]</code> 永远是当前优先级最高的元素。</p>
 <h2 id="bubbleup-入队过程">BubbleUp：入队过程</h2>
 <p>假设现在堆里已经有这些 Tips，数字代表 <code>Priority</code>：</p>
 <pre><code class="language-text">_heap = [90, 70, 80, 30, 50, 60]</code></pre>
@@ -329,7 +343,7 @@ right = 2 * 2 + 2 = 6 -&gt; 不存在</code></pre>
 <p>普通队列是先进先出：</p>
 <pre><code class="language-text">入队顺序: A(10), B(100), C(30)
 出队顺序: A, B, C</code></pre>
-<p>但 Tips 系统想要的是：</p>
+<p>如果调度策略明确要求高优先级先处理，目标顺序才是：</p>
 <pre><code class="language-text">出队顺序: B(100), C(30), A(10)</code></pre>
 <p>所以普通队列适合“顺序公平”，不适合“优先级调度”。</p>
 <p>复杂度：</p>
@@ -372,15 +386,47 @@ Dequeue: O(log n)
 寻路 A* 的 open set
 排行榜取 Top K
 定时器系统取最近到期任务</code></pre>
+<h2 id="从-fifo-到堆调度-先确认消费点">从 FIFO 到堆调度：先确认消费点</h2>
+<p>提示系统可以分成四个角色：</p>
+<pre><code class="language-text">生产者 → 等待区 → 调度器 → 活动区 → 到期回对象池</code></pre>
+<p>数据结构只有被调度器消费，才会改变用户看到的顺序。一个系统即使已经实现了最大堆，如果展示端仍从 FIFO 队列出队，优先级字段就不会影响显示。</p>
+<p>当前可验证的提示链路使用两级 FIFO：</p>
+<ol>
+<li>入口 FIFO 汇聚并发到达的消息，并避免重复打开显示面板；</li>
+<li>面板 FIFO 依次取出消息，维护活动视图与对象池；</li>
+<li>已实现的最大堆没有接到这条消费链上。</li>
+</ol>
+<p>因此，“当前提示按优先级显示”不是现状。最大堆更适合作为一次明确的调度演进。</p>
+<h3 id="三种可比较的策略">三种可比较的策略</h3>
+<h4 id="fifo">FIFO</h4>
+<pre><code class="language-text">比较键：arrivalSequence
+出队：最早到达的消息</code></pre>
+<p>它保证顺序公平，入队和出队都是 <code>O(1)</code>，但高优先消息不能越过已经等待的低优先消息。</p>
+<h4 id="priority-only-heap">Priority-only heap</h4>
+<pre><code class="language-text">比较键：Priority
+出队：最高优先级消息</code></pre>
+<p>入队和出队是 <code>O(log n)</code>。同优先级没有第二比较键，因此不保证先进先出。</p>
+<h4 id="priority-sequence">Priority + sequence</h4>
+<pre><code class="language-text">先比较 Priority：越大越靠前
+Priority 相同，再比较 Sequence：越小越靠前</code></pre>
+<p>这是教学中的稳定策略：保留优先级调度，同时让同级消息按到达顺序显示。它需要在消息进入等待区时分配单调递增序号。</p>
+<h3 id="不默认实现抢占与老化">不默认实现抢占与老化</h3>
+<p>以上策略只决定“下一条从等待区取谁”，不打断已经处于活动区的消息。</p>
+<ul>
+<li>抢占：高优先消息是否立即替换正在显示的低优先消息；</li>
+<li>老化：等待越久是否逐渐提高有效优先级；</li>
+<li>防饥饿：低优先消息等待多久后必须获得机会。</li>
+</ul>
+<p>这些都是独立的产品与调度策略，不能由“使用了堆”自动推导。本学习单元默认不实现抢占和老化，只观察等待顺序。</p>
 <h2 id="工程上可以补强的点">工程上可以补强的点</h2>
 <p>这个实现已经足够完整；如果继续扩展，可以加入一个 <code>Peek</code>：</p>
-<pre><code class="language-csharp">public UITipConfig Peek()
+<pre><code class="language-csharp">public MessageConfig Peek()
 {
     return _heap.Count == 0 ? null : _heap[0];
 }</code></pre>
 <p>这样可以只看当前最高优先级，不弹出。</p>
 <p>另外，如果两个 Tips 的 <code>Priority</code> 相同，现在谁先出并不稳定。</p>
-<p>如果业务需要“同优先级先来先出”，可以给 <code>UITipConfig</code> 增加一个递增序号，比如 <code>SequenceId</code>，比较时变成：</p>
+<p>如果业务需要“同优先级先来先出”，可以给 <code>MessageConfig</code> 增加一个递增序号，比如 <code>SequenceId</code>，比较时变成：</p>
 <pre><code class="language-text">Priority 越大越靠前；
 Priority 相同，SequenceId 越小越靠前。</code></pre>
 <p>这就是工程里很常见的“主排序键 + 次排序键”。</p>

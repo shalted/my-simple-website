@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐步调试固定与临时标签来源账本，以及普通激活、预输入窗口和外部强制打断三套技能仲裁。">
+  <title>状态来源与技能仲裁 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/tag-arbitration.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/tag-arbitration.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / STATE ARBITRATION</span></a>
+    <nav aria-label="主导航">
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/工程设计/状态来源与技能仲裁/">完整文章</a>
+      <a href="/knowledge/ability-flow/">技能运行地图</a>
+      <a class="github-link" href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">SOURCE LEDGER × PHASED DECISION</p>
+        <h1>同一个状态，<br><em>谁有权撤销？</em></h1>
+        <p class="hero-intro">先用来源账本解释“状态为什么仍然存在”，再把普通激活、预输入窗口和外部强制打断分成三条决策轨道。</p>
+      </div>
+      <aside class="hero-rule">
+        <span>核心不变量</span>
+        <strong>查询可以聚合，清理必须按来源</strong>
+        <p>教学优先级只表示 LOW / MID / HIGH 的相对顺序，不对应任何产品数值。</p>
+      </aside>
+    </section>
+
+    <section class="model" aria-labelledby="model-title">
+      <div class="section-heading">
+        <div><p class="section-kicker">MENTAL MODEL</p><h2 id="model-title">先分清两个问题</h2></div>
+        <p>标签回答“现在是什么状态”，仲裁回答“新的请求怎样与当前运行冲突”。</p>
+      </div>
+      <div class="model-grid">
+        <article>
+          <span>01 / SOURCE</span>
+          <h3>来源账本</h3>
+          <p>固定集合与临时来源集合共同决定有效标签。一个来源退出，不代表同名状态失效。</p>
+          <code>effective = fixed || sources.size &gt; 0</code>
+        </article>
+        <article>
+          <span>02 / QUERY</span>
+          <h3>层级查询</h3>
+          <p>叶子标签可以满足父级查询，但账本仍保存精确标签与精确来源。</p>
+          <code>动作.施法 → satisfies("动作")</code>
+        </article>
+        <article>
+          <span>03 / DECISION</span>
+          <h3>阶段仲裁</h3>
+          <p>普通激活比较活动能力；窗口看阶段；外部强制打断按过滤条件选择目标。</p>
+          <code>route + phase + reason</code>
+        </article>
+      </div>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="状态来源与技能仲裁交互实验">
+      <div class="lab-toolbar">
+        <div class="scenario-tabs" role="group" aria-label="选择调试场景">
+          <button class="scenario-tab is-active" type="button" data-scenario="ledger" aria-pressed="true"><small>01 / LEDGER</small><span>来源账本</span></button>
+          <button class="scenario-tab" type="button" data-scenario="takeover" aria-pressed="false"><small>02 / DIRECT</small><span>高级接管</span></button>
+          <button class="scenario-tab" type="button" data-scenario="firstWins" aria-pressed="false"><small>03 / WINDOW</small><span>同级首个缓存</span></button>
+          <button class="scenario-tab" type="button" data-scenario="blocked" aria-pressed="false"><small>04 / REJECT</small><span>低级阻挡</span></button>
+          <button class="scenario-tab" type="button" data-scenario="postWindow" aria-pressed="false"><small>05 / PHASE</small><span>PostWindow</span></button>
+          <button class="scenario-tab" type="button" data-scenario="cleanup" aria-pressed="false"><small>06 / CLEANUP</small><span>来源清理冲突</span></button>
+        </div>
+        <div class="step-readout" aria-live="polite"><span id="step-label">STEP 01</span><strong id="step-count">1 / 6</strong></div>
+      </div>
+
+      <div class="route-strip" aria-label="仲裁轨道">
+        <div class="route-node" data-route="ledger"><b>A</b><span>来源账本</span><small>固定 + 临时来源</small></div>
+        <div class="route-node" data-route="direct"><b>B</b><span>普通激活</span><small>活动能力比较</small></div>
+        <div class="route-node" data-route="window"><b>C</b><span>预输入窗口</span><small>阶段优先</small></div>
+        <div class="route-node" data-route="external"><b>D</b><span>外部强制打断</span><small>区间 + 强度</small></div>
+      </div>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <div>
+            <p class="panel-label">CURRENT DECISION</p>
+            <p class="phase" id="phase">SOURCE / ADD</p>
+            <h2 id="step-title">固定状态进入账本</h2>
+            <p class="step-copy" id="step-copy">固定标签表示长期状态，不依赖临时运行实例。</p>
+          </div>
+          <div class="decision-box">
+            <span>本步改变</span>
+            <p id="step-change">fixed：空 → 可行动</p>
+          </div>
+          <div class="reason-box">
+            <span>为什么</span>
+            <p id="step-reason">先保留原始来源，聚合查询才不会丢失所有权。</p>
+          </div>
+          <div class="cost-box">
+            <span>代价 / 边界</span>
+            <p id="step-cost">写入 O(1)；查询还要考虑标签层级。</p>
+          </div>
+          <div class="result-banner" id="result-banner" data-tone="running">
+            <span>RESULT</span><strong id="result-text">账本已建立</strong>
+          </div>
+        </article>
+
+        <section class="state-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">LIVE STATE</p><h2>来源、队列与决策快照</h2></div>
+            <span class="scenario-note" id="scenario-note">教学标签：动作 / 动作.施法</span>
+          </div>
+
+          <div class="ledger-board">
+            <div class="tag-summary">
+              <span>QUERY TAG</span>
+              <strong id="query-tag">动作</strong>
+              <em id="effective-state" data-active="true">有效</em>
+            </div>
+            <div class="source-columns">
+              <article>
+                <h3>固定来源</h3>
+                <ul id="fixed-sources"></ul>
+              </article>
+              <article>
+                <h3>临时来源</h3>
+                <ul id="temporary-sources"></ul>
+              </article>
+            </div>
+          </div>
+
+          <dl class="decision-state">
+            <div><dt>轨道</dt><dd id="route-state">来源账本</dd></div>
+            <div><dt>阶段</dt><dd id="phase-state">—</dd></div>
+            <div><dt>当前能力</dt><dd id="current-state">—</dd></div>
+            <div><dt>输入</dt><dd id="incoming-state">—</dd></div>
+            <div><dt>排队</dt><dd id="queued-state">—</dd></div>
+            <div><dt>决策</dt><dd id="decision-state">记录来源</dd></div>
+          </dl>
+
+          <div class="trace">
+            <span>EVENT / REASON TRACE</span>
+            <ol id="event-trace"></ol>
+          </div>
+        </section>
+
+        <aside class="code-panel">
+          <div class="code-head">
+            <div><p class="panel-label">SYNCED PSEUDOCODE</p><h2 id="code-title">添加固定来源</h2></div>
+            <strong id="code-status">LEDGER</strong>
+          </div>
+          <ol class="code-lines" id="code-lines"></ol>
+          <p class="code-note">高亮行是本步执行的最小逻辑单元；代码保持三条仲裁轨道分离。</p>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="progress-wrap">
+          <div class="step-dots" id="step-dots" data-lab-dots aria-label="步骤进度"></div>
+          <label for="speed-seconds">自动播放 · 每步
+            <select id="speed-seconds" aria-describedby="speed-message">
+              <option value="3.5">慢速 3.5 秒</option>
+              <option value="2.5" selected>标准 2.5 秒</option>
+              <option value="1.5">较快 1.5 秒</option>
+            </select>
+          </label>
+          <span id="speed-message" role="status">标准速度，每 2.5 秒推进一步</span>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button type="button" id="auto-button" data-lab-control aria-pressed="false">▶ 自动播放</button>
+          <button class="next-button" type="button" id="next-button" data-lab-control>下一步 →</button>
+        </div>
+        <p class="keyboard-help">键盘：← / → 单步，空格暂停或继续，R 重置。焦点位于输入控件时不会拦截。</p>
+      </div>
+      <p class="sr-only" id="live-announcement" aria-live="polite"></p>
+    </section>
+
+    <section class="boundaries">
+      <div class="section-heading">
+        <div><p class="section-kicker">BOUNDARIES</p><h2>两项不能写成保证</h2></div>
+      </div>
+      <div class="boundary-grid">
+        <article>
+          <span>UNRESOLVED 01</span>
+          <h3>临时 Add 通知</h3>
+          <p>账本写入后直接查询能够看到状态，但事件订阅者是否一定收到聚合 Add 通知，需要由具体通知路径验证。</p>
+        </article>
+        <article>
+          <span>UNRESOLVED 02</span>
+          <h3>层级提升清理</h3>
+          <p>若“是否存在”使用层级匹配，而“删除”只按精确标签，临时提升为固定状态时可能留下来源记录。</p>
+        </article>
+        <article>
+          <span>SEPARATE ROUTE</span>
+          <h3>外部强制打断</h3>
+          <p>它按目标区间与强度提交取消，不代表一个新技能通过了普通激活，更不创建接管实例。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="decision-matrix">
+      <div class="section-heading">
+        <div><p class="section-kicker">PHASE MATRIX</p><h2>预输入窗口不等于优先级绕过</h2></div>
+      </div>
+      <div class="matrix-wrap">
+        <table>
+          <thead><tr><th>阶段</th><th>更高输入</th><th>同级输入</th><th>更低输入</th></tr></thead>
+          <tbody>
+            <tr><th>InWindow</th><td>请求取消</td><td>首个缓存</td><td>首个缓存</td></tr>
+            <tr class="accent-row"><th>PostWindow</th><td>取消并排队</td><td>取消并排队</td><td>取消并排队</td></tr>
+            <tr><th>AwaitingRelease</th><td>替换队列</td><td>拒绝替换</td><td>拒绝替换</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

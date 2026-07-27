@@ -235,7 +235,7 @@ heapPlayer = window.XianyuInteractiveLab.createStepPlayer({
     dotPast: "is-past"
   },
   renderStep: render,
-  onModeChange: () => {}
+  onModeChange: ({ mode }) => { refs.auto.setAttribute("aria-pressed", String(mode === "auto")); }
 });
 
 document.querySelectorAll("[data-scenario]").forEach((button) => {
@@ -249,3 +249,45 @@ document.querySelectorAll("[data-scenario]").forEach((button) => {
     heapPlayer.replaceSteps(scenarios[scenarioName].steps);
   });
 });
+(() => {
+  "use strict";
+  const $ = (selector) => document.querySelector(selector);
+  const code = {
+    fifo:["waiting.enqueue(message);","next = waiting.dequeue();","active.show(next);"],
+    heap:["heap.add(message);","bubbleUp(heap.length - 1);","next = heap.removeMax();","active.show(next);"],
+    stable:["key = (priority DESC, sequence ASC);","heap.add({ message, key });","next = heap.removeMax();"],
+    disconnected:["priorityHeap.add(message);","// 展示端仍消费旧 FIFO","next = fifo.dequeue();","active.show(next);"]
+  };
+  const msg=(name,p,s)=>({name,priority:p,sequence:s});
+  const state=(o={})=>Object.assign({waiting:[],active:[],pool:[],heap:[],swaps:0,events:[],status:"READY",created:0,reused:0},o);
+  const step=(phase,title,copy,change,why,state,codeKey,lines)=>({phase,title,copy,change,why,state,codeKey,lines});
+  const common=[msg("普通提示 A",1,1),msg("紧急提示 B",9,2),msg("同级提示 C",5,3),msg("同级提示 D",5,4)];
+  const modes={
+    fifo:{problem:"真实现状使用两级 FIFO，Priority 不进入展示消费点。",steps:[
+      step("01 / ARRIVE","消息按到达顺序进入 FIFO","四条教学消息依次到达；Priority 只是随消息展示，不参与队列比较。","等待区顺序为 A → B → C → D。","FIFO 只关心 sequence。",state({waiting:common,events:["入口 FIFO 收到 4 条消息"],created:1}),"fifo",[0]),
+      step("02 / DEQUEUE","最早到达的 A 先显示","即使 B 的优先级更高，展示端仍从 FIFO 队首取 A。","A 进入活动区，等待区剩 B、C、D。","真实可见顺序由消费的数据结构决定。",state({waiting:common.slice(1),active:[common[0]],events:["dequeue A","show A"],status:"FIFO → A",created:1}),"fifo",[1,2]),
+      step("03 / RECYCLE","A 到期并回对象池","活动消息结束后，视图重置并回池；下一条仍是 B。","活动区清空，对象池 +1。","对象池管理视图身份，不改变消息调度顺序。",state({waiting:common.slice(1),pool:["view#1"],events:["expire A","view#1 recycle"],status:"RECYCLED",created:1}),"fifo",[2])
+    ]},
+    heap:{problem:"Priority-only 最大堆能先取最高优先级，但同级顺序没有稳定保证。",steps:[
+      step("01 / INSERT","消息进入最大堆","按 A、B、C、D 插入，B 上浮到堆顶。","堆数组形成 [B, D, C, A]，发生 2 次交换。","最大堆只保证父节点不小于孩子，不保证完整有序。",state({waiting:common,heap:[common[1],common[3],common[2],common[0]],swaps:2,events:["B 与 A 交换","D 与 A 交换"],created:1}),"heap",[0,1]),
+      step("02 / MAX","最高优先级 B 先显示","调度器从堆顶取 B，末尾补位后向下修复。","B 进入活动区，堆恢复。","堆必须成为展示端的实际消费点，Priority 才可见。",state({waiting:[common[3],common[0],common[2]],active:[common[1]],heap:[common[3],common[0],common[2]],swaps:2,events:["removeMax → B","show B"],status:"HEAP → B",created:1}),"heap",[2,3]),
+      step("03 / TIE","C 与 D 同级不保证 FIFO","Priority-only 比较器看不到 sequence；当前堆让 D 位于 C 前面。","下一条可能是 D，而 C 更早到达。","没有次排序键，就不能承诺同优先级先进先出。",state({waiting:[common[3],common[0],common[2]],pool:["view#1"],heap:[common[3],common[0],common[2]],swaps:2,events:["同级 C(seq3) / D(seq4)","顺序不稳定"],status:"TIE UNSTABLE",created:1}),"heap",[1,2])
+    ]},
+    stable:{problem:"既要高优先级先显示，又要同级保持到达顺序，需要第二比较键。",steps:[
+      step("01 / KEY","分配单调递增 sequence","消息入队时保存 priority 与 sequence；比较器先看优先级，再让较小 sequence 胜出。","C(seq3) 排在 D(seq4) 前。","稳定性来自明确比较键，不来自堆本身。",state({waiting:common,heap:[common[1],common[3],common[2],common[0]],swaps:2,events:["key=(priority, -sequence)"],created:1}),"stable",[0,1]),
+      step("02 / HIGH FIRST","B 先显示","最高优先级 B 从堆顶移出。","活动区显示 B。","主排序键仍是 Priority。",state({waiting:[common[2],common[3],common[0]],active:[common[1]],heap:[common[2],common[3],common[0]],swaps:3,events:["removeMax → B"],status:"STABLE → B",created:1}),"stable",[2]),
+      step("03 / STABLE TIE","同级 C 先于 D","B 到期后，C 与 D Priority 相同，sequence 更小的 C 胜出。","可见顺序 B → C → D → A。","这是教学稳定策略，不代表当前运行链已经采用。",state({waiting:[common[3],common[0]],active:[common[2]],pool:["view#1"],heap:[common[3],common[0]],swaps:3,events:["tie: seq3 < seq4","show C"],status:"TIE STABLE",created:1,reused:1}),"stable",[0,2])
+    ]},
+    disconnected:{problem:"只创建优先堆但不修改展示消费点，优先级不会改变可见顺序。",steps:[
+      step("01 / PARALLEL","堆与 FIFO 同时收消息","教学中的新堆把 B 放到堆顶，但旧 FIFO 仍保存 A、B、C、D。","堆数组看起来正确，消费链尚未改变。","结构存在不等于结构被消费。",state({waiting:common,heap:[common[1],common[3],common[2],common[0]],swaps:2,events:["heap top = B","fifo head = A"],status:"NOT CONNECTED",created:1}),"disconnected",[0,1]),
+      step("02 / WRONG CONSUMER","展示仍从 FIFO 取 A","调度器没有接入堆，最终执行的仍是 fifo.dequeue()。","高优先 B 留在等待区，A 进入活动区。","判断功能是否生效要追到最终消费点。",state({waiting:common.slice(1),active:[common[0]],heap:[common[1],common[3],common[2],common[0]],swaps:2,events:["失败：heap 未被读取","fifo.dequeue → A"],status:"FAIL → A",created:1}),"disconnected",[1,2,3]),
+      step("03 / EVIDENCE","Priority 改变但顺序不变","把 B 的 Priority 再提高，堆顶仍是 B；展示已经显示 A。","可见结果证明优先级链路未接通。","测试应观察用户可见出队顺序，而不只检查堆数组。",state({waiting:common.slice(1),pool:["view#1"],heap:[msg("紧急提示 B",99,2),common[3],common[2],common[0]],swaps:2,events:["Priority B: 9 → 99","visible order unchanged"],status:"FAILURE CONFIRMED",created:1}),"disconnected",[0,2])
+    ]}
+  };
+  const refs={tabs:[...document.querySelectorAll("[data-schedule]")],phase:$("#schedule-phase"),title:$("#schedule-title"),copy:$("#schedule-copy"),change:$("#schedule-change"),why:$("#schedule-why"),status:$("#schedule-status"),waiting:$("#schedule-waiting"),active:$("#schedule-active"),pool:$("#schedule-pool"),heap:$("#schedule-heap"),events:$("#schedule-events"),metrics:$("#schedule-metrics"),codeStatus:$("#schedule-code-status"),codeLines:$("#schedule-code-lines"),speed:$("#schedule-speed"),dots:$("#schedule-dots"),reset:$("#schedule-reset"),prev:$("#schedule-prev"),auto:$("#schedule-auto"),next:$("#schedule-next")};
+  let mode="fifo",player;
+  const renderMessages=(target,items)=>{target.replaceChildren();(items.length?items:[null]).forEach(item=>{const li=document.createElement("li");if(item===null){li.textContent="空"}else if(typeof item==="string"){li.innerHTML=`<span>${item}</span><small>idle</small>`}else{li.innerHTML=`<span>${item.name}</span><small>P${item.priority} · S${item.sequence}</small>`}target.append(li)})};
+  function render({step:item,index,total}){const s=item.state;refs.phase.textContent=item.phase;refs.title.textContent=item.title;refs.copy.textContent=item.copy;refs.change.textContent=item.change;refs.why.textContent=item.why;refs.status.textContent=s.status;renderMessages(refs.waiting,s.waiting);renderMessages(refs.active,s.active);renderMessages(refs.pool,s.pool);refs.heap.textContent=s.heap.length?`[${s.heap.map(m=>`${m.name.slice(-1)}:P${m.priority}/S${m.sequence}`).join(", ")}]`:"未接入 / 空";refs.events.replaceChildren();s.events.forEach(value=>{const li=document.createElement("li");li.textContent=value;if(value.includes("失败"))li.classList.add("is-error");refs.events.append(li)});const rows=[["当前策略",mode],["等待消息",s.waiting.length],["活动消息",s.active.length],["池内视图",s.pool.length],["堆交换",s.swaps],["创建视图",s.created],["复用视图",s.reused],["步骤",`${index+1}/${total}`]];refs.metrics.replaceChildren();rows.forEach(([k,v])=>{const div=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=k;dd.textContent=v;div.append(dt,dd);refs.metrics.append(div)});refs.codeLines.replaceChildren();code[item.codeKey].forEach((line,i)=>{const li=document.createElement("li");li.textContent=line;li.classList.toggle("is-active",item.lines.includes(i));refs.codeLines.append(li)});refs.codeStatus.textContent=item.codeKey.toUpperCase()}
+  function create(){if(player)player.destroy();player=window.XianyuInteractiveLab.createStepPlayer({steps:modes[mode].steps,autoStepMs:Number(refs.speed.value),endBehavior:"disable",dotElement:"button",dotsInteractive:true,controls:{previous:refs.prev,next:refs.next,auto:refs.auto,reset:refs.reset,dots:refs.dots},labels:{play:"自动演示",pause:"暂停",complete:"演示完成",next:"下一步 →",done:"已完成",dot:(i,t)=>`跳到第 ${i+1} 步，共 ${t} 步`},classes:{playing:"is-playing",dot:"step-dot",dotActive:"is-active",dotPast:"is-past"},renderStep:render,onModeChange:({mode})=>{refs.auto.setAttribute("aria-pressed",String(mode==="auto"))}})}
+  refs.tabs.forEach(button=>button.addEventListener("click",()=>{mode=button.dataset.schedule;refs.tabs.forEach(tab=>{const on=tab===button;tab.classList.toggle("is-active",on);tab.setAttribute("aria-pressed",String(on))});create()}));refs.speed.addEventListener("change",create);create();
+})();

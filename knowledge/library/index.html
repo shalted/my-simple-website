@@ -26,7 +26,7 @@
 
   <main>
     <section class="library-hero knowledge-shell">
-      <div class="eyebrow">KNOWLEDGE LIBRARY / 33 NOTES</div>
+      <div class="eyebrow">KNOWLEDGE LIBRARY / 36 NOTES</div>
       <h1>把知识变成<br>可探索的系统</h1>
       <p class="hero-copy">算法、数据结构、游戏 AI 与工程设计。普通笔记用于系统阅读，重点主题配有可单步调试的交互实验。</p>
       <div class="library-search">
@@ -76,6 +76,21 @@
           <div><h3>UI 页面栈与面板池</h3><p>拆解打开、覆盖、返回、复用、绑定清理和旧回调冲突。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
+        <a class="feature-card" href="/knowledge/tag-arbitration/">
+          <small>STATE SOURCE / ARBITRATION</small>
+          <div><h3>状态来源与技能仲裁</h3><p>用来源账本和阶段矩阵拆解标签聚合、激活阻挡、预输入与打断清理。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/projectile-motion/">
+          <small>PROJECTILE / MOTION FEEDBACK</small>
+          <div><h3>命中后的运动与投射物</h3><p>沿运动策略、扫掠命中、击退曲线、碰撞反馈和终态清理逐步调试。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/dirty-attribute/">
+          <small>DIRTY FLAGS / LOCAL RECOMPUTE</small>
+          <div><h3>属性脏标记与局部重算</h3><p>观察实体粗筛、属性精筛、同帧合并、即时刷新和失效引用清理。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
         <a class="feature-card" href="/#lab">
           <small>PATHFINDING / STEP DEBUG</small>
           <div><h3>A* 寻路</h3><p>逐步观察代价、Open / Closed 集合与 Parent 回溯。</p></div>
@@ -112,7 +127,7 @@
       <div class="section-heading"><h2>专题地图</h2><span>7 CATEGORIES</span></div>
       <div class="category-grid">
       <a class="category-card" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">
-        <small>12 NOTES</small>
+        <small>14 NOTES</small>
         <h3>工程设计</h3>
         <span class="card-arrow">进入专题 →</span>
       </a>
@@ -127,7 +142,7 @@
         <span class="card-arrow">进入专题 →</span>
       </a>
       <a class="category-card" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">
-        <small>04 NOTES</small>
+        <small>05 NOTES</small>
         <h3>游戏逻辑常用模式</h3>
         <span class="card-arrow">进入专题 →</span>
       </a>
@@ -148,7 +163,7 @@
       </a></div>
     </section>
     <section class="section knowledge-shell">
-      <div class="section-heading"><h2>全部笔记</h2><span>33 ARTICLES</span></div>
+      <div class="section-heading"><h2>全部笔记</h2><span>36 ARTICLES</span></div>
       <div class="article-grid">
       <a class="article-card" data-article-card data-search="对象池 工程设计 游戏里有很多对象会频繁创建和销毁：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">
         <small>工程设计</small>
@@ -163,6 +178,14 @@
         <div>
           <h3>门面模式与泛型消重</h3>
           <p>GAS / ECS 这类系统内部通常很复杂：</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="命中后的运动与投射物 工程设计 一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%B8%AD%E5%90%8E%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E6%8A%95%E5%B0%84%E7%89%A9/">
+        <small>工程设计</small>
+        <div>
+          <h3>命中后的运动与投射物</h3>
+          <p>一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
@@ -214,6 +237,14 @@
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
+      <a class="article-card" data-article-card data-search="状态来源与技能仲裁 工程设计 “角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%8A%B6%E6%80%81%E6%9D%A5%E6%BA%90%E4%B8%8E%E6%8A%80%E8%83%BD%E4%BB%B2%E8%A3%81/">
+        <small>工程设计</small>
+        <div>
+          <h3>状态来源与技能仲裁</h3>
+          <p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
       <a class="article-card" data-article-card data-search="资源生命周期统一管理 工程设计 资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、owner 矩阵和最终释放，可进入资源作用域与引用释放。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">
         <small>工程设计</small>
         <div>
@@ -246,11 +277,11 @@
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
-      <a class="article-card" data-article-card data-search="二叉堆优先队列 数据结构 优先队列适合解决这类问题：ui 提示有不同优先级，每次都应该先弹出优先级最高的那个。" href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
+      <a class="article-card" data-article-card data-search="二叉堆优先队列 数据结构 优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。" href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
         <small>数据结构</small>
         <div>
           <h3>二叉堆优先队列</h3>
-          <p>优先队列适合解决这类问题：UI 提示有不同优先级，每次都应该先弹出优先级最高的那个。</p>
+          <p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
@@ -315,6 +346,14 @@
         <div>
           <h3>时间控制小模式：冷却、计时器、延迟与 Tick</h3>
           <p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="属性脏标记与局部重算 游戏逻辑常用模式 属性系统常同时保存两类值：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E5%B1%9E%E6%80%A7%E8%84%8F%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B1%80%E9%83%A8%E9%87%8D%E7%AE%97/">
+        <small>游戏逻辑常用模式</small>
+        <div>
+          <h3>属性脏标记与局部重算</h3>
+          <p>属性系统常同时保存两类值：</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>

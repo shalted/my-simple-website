@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐步观察实体粗筛、属性精筛、同帧合并、即时重算与失效引用清理。">
+  <title>属性脏标记与局部重算 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/dirty-attribute.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/dirty-attribute.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a><nav aria-label="主导航"><a href="/knowledge/library/">知识库</a><a href="/knowledge/systems-lab/">系统实验室</a><a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a></nav></header>
+  <main>
+    <section class="hero"><div><span class="eyebrow">COARSE FILTER / PRECISE REBUILD</span><h1>先找到脏实体，<br>再只算<em>脏属性</em>。</h1></div><p>页面中的数值都是教学场景数据。用两级标记把重复写入合并成一次局部重算，并在必须立即读取时只刷新一个属性。</p></section>
+    <section class="lab" data-interactive-lab tabindex="0" aria-label="属性脏标记与局部重算交互实验">
+      <div class="lab-head"><div><span class="panel-label">DIRTY ATTRIBUTE PIPELINE</span><h2>标记、聚合、提交与通知</h2></div><div class="step-readout"><span id="step-label"></span><strong id="step-count"></strong></div></div>
+      <div class="case-tabs" role="group" aria-label="教学场景">
+        <button class="case-tab is-active" data-case="normal" type="button" aria-pressed="true">正常局部重算</button>
+        <button class="case-tab" data-case="merge" type="button" aria-pressed="false">同帧合并与即时读</button>
+        <button class="case-tab" data-case="failure" type="button" aria-pressed="false">两级标记缺一</button>
+        <button class="case-tab" data-case="conflict" type="button" aria-pressed="false">失效引用冲突</button>
+      </div>
+      <section class="lenses"><article><span>PROBLEM</span><p id="problem"></p></article><article><span>MECHANISM</span><p id="mechanism"></p></article><article><span>BOUNDARY</span><p id="boundary"></p></article><article><span>COMPLEXITY</span><p id="cost"></p></article></section>
+      <div class="lab-grid">
+        <article class="explain"><span class="phase" id="phase"></span><h2 id="title"></h2><p id="copy"></p><div class="change"><span>这一步改变了什么</span><p id="change"></p></div><div class="why"><span>WHY</span><p id="why"></p></div><a href="/knowledge/library/游戏逻辑常用模式/属性脏标记与局部重算/">阅读完整原理 →</a></article>
+        <section class="visual">
+          <header class="visual-head"><div><span class="panel-label">CURRENT ENTITY</span><h2>两级脏标记</h2></div><strong id="status"></strong></header>
+          <div class="entity-gate"><span>ENTITY DIRTY</span><strong id="entity-dirty"></strong><small id="gate-copy"></small></div>
+          <div class="attribute-grid" id="attributes"></div>
+          <div class="effect-panel"><span>ACTIVE MODIFIERS / EFFECT REFERENCES</span><ul id="effects"></ul></div>
+          <ol class="event-log" id="events"></ol>
+        </section>
+        <aside class="inspect"><span class="panel-label">KEY STATE</span><dl id="metrics"></dl><div class="code"><div><span>同步伪代码</span><strong id="code-status"></strong></div><ol id="code-lines"></ol></div></aside>
+      </div>
+      <div class="controls"><label>自动速度<select id="speed"><option value="3200">慢 · 3.2s</option><option value="2200" selected>标准 · 2.2s</option><option value="1400">快 · 1.4s</option></select></label><div id="dots" data-lab-dots></div><div><button id="reset" type="button" data-lab-control>重置</button><button id="previous" type="button" data-lab-control>← 上一步</button><button class="auto-button" id="auto" type="button" data-lab-control aria-pressed="false">自动演示</button><button class="next-button" id="next" type="button" data-lab-control>下一步 →</button></div></div>
+      <p class="keyboard-hint">键盘：← / → 单步，空格暂停或继续。焦点位于输入控件时不会拦截按键。</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -432,6 +432,30 @@ function interactiveCallout(document) {
         <p><a href="/knowledge/ui-stack-pool/">打开页面栈实验 →</a></p>
       </aside>`;
   }
+  if (/状态来源与技能仲裁|标签来源|打断优先级/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套来源与仲裁实验</strong>
+        <span>观察固定状态、临时来源、层级查询，以及普通激活、预输入窗口和外部强制打断的分轨决策。</span>
+        <p><a href="/knowledge/tag-arbitration/">打开技能仲裁实验 →</a></p>
+      </aside>`;
+  }
+  if (/命中后的运动与投射物|投射物|击退曲线/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套运动反馈实验</strong>
+        <span>逐步观察追踪与穿透、扫掠命中历史、目标丢失、击退曲线和碰撞反馈后的清理。</span>
+        <p><a href="/knowledge/projectile-motion/">打开运动与投射物实验 →</a></p>
+      </aside>`;
+  }
+  if (/属性脏标记|局部重算/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套局部重算实验</strong>
+        <span>拆开实体粗筛与属性精筛，比较同帧合并、即时读取、两级缺标和失效引用清理。</span>
+        <p><a href="/knowledge/dirty-attribute/">打开属性重算实验 →</a></p>
+      </aside>`;
+  }
   if (/目标筛选|命中判定/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -657,6 +681,7 @@ function renderTimelineLab() {
         </div>
         <div class="timeline-lab__settings">
           <label>总帧数<input data-timeline-length type="number" min="1" max="120" value="15" inputmode="numeric"></label>
+          <label>Flow 起播帧<input data-timeline-start-frame type="number" min="0" max="14" value="0" inputmode="numeric" disabled></label>
           <label>演示速度（网页帧/秒）<input data-timeline-demo-speed type="number" min="1" max="30" value="6" inputmode="numeric"></label>
         </div>
       </header>
@@ -704,10 +729,35 @@ function renderTimelineLab() {
           </div>
         </section>
       </div>
+      <div class="timeline-runtime" aria-label="Timeline 宿主与清理扩展">
+        <section class="timeline-runtime__tasks">
+          <header><span>HOST ADAPTER</span><button type="button" data-timeline-host aria-pressed="false">独立 Timeline</button></header>
+          <div data-timeline-host-state></div>
+        </section>
+        <section class="timeline-runtime__tasks">
+          <header><span>FLOW SCOPED TASK</span><button type="button" data-timeline-scope-finish>演示正常清理</button><button type="button" data-timeline-scope-cancel>演示取消清理</button></header>
+          <div data-timeline-scope-state></div>
+        </section>
+        <section class="timeline-runtime__tasks">
+          <header><span>CONTROL LOCK OWNERS</span><button type="button" data-timeline-lock-a aria-pressed="false">来源 A</button><button type="button" data-timeline-lock-b aria-pressed="false">来源 B</button></header>
+          <div data-timeline-lock-state></div>
+        </section>
+      </div>
+      <details data-timeline-boundaries>
+        <summary>展开运行边界：节点预算、断链、命令桥与 Dispose</summary>
+        <ul>
+          <li>Flow 可在同一次 Tick 连续通过多个立即完成节点，但必须受安全预算约束；耗尽预算时取消，避免同步死循环。</li>
+          <li>当前运行模型中，“没有下一节点”和“下一节点引用找不到”都会结束宿主；未知节点执行器与显式取消才进入取消终态。</li>
+          <li>命令桥提交失败不会自动阻止宿主启动。失败保持可见，本实验不伪造重试、默认成功或静默补偿。</li>
+          <li>普通 Timeline Clip 只展示 Finish / Interrupt；只有明确由 Flow 作用域托管的 Task 才在终态后展示 Dispose。</li>
+        </ul>
+      </details>
       <footer class="timeline-lab__controls">
         <button type="button" data-timeline-reset data-lab-control>重置数据</button><button type="button" data-timeline-prev data-lab-control>← 上一帧</button>
         <button class="is-primary" type="button" data-timeline-play data-lab-control aria-pressed="false">自动播放</button><button type="button" data-timeline-next data-lab-control>下一帧 →</button>
-        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button type="button" data-timeline-same-frame data-lab-control aria-pressed="false">同帧命中：已关闭</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
+        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button type="button" data-timeline-same-frame data-lab-control aria-pressed="false">同帧命中：已关闭</button>
+        <button type="button" data-timeline-loop data-lab-control aria-pressed="false" disabled>Flow 循环：已关闭</button><button type="button" data-timeline-loop-marker data-lab-control aria-pressed="true" disabled>循环锚点：动作标记</button>
+        <button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
       </footer>
     </section>`;
 }
@@ -892,6 +942,21 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/ui-stack-pool/">
           <small>UI / STACK &amp; POOL</small>
           <div><h3>UI 页面栈与面板池</h3><p>拆解打开、覆盖、返回、复用、绑定清理和旧回调冲突。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/tag-arbitration/">
+          <small>STATE SOURCE / ARBITRATION</small>
+          <div><h3>状态来源与技能仲裁</h3><p>用来源账本和阶段矩阵拆解标签聚合、激活阻挡、预输入与打断清理。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/projectile-motion/">
+          <small>PROJECTILE / MOTION FEEDBACK</small>
+          <div><h3>命中后的运动与投射物</h3><p>沿运动策略、扫掠命中、击退曲线、碰撞反馈和终态清理逐步调试。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/dirty-attribute/">
+          <small>DIRTY FLAGS / LOCAL RECOMPUTE</small>
+          <div><h3>属性脏标记与局部重算</h3><p>观察实体粗筛、属性精筛、同帧合并、即时刷新和失效引用清理。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
         <a class="feature-card" href="/#lab">

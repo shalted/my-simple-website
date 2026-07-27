@@ -44,8 +44,10 @@
     <a data-toc-link href="#第六步-把配置编译成运行时快照">第六步：把配置编译成运行时快照</a>
     <a data-toc-link href="#第七步-启动时建立只读索引">第七步：启动时建立只读索引</a>
     <a data-toc-link href="#第八步-激活时创建播放实例">第八步：激活时创建播放实例</a>
+    <a class="sub" data-toc-link href="#一个生命周期核心-两种宿主适配">一个生命周期核心，两种宿主适配</a>
     <a data-toc-link href="#第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</a>
     <a data-toc-link href="#第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</a>
+    <a class="sub" data-toc-link href="#flow-作用域-task-还要经过-dispose">Flow 作用域 Task 还要经过 Dispose</a>
     <a data-toc-link href="#第十一步-task-只发语义命令">第十一步：Task 只发语义命令</a>
     <a data-toc-link href="#第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</a>
     <a data-toc-link href="#把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</a>
@@ -63,6 +65,7 @@
         </div>
         <div class="timeline-lab__settings">
           <label>总帧数<input data-timeline-length type="number" min="1" max="120" value="15" inputmode="numeric"></label>
+          <label>Flow 起播帧<input data-timeline-start-frame type="number" min="0" max="14" value="0" inputmode="numeric" disabled></label>
           <label>演示速度（网页帧/秒）<input data-timeline-demo-speed type="number" min="1" max="30" value="6" inputmode="numeric"></label>
         </div>
       </header>
@@ -110,10 +113,35 @@
           </div>
         </section>
       </div>
+      <div class="timeline-runtime" aria-label="Timeline 宿主与清理扩展">
+        <section class="timeline-runtime__tasks">
+          <header><span>HOST ADAPTER</span><button type="button" data-timeline-host aria-pressed="false">独立 Timeline</button></header>
+          <div data-timeline-host-state></div>
+        </section>
+        <section class="timeline-runtime__tasks">
+          <header><span>FLOW SCOPED TASK</span><button type="button" data-timeline-scope-finish>演示正常清理</button><button type="button" data-timeline-scope-cancel>演示取消清理</button></header>
+          <div data-timeline-scope-state></div>
+        </section>
+        <section class="timeline-runtime__tasks">
+          <header><span>CONTROL LOCK OWNERS</span><button type="button" data-timeline-lock-a aria-pressed="false">来源 A</button><button type="button" data-timeline-lock-b aria-pressed="false">来源 B</button></header>
+          <div data-timeline-lock-state></div>
+        </section>
+      </div>
+      <details data-timeline-boundaries>
+        <summary>展开运行边界：节点预算、断链、命令桥与 Dispose</summary>
+        <ul>
+          <li>Flow 可在同一次 Tick 连续通过多个立即完成节点，但必须受安全预算约束；耗尽预算时取消，避免同步死循环。</li>
+          <li>当前运行模型中，“没有下一节点”和“下一节点引用找不到”都会结束宿主；未知节点执行器与显式取消才进入取消终态。</li>
+          <li>命令桥提交失败不会自动阻止宿主启动。失败保持可见，本实验不伪造重试、默认成功或静默补偿。</li>
+          <li>普通 Timeline Clip 只展示 Finish / Interrupt；只有明确由 Flow 作用域托管的 Task 才在终态后展示 Dispose。</li>
+        </ul>
+      </details>
       <footer class="timeline-lab__controls">
         <button type="button" data-timeline-reset data-lab-control>重置数据</button><button type="button" data-timeline-prev data-lab-control>← 上一帧</button>
         <button class="is-primary" type="button" data-timeline-play data-lab-control aria-pressed="false">自动播放</button><button type="button" data-timeline-next data-lab-control>下一帧 →</button>
-        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button type="button" data-timeline-same-frame data-lab-control aria-pressed="false">同帧命中：已关闭</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
+        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button type="button" data-timeline-same-frame data-lab-control aria-pressed="false">同帧命中：已关闭</button>
+        <button type="button" data-timeline-loop data-lab-control aria-pressed="false" disabled>Flow 循环：已关闭</button><button type="button" data-timeline-loop-marker data-lab-control aria-pressed="true" disabled>循环锚点：动作标记</button>
+        <button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
       </footer>
     </section>
         <p>分类：工程设计</p>
@@ -414,6 +442,35 @@ ActivationResult Activate(string timelineId)
 }</code></pre>
 <p>模板中的四个 <code>CompiledClip</code> 会得到四个独立 Task 实例。两个实体同时播放同一个模板时，它们共享只读配置，但各自拥有 <code>currentFrame</code>、生命周期标记和实体上下文。这里的 <code>globalLogicFrameRate</code> 来自系统级调度配置，不是 Timeline 文档字段；页面上的“演示速度”也只控制网页自动播放节奏。</p>
 <p>部分 Task 的真实持续时间可能由曲线或资源长度决定，因此允许 Task 在实例化阶段修正结束帧，但修正结果只能属于本次运行时 Clip。</p>
+<h3 id="一个生命周期核心-两种宿主适配">一个生命周期核心，两种宿主适配</h3>
+<p>Clip 的 Begin、Tick、Finish、Interrupt 不需要因为上层流程不同而重写；变化的是“谁拥有播放器、从哪里开始、完成后通知谁”。</p>
+<table><thead><tr>
+<th>适配方式</th>
+<th>起播位置</th>
+<th>完成后的去向</th>
+<th>循环责任</th>
+</tr></thead><tbody>
+<tr>
+<td>独立 Timeline</td>
+<td>固定从第 0 帧建立实例</td>
+<td>直接结束当前宿主</td>
+<td>不在该适配层循环</td>
+</tr>
+<tr>
+<td>Flow 宿主</td>
+<td>可从指定 <code>startFrame</code> 建立本轮运行</td>
+<td>把完成结果交还当前流程节点</td>
+<td>流程上下文保存循环模板与重播锚点</td>
+</tr>
+</tbody></table>
+<p>从指定帧开始，不等于先偷偷执行前面的所有帧。已经在起播帧之前结束的 Clip 保持未开始；仍然跨越起播帧的 Clip 会在该帧补 Begin，然后继续 Tick。这样恢复的是“从此刻应当有效的状态”，不是伪造完整历史。</p>
+<pre><code class="language-pseudo">runStart = host == Flow ? requestedStartFrame : 0
+currentFrame = runStart - 1
+
+for each frame from runStart:
+    if clip has not begun and frame is inside clip.range:
+        clip.begin(frame)  // 从中段起播时允许晚 Begin</code></pre>
+<p>循环重播也需要明确锚点。本页只从有限、已识别的循环表现标记中选择最早开始帧；没有这种标记时明确回到第 0 帧，不从任意逻辑 Clip 的名字或外观猜测锚点。这个规则属于 Flow 适配边界，不是 Timeline 文档的新字段。</p>
 <h2 id="第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</h2>
 <p>播放器通常把真实时间转换成逻辑帧。一次渲染帧可能跨过多个逻辑帧，因此不能只处理目标帧，必须依次补齐中间帧。</p>
 <ul>
@@ -501,6 +558,11 @@ if frame == clip.end and not clip.finished:
     state = PlayerState.Interrupted;
 }</code></pre>
 <p>把 <code>Finished</code> 设为 true 是为了阻止同一个 Task 在后续销毁流程里再次清理。正常完成与中断可以产生不同业务结果，但二者都必须释放持续状态。</p>
+<h3 id="flow-作用域-task-还要经过-dispose">Flow 作用域 Task 还要经过 Dispose</h3>
+<p>Flow 作用域 Task 与普通 Timeline Clip 是两类所有权。作用域 Task 在创建时登记到当前流程上下文，宿主退出时按相反顺序统一处理：</p>
+<pre><code class="language-text">正常结束：Begin → Finish → Dispose
+显式取消：Begin → Interrupt → Dispose</code></pre>
+<p>Finish 或 Interrupt 负责语义清理，Dispose 负责释放由流程作用域持有的对象资源。两步不能合成一个模糊的“清掉”。页面实验中的 FLOW SCOPED TASK 面板只说明这一条明确的托管路径；普通 Clip 只展示 Finish 或 Interrupt，不能据此宣称所有 Timeline Task 都会自动 Dispose。</p>
 <h2 id="第十一步-task-只发语义命令">第十一步：Task 只发语义命令</h2>
 <p>Task 不应直接操纵具体角色控制器。它只表达“想做什么”，通过桥接层提交带有实体目标、来源标识和参数的语义命令。</p>
 <ul>
@@ -613,6 +675,8 @@ sealed class HitRuntimeTask : IRuntimeTask
 <li>实体组件是否因优先级、锁或状态拒绝</li>
 <li>最终执行结果是否符合请求</li>
 </ol>
+<p>页面折叠边界卡还保留四个不能被成功路径掩盖的事实：Flow 在同一次 Tick 连续推进节点时必须有安全预算；没有下一节点与找不到下一节点引用在当前运行模型中都会结束宿主；命令桥返回失败不会自动阻止宿主启动；普通 Clip 的生命周期结束不能泛化为对象已经 Dispose。这里不添加重试、默认成功或断链转取消之类未经确认的补偿。</p>
+<p>控制锁同样不是一个布尔值。它保存来源集合：A 与 B 同时持有时，释放 A 后集合仍有 B，控制必须继续锁定；只有最后一个来源离开才恢复。页面的 CONTROL LOCK OWNERS 面板可以逐个获取和释放两个来源，直接观察这个差异。</p>
 <p>最重要的原则是：Timeline 负责确定性顺序，Task 负责翻译意图，实体组件负责世界规则。三层各自可观察，问题才不会全部堆进一个巨大的播放器。</p>
 <h2 id="把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</h2>
 <p>现在把编辑器导出的四个 Clip 放回同一条时间线上，就能看到数据如何一步步变成实体行为：</p>

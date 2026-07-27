@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐步调试投射物生成、运动、平面胶囊扫掠、命中历史、效果与击退，以及累计曲线求差和受阻提前停止。">
+  <title>命中后的运动与投射物 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/projectile-motion.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/projectile-motion.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / MOTION TRACE</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/工程设计/命中后的运动与投射物/">完整文章</a>
+      <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">PROJECTILE / KNOCKBACK DEBUGGER</p>
+      <h1>命中之前要扫掠，<br>位移之后要<em>对账</em></h1>
+      <p>沿着“生成快照 → 运动策略 → 胶囊扫掠 → 命中门控 → 效果与击退 → 完成清理”，检查每一步改变了什么。</p>
+    </section>
+
+    <section class="boundary-strip" aria-label="事实边界">
+      <span>已确认运动</span><strong>追踪 / 锁定方向穿透</strong>
+      <span>不作推断</span><strong>第三种直线实现 / 环境碰撞 / 弹道高度</strong>
+      <span>候选顺序</span><strong>没有最近优先保证</strong>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="运动与投射物交互实验">
+      <div class="scenario-bar">
+        <div class="scenario-tabs" role="group" aria-label="教学场景">
+          <button type="button" class="scenario-tab is-active" data-scenario="homing" data-lab-control aria-pressed="true">追踪命中</button>
+          <button type="button" class="scenario-tab" data-scenario="pierce" data-lab-control aria-pressed="false">穿透顺序冲突</button>
+          <button type="button" class="scenario-tab" data-scenario="lost" data-lab-control aria-pressed="false">目标丢失</button>
+          <button type="button" class="scenario-tab" data-scenario="gate" data-lab-control aria-pressed="false">同目标间隔</button>
+          <button type="button" class="scenario-tab" data-scenario="blocked" data-lab-control aria-pressed="false">障碍提前停止</button>
+          <button type="button" class="scenario-tab" data-scenario="replace" data-lab-control aria-pressed="false">新击退替换</button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 8</strong></div>
+      </div>
+
+      <div class="lab-grid">
+        <section class="stage-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">MOTION PLANE</p><h2 id="stage-title">追踪目标的连续扫掠</h2></div>
+            <p id="teaching-params">教学场景数据 · 速度 1.4 / 半径 0.18</p>
+          </div>
+          <svg id="motion-stage" viewBox="0 0 760 420" role="img" aria-labelledby="stage-title stage-description">
+            <desc id="stage-description">投射物在水平平面移动，胶囊扫掠经过候选目标；击退场景显示期望位移与实际位移。</desc>
+            <defs>
+              <pattern id="motion-grid" width="38" height="38" patternUnits="userSpaceOnUse">
+                <path d="M 38 0 L 0 0 0 38" fill="none" stroke="#25302e" stroke-width="1"/>
+              </pattern>
+              <marker id="motion-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f3ba63"/>
+              </marker>
+            </defs>
+            <rect width="760" height="420" fill="url(#motion-grid)"/>
+            <g id="trace-layer"></g>
+            <g id="world-layer"></g>
+            <g id="label-layer"></g>
+          </svg>
+          <div class="legend">
+            <span><i class="projectile-dot"></i>投射物 / 位移来源</span>
+            <span><i class="candidate-dot"></i>扫掠候选</span>
+            <span><i class="hit-dot"></i>成功消费</span>
+            <span><i class="blocked-dot"></i>门控 / 障碍</span>
+          </div>
+        </section>
+
+        <article class="explain-panel">
+          <p class="panel-label">CURRENT TRANSITION</p>
+          <p class="phase" id="phase-label">SPAWN SNAPSHOT</p>
+          <h2 id="step-title">保存生成快照</h2>
+          <p id="step-copy">运行实例保存来源、初始位置、目标快照和运动策略。</p>
+          <div class="change-box"><span>本步改变</span><p id="step-change">请求 → 可逐帧运行状态</p></div>
+          <div class="why-box"><span>WHY</span><p id="step-why">后续每帧必须从确定输入继续，创建失败也要保持可见。</p></div>
+          <div class="decision-card">
+            <span>当前判定</span>
+            <strong id="decision-title">运行实例已创建</strong>
+            <p id="decision-copy">等待计算第一段期望位移。</p>
+          </div>
+        </article>
+
+        <aside class="inspect-panel">
+          <div class="state-grid">
+            <div><span>MODE</span><strong id="state-mode">HOMING</strong><small>运动策略</small></div>
+            <div><span>EXPECT</span><strong id="state-expected">0.00</strong><small>期望位移</small></div>
+            <div><span>ACTUAL</span><strong id="state-actual">0.00</strong><small>实际位移</small></div>
+            <div><span>CANDIDATE</span><strong id="state-candidates">0</strong><small>扫掠候选</small></div>
+            <div><span>HISTORY</span><strong id="state-history">∅</strong><small>每目标记录</small></div>
+            <div><span>PIERCE</span><strong id="state-pierce">1</strong><small>剩余命中</small></div>
+            <div class="status-cell"><span>STATUS</span><strong id="state-status">CREATED</strong><small id="state-cleanup">尚未清理</small></div>
+          </div>
+          <div class="code-panel">
+            <div class="code-head"><span>SYNCED PSEUDOCODE</span><strong id="code-status">SPAWN</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="timeline-panel">
+        <div class="timeline-head"><span>STATE TRACE</span><strong id="trace-summary">创建成功，运动尚未开始</strong></div>
+        <ol id="event-trace"></ol>
+      </div>
+
+      <div class="controls">
+        <div class="progress">
+          <div class="step-dots" id="step-dots" data-lab-dots></div>
+          <div class="speed-control" role="group" aria-label="自动播放速度">
+            <span>速度</span>
+            <button type="button" data-speed="slow" data-lab-control aria-pressed="false">慢</button>
+            <button type="button" class="is-active" data-speed="normal" data-lab-control aria-pressed="true">中</button>
+            <button type="button" data-speed="fast" data-lab-control aria-pressed="false">快</button>
+          </div>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>↺ 重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button type="button" id="auto-button" data-lab-control aria-pressed="false">▶ 自动播放</button>
+          <button type="button" class="primary" id="next-button" data-lab-control>下一步 →</button>
+        </div>
+        <p class="keyboard-hint">键盘：← / → 逐步，Space 暂停或继续，R 重置；输入焦点内不拦截。</p>
+      </div>
+    </section>
+
+    <section class="notes">
+      <article><span>01</span><h3>扫掠只给候选</h3><p>平面胶囊避免高速穿透，但候选仍要经过自身、阵营、有效性和每目标命中历史过滤。</p></article>
+      <article><span>02</span><h3>顺序必须显式</h3><p>有限穿透按查询返回顺序消费；若业务要求最近优先，必须明确排序并承担 O(k log k)。</p></article>
+      <article><span>03</span><h3>累计曲线要求差</h3><p>本帧位移是两次累计曲线采样之差，不能把累计总量每帧重复应用。</p></article>
+      <article><span>04</span><h3>失败也是状态</h3><p>创建失败、目标丢失、命中门控、受阻与替换都必须可观察，并最终进入正确清理路径。</p></article>
+    </section>
+
+    <section class="related">
+      <p class="panel-label">CONTINUE THE CHAIN</p>
+      <a href="/knowledge/target-filter/"><span>上一段</span><strong>目标筛选与命中判定 →</strong></a>
+      <a href="/knowledge/effect-lifecycle/"><span>下一段</span><strong>Effect / Buff 生命周期 →</strong></a>
+    </section>
+  </main>
+</body>
+</html>

@@ -245,7 +245,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
   };
 
   const initialClips = [
-    { id: "action", track: "动作", name: "播放攻击动作", start: 0, end: 12, tone: "cyan" },
+    { id: "action", track: "动作", name: "播放攻击动作", start: 0, end: 12, tone: "cyan", loopAnchorEligible: true },
     { id: "audio", track: "音效", name: "挥击音效", start: 6, end: 10, tone: "amber" },
     { id: "hit", track: "判定", name: "执行命中", start: 8, end: 9, tone: "coral" },
     { id: "state", track: "状态", name: "锁定普通移动", start: 0, end: 14, tone: "mint" }
@@ -260,12 +260,20 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     hideLog: false,
     catchupFrom: null,
     events: [],
-    sameFrameCase: false
+    sameFrameCase: false,
+    host: "standalone",
+    startFrame: 0,
+    runStartFrame: 0,
+    loopEnabled: false,
+    loopMarkerEnabled: true,
+    scopedTaskState: "unavailable",
+    lockOwners: new Set()
   };
   let timer = null;
 
   const refs = {
     length: required("[data-timeline-length]"),
+    startFrame: required("[data-timeline-start-frame]"),
     demoSpeed: required("[data-timeline-demo-speed]"),
     notice: required("[data-timeline-notice]"),
     canvas: required("[data-timeline-canvas]"),
@@ -296,6 +304,16 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     catchup: required("[data-timeline-catchup]"),
     interrupt: required("[data-timeline-interrupt]"),
     sameFrame: required("[data-timeline-same-frame]"),
+    loop: required("[data-timeline-loop]"),
+    loopMarker: required("[data-timeline-loop-marker]"),
+    host: required("[data-timeline-host]"),
+    hostState: required("[data-timeline-host-state]"),
+    scopeState: required("[data-timeline-scope-state]"),
+    scopeFinish: required("[data-timeline-scope-finish]"),
+    scopeCancel: required("[data-timeline-scope-cancel]"),
+    lockState: required("[data-timeline-lock-state]"),
+    lockA: required("[data-timeline-lock-a]"),
+    lockB: required("[data-timeline-lock-b]"),
     clearLog: required("[data-timeline-clear-log]")
   };
   const codeLines = [...lab.querySelectorAll("[data-code-line]")];
@@ -318,11 +336,19 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     if (state.sameFrameCase && source.id === "hit") source.end = source.start;
     return createRuntimeClip(source);
   });
+  const isFlowHost = () => state.host === "flow";
+  const isFlowLoop = () => isFlowHost() && state.loopEnabled;
+  const playbackStartFrame = () => isFlowHost() ? state.startFrame : 0;
+  const resolveLoopAnchor = () => {
+    if (!state.loopMarkerEnabled) return 0;
+    const anchors = state.clips.filter((clip) => clip.loopAnchorEligible).map((clip) => clip.start);
+    return anchors.length === 0 ? 0 : Math.max(0, Math.min(state.length - 1, Math.min(...anchors)));
+  };
   const stop = () => {
     if (timer !== null) window.clearInterval(timer);
     timer = null;
     state.playing = false;
-    refs.play.textContent = state.frame >= state.length - 1 ? "播放完成" : "自动播放";
+    refs.play.textContent = state.frame >= state.length - 1 && !isFlowLoop() ? "播放完成" : "自动播放";
     refs.play.setAttribute("aria-pressed", "false");
   };
   const setNotice = (message, error = false) => {
@@ -336,7 +362,8 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
 
   function processFrame(frame) {
     state.clips.forEach((clip) => {
-      if (!clip.begun && frame === clip.start) {
+      const reachesStart = frame === clip.start || (isFlowHost() && frame >= clip.start && frame <= clip.end);
+      if (!clip.begun && reachesStart) {
         clip.begun = true;
         recordEvent(frame, "BEGIN", clip);
       }
@@ -360,14 +387,14 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     });
     state.events = [];
     state.interruptedAt = null;
-    for (let logicalFrame = 0; logicalFrame <= frame; logicalFrame += 1) {
+    for (let logicalFrame = state.runStartFrame; logicalFrame <= frame; logicalFrame += 1) {
       processFrame(logicalFrame);
     }
     state.frame = frame;
   }
 
   function advanceTo(frame) {
-    const target = Math.max(0, Math.min(state.length - 1, frame));
+    const target = Math.max(state.runStartFrame, Math.min(state.length - 1, frame));
     if (target < state.frame || state.interruptedAt !== null) {
       replayTo(target);
       return;
@@ -476,7 +503,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     const audioActive = !interrupted && isActive(audio);
     const hitActive = !interrupted && isActive(hit);
     const hitTriggeredThisFrame = !interrupted && hit.lastTickFrame === state.frame;
-    const movementLocked = !interrupted && isActive(movement);
+    const movementLocked = (!interrupted && isActive(movement)) || state.lockOwners.size > 0;
     const actionSpan = action.end - action.start + 1;
     const actionStep = state.frame - action.start;
     const actionThird = actionSpan / 3;
@@ -491,11 +518,13 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     refs.action.textContent = actionActive ? ({ windup: "蓄力", strike: "挥击", recover: "收招" })[actionPhase] : "Idle";
     refs.audio.textContent = audioActive ? "播放中" : audio.finished ? "已结束" : "未播放";
     refs.hit.textContent = hitActive ? "命中提交" : hit.finished ? "已结算" : "未触发";
-    refs.movement.textContent = movementLocked ? "Timeline 锁定" : "自由";
+    refs.movement.textContent = state.lockOwners.size > 0 ? `${state.lockOwners.size} 个来源锁定` : movementLocked ? "Timeline 锁定" : "自由";
 
     if (interrupted) {
       refs.phase.textContent = `第 ${state.interruptedAt} 帧中断`;
-      refs.caption.textContent = "Interrupt 回收活动 Task，实体控制权已释放";
+      refs.caption.textContent = state.lockOwners.size > 0
+        ? "Interrupt 已回收活动 Task；其他来源仍持有控制锁"
+        : "Interrupt 回收活动 Task，实体控制权已释放";
     } else if (hitTriggeredThisFrame) {
       refs.phase.textContent = "实体消费 / 命中";
       refs.caption.textContent = "命中 Task 提交语义命令，目标组件产生反馈";
@@ -562,17 +591,85 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     refs.codeState.textContent = codeState;
   }
 
+  function appendAdapterStatus(container, label, title, detail, tone = "cyan") {
+    const item = document.createElement("div");
+    item.className = `timeline-task is-${tone}`;
+    const labelNode = document.createElement("span");
+    const titleNode = document.createElement("strong");
+    const detailNode = document.createElement("small");
+    labelNode.textContent = label;
+    titleNode.textContent = title;
+    detailNode.textContent = detail;
+    item.append(labelNode, titleNode, detailNode);
+    container.append(item);
+  }
+
+  function renderAdapterPanels() {
+    refs.hostState.replaceChildren();
+    if (isFlowHost()) {
+      appendAdapterStatus(refs.hostState, "HOST", "Flow 节点宿主持有播放器", `本轮从 F${state.runStartFrame} 开始`, "cyan");
+      appendAdapterStatus(
+        refs.hostState,
+        "LOOP",
+        state.loopEnabled ? `循环开启 · 锚点 F${resolveLoopAnchor()}` : "循环关闭",
+        state.loopEnabled
+          ? state.loopMarkerEnabled ? "锚点只从已识别的循环表现标记推导" : "没有已识别标记，回退到 F0"
+          : "非循环节点等待 Timeline 完成后再前进",
+        "amber");
+    } else {
+      appendAdapterStatus(refs.hostState, "HOST", "独立 Timeline 直接拥有播放实例", "固定从 F0 开始；播放完成后结束宿主", "cyan");
+      appendAdapterStatus(refs.hostState, "LOOP", "没有 Flow 循环适配", "起播帧与循环控件只在 Flow 宿主开放", "amber");
+    }
+
+    refs.scopeState.replaceChildren();
+    if (!isFlowHost()) {
+      appendAdapterStatus(refs.scopeState, "SCOPE", "当前宿主不托管作用域 Task", "普通 Clip 不在这里泛化 Dispose", "mint");
+    } else if (state.scopedTaskState === "finished-disposed") {
+      appendAdapterStatus(refs.scopeState, "NORMAL", "Finish → Dispose", "先完成语义清理，再释放作用域对象", "mint");
+    } else if (state.scopedTaskState === "interrupted-disposed") {
+      appendAdapterStatus(refs.scopeState, "CANCEL", "Interrupt → Dispose", "取消保留原始失败语义，随后释放作用域对象", "coral");
+    } else {
+      appendAdapterStatus(refs.scopeState, "ACTIVE", "作用域 Task 已 Begin", "等待宿主正常结束或显式取消", "cyan");
+    }
+
+    refs.lockState.replaceChildren();
+    const owners = [...state.lockOwners].sort();
+    appendAdapterStatus(
+      refs.lockState,
+      "OWNERS",
+      owners.length > 0 ? owners.join(" + ") : "空集合",
+      owners.length > 0 ? "集合非空，因此控制仍被锁定" : "最后一个来源已释放，控制恢复",
+      owners.length > 0 ? "coral" : "mint");
+    appendAdapterStatus(refs.lockState, "RULE", state.lockOwners.size > 0 ? "LOCKED" : "FREE", "释放 A 不会移除仍存在的 B；它不是单一布尔值", "amber");
+
+    refs.host.textContent = isFlowHost() ? "Flow 宿主" : "独立 Timeline";
+    refs.host.setAttribute("aria-pressed", String(isFlowHost()));
+    refs.startFrame.disabled = !isFlowHost();
+    refs.startFrame.max = String(Math.max(0, state.length - 1));
+    refs.loop.disabled = !isFlowHost();
+    refs.loop.textContent = state.loopEnabled ? "Flow 循环：已开启" : "Flow 循环：已关闭";
+    refs.loop.setAttribute("aria-pressed", String(state.loopEnabled));
+    refs.loopMarker.disabled = !isFlowLoop();
+    refs.loopMarker.textContent = state.loopMarkerEnabled ? "循环锚点：动作标记" : "循环锚点：回退 0";
+    refs.loopMarker.setAttribute("aria-pressed", String(state.loopMarkerEnabled));
+    refs.scopeFinish.disabled = !isFlowHost();
+    refs.scopeCancel.disabled = !isFlowHost();
+    refs.lockA.textContent = state.lockOwners.has("A") ? "释放来源 A" : "获取来源 A";
+    refs.lockB.textContent = state.lockOwners.has("B") ? "释放来源 B" : "获取来源 B";
+    refs.lockA.setAttribute("aria-pressed", String(state.lockOwners.has("A")));
+    refs.lockB.setAttribute("aria-pressed", String(state.lockOwners.has("B")));
+  }
   function renderPlayhead() {
     refs.frame.textContent = String(state.frame).padStart(2, "0");
     refs.time.textContent = `逻辑帧 ${state.frame}`;
     const playheadLeft = refs.ruler.offsetLeft + ((state.frame + 0.5) / state.length) * refs.ruler.offsetWidth;
     refs.playhead.style.left = `${playheadLeft}px`;
     refs.playhead.querySelector("span").textContent = String(state.frame);
-    refs.previous.toggleAttribute("disabled", state.frame === 0 || state.interruptedAt !== null);
-    refs.next.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
+    refs.previous.toggleAttribute("disabled", state.frame <= state.runStartFrame || state.interruptedAt !== null);
+    refs.next.toggleAttribute("disabled", (state.frame >= state.length - 1 && !isFlowLoop()) || state.interruptedAt !== null);
     refs.catchup.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
     refs.interrupt.toggleAttribute("disabled", state.interruptedAt !== null || !state.clips.some(isActive));
-    refs.play.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
+    refs.play.toggleAttribute("disabled", (state.frame >= state.length - 1 && !isFlowLoop()) || state.interruptedAt !== null);
   }
 
   function renderAll() {
@@ -581,20 +678,34 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     renderPlayhead();
     renderPreview();
     renderRuntime();
+    renderAdapterPanels();
   }
 
   function goTo(frame, catchupFrom = null) {
     if (state.interruptedAt !== null) return;
+    if (frame >= state.length && isFlowLoop()) {
+      const anchor = resolveLoopAnchor();
+      state.runStartFrame = anchor;
+      replayTo(anchor);
+      state.catchupFrom = null;
+      state.hideLog = false;
+      setNotice(`Flow 循环完成：从有限类型标记推导的 F${anchor} 重新开始。`);
+      renderAll();
+      return;
+    }
     advanceTo(frame);
     state.catchupFrom = catchupFrom;
     state.hideLog = false;
+    if (isFlowHost() && !state.loopEnabled && state.frame >= state.length - 1 && state.scopedTaskState === "active") {
+      state.scopedTaskState = "finished-disposed";
+    }
     renderAll();
-    if (state.frame >= state.length - 1) stop();
+    if (state.frame >= state.length - 1 && !isFlowLoop()) stop();
   }
 
   function start() {
     if (state.playing) { stop(); return; }
-    if (state.frame >= state.length - 1 || state.interruptedAt !== null) return;
+    if ((state.frame >= state.length - 1 && !isFlowLoop()) || state.interruptedAt !== null) return;
     state.playing = true;
     refs.play.textContent = "暂停播放";
     refs.play.setAttribute("aria-pressed", "true");
@@ -642,6 +753,25 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     setNotice(`Timeline 已改为 ${next} 帧；所有 Clip 保持原始区间。`);
     renderAll();
   });
+  refs.startFrame.addEventListener("input", () => {
+    const next = Number(refs.startFrame.value);
+    if (!Number.isInteger(next) || next < 0 || next >= state.length) {
+      refs.startFrame.setCustomValidity(`Flow 起播帧必须是 0—${state.length - 1} 的整数。`);
+      setNotice(`Flow 起播帧必须落在当前 Timeline 范围内；运行状态没有改变。`, true);
+      return;
+    }
+    refs.startFrame.setCustomValidity("");
+    stop();
+    state.startFrame = next;
+    state.runStartFrame = next;
+    state.clips = createScenarioClips();
+    replayTo(next);
+    state.scopedTaskState = "active";
+    state.hideLog = false;
+    state.catchupFrom = null;
+    setNotice(`Flow 宿主从 F${next} 建立本轮运行；仍跨越该帧的 Clip 会在此处 Begin，已结束的 Clip 保持未开始。`);
+    renderAll();
+  });
   refs.demoSpeed.addEventListener("input", () => {
     const next = Number(refs.demoSpeed.value);
     if (!Number.isInteger(next) || next < 1 || next > 30) {
@@ -655,6 +785,74 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     setNotice(`网页演示速度已改为每秒 ${next} 个逻辑帧；源数据没有改变。`);
     renderAll();
   });
+  refs.host.addEventListener("click", () => {
+    stop();
+    state.host = isFlowHost() ? "standalone" : "flow";
+    if (!isFlowHost()) {
+      state.startFrame = 0;
+      state.loopEnabled = false;
+      state.scopedTaskState = "unavailable";
+    } else {
+      state.scopedTaskState = "active";
+    }
+    state.runStartFrame = playbackStartFrame();
+    state.frame = state.runStartFrame;
+    state.clips = createScenarioClips();
+    replayTo(state.runStartFrame);
+    state.hideLog = false;
+    state.catchupFrom = null;
+    refs.startFrame.value = String(state.startFrame);
+    refs.startFrame.setCustomValidity("");
+    setNotice(isFlowHost()
+      ? "已切换为 Flow 宿主：可选择起播帧，并由节点决定等待、循环、正常结束或取消。"
+      : "已切换为独立 Timeline：从 F0 播放，完成后直接结束宿主。");
+    renderAll();
+  });
+  refs.loop.addEventListener("click", () => {
+    if (!isFlowHost()) return;
+    stop();
+    state.loopEnabled = !state.loopEnabled;
+    if (!state.loopEnabled && state.frame >= state.length - 1 && state.scopedTaskState === "active") {
+      state.scopedTaskState = "finished-disposed";
+    }
+    stop();
+    setNotice(state.loopEnabled
+      ? `Flow 循环已开启；本轮结束后将从 F${resolveLoopAnchor()} 重播。`
+      : "Flow 循环已关闭；本轮完成后节点才能继续。");
+    renderAll();
+  });
+  refs.loopMarker.addEventListener("click", () => {
+    if (!isFlowLoop()) return;
+    stop();
+    state.loopMarkerEnabled = !state.loopMarkerEnabled;
+    setNotice(state.loopMarkerEnabled
+      ? `已识别动作循环标记，当前重播锚点为 F${resolveLoopAnchor()}。`
+      : "没有已识别的循环表现标记；锚点明确回退到 F0，不从任意逻辑 Clip 猜测。");
+    renderAll();
+  });
+  refs.scopeFinish.addEventListener("click", () => {
+    if (!isFlowHost()) return;
+    state.scopedTaskState = "finished-disposed";
+    setNotice("Flow 正常结束：作用域 Task 先 Finish，再 Dispose；普通 Timeline Clip 不据此泛化 Dispose。");
+    renderAdapterPanels();
+  });
+  refs.scopeCancel.addEventListener("click", () => {
+    if (!isFlowHost()) return;
+    state.scopedTaskState = "interrupted-disposed";
+    setNotice("Flow 显式取消：作用域 Task 先 Interrupt 保留取消语义，再 Dispose。");
+    renderAdapterPanels();
+  });
+  const toggleLockOwner = (owner) => {
+    if (state.lockOwners.has(owner)) state.lockOwners.delete(owner);
+    else state.lockOwners.add(owner);
+    setNotice(state.lockOwners.size > 0
+      ? `控制锁来源：${[...state.lockOwners].sort().join(" + ")}。释放任一来源不会清掉其他来源。`
+      : "最后一个控制锁来源已释放，实体控制恢复。");
+    renderPreview();
+    renderAdapterPanels();
+  };
+  refs.lockA.addEventListener("click", () => toggleLockOwner("A"));
+  refs.lockB.addEventListener("click", () => toggleLockOwner("B"));
   refs.previous.addEventListener("click", () => { stop(); goTo(state.frame - 1); });
   refs.next.addEventListener("click", () => { stop(); goTo(state.frame + 1); });
   refs.play.addEventListener("click", start);
@@ -670,6 +868,9 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     if (active.length === 0) return;
     state.interruptedAt = state.frame;
     state.hideLog = false;
+    if (isFlowHost() && state.scopedTaskState === "active") {
+      state.scopedTaskState = "interrupted-disposed";
+    }
     active.forEach((clip) => {
       clip.interrupted = true;
       clip.finished = true;
@@ -681,16 +882,18 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
   refs.sameFrame.addEventListener("click", () => {
     stop();
     state.sameFrameCase = !state.sameFrameCase;
-    state.frame = 0;
+    state.runStartFrame = playbackStartFrame();
+    state.frame = state.runStartFrame;
     state.clips = createScenarioClips();
-    replayTo(0);
+    replayTo(state.runStartFrame);
+    if (isFlowHost()) state.scopedTaskState = "active";
     state.hideLog = false;
     state.catchupFrom = null;
     refs.sameFrame.setAttribute("aria-pressed", String(state.sameFrameCase));
     refs.sameFrame.textContent = state.sameFrameCase ? "同帧命中：已开启" : "同帧命中：已关闭";
     setNotice(state.sameFrameCase
       ? "边界案例：命中 Clip 在第 8 帧依次 Begin、Tick、Finish，处理后不会留在 Active Tasks。"
-      : "已恢复标准命中区间；运行状态从第 0 帧重新建立。");
+      : `已恢复标准命中区间；运行状态从第 ${state.runStartFrame} 帧重新建立。`);
     renderAll();
   });
   refs.clearLog.addEventListener("click", () => { state.hideLog = true; state.catchupFrom = null; renderRuntime(); });
@@ -700,13 +903,22 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     state.demoStepsPerSecond = 6;
     state.frame = 0;
     state.sameFrameCase = false;
+    state.host = "standalone";
+    state.startFrame = 0;
+    state.runStartFrame = 0;
+    state.loopEnabled = false;
+    state.loopMarkerEnabled = true;
+    state.scopedTaskState = "unavailable";
+    state.lockOwners.clear();
     state.clips = createScenarioClips();
     replayTo(0);
     state.hideLog = false;
     state.catchupFrom = null;
     refs.length.value = "15";
+    refs.startFrame.value = "0";
     refs.demoSpeed.value = "6";
     refs.length.setCustomValidity("");
+    refs.startFrame.setCustomValidity("");
     refs.demoSpeed.setCustomValidity("");
     refs.sameFrame.setAttribute("aria-pressed", "false");
     refs.sameFrame.textContent = "同帧命中：已关闭";
@@ -714,8 +926,9 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     renderAll();
   });
 
+  state.runStartFrame = playbackStartFrame();
   state.clips = createScenarioClips();
-  replayTo(0);
+  replayTo(state.runStartFrame);
   bindPlayhead();
   window.addEventListener("resize", renderPlayhead);
   renderAll();

@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="属性系统常同时保存两类值：">
+  <title>属性脏标记与局部重算 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
+      <h1>属性脏标记与局部重算</h1>
+      <p class="hero-copy">属性系统常同时保存两类值：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#1-两级标记不是重复信息">1. 两级标记不是重复信息</a>
+    <a data-toc-link href="#2-同帧合并">2. 同帧合并</a>
+    <a data-toc-link href="#3-局部重算">3. 局部重算</a>
+    <a data-toc-link href="#4-active-modifiers">4. active modifiers</a>
+    <a data-toc-link href="#5-需要立即读取-ensurefresh">5. 需要立即读取：ensureFresh</a>
+    <a data-toc-link href="#6-clear-与-notify">6. clear 与 notify</a>
+    <a data-toc-link href="#7-复杂度">7. 复杂度</a>
+    <a data-toc-link href="#8-必须验证的边界">8. 必须验证的边界</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套局部重算实验</strong>
+        <span>拆开实体粗筛与属性精筛，比较同帧合并、即时读取、两级缺标和失效引用清理。</span>
+        <p><a href="/knowledge/dirty-attribute/">打开属性重算实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 两级标记不是重复信息">
+      <span>01</span>
+      <strong>1. 两级标记不是重复信息</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 同帧合并">
+      <span>02</span>
+      <strong>2. 同帧合并</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 局部重算">
+      <span>03</span>
+      <strong>3. 局部重算</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. active modifiers">
+      <span>04</span>
+      <strong>4. active modifiers</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 需要立即读取：ensureFresh">
+      <span>05</span>
+      <strong>5. 需要立即读取：ensureFresh</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. clear 与 notify">
+      <span>06</span>
+      <strong>6. clear 与 notify</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 复杂度">
+      <span>07</span>
+      <strong>7. 复杂度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 必须验证的边界">
+      <span>08</span>
+      <strong>8. 必须验证的边界</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>1. 两级标记不是重复信息</h3>
+        <p>可以把它想成办公楼的两层索引：</p>
+        <ul><li><code>EntityDirty</code> 是楼层门口的待办牌：调度器只进入挂了牌子的实体；</li><li><code>AttributeDirty</code> 是房间内的具体清单：进入后只重算被勾选的属性。</li></ul>
+        <pre><code class="language-text">写入攻击基础值
+    ↓
+Attack.Dirty = true        // 精筛：哪一个属性需要更新
+    ↓
+EntityDirty = true         // 粗筛：哪一个实体需要进入系统
+    ↓
+统一消费阶段扫描该实体</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CONCEPT</div>
+        <h3>2. 同帧合并</h3>
+        <p>同一帧内，装备、状态和升级可能连续改变属性。写入口只更新基础值或修改器状态，并重复写入同一布尔标记。最终消费阶段只看到“这个属性需要重算”，因此多个写入可以合并成一次计算。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>3. 局部重算</h3>
+        <p>对一个脏属性，重算链可以抽象为：</p>
+
+        <pre><code class="language-csharp">float Recalculate(Entity entity, Attribute attribute)
+{
+    float next = attribute.BaseValue;
+
+    // 只消费仍有效、仍激活且命中当前属性的修改器
+    for (int i = entity.Effects.Count - 1; i &gt;= 0; i--)
+    {
+        Effect effect = entity.Effects[i];
+        if (!effect.IsValid)
+        {
+            entity.Effects.RemoveAt(i);
+            continue;
+        }
+
+        if (!effect.Active)
+            continue;
+
+        next = ApplyMatchingModifiers(effect, attribute.Code, next);
+    }
+
+    next = Clamp(next, attribute.Min, attribute.Max);
+    attribute.CurrentValue = next;
+    attribute.Dirty = false;
+    NotifyChanged(attribute.Code, next);
+    return next;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CONCEPT</div>
+        <h3>4. active modifiers</h3>
+        <p>持续修改器只有在有效且激活时才参与 <code>CurrentValue</code> 聚合。一次性变化通常直接改变基础值；持续变化保留为独立修改器，让移除、失效或叠层变化后可以从基础值重新推导。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>5. 需要立即读取：ensureFresh</h3>
+        <p>统一消费适合批处理，但有些写入后马上就要读取新值。此时使用单属性即时路径：</p>
+
+        <pre><code class="language-csharp">float EnsureFresh(Entity entity, Attribute attribute)
+{
+    if (attribute.Dirty)
+        return Recalculate(entity, attribute);
+
+    return attribute.CurrentValue;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
+        <h3>6. clear 与 notify</h3>
+        <p>一次成功消费包含三个提交动作：</p>
+        <ul><li>写回新的 <code>CurrentValue</code>；</li><li>清除该属性的 <code>Dirty</code>；</li><li>通知观察者。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>7. 复杂度</h3>
+        <p>设一个脏实体共有 <code>A</code> 个属性，其中 <code>D</code> 个属性脏；当前有 <code>E</code> 个效果，每个效果平均 <code>M</code> 个修改器：</p>
+        <ul><li><code>O(A)</code>：在脏实体内寻找具体脏属性；</li><li><code>O(D × E × M)</code>：为每个脏属性聚合有效修改器。</li></ul>
+        <pre><code class="language-text">O(A + D × E × M)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+        <h3>8. 必须验证的边界</h3>
+
+        <ul><li>两级标记必须同时维护；</li><li>同帧多次写入是否只触发一次最终重算；</li><li>即时读取后统一阶段是否避免重复重算；</li><li>失效效果引用是否安全移除；</li><li>未激活修改器是否被跳过；</li><li>通知是否允许 <code>oldValue == newValue</code>；</li><li>跨属性依赖是否有显式传播规则。</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>属性系统常同时保存两类值：</p>
+<ul>
+<li><code>BaseValue</code>：不考虑临时修改器的基础值；</li>
+<li><code>CurrentValue</code>：基础值叠加当前有效修改器后的结果。</li>
+</ul>
+<p>每次写入都立刻重算虽然直观，却会让同一帧的连续变化重复遍历修改器。更实用的模型是：写入阶段只标脏，统一消费阶段再局部重算。</p>
+<h2 id="1-两级标记不是重复信息">1. 两级标记不是重复信息</h2>
+<p>可以把它想成办公楼的两层索引：</p>
+<ul>
+<li><code>EntityDirty</code> 是楼层门口的待办牌：调度器只进入挂了牌子的实体；</li>
+<li><code>AttributeDirty</code> 是房间内的具体清单：进入后只重算被勾选的属性。</li>
+</ul>
+<p>只有实体标记，没有属性清单，系统会进入实体却找不到工作；只有属性清单，没有实体标记，查询阶段根本不会选中它。</p>
+<pre><code class="language-text">写入攻击基础值
+    ↓
+Attack.Dirty = true        // 精筛：哪一个属性需要更新
+    ↓
+EntityDirty = true         // 粗筛：哪一个实体需要进入系统
+    ↓
+统一消费阶段扫描该实体</code></pre>
+<h2 id="2-同帧合并">2. 同帧合并</h2>
+<p>同一帧内，装备、状态和升级可能连续改变属性。写入口只更新基础值或修改器状态，并重复写入同一布尔标记。最终消费阶段只看到“这个属性需要重算”，因此多个写入可以合并成一次计算。</p>
+<p>这不是事件丢失：中间写入若需要审计，应由独立日志记录；脏标记表达的是“最终缓存已失效”，不是变更历史。</p>
+<h2 id="3-局部重算">3. 局部重算</h2>
+<p>对一个脏属性，重算链可以抽象为：</p>
+<pre><code class="language-csharp">float Recalculate(Entity entity, Attribute attribute)
+{
+    float next = attribute.BaseValue;
+
+    // 只消费仍有效、仍激活且命中当前属性的修改器
+    for (int i = entity.Effects.Count - 1; i &gt;= 0; i--)
+    {
+        Effect effect = entity.Effects[i];
+        if (!effect.IsValid)
+        {
+            entity.Effects.RemoveAt(i);
+            continue;
+        }
+
+        if (!effect.Active)
+            continue;
+
+        next = ApplyMatchingModifiers(effect, attribute.Code, next);
+    }
+
+    next = Clamp(next, attribute.Min, attribute.Max);
+    attribute.CurrentValue = next;
+    attribute.Dirty = false;
+    NotifyChanged(attribute.Code, next);
+    return next;
+}</code></pre>
+<p>从尾部向前删除失效引用，是为了避免删除后数组左移导致漏检下一项。</p>
+<h2 id="4-active-modifiers">4. active modifiers</h2>
+<p>持续修改器只有在有效且激活时才参与 <code>CurrentValue</code> 聚合。一次性变化通常直接改变基础值；持续变化保留为独立修改器，让移除、失效或叠层变化后可以从基础值重新推导。</p>
+<p>脏标记本身不负责推导依赖。若一个属性依赖另一个属性，需要显式建立依赖传播规则；不能假定修改 A 会自动标记 B。</p>
+<h2 id="5-需要立即读取-ensurefresh">5. 需要立即读取：ensureFresh</h2>
+<p>统一消费适合批处理，但有些写入后马上就要读取新值。此时使用单属性即时路径：</p>
+<pre><code class="language-csharp">float EnsureFresh(Entity entity, Attribute attribute)
+{
+    if (attribute.Dirty)
+        return Recalculate(entity, attribute);
+
+    return attribute.CurrentValue;
+}</code></pre>
+<p>即时路径只提前支付当前属性的重算成本。实体级标记仍可留给统一阶段清理；统一阶段看到该属性已经不脏，就不会重复聚合。</p>
+<h2 id="6-clear-与-notify">6. clear 与 notify</h2>
+<p>一次成功消费包含三个提交动作：</p>
+<ol>
+<li>写回新的 <code>CurrentValue</code>；</li>
+<li>清除该属性的 <code>Dirty</code>；</li>
+<li>通知观察者。</li>
+</ol>
+<p>实体内所有脏属性处理后，再清除 <code>EntityDirty</code>。通知是否只在数值实际变化时触发，是系统契约的一部分；不能仅凭“执行过重算”推断“数值一定变化”。</p>
+<h2 id="7-复杂度">7. 复杂度</h2>
+<p>设一个脏实体共有 <code>A</code> 个属性，其中 <code>D</code> 个属性脏；当前有 <code>E</code> 个效果，每个效果平均 <code>M</code> 个修改器：</p>
+<pre><code class="language-text">O(A + D × E × M)</code></pre>
+<ul>
+<li><code>O(A)</code>：在脏实体内寻找具体脏属性；</li>
+<li><code>O(D × E × M)</code>：为每个脏属性聚合有效修改器。</li>
+</ul>
+<p>这是一种属性级局部重算，而不是依赖图级增量计算。</p>
+<h2 id="8-必须验证的边界">8. 必须验证的边界</h2>
+<ul>
+<li>两级标记必须同时维护；</li>
+<li>同帧多次写入是否只触发一次最终重算；</li>
+<li>即时读取后统一阶段是否避免重复重算；</li>
+<li>失效效果引用是否安全移除；</li>
+<li>未激活修改器是否被跳过；</li>
+<li>通知是否允许 <code>oldValue == newValue</code>；</li>
+<li>跨属性依赖是否有显式传播规则。</li>
+</ul>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E6%97%B6%E9%97%B4%E6%8E%A7%E5%88%B6%E5%B0%8F%E6%A8%A1%E5%BC%8F-%E5%86%B7%E5%8D%B4%E8%AE%A1%E6%97%B6%E5%99%A8%E5%BB%B6%E8%BF%9F%E4%B8%8ETick/"><small>← PREVIOUS</small>时间控制小模式：冷却、计时器、延迟与 Tick</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E9%9A%8F%E6%9C%BA%E7%B3%BB%E7%BB%9F/"><small>NEXT →</small>随机系统</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>
