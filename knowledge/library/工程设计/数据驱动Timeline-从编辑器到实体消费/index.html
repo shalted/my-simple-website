@@ -48,6 +48,7 @@
     <a data-toc-link href="#第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</a>
     <a data-toc-link href="#第十一步-task-只发语义命令">第十一步：Task 只发语义命令</a>
     <a data-toc-link href="#第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</a>
+    <a data-toc-link href="#把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</a>
     <a data-toc-link href="#最终总结">最终总结</a>
   </nav>
       <article class="article-body" id="article-start">
@@ -143,6 +144,28 @@ Task 生命周期
 <li>Clip：开始帧、结束帧、名称和 Task</li>
 <li>Task：类型标识与该类型需要的参数</li>
 </ul>
+<p>可以先把它写成不依赖任何引擎对象的纯数据类型。下面只是知识示例，类型名和资源键都是通用占位，不对应具体项目源码。</p>
+<pre><code class="language-csharp">public sealed record TimelineDocument(
+    string Id,
+    int FrameRate,
+    IReadOnlyList&lt;TrackDocument&gt; Tracks);
+
+public sealed record TrackDocument(
+    string Name,
+    TrackKind Kind,
+    IReadOnlyList&lt;ClipDocument&gt; Clips);
+
+public sealed record ClipDocument(
+    int StartFrame,
+    int EndFrame,
+    TaskDefinition Task);
+
+public abstract record TaskDefinition;
+public sealed record PlayAnimationTask(string AnimationKey) : TaskDefinition;
+public sealed record PlayAudioTask(string AudioKey) : TaskDefinition;
+public sealed record ApplyHitTask(string HitProfile) : TaskDefinition;
+public sealed record MovementLockTask(bool Locked) : TaskDefinition;</code></pre>
+<p>这里故意没有 <code>currentFrame</code>、预览对象或运行时 Task 实例。它们属于一次播放过程，不应该被保存进编辑文档。编辑器真正修改的只有 <code>StartFrame</code>、<code>EndFrame</code> 和 Task 参数。</p>
 <pre><code class="language-text">Timeline
 ├─ Track：表现
 │  ├─ Clip：0—12 帧 / 播放动作
@@ -166,6 +189,56 @@ Task 生命周期
     clip.end = max(clip.start, nextEnd)
     markDocumentChanged()</code></pre>
 <p>这样编辑器 UI 可以不断重建，而真正的数据仍然稳定存在。窗口关闭、布局变化或预览对象销毁，都不应该破坏 Timeline 源数据。</p>
+<p>一次拖动可以拆成四步：读取指针位移、换算成帧差、修正合法范围、写回文档。预览器只是在写回以后重新采样同一份数据。</p>
+<pre><code class="language-pseudo">onPointerMove(pointerX):
+    deltaPixel = pointerX - dragStartX
+    deltaFrame = round(deltaPixel / pixelsPerFrame)
+
+    nextStart = originalStart + deltaFrame
+    nextEnd   = originalEnd + deltaFrame
+
+    require nextStart &gt;= 0
+    require nextEnd &lt; editorFrameCount
+
+    clip.startFrame = nextStart
+    clip.endFrame   = nextEnd
+    preview.sample(currentPreviewFrame, document)</code></pre>
+<p>编辑器保存的源数据可以使用 JSON、YAML 或其他序列化格式。下面给出与页面实验一致的 JSON 示例；它描述的是“作者编辑了什么”，还不是运行时对象。</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;demo_attack&quot;,
+  &quot;frameRate&quot;: 6,
+  &quot;tracks&quot;: [
+    {
+      &quot;name&quot;: &quot;动作&quot;,
+      &quot;kind&quot;: &quot;Action&quot;,
+      &quot;clips&quot;: [
+        { &quot;start&quot;: 0, &quot;end&quot;: 12, &quot;task&quot;: { &quot;type&quot;: &quot;PlayAnimation&quot;, &quot;animationKey&quot;: &quot;attack_basic&quot; } }
+      ]
+    },
+    {
+      &quot;name&quot;: &quot;音效&quot;,
+      &quot;kind&quot;: &quot;Audio&quot;,
+      &quot;clips&quot;: [
+        { &quot;start&quot;: 6, &quot;end&quot;: 10, &quot;task&quot;: { &quot;type&quot;: &quot;PlayAudio&quot;, &quot;audioKey&quot;: &quot;swing&quot; } }
+      ]
+    },
+    {
+      &quot;name&quot;: &quot;判定&quot;,
+      &quot;kind&quot;: &quot;Gameplay&quot;,
+      &quot;clips&quot;: [
+        { &quot;start&quot;: 8, &quot;end&quot;: 9, &quot;task&quot;: { &quot;type&quot;: &quot;ApplyHit&quot;, &quot;hitProfile&quot;: &quot;normal_hit&quot; } }
+      ]
+    },
+    {
+      &quot;name&quot;: &quot;状态&quot;,
+      &quot;kind&quot;: &quot;State&quot;,
+      &quot;clips&quot;: [
+        { &quot;start&quot;: 0, &quot;end&quot;: 14, &quot;task&quot;: { &quot;type&quot;: &quot;MovementLock&quot;, &quot;locked&quot;: true } }
+      ]
+    }
+  ]
+}</code></pre>
+<p>读这个数据时要抓住两点：Track 只是分组；真正参与调度的是四个 Clip。资源只保存稳定键，不保存编辑器预览对象。</p>
 <h2 id="第三步-区分源字段与派生字段">第三步：区分源字段与派生字段</h2>
 <p>总时长、缓存索引、运行时句柄等字段可以从 Clip 推导出来，不应要求使用者重复维护。典型做法是把总生命周期定义为所有 Clip 结束帧的最大值。</p>
 <ul>
@@ -179,6 +252,19 @@ for each track:
     for each clip:
         lifeTime = max(lifeTime, clip.endFrame)</code></pre>
 <p>如果总时长既能手填又能自动计算，就可能出现“Clip 已结束，但 Timeline 仍占用控制锁”的幽灵时间。派生字段只有一个计算入口，能够消除这类不一致。</p>
+<p>构建以后可以把 Track 展平，并写入已经验证过的 Task 类型。下面是同一份数据的运行时形态示例：</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;demo_attack&quot;,
+  &quot;frameRate&quot;: 6,
+  &quot;lifeTime&quot;: 14,
+  &quot;clips&quot;: [
+    { &quot;start&quot;: 0, &quot;end&quot;: 12, &quot;taskType&quot;: &quot;PlayAnimation&quot;, &quot;payload&quot;: { &quot;animationKey&quot;: &quot;attack_basic&quot; } },
+    { &quot;start&quot;: 6, &quot;end&quot;: 10, &quot;taskType&quot;: &quot;PlayAudio&quot;, &quot;payload&quot;: { &quot;audioKey&quot;: &quot;swing&quot; } },
+    { &quot;start&quot;: 8, &quot;end&quot;: 9, &quot;taskType&quot;: &quot;ApplyHit&quot;, &quot;payload&quot;: { &quot;hitProfile&quot;: &quot;normal_hit&quot; } },
+    { &quot;start&quot;: 0, &quot;end&quot;: 14, &quot;taskType&quot;: &quot;MovementLock&quot;, &quot;payload&quot;: { &quot;locked&quot;: true } }
+  ]
+}</code></pre>
+<p><code>lifeTime = 14</code> 表示最后一个逻辑帧编号是 14，因此实际覆盖 0—14 共 15 帧。运行时不再依赖 Track 名称，也不需要重新解释编辑器布局。</p>
 <h2 id="第四步-预览不是运行时真相">第四步：预览不是运行时真相</h2>
 <p>编辑器预览可以采样动画、特效或位置，但它的目标是帮助创作者观察结果，不是替代真正的运行时执行。</p>
 <ul>
@@ -217,11 +303,40 @@ if errors.any:
 <li>内容未变化时不重复写入</li>
 <li>运行时只依赖生成结果，不依赖编辑工具</li>
 </ul>
-<pre><code class="language-pseudo">runtimeTimeline = new TimelineData(
-    id       = source.id,
-    lifeTime = deriveLifeTime(source),
-    tracks   = source.tracks.map(compileTrack)
-)</code></pre>
+<pre><code class="language-csharp">TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
+{
+    var errors = ValidateStructure(source)
+        .Concat(ValidateReferences(source, catalog))
+        .Concat(ValidateSemantics(source))
+        .ToArray();
+
+    if (errors.Length &gt; 0)
+        throw new TimelineBuildException(errors);
+
+    var runtimeClips = new List&lt;CompiledClip&gt;();
+
+    foreach (TrackDocument track in source.Tracks)
+    foreach (ClipDocument clip in track.Clips)
+    {
+        runtimeClips.Add(new CompiledClip(
+            StartFrame: clip.StartFrame,
+            EndFrame: clip.EndFrame,
+            Task: CompileTask(clip.Task, catalog)));
+    }
+
+    int lifeTime = runtimeClips.Max(clip =&gt; clip.EndFrame);
+    return new TimelineData(source.Id, source.FrameRate, lifeTime, runtimeClips);
+}
+
+CompiledTask CompileTask(TaskDefinition source, ResourceCatalog catalog) =&gt; source switch
+{
+    PlayAnimationTask task =&gt; new AnimationTaskData(catalog.RequireAnimation(task.AnimationKey)),
+    PlayAudioTask task     =&gt; new AudioTaskData(catalog.RequireAudio(task.AudioKey)),
+    ApplyHitTask task      =&gt; new HitTaskData(catalog.RequireHitProfile(task.HitProfile)),
+    MovementLockTask task  =&gt; new MovementLockTaskData(task.Locked),
+    _ =&gt; throw new UnsupportedTaskTypeException(source.GetType())
+};</code></pre>
+<p>这段代码的输入是编辑器文档，输出是只读 <code>TimelineData</code>。任何未知 Task、丢失资源或非法帧区间都会让构建明确失败，不会被替换成空行为。</p>
 <p>这一步相当于把“方便编辑的语言”翻译成“方便执行的语言”。收益是启动更快、类型更确定，也能让错误集中出现在构建阶段。</p>
 <h2 id="第七步-启动时建立只读索引">第七步：启动时建立只读索引</h2>
 <p>运行时启动后先加载 Timeline 快照，再加载引用 Timeline 的能力或流程。顺序不能反过来，因为上层对象创建时就可能需要解析 Timeline。</p>
@@ -231,11 +346,29 @@ if errors.any:
 <li>上层只保存标识或只读引用</li>
 <li>查询入口保持单一，调用方不关心数据来自哪里</li>
 </ul>
-<pre><code class="language-pseudo">for each timeline in snapshot.timelines:
-    timelineById[timeline.id] = timeline
+<pre><code class="language-csharp">IReadOnlyDictionary&lt;string, TimelineData&gt; BuildIndex(RuntimeSnapshot snapshot)
+{
+    var index = new Dictionary&lt;string, TimelineData&gt;();
 
-for each ability in snapshot.abilities:
-    ability.timeline = timelineById[ability.timelineId]</code></pre>
+    foreach (TimelineData timeline in snapshot.Timelines)
+    {
+        if (!index.TryAdd(timeline.Id, timeline))
+            throw new DuplicateTimelineIdException(timeline.Id);
+    }
+
+    return index;
+}
+
+TimelineData ResolveTimeline(
+    IReadOnlyDictionary&lt;string, TimelineData&gt; index,
+    string timelineId)
+{
+    if (!index.TryGetValue(timelineId, out TimelineData timeline))
+        throw new MissingTimelineException(timelineId);
+
+    return timeline;
+}</code></pre>
+<p>索引建立完成后，上层对象只保存 Timeline 标识或只读引用。找不到标识时直接暴露数据错误，不返回一个“什么也不做”的空 Timeline。</p>
 <p>索引解决的是定位，不负责复制数据。只读 Timeline 可以被多个实例共享；真正的播放进度、Task 状态和目标实体必须属于每次播放实例。</p>
 <h2 id="第八步-激活时创建播放实例">第八步：激活时创建播放实例</h2>
 <p>Timeline 数据是模板，播放器才是一次执行。激活前，播放器会遍历全部 Clip，根据 Task 类型从工厂创建执行对象，并注入参数与上下文。</p>
@@ -246,14 +379,30 @@ for each ability in snapshot.abilities:
 <li>播放状态与共享模板分离</li>
 <li>可变状态不能写回 Timeline 配置</li>
 </ul>
-<pre><code class="language-pseudo">for each clip in timeline.allClips:
-    task = taskFactory.create(clip.taskType, context)
-    task.initialize(clip.parameters)
-    runtimeClips.add(
-        task,
-        clip.startFrame,
-        resolveEndFrame(task, clip)
-    )</code></pre>
+<pre><code class="language-csharp">TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
+{
+    var runtimeClips = new List&lt;RuntimeClip&gt;();
+
+    foreach (CompiledClip clip in template.Clips)
+    {
+        IRuntimeTask task = taskFactory.Create(clip.Task.Type);
+        task.Initialize(clip.Task, context);
+
+        runtimeClips.Add(new RuntimeClip(
+            task: task,
+            startFrame: clip.StartFrame,
+            endFrame: task.ResolveEndFrame(clip.EndFrame),
+            begun: false,
+            finished: false));
+    }
+
+    return new TimelinePlayer(
+        frameRate: template.FrameRate,
+        lifeTime: template.LifeTime,
+        clips: runtimeClips,
+        currentFrame: -1);
+}</code></pre>
+<p>模板中的四个 <code>CompiledClip</code> 会得到四个独立 Task 实例。两个实体同时播放同一个模板时，它们共享只读配置，但各自拥有 <code>currentFrame</code>、生命周期标记和实体上下文。</p>
 <p>部分 Task 的真实持续时间可能由曲线或资源长度决定，因此允许 Task 在实例化阶段修正结束帧，但修正结果只能属于本次运行时 Clip。</p>
 <h2 id="第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</h2>
 <p>播放器通常把真实时间转换成逻辑帧。一次渲染帧可能跨过多个逻辑帧，因此不能只处理目标帧，必须依次补齐中间帧。</p>
@@ -264,12 +413,43 @@ for each ability in snapshot.abilities:
 <li>每个逻辑帧按统一顺序检查全部 Clip</li>
 <li>到达生命周期后结束播放器</li>
 </ul>
-<pre><code class="language-pseudo">elapsed += deltaTime * playbackSpeed
-targetFrame = floor(elapsed * frameRate)
+<pre><code class="language-csharp">void Advance(float deltaTime)
+{
+    elapsed += deltaTime * playbackSpeed;
+    int targetFrame = FloorToInt(elapsed * frameRate);
+    targetFrame = Min(targetFrame, lifeTime);
 
-while currentFrame &lt; targetFrame:
-    currentFrame += 1
-    tickFrame(currentFrame)</code></pre>
+    while (currentFrame &lt; targetFrame)
+    {
+        currentFrame += 1;
+        TickFrame(currentFrame);
+    }
+
+    if (currentFrame == lifeTime)
+        CompleteTimeline();
+}
+
+void TickFrame(int frame)
+{
+    foreach (RuntimeClip clip in runtimeClips)
+    {
+        if (frame == clip.StartFrame &amp;&amp; !clip.Begun)
+        {
+            clip.Task.Begin(frame);
+            clip.Begun = true;
+        }
+
+        if (clip.Begun &amp;&amp; !clip.Finished &amp;&amp; frame &gt;= clip.StartFrame &amp;&amp; frame &lt;= clip.EndFrame)
+            clip.Task.Tick(frame);
+
+        if (frame == clip.EndFrame &amp;&amp; !clip.Finished)
+        {
+            clip.Task.Finish(frame);
+            clip.Finished = true;
+        }
+    }
+}</code></pre>
+<p>假设渲染线程从第 7 帧一次跳到第 10 帧，<code>while</code> 会依次执行第 8、9、10 帧。因此 8—9 帧的短命中 Clip 仍然能够完整经历 Begin、Tick 和 Finish。</p>
 <p>逐帧追赶可以保证低帧率下不会跳过短 Clip。代价是单帧卡顿后可能集中执行多次，因此 Task 的每帧逻辑应保持轻量，并避免无界循环。</p>
 <h2 id="第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</h2>
 <p>每个运行时 Clip 至少需要 Begin、Tick、Finish、Interrupt 四种语义。播放器只根据帧和状态调用它们，不理解具体业务。</p>
@@ -290,6 +470,21 @@ if frame == clip.end and not clip.finished:
     clip.task.finish(frame)
     clip.finished = true</code></pre>
 <p>默认让 Interrupt 至少执行与 Finish 等价的清理，可以降低旧 Task 遗留状态的风险；如果中断与正常结束的业务结果不同，再显式覆盖。</p>
+<p>播放器中断时不能只停止计时器，还必须访问所有已经 Begin 但尚未 Finish 的 Clip：</p>
+<pre><code class="language-csharp">void InterruptTimeline()
+{
+    foreach (RuntimeClip clip in runtimeClips)
+    {
+        if (!clip.Begun || clip.Finished)
+            continue;
+
+        clip.Task.Interrupt(currentFrame);
+        clip.Finished = true;
+    }
+
+    state = PlayerState.Interrupted;
+}</code></pre>
+<p>把 <code>Finished</code> 设为 true 是为了阻止同一个 Task 在后续销毁流程里再次清理。正常完成与中断可以产生不同业务结果，但二者都必须释放持续状态。</p>
 <h2 id="第十一步-task-只发语义命令">第十一步：Task 只发语义命令</h2>
 <p>Task 不应直接操纵具体角色控制器。它只表达“想做什么”，通过桥接层提交带有实体目标、来源标识和参数的语义命令。</p>
 <ul>
@@ -299,15 +494,41 @@ if frame == clip.end and not clip.finished:
 <li>运动类：提交位移意图或瞬移请求</li>
 <li>生成类：创建投射物或临时实体</li>
 </ul>
-<pre><code class="language-pseudo">onBegin:
-    commandBus.submit(
-        targetEntity,
-        sourceId,
-        command = AllowMove(speedScale)
-    )
+<pre><code class="language-csharp">sealed class MovementLockRuntimeTask : IRuntimeTask
+{
+    public void Begin(int frame)
+    {
+        commands.Submit(targetEntity, sourceId, new AcquireMovementLock());
+    }
 
-onFinishOrInterrupt:
-    commandBus.release(targetEntity, sourceId)</code></pre>
+    public void Tick(int frame)
+    {
+        // 锁是持续状态，不需要每帧重复提交。
+    }
+
+    public void Finish(int frame)
+    {
+        commands.Submit(targetEntity, sourceId, new ReleaseMovementLock());
+    }
+
+    public void Interrupt(int frame)
+    {
+        commands.Submit(targetEntity, sourceId, new ReleaseMovementLock());
+    }
+}
+
+sealed class HitRuntimeTask : IRuntimeTask
+{
+    public void Begin(int frame)
+    {
+        commands.Submit(targetEntity, sourceId, new ApplyHit(hitProfile));
+    }
+
+    public void Tick(int frame) { }
+    public void Finish(int frame) { }
+    public void Interrupt(int frame) { }
+}</code></pre>
+<p>动作 Task 的 Begin 可以提交 <code>PlayAnimation</code>，音效 Task 的 Begin 可以提交 <code>PlayAudio</code>，命中 Task 的 Begin 提交 <code>ApplyHit</code>，状态 Task 则用 Begin/Finish 形成成对的获取与释放。播放器只看统一生命周期，不需要知道每条命令如何落地。</p>
 <p>来源标识让同一实体能够区分多个并行请求。没有来源标识，某个 Clip 结束时可能错误清掉另一个系统仍在使用的状态。</p>
 <h2 id="第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</h2>
 <p>命令桥把 Timeline 世界中的实体引用映射为真正的运行时单位，再路由到运动、动画、输入或效果组件。实体组件才拥有最终决定权。</p>
@@ -329,6 +550,38 @@ onFinishOrInterrupt:
 最终速度和朝向
   ↓
 移动组件真正修改实体</code></pre>
+<p>命令到达实体侧以后，还要经过一次明确的路由和仲裁：</p>
+<pre><code class="language-csharp">void Consume(EntityCommand command)
+{
+    switch (command)
+    {
+        case PlayAnimation value:
+            animation.Play(value.AnimationId, value.SourceId);
+            break;
+
+        case PlayAudio value:
+            audio.Play(value.AudioId);
+            break;
+
+        case ApplyHit value:
+            combat.ResolveHit(value.HitProfile, value.SourceId);
+            break;
+
+        case AcquireMovementLock value:
+            movementLocks.Add(value.SourceId);
+            movement.Recalculate(movementLocks);
+            break;
+
+        case ReleaseMovementLock value:
+            movementLocks.Remove(value.SourceId);
+            movement.Recalculate(movementLocks);
+            break;
+
+        default:
+            throw new UnsupportedEntityCommandException(command.GetType());
+    }
+}</code></pre>
+<p>注意移动锁保存的是 <code>SourceId</code> 集合，而不是单个布尔值。这样一个 Timeline 释放自己的锁时，不会误删另一个系统仍然持有的锁。</p>
 <p>完整调试也应沿这条链逐层观察：</p>
 <ol>
 <li>源数据是否正确</li>
@@ -340,6 +593,73 @@ onFinishOrInterrupt:
 <li>最终执行结果是否符合请求</li>
 </ol>
 <p>最重要的原则是：Timeline 负责确定性顺序，Task 负责翻译意图，实体组件负责世界规则。三层各自可观察，问题才不会全部堆进一个巨大的播放器。</p>
+<h2 id="把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</h2>
+<p>现在把编辑器导出的四个 Clip 放回同一条时间线上，就能看到数据如何一步步变成实体行为：</p>
+<table><thead><tr>
+<th>帧</th>
+<th>播放器发现的边界</th>
+<th>Task 生命周期</th>
+<th>实体侧结果</th>
+</tr></thead><tbody>
+<tr>
+<td>0</td>
+<td>动作与移动锁到达开始帧</td>
+<td><code>PlayAnimation.Begin</code>、<code>MovementLock.Begin</code></td>
+<td>播放攻击动作，普通移动被锁定</td>
+</tr>
+<tr>
+<td>1—5</td>
+<td>两个 Clip 都处于有效区间</td>
+<td>两个 Task 持续 Tick</td>
+<td>动作继续采样，移动锁保持</td>
+</tr>
+<tr>
+<td>6</td>
+<td>音效到达开始帧</td>
+<td><code>PlayAudio.Begin</code></td>
+<td>播放挥击音效</td>
+</tr>
+<tr>
+<td>8</td>
+<td>命中到达开始帧</td>
+<td><code>ApplyHit.Begin</code></td>
+<td>提交命中语义命令并由战斗组件结算</td>
+</tr>
+<tr>
+<td>9</td>
+<td>命中到达结束帧</td>
+<td><code>ApplyHit.Tick</code> 后 <code>Finish</code></td>
+<td>命中 Clip 正常结束</td>
+</tr>
+<tr>
+<td>10</td>
+<td>音效到达结束帧</td>
+<td><code>PlayAudio.Finish</code></td>
+<td>音效 Clip 生命周期结束</td>
+</tr>
+<tr>
+<td>12</td>
+<td>动作到达结束帧</td>
+<td><code>PlayAnimation.Finish</code></td>
+<td>动作控制权释放</td>
+</tr>
+<tr>
+<td>14</td>
+<td>移动锁到达结束帧</td>
+<td><code>MovementLock.Finish</code></td>
+<td>移动锁按 SourceId 释放，Timeline 完成</td>
+</tr>
+</tbody></table>
+<p>可以把第 8 帧抽出来看成一次完整调用栈：</p>
+<pre><code class="language-text">Advance(deltaTime)
+  → targetFrame = 8
+  → TickFrame(8)
+  → HitRuntimeTask.Begin(8)
+  → Submit(ApplyHit)
+  → EntityCommandReceiver.Consume(...)
+  → CombatComponent.ResolveHit(...)
+  → 目标实体产生结算结果</code></pre>
+<p>如果在第 8 帧点击页面实验里的“中断 Timeline”，动作、音效、命中和移动锁中仍然活动的 Task 都会收到 Interrupt；其中移动锁 Task 会提交释放命令，实体重新获得移动控制权。这就是为什么中断不能等同于简单地停止播放。</p>
 <h2 id="最终总结">最终总结</h2>
 <p>一套完整的 Timeline 运行流程可以压缩成三个阶段：</p>
 <pre><code class="language-text">数据准备
