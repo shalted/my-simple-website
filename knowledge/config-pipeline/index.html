@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="制造重复 ID、缺失引用和非法范围，逐阶段观察配置校验、强类型快照、索引和运行时查询。">
+  <title>配置数据生成管线 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/config-pipeline.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/config-pipeline.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / CONFIG BUILD</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/工程设计/配置数据生成管线/">完整文章</a>
+      <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">SOURCE → VALIDATE → SNAPSHOT → QUERY</p>
+      <h1>让错误停在<em>构建期</em>，<br>不进入运行时</h1>
+      <p>逐层检查结构、引用和语义；只有零错误的数据才能生成强类型快照与索引。</p>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="配置数据生成管线交互实验">
+      <div class="toolbar">
+        <div class="scenario-tabs" role="group" aria-label="教学场景">
+          <button class="scenario-tab is-active" type="button" data-scenario="normal" aria-pressed="true">正常构建</button>
+          <button class="scenario-tab" type="button" data-scenario="boundary" aria-pressed="false">边界数据</button>
+          <button class="scenario-tab" type="button" data-scenario="failure" aria-pressed="false">多错误失败</button>
+        </div>
+        <div class="fault-controls" role="group" aria-label="错误注入">
+          <label><input id="duplicate-toggle" type="checkbox"> 重复 ID</label>
+          <label><input id="missing-ref-toggle" type="checkbox"> 缺失引用</label>
+          <label><input id="range-toggle" type="checkbox"> 非法范围</label>
+          <button id="apply-faults" type="button">重新构建</button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 7</strong></div>
+      </div>
+
+      <div class="pipeline" id="pipeline" aria-label="构建阶段">
+        <button type="button" data-stage="source"><span>01</span>源记录</button>
+        <i>→</i>
+        <button type="button" data-stage="shape"><span>02</span>结构校验</button>
+        <i>→</i>
+        <button type="button" data-stage="reference"><span>03</span>引用校验</button>
+        <i>→</i>
+        <button type="button" data-stage="semantic"><span>04</span>语义校验</button>
+        <i>→</i>
+        <button type="button" data-stage="snapshot"><span>05</span>强类型快照</button>
+        <i>→</i>
+        <button type="button" data-stage="index"><span>06</span>索引</button>
+        <i>→</i>
+        <button type="button" data-stage="query"><span>07</span>运行时查询</button>
+      </div>
+
+      <div class="lab-grid">
+        <section class="data-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">TEACHING SOURCE</p><h2>动作配置记录</h2></div>
+            <p>教学 Schema · cost ∈ [0, 100]</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>行</th><th>ID</th><th>NAME</th><th>COST</th><th>EFFECT_ID</th><th>状态</th></tr></thead>
+              <tbody id="source-rows"></tbody>
+            </table>
+          </div>
+          <div class="schema-strip">
+            <span>id: int / primary key</span>
+            <span>name: string / required</span>
+            <span>cost: int / [0, 100]</span>
+            <span>effect_id: int / reference</span>
+          </div>
+          <div class="artifact-panel">
+            <div class="artifact-head"><span>BUILD ARTIFACT</span><strong id="artifact-status">尚未生成</strong></div>
+            <pre id="artifact-view">等待验证完成…</pre>
+          </div>
+        </section>
+
+        <article class="explain-panel">
+          <p class="panel-label">CURRENT STAGE</p>
+          <p class="phase" id="phase">SOURCE ROWS</p>
+          <h2 id="step-title">读取源记录</h2>
+          <p id="step-copy">先保留来源、行号和原始字段，错误才能回到作者位置。</p>
+          <div class="change-box"><span>本步改变</span><p id="step-change">源单元格 → 带来源的记录</p></div>
+          <div class="why-box"><span>WHY</span><p id="step-why">只报“生成失败”无法定位需要修改的行。</p></div>
+          <div class="query-card">
+            <span>RUNTIME QUERY</span>
+            <label for="query-id">按 ID 查询 <input id="query-id" type="number" value="102" inputmode="numeric"></label>
+            <button id="query-button" type="button">执行查询</button>
+            <p id="query-result">快照发布后才能查询</p>
+          </div>
+        </article>
+
+        <aside class="inspect-panel">
+          <div class="counter-grid">
+            <div><span>ROWS</span><strong id="row-count">3</strong><small>源记录</small></div>
+            <div><span>ERRORS</span><strong id="error-count">0</strong><small>累计错误</small></div>
+            <div><span>INDEX</span><strong id="index-count">0</strong><small>索引条目</small></div>
+            <div><span>QUERY</span><strong id="query-cost">—</strong><small>查询结果 cost</small></div>
+          </div>
+          <div class="error-panel">
+            <div class="error-head"><span>ERROR BAG</span><strong id="build-state">检查中</strong></div>
+            <ol id="error-list" aria-live="polite"></ol>
+          </div>
+          <div class="code-panel">
+            <div class="code-head"><span>SYNCED PSEUDOCODE</span><strong id="code-status">SOURCE</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="progress">
+          <div class="step-dots" id="step-dots" data-lab-dots></div>
+          <label for="speed-seconds">自动每步 <input id="speed-seconds" type="number" value="2" min="0.8" max="8" step="0.2" inputmode="decimal"> 秒</label>
+          <span id="speed-message" role="status">站内基准 2 秒</span>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button type="button" id="next-button" class="primary-button" data-lab-control>下一步 →</button>
+          <button type="button" id="auto-button" data-lab-control aria-pressed="false">自动播放</button>
+        </div>
+      </div>
+      <p class="keyboard-hint">键盘：← / → 单步，空格播放或暂停，R 重置。输入控件聚焦时不会触发快捷键。</p>
+    </section>
+
+    <section class="concept-grid" aria-label="机制与代价">
+      <article><span>01</span><h2>问题</h2><p>弱类型数据把重复键、断引用和非法范围推迟到运行时。</p></article>
+      <article><span>02</span><h2>机制</h2><p>分层收集错误，零错误后才生成强类型快照和索引。</p></article>
+      <article><span>03</span><h2>失败边界</h2><p>构建失败必须停止发布；不能生成空快照或残缺索引伪装成功。</p></article>
+      <article><span>04</span><h2>复杂度</h2><p>验证与建索引通常为 O(n)，主键查询平均为 O(1)，额外空间 O(n)。</p></article>
+    </section>
+  </main>
+</body>
+</html>

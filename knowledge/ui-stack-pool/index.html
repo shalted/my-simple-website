@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐步观察页面栈、活动面板、面板池、绑定版本与事件解绑。">
+  <title>UI 页面栈与面板池 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/ui-stack-pool.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/ui-stack-pool.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a>
+    <nav aria-label="主导航">
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/ability-flow/">技能运行地图</a>
+      <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div><span class="eyebrow">NAVIGATION / ACTIVE / POOL</span><h1>关闭页面，<br>不等于<em>销毁面板</em>。</h1></div>
+      <p>教学场景使用页面 A、B 与覆盖页 C。观察导航历史、活动实例、池内对象、绑定版本和事件订阅如何分别变化。</p>
+    </section>
+    <section class="lab" data-interactive-lab aria-label="UI 页面栈与面板池交互实验">
+      <div class="lab-head">
+        <div><span class="panel-label">UI RUNTIME STATE</span><h2>栈、活动表与面板池</h2></div>
+        <div class="step-readout"><span id="step-label"></span><strong id="step-count"></strong></div>
+      </div>
+      <div class="case-tabs" role="group" aria-label="教学场景">
+        <button class="case-tab is-active" data-case="normal" type="button" aria-pressed="true">打开与返回</button>
+        <button class="case-tab" data-case="overlay" type="button" aria-pressed="false">覆盖与重复打开</button>
+        <button class="case-tab" data-case="conflict" type="button" aria-pressed="false">旧回调冲突</button>
+      </div>
+      <section class="lenses">
+        <article><span>PROBLEM</span><p id="problem"></p></article>
+        <article><span>MECHANISM</span><p id="mechanism"></p></article>
+        <article><span>BOUNDARY</span><p id="boundary"></p></article>
+        <article><span>COMPLEXITY</span><p id="cost"></p></article>
+      </section>
+      <div class="lab-grid">
+        <article class="explain">
+          <span class="phase" id="phase"></span>
+          <h2 id="title"></h2>
+          <p id="copy"></p>
+          <div class="change"><span>这一步改变了什么</span><p id="change"></p></div>
+          <div class="why"><span>WHY</span><p id="why"></p></div>
+          <a href="/knowledge/library/工程设计/UI页面栈与面板池/">阅读完整原理 →</a>
+        </article>
+        <section class="visual">
+          <header class="visual-head">
+            <div><span class="panel-label">OBSERVABLE STATE</span><h2>页面运行图</h2></div>
+            <strong id="status"></strong>
+          </header>
+          <div class="state-columns">
+            <section class="state-card"><h3>PAGE STACK</h3><ol id="stack"></ol></section>
+            <section class="state-card"><h3>ACTIVE PANELS</h3><ul id="active"></ul></section>
+            <section class="state-card"><h3>PANEL POOL</h3><ul id="pool"></ul></section>
+          </div>
+          <div class="binding">
+            <div><span>绑定版本</span><strong id="version"></strong></div>
+            <div><span>事件订阅</span><strong id="subscriptions"></strong></div>
+            <div><span>面板令牌</span><strong id="token"></strong></div>
+          </div>
+          <ol class="events" id="events"></ol>
+        </section>
+        <aside class="inspect">
+          <span class="panel-label">KEY STATE</span>
+          <dl id="metrics"></dl>
+          <div class="code">
+            <div><span>同步伪代码</span><strong id="code-status"></strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+      <div class="controls">
+        <label>自动速度
+          <select id="speed">
+            <option value="3000">慢 · 3.0s</option>
+            <option value="2100" selected>标准 · 2.1s</option>
+            <option value="1300">快 · 1.3s</option>
+          </select>
+        </label>
+        <div id="dots" data-lab-dots></div>
+        <div>
+          <button id="reset" type="button" data-lab-control>重置</button>
+          <button id="previous" type="button" data-lab-control>← 上一步</button>
+          <button class="auto-button" id="auto" type="button" data-lab-control aria-pressed="false">自动演示</button>
+          <button class="next-button" id="next" type="button" data-lab-control>下一步 →</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

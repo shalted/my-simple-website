@@ -416,6 +416,22 @@ function interactiveCallout(document) {
         <p><a href="/knowledge/virtual-list/">打开虚拟列表实验 →</a></p>
       </aside>`;
   }
+  if (/配置数据生成管线/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套构建闸门实验</strong>
+        <span>注入重复 ID、缺失引用与非法范围，观察错误袋、强类型快照、主键索引和运行时查询。</span>
+        <p><a href="/knowledge/config-pipeline/">打开配置生成实验 →</a></p>
+      </aside>`;
+  }
+  if (/UI.*页面栈|页面栈.*面板池/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套页面生命周期实验</strong>
+        <span>逐步观察打开、覆盖、返回、面板复用、数据绑定、事件解绑和旧回调冲突。</span>
+        <p><a href="/knowledge/ui-stack-pool/">打开页面栈实验 →</a></p>
+      </aside>`;
+  }
   if (/目标筛选|命中判定/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -866,6 +882,16 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/virtual-list/">
           <small>UI / VIRTUALIZATION</small>
           <div><h3>虚拟列表与节点复用</h3><p>用固定槽位滚动大量数据，观察索引映射、复用和异步取消。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/config-pipeline/">
+          <small>CONFIG / BUILD GATE</small>
+          <div><h3>配置数据生成管线</h3><p>从源数据到强类型快照，观察分层校验、错误袋、索引和发布闸门。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/ui-stack-pool/">
+          <small>UI / STACK &amp; POOL</small>
+          <div><h3>UI 页面栈与面板池</h3><p>拆解打开、覆盖、返回、复用、绑定清理和旧回调冲突。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
         <a class="feature-card" href="/#lab">

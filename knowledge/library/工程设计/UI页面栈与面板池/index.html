@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="页面系统常同时维护三种状态：">
+  <title>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</h1>
+      <p class="hero-copy">页面系统常同时维护三种状态：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#1-打开一页的完整链路">1. 打开一页的完整链路</a>
+    <a data-toc-link href="#2-single-与重复打开">2. Single 与重复打开</a>
+    <a data-toc-link href="#3-页面栈只记录导航历史">3. 页面栈只记录导航历史</a>
+    <a data-toc-link href="#4-面板池的创建与复用">4. 面板池的创建与复用</a>
+    <a data-toc-link href="#5-面板显示-绑定与隐藏">5. 面板显示、绑定与隐藏</a>
+    <a data-toc-link href="#6-事件订阅与旧回调冲突">6. 事件订阅与旧回调冲突</a>
+    <a data-toc-link href="#7-关闭与回收">7. 关闭与回收</a>
+    <a data-toc-link href="#8-复杂度与边界">8. 复杂度与边界</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套页面生命周期实验</strong>
+        <span>逐步观察打开、覆盖、返回、面板复用、数据绑定、事件解绑和旧回调冲突。</span>
+        <p><a href="/knowledge/ui-stack-pool/">打开页面栈实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 打开一页的完整链路">
+      <span>01</span>
+      <strong>1. 打开一页的完整链路</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. Single 与重复打开">
+      <span>02</span>
+      <strong>2. Single 与重复打开</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 页面栈只记录导航历史">
+      <span>03</span>
+      <strong>3. 页面栈只记录导航历史</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 面板池的创建与复用">
+      <span>04</span>
+      <strong>4. 面板池的创建与复用</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 面板显示、绑定与隐藏">
+      <span>05</span>
+      <strong>5. 面板显示、绑定与隐藏</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 事件订阅与旧回调冲突">
+      <span>06</span>
+      <strong>6. 事件订阅与旧回调冲突</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 关闭与回收">
+      <span>07</span>
+      <strong>7. 关闭与回收</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 复杂度与边界">
+      <span>08</span>
+      <strong>8. 复杂度与边界</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>1. 打开一页的完整链路</h3>
+        <p>教学场景使用“页面 A、页面 B、覆盖页 C”作为通用名称。</p>
+
+        <pre><code class="language-text">解析页面定义与打开选项
+    ↓
+检查 Single 模式是否已有活动实例
+    ↓
+检查是否已有相同异步打开任务
+    ↓
+从池租用，或加载并创建面板
+    ↓
+预加载面板依赖
+    ↓
+挂到宿主或画布
+    ↓
+写入 ActivePanels
+    ↓
+按选项 Push StackFrame
+    ↓
+Open(data)：绑定、显示、动画、事件</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CONCEPT</div>
+        <h3>2. Single 与重复打开</h3>
+        <p>Single 模式应先查活动实例。若实例仍有效，直接返回它，不再租用第二个面板，也不再压入重复栈帧。异步创建期间也可以共享同一个 PendingOpen，防止两个并发请求各自创建实例。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>3. 页面栈只记录导航历史</h3>
+        <p>栈帧可以记录页面键、打开数据、选项与打开时间。新面板完成挂载后，只有页面定义和本次选项都允许入栈时才 Push。</p>
+
+        <pre><code class="language-csharp">if (stack.Count &lt;= 1)
+    return;
+
+Close(stack.Last.UIKey);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / FLOW / RULES</div>
+        <h3>4. 面板池的创建与复用</h3>
+        <p>可缓存页面先从池 Spawn：</p>
+        <ul><li>命中：直接返回已有实例；</li><li>未命中：加载 Prefab、创建面板对象、Initialize 一次，并以 spawned 状态注册到池；</li><li>不允许缓存：创建独立实例，关闭时直接销毁。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
+        <h3>5. 面板显示、绑定与隐藏</h3>
+        <p>一次可复用面板应区分：</p>
+        <ul><li><code>Initialize</code>：仅首次创建时缓存组件、建立动画控制；</li><li><code>Rent</code>：从池取出时保持隐藏，避免异步预载期间闪出旧画面；</li><li><code>Open(data)</code>：更新取消令牌，执行打开前数据设置，加载静态资源，先 Unbind 再 Bind，最后显示并播放动画；</li><li><code>Close</code>：取消面板令牌，执行关闭前逻辑，Unbind，再播放关闭动画；</li><li><code>Return</code>：隐藏，清宿主关系和状态，Unbind，Dispose ViewModel 与资源作用域；</li><li><code>Dispose</code>：先执行 Return 清理，再销毁对象。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>6. 事件订阅与旧回调冲突</h3>
+        <p>框架能统一清理 Binder，但页面子类在打开后自行订阅的业务事件，仍需要在关闭后显式解绑。一个安全模型是保存 <code>bindingVersion</code>：</p>
+
+        <pre><code class="language-csharp">bindingVersion++;
+var expected = bindingVersion;
+
+subscription = source.Subscribe(value =&gt; {
+    if (!IsOpen || expected != bindingVersion)
+        return;
+    Render(value);
+});</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>7. 关闭与回收</h3>
+        <p>Shutdown 会立即关闭所有活动面板、释放所有栈帧、销毁面板池并清空活动表和 PendingOpen。</p>
+
+        <pre><code class="language-text">关闭宿主的子面板
+    ↓
+从 Canvas / Host 脱离
+    ↓
+从页面栈移除
+    ↓
+Close：取消令牌、Unbind、关闭动画
+    ↓ animation complete
+从 ActivePanels 删除
+    ↓
+可缓存 → Unspawn 回池
+不可缓存 → Destroy</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+        <h3>8. 复杂度与边界</h3>
+        <p>必须单独验证的边界：</p>
+        <ul><li>活动面板按键查询平均 <code>O(1)</code>；</li><li>Push 栈帧 <code>O(1)</code>，按 key 从后向前移除最坏 <code>O(S)</code>；</li><li>关闭同一 ID 的多个实例需要遍历快照；</li><li>池命中避免加载与实例化，但增加闲置内存；</li><li>过期池扫描约 <code>O(P)</code>，P 为池数量。</li><li>重复打开已处于 Open 的 Single 页面是否消费新 data；</li><li>自定义事件是否在 OnAfterClose 中解除；</li><li>关闭动画期间的重复 Close；</li><li>异步预载失败后是否回收面板并释放临时 Scope；</li><li>宿主不存在时，子面板必须拒绝挂到全局层；</li><li>页面回池后旧异步回调是否有取消令牌或绑定版本保护；</li><li>关停捷径是否也显式取消并释放面板令牌。</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>页面系统常同时维护三种状态：</p>
+<ul>
+<li>页面栈：记录返回顺序和打开参数；</li>
+<li>活动面板表：记录当前仍打开的实例；</li>
+<li>面板池：保存已经关闭、可再次租用的实例。</li>
+</ul>
+<p>把它们混为一个“页面列表”，重复打开、关闭动画、返回和复用就会互相覆盖。</p>
+<h2 id="1-打开一页的完整链路">1. 打开一页的完整链路</h2>
+<pre><code class="language-text">解析页面定义与打开选项
+    ↓
+检查 Single 模式是否已有活动实例
+    ↓
+检查是否已有相同异步打开任务
+    ↓
+从池租用，或加载并创建面板
+    ↓
+预加载面板依赖
+    ↓
+挂到宿主或画布
+    ↓
+写入 ActivePanels
+    ↓
+按选项 Push StackFrame
+    ↓
+Open(data)：绑定、显示、动画、事件</code></pre>
+<p>教学场景使用“页面 A、页面 B、覆盖页 C”作为通用名称。</p>
+<h2 id="2-single-与重复打开">2. Single 与重复打开</h2>
+<p>Single 模式应先查活动实例。若实例仍有效，直接返回它，不再租用第二个面板，也不再压入重复栈帧。异步创建期间也可以共享同一个 PendingOpen，防止两个并发请求各自创建实例。</p>
+<p>但“复用已有实例”是否会刷新新数据，要看 Open 的实际语义。如果面板已经处于 Open 状态，而 Open 直接返回，那么不能仅凭“重复打开成功”推断新 data 已被重新绑定；需要独立 Refresh 或明确的重复打开协议。</p>
+<h2 id="3-页面栈只记录导航历史">3. 页面栈只记录导航历史</h2>
+<p>栈帧可以记录页面键、打开数据、选项与打开时间。新面板完成挂载后，只有页面定义和本次选项都允许入栈时才 Push。</p>
+<p>返回通常关闭栈顶：</p>
+<pre><code class="language-csharp">if (stack.Count &lt;= 1)
+    return;
+
+Close(stack.Last.UIKey);</code></pre>
+<p>关闭流程会从栈中删除对应帧。覆盖页可以和下层页面同时保持 active；返回只关闭覆盖页，下层页面无需重新创建。</p>
+<h2 id="4-面板池的创建与复用">4. 面板池的创建与复用</h2>
+<p>可缓存页面先从池 Spawn：</p>
+<ul>
+<li>命中：直接返回已有实例；</li>
+<li>未命中：加载 Prefab、创建面板对象、Initialize 一次，并以 spawned 状态注册到池；</li>
+<li>不允许缓存：创建独立实例，关闭时直接销毁。</li>
+</ul>
+<p>关闭动画完成后才从 ActivePanels 删除并 Recycle。过早回池会让关闭动画与下一次打开同时操作同一对象。</p>
+<p>池可以按最后访问时间清理：只有没有活动实例的过期池才能释放未使用对象、销毁池并释放其 Prefab 所有权。</p>
+<h2 id="5-面板显示-绑定与隐藏">5. 面板显示、绑定与隐藏</h2>
+<p>一次可复用面板应区分：</p>
+<ul>
+<li><code>Initialize</code>：仅首次创建时缓存组件、建立动画控制；</li>
+<li><code>Rent</code>：从池取出时保持隐藏，避免异步预载期间闪出旧画面；</li>
+<li><code>Open(data)</code>：更新取消令牌，执行打开前数据设置，加载静态资源，先 Unbind 再 Bind，最后显示并播放动画；</li>
+<li><code>Close</code>：取消面板令牌，执行关闭前逻辑，Unbind，再播放关闭动画；</li>
+<li><code>Return</code>：隐藏，清宿主关系和状态，Unbind，Dispose ViewModel 与资源作用域；</li>
+<li><code>Dispose</code>：先执行 Return 清理，再销毁对象。</li>
+</ul>
+<p>绑定前先 Unbind 可以避免池对象残留上一次 ViewModel 的订阅。</p>
+<h2 id="6-事件订阅与旧回调冲突">6. 事件订阅与旧回调冲突</h2>
+<p>框架能统一清理 Binder，但页面子类在打开后自行订阅的业务事件，仍需要在关闭后显式解绑。一个安全模型是保存 <code>bindingVersion</code>：</p>
+<pre><code class="language-csharp">bindingVersion++;
+var expected = bindingVersion;
+
+subscription = source.Subscribe(value =&gt; {
+    if (!IsOpen || expected != bindingVersion)
+        return;
+    Render(value);
+});</code></pre>
+<p>Close 时 Dispose subscription 并增加版本。这样即使旧回调已经进入消息队列，版本检查也会阻止它改写复用后的页面。</p>
+<p>版本保护是通用教学模型；若具体框架只提供可重写的 OnAfterOpen/OnAfterClose，而没有强制管理子类订阅，就不能宣称所有页面都会自动解绑。</p>
+<h2 id="7-关闭与回收">7. 关闭与回收</h2>
+<pre><code class="language-text">关闭宿主的子面板
+    ↓
+从 Canvas / Host 脱离
+    ↓
+从页面栈移除
+    ↓
+Close：取消令牌、Unbind、关闭动画
+    ↓ animation complete
+从 ActivePanels 删除
+    ↓
+可缓存 → Unspawn 回池
+不可缓存 → Destroy</code></pre>
+<p>Shutdown 会立即关闭所有活动面板、释放所有栈帧、销毁面板池并清空活动表和 PendingOpen。</p>
+<h2 id="8-复杂度与边界">8. 复杂度与边界</h2>
+<ul>
+<li>活动面板按键查询平均 <code>O(1)</code>；</li>
+<li>Push 栈帧 <code>O(1)</code>，按 key 从后向前移除最坏 <code>O(S)</code>；</li>
+<li>关闭同一 ID 的多个实例需要遍历快照；</li>
+<li>池命中避免加载与实例化，但增加闲置内存；</li>
+<li>过期池扫描约 <code>O(P)</code>，P 为池数量。</li>
+</ul>
+<p>必须单独验证的边界：</p>
+<ul>
+<li>重复打开已处于 Open 的 Single 页面是否消费新 data；</li>
+<li>自定义事件是否在 OnAfterClose 中解除；</li>
+<li>关闭动画期间的重复 Close；</li>
+<li>异步预载失败后是否回收面板并释放临时 Scope；</li>
+<li>宿主不存在时，子面板必须拒绝挂到全局层；</li>
+<li>页面回池后旧异步回调是否有取消令牌或绑定版本保护；</li>
+<li>关停捷径是否也显式取消并释放面板令牌。</li>
+</ul>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><small>← PREVIOUS</small>Effect 与 Buff 生命周期：从一次申请到彻底清理</a>
+          <a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/"><small>NEXT →</small>二叉堆优先队列</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

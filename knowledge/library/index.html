@@ -26,7 +26,7 @@
 
   <main>
     <section class="library-hero knowledge-shell">
-      <div class="eyebrow">KNOWLEDGE LIBRARY / 31 NOTES</div>
+      <div class="eyebrow">KNOWLEDGE LIBRARY / 33 NOTES</div>
       <h1>把知识变成<br>可探索的系统</h1>
       <p class="hero-copy">算法、数据结构、游戏 AI 与工程设计。普通笔记用于系统阅读，重点主题配有可单步调试的交互实验。</p>
       <div class="library-search">
@@ -66,6 +66,16 @@
           <div><h3>虚拟列表与节点复用</h3><p>用固定槽位滚动大量数据，观察索引映射、复用和异步取消。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
+        <a class="feature-card" href="/knowledge/config-pipeline/">
+          <small>CONFIG / BUILD GATE</small>
+          <div><h3>配置数据生成管线</h3><p>从源数据到强类型快照，观察分层校验、错误袋、索引和发布闸门。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/ui-stack-pool/">
+          <small>UI / STACK &amp; POOL</small>
+          <div><h3>UI 页面栈与面板池</h3><p>拆解打开、覆盖、返回、复用、绑定清理和旧回调冲突。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
         <a class="feature-card" href="/#lab">
           <small>PATHFINDING / STEP DEBUG</small>
           <div><h3>A* 寻路</h3><p>逐步观察代价、Open / Closed 集合与 Parent 回溯。</p></div>
@@ -102,7 +112,7 @@
       <div class="section-heading"><h2>专题地图</h2><span>7 CATEGORIES</span></div>
       <div class="category-grid">
       <a class="category-card" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">
-        <small>10 NOTES</small>
+        <small>12 NOTES</small>
         <h3>工程设计</h3>
         <span class="card-arrow">进入专题 →</span>
       </a>
@@ -138,7 +148,7 @@
       </a></div>
     </section>
     <section class="section knowledge-shell">
-      <div class="section-heading"><h2>全部笔记</h2><span>31 ARTICLES</span></div>
+      <div class="section-heading"><h2>全部笔记</h2><span>33 ARTICLES</span></div>
       <div class="article-grid">
       <a class="article-card" data-article-card data-search="对象池 工程设计 游戏里有很多对象会频繁创建和销毁：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">
         <small>工程设计</small>
@@ -153,6 +163,14 @@
         <div>
           <h3>门面模式与泛型消重</h3>
           <p>GAS / ECS 这类系统内部通常很复杂：</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="配置数据生成管线：让错误停在构建期 工程设计 配置表不是把电子表格“另存为 json”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90%E7%AE%A1%E7%BA%BF/">
+        <small>工程设计</small>
+        <div>
+          <h3>配置数据生成管线：让错误停在构建期</h3>
+          <p>配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
@@ -217,6 +235,14 @@
         <div>
           <h3>Effect 与 Buff 生命周期：从一次申请到彻底清理</h3>
           <p>&gt; Effect 是一份“如何改变状态”的定义，Buff 是持续存在、会被后续更新和移除的 Effect。把两者放进同一条生命周期管线，才能解释叠层、周期、属性重算与清理为什么不会互相打架。</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="ui 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事 工程设计 页面系统常同时维护三种状态：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E9%A1%B5%E9%9D%A2%E6%A0%88%E4%B8%8E%E9%9D%A2%E6%9D%BF%E6%B1%A0/">
+        <small>工程设计</small>
+        <div>
+          <h3>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</h3>
+          <p>页面系统常同时维护三种状态：</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
