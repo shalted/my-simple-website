@@ -578,6 +578,76 @@ function isHashSetDocument(document) {
   return /HashSet/i.test(`${document.title} ${document.relativeMarkdown}`);
 }
 
+function isTimelineDocument(document) {
+  return /数据驱动\s*Timeline|Timeline.*实体消费/i.test(`${document.title} ${document.relativeMarkdown}`);
+}
+
+function renderTimelineLab() {
+  return `
+    <section class="timeline-lab" data-timeline-lab data-interactive-lab aria-labelledby="timeline-lab-title">
+      <header class="timeline-lab__header">
+        <div>
+          <span class="timeline-lab__kicker">RUNTIME TIMELINE / LIVE EDITOR</span>
+          <h2 id="timeline-lab-title">拖动一段时间，观察整条执行链</h2>
+          <p>这里的轨道不是装饰。移动或缩放 Clip 后，播放实例、Task 生命周期、实体状态与预览画面都会读取同一份数据。</p>
+        </div>
+        <div class="timeline-lab__settings">
+          <label>总帧数<input data-timeline-length type="number" min="1" max="120" value="15" inputmode="numeric"></label>
+          <label>播放帧率<input data-timeline-fps type="number" min="1" max="30" value="6" inputmode="numeric"></label>
+        </div>
+      </header>
+      <div class="timeline-lab__notice" data-timeline-notice role="status" aria-live="polite">拖动片段主体可改变位置，拖动两侧把手可修改起止帧。</div>
+      <div class="timeline-lab__workspace">
+        <div class="timeline-editor">
+          <div class="timeline-editor__toolbar">
+            <div><span>SOURCE DATA</span><strong>4 TRACKS / 4 CLIPS</strong></div>
+            <div class="timeline-editor__readout">FRAME <b data-timeline-frame>00</b><span data-timeline-time>0.00s</span></div>
+          </div>
+          <div class="timeline-editor__scroll">
+            <div class="timeline-editor__canvas" data-timeline-canvas>
+              <div class="timeline-ruler"><div class="timeline-ruler__label">FRAME</div><div class="timeline-ruler__ticks" data-timeline-ruler></div></div>
+              <div class="timeline-tracks" data-timeline-tracks></div>
+              <button class="timeline-playhead" data-timeline-playhead type="button" aria-label="当前播放帧，可拖动定位"><i></i><span></span></button>
+            </div>
+          </div>
+          <p class="timeline-editor__hint">拖动播放头可逐帧预览；片段边缘吸附到整数帧。</p>
+        </div>
+        <div class="timeline-preview">
+          <div class="timeline-preview__topline"><span>ENTITY PREVIEW</span><strong data-timeline-phase>等待播放</strong></div>
+          <div class="timeline-stage" data-timeline-stage>
+            <div class="timeline-stage__grid" aria-hidden="true"></div>
+            <div class="timeline-actor" data-timeline-actor><i class="timeline-actor__head"></i><i class="timeline-actor__body"></i><i class="timeline-actor__arm"></i><span>ACTOR</span></div>
+            <div class="timeline-attack" data-timeline-attack aria-hidden="true"></div>
+            <div class="timeline-target" data-timeline-target><i></i><span>TARGET</span></div>
+            <div class="timeline-sound" data-timeline-sound aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="timeline-stage__caption" data-timeline-caption>实体尚未收到命令</div>
+          </div>
+          <div class="timeline-entity-state">
+            <div><span>动作</span><strong data-timeline-action>Idle</strong></div><div><span>音效</span><strong data-timeline-audio>未播放</strong></div>
+            <div><span>命中</span><strong data-timeline-hit>未触发</strong></div><div><span>移动</span><strong data-timeline-movement>自由</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-runtime">
+        <section class="timeline-runtime__tasks"><header><span>ACTIVE TASKS</span><b data-timeline-active-count>0</b></header><div data-timeline-active-tasks></div></section>
+        <section class="timeline-runtime__log"><header><span>EVENT STREAM</span><button type="button" data-timeline-clear-log>清空显示</button></header><ol data-timeline-log aria-live="polite"></ol></section>
+        <section class="timeline-runtime__code">
+          <header><span>SYNCED PSEUDOCODE</span><b data-timeline-code-state>IDLE</b></header>
+          <div data-timeline-code>
+            <p data-code-line="1"><span>1</span><code>targetFrame = floor(elapsed × fps)</code></p><p data-code-line="2"><span>2</span><code>while currentFrame &lt; targetFrame</code></p>
+            <p data-code-line="3"><span>3</span><code>if frame == start → Begin()</code></p><p data-code-line="4"><span>4</span><code>if clip is active → Tick()</code></p>
+            <p data-code-line="5"><span>5</span><code>if frame == end → Finish()</code></p><p data-code-line="6"><span>6</span><code>command → entity component</code></p><p data-code-line="7"><span>7</span><code>Interrupt() → release active state</code></p>
+          </div>
+        </section>
+      </div>
+      <footer class="timeline-lab__controls">
+        <button type="button" data-timeline-reset data-lab-control>重置数据</button><button type="button" data-timeline-prev data-lab-control>← 上一帧</button>
+        <button class="is-primary" type="button" data-timeline-play data-lab-control aria-pressed="false">自动播放</button><button type="button" data-timeline-next data-lab-control>下一帧 →</button>
+        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
+      </footer>
+    </section>`;
+}
+
 function renderHashSetLab() {
   return `
     <section class="hashset-lab" data-hashset-lab aria-labelledby="hashset-lab-title">
@@ -664,7 +734,7 @@ function renderArticlePage(document, markdown, previous, next) {
       ${renderToc(rendered.toc)}
       <article class="article-body" id="article-start">
         ${interactiveCallout(document)}
-        ${document.isReadme ? "" : isHashSetDocument(document) ? renderHashSetLab() : renderDynamicDeck(markdown, document.relativeMarkdown)}
+        ${document.isReadme ? "" : isTimelineDocument(document) ? renderTimelineLab() : isHashSetDocument(document) ? renderHashSetLab() : renderDynamicDeck(markdown, document.relativeMarkdown)}
         ${rendered.html}
         <nav class="article-pager" aria-label="上下篇">
           ${previousLink}

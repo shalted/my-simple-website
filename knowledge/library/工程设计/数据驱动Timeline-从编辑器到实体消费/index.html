@@ -53,260 +53,66 @@
       <article class="article-body" id="article-start">
 
 
-    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
-      <header class="deck-header">
+    <section class="timeline-lab" data-timeline-lab data-interactive-lab aria-labelledby="timeline-lab-title">
+      <header class="timeline-lab__header">
         <div>
-          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
-          <h2>把章节变成可单步观察的过程</h2>
+          <span class="timeline-lab__kicker">RUNTIME TIMELINE / LIVE EDITOR</span>
+          <h2 id="timeline-lab-title">拖动一段时间，观察整条执行链</h2>
+          <p>这里的轨道不是装饰。移动或缩放 Clip 后，播放实例、Task 生命周期、实体状态与预览画面都会读取同一份数据。</p>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+        <div class="timeline-lab__settings">
+          <label>总帧数<input data-timeline-length type="number" min="1" max="120" value="15" inputmode="numeric"></label>
+          <label>播放帧率<input data-timeline-fps type="number" min="1" max="30" value="6" inputmode="numeric"></label>
+        </div>
       </header>
-      <div class="deck-stage">
-        <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先建立完整心智模型">
-      <span>01</span>
-      <strong>先建立完整心智模型</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第一步：准备最小数据模型">
-      <span>02</span>
-      <strong>第一步：准备最小数据模型</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二步：让编辑器只修改源数据">
-      <span>03</span>
-      <strong>第二步：让编辑器只修改源数据</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第三步：区分源字段与派生字段">
-      <span>04</span>
-      <strong>第三步：区分源字段与派生字段</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第四步：预览不是运行时真相">
-      <span>05</span>
-      <strong>第四步：预览不是运行时真相</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第五步：构建阶段设置两道校验门">
-      <span>06</span>
-      <strong>第五步：构建阶段设置两道校验门</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第六步：把配置编译成运行时快照">
-      <span>07</span>
-      <strong>第六步：把配置编译成运行时快照</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：第七步：启动时建立只读索引">
-      <span>08</span>
-      <strong>第七步：启动时建立只读索引</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：第八步：激活时创建播放实例">
-      <span>09</span>
-      <strong>第八步：激活时创建播放实例</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：第九步：用固定帧推进并补齐丢帧">
-      <span>10</span>
-      <strong>第九步：用固定帧推进并补齐丢帧</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：第十步：统一 Clip 的四段生命周期">
-      <span>11</span>
-      <strong>第十步：统一 Clip 的四段生命周期</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：第十一步：Task 只发语义命令">
-      <span>12</span>
-      <strong>第十一步：Task 只发语义命令</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：第十二步：实体侧仲裁、落地并清理">
-      <span>13</span>
-      <strong>第十二步：实体侧仲裁、落地并清理</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最终总结">
-      <span>14</span>
-      <strong>最终总结</strong>
-    </button></nav>
-        <div class="deck-slides">
-      <article class="deck-slide active" data-deck-slide="0">
-        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
-        <h3>先建立完整心智模型</h3>
-        <p>一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p>
-        <ul><li>编辑态只描述“何时发生什么”</li><li>构建阶段把宽松配置变成确定的运行时结构</li><li>播放器只维护时间与 Clip 生命周期</li><li>Task 把时间事件翻译成语义命令</li><li>实体组件仲裁多个系统的请求并落地</li></ul>
-        <pre><code class="language-text">编辑数据
-  ↓ 校验与派生
-运行时快照
-  ↓ 建立索引
-Timeline 实例
-  ↓ 固定帧调度
-Task 生命周期
-  ↓ 语义命令
-实体组件消费</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
-        <h3>第一步：准备最小数据模型</h3>
-        <p>编辑器首先需要一套稳定、可序列化的数据模型。最小结构可以收敛为四层：</p>
-        <ul><li>Timeline：唯一标识、名称、轨道集合</li><li>Track：用于组织同类片段，本身通常不执行逻辑</li><li>Clip：开始帧、结束帧、名称和 Task</li><li>Task：类型标识与该类型需要的参数</li></ul>
-        <pre><code class="language-text">Timeline
-├─ Track：表现
-│  ├─ Clip：0—12 帧 / 播放动作
-│  └─ Clip：6—10 帧 / 播放音效
-├─ Track：判定
-│  └─ Clip：8—9 帧 / 执行命中
-└─ Track：控制
-   └─ Clip：0—14 帧 / 锁定普通移动</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
-        <h3>第二步：让编辑器只修改源数据</h3>
-        <p>时间线窗口的职责是把拖拽、缩放、复制、删除等可视化操作转换成源数据变化，而不是直接创建运行时对象。</p>
-        <ul><li>拖动 Clip：修改开始帧与结束帧</li><li>改变 Task 类型：替换参数结构</li><li>编辑参数：写回对应字段</li><li>撤销与重做：保存数据快照，而不是回滚场景对象</li><li>保存前：统一修正区间并执行结构校验</li></ul>
-        <pre><code class="language-pseudo">onClipDragged(clip, nextStart, nextEnd):
-    clip.start = max(0, nextStart)
-    clip.end = max(clip.start, nextEnd)
-    markDocumentChanged()</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
-        <h3>第三步：区分源字段与派生字段</h3>
-        <p>总时长、缓存索引、运行时句柄等字段可以从 Clip 推导出来，不应要求使用者重复维护。典型做法是把总生命周期定义为所有 Clip 结束帧的最大值。</p>
-        <ul><li>源数据保存开始帧、结束帧和参数</li><li>总生命周期在保存或构建时重新计算</li><li>预览资源、临时模型和当前播放帧不进入运行时配置</li><li>能推导的值不允许形成第二份人工真相</li></ul>
-        <pre><code class="language-pseudo">lifeTime = 1
-for each track:
-    for each clip:
-        lifeTime = max(lifeTime, clip.endFrame)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
-        <h3>第四步：预览不是运行时真相</h3>
-        <p>编辑器预览可以采样动画、特效或位置，但它的目标是帮助创作者观察结果，不是替代真正的运行时执行。</p>
-        <ul><li>预览允许使用临时对象和简化环境</li><li>预览只读取同一份 Clip 数据</li><li>预览状态必须与源数据分离</li><li>保存结果不能依赖当前场景中是否存在预览对象</li><li>最终正确性仍由运行时播放器验证</li></ul>
-        <pre><code class="language-text">同一份 Clip 数据
-├─ 编辑器预览器：快速采样、方便拖动
-└─ 运行时播放器：完整生命周期、真实实体与系统</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
-        <h3>第五步：构建阶段设置两道校验门</h3>
-        <p>保存时的第一道门检查单个 Timeline 的结构；构建时的第二道门检查整个数据世界。只有两层都通过，配置才能进入运行时。</p>
-        <ul><li>结构校验：必填字段、合法 Task 类型、参数类型、帧区间</li><li>引用校验：资源、效果、目标定义等外部引用是否存在</li><li>语义校验：互斥参数、非法组合、超出能力范围的配置</li><li>唯一性校验：标识不能冲突</li><li>生命周期校验：运行时总帧数必须覆盖全部 Clip</li></ul>
-        <pre><code class="language-pseudo">validateDocument(timeline)
-validateReferences(timeline, catalogs)
-validateSemantics(timeline)
-
-if errors.any:
-    stopBuild(errors)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
-        <h3>第六步：把配置编译成运行时快照</h3>
-        <p>通过校验后，源数据会被转换为强类型运行时快照。运行时不再逐个解析编辑文件，也不需要理解编辑器格式。</p>
-        <ul><li>多态 Task 参数在构建阶段转换为明确类型</li><li>派生生命周期在这里写入</li><li>数据按类别分片，避免单个巨大文件</li><li>内容未变化时不重复写入</li><li>运行时只依赖生成结果，不依赖编辑工具</li></ul>
-        <pre><code class="language-pseudo">runtimeTimeline = new TimelineData(
-    id       = source.id,
-    lifeTime = deriveLifeTime(source),
-    tracks   = source.tracks.map(compileTrack)
-)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
-        <h3>第七步：启动时建立只读索引</h3>
-        <p>运行时启动后先加载 Timeline 快照，再加载引用 Timeline 的能力或流程。顺序不能反过来，因为上层对象创建时就可能需要解析 Timeline。</p>
-        <ul><li>快照创建后按唯一标识建立字典</li><li>Timeline 数据先于上层能力注册</li><li>上层只保存标识或只读引用</li><li>查询入口保持单一，调用方不关心数据来自哪里</li></ul>
-        <pre><code class="language-pseudo">for each timeline in snapshot.timelines:
-    timelineById[timeline.id] = timeline
-
-for each ability in snapshot.abilities:
-    ability.timeline = timelineById[ability.timelineId]</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
-        <h3>第八步：激活时创建播放实例</h3>
-        <p>Timeline 数据是模板，播放器才是一次执行。激活前，播放器会遍历全部 Clip，根据 Task 类型从工厂创建执行对象，并注入参数与上下文。</p>
-        <ul><li>Task 工厂把字符串类型映射为具体执行器</li><li>每个 Clip 获得独立的 Task 实例</li><li>Task 保存本次执行所需的拥有者、目标和参数</li><li>播放状态与共享模板分离</li><li>可变状态不能写回 Timeline 配置</li></ul>
-        <pre><code class="language-pseudo">for each clip in timeline.allClips:
-    task = taskFactory.create(clip.taskType, context)
-    task.initialize(clip.parameters)
-    runtimeClips.add(
-        task,
-        clip.startFrame,
-        resolveEndFrame(task, clip)
-    )</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
-        <h3>第九步：用固定帧推进并补齐丢帧</h3>
-        <p>播放器通常把真实时间转换成逻辑帧。一次渲染帧可能跨过多个逻辑帧，因此不能只处理目标帧，必须依次补齐中间帧。</p>
-        <ul><li>累加经过速度修正的真实时间</li><li>将时间换算为目标逻辑帧</li><li>从当前帧逐帧推进到目标帧</li><li>每个逻辑帧按统一顺序检查全部 Clip</li><li>到达生命周期后结束播放器</li></ul>
-        <pre><code class="language-pseudo">elapsed += deltaTime * playbackSpeed
-targetFrame = floor(elapsed * frameRate)
-
-while currentFrame &lt; targetFrame:
-    currentFrame += 1
-    tickFrame(currentFrame)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
-        <h3>第十步：统一 Clip 的四段生命周期</h3>
-        <p>每个运行时 Clip 至少需要 Begin、Tick、Finish、Interrupt 四种语义。播放器只根据帧和状态调用它们，不理解具体业务。</p>
-        <ul><li>Begin：首次进入片段，创建状态或提交持续请求</li><li>Tick：片段有效期间更新连续行为</li><li>Finish：正常到达结束帧，提交结果并清理</li><li>Interrupt：Timeline 被取消，立即回收未结束状态</li></ul>
-        <pre><code class="language-pseudo">if frame == clip.start and not clip.begun:
-    clip.task.begin(frame)
-    clip.begun = true
-
-if clip.begun and not clip.finished and frame in clip.range:
-    clip.task.tick(frame)
-
-if frame == clip.end and not clip.finished:
-    clip.task.finish(frame)
-    clip.finished = true</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
-        <h3>第十一步：Task 只发语义命令</h3>
-        <p>Task 不应直接操纵具体角色控制器。它只表达“想做什么”，通过桥接层提交带有实体目标、来源标识和参数的语义命令。</p>
-        <ul><li>表现类：播放动作、音效、特效</li><li>结算类：查询目标、应用效果</li><li>控制类：允许移动、禁止输入、锁定朝向</li><li>运动类：提交位移意图或瞬移请求</li><li>生成类：创建投射物或临时实体</li></ul>
-        <pre><code class="language-pseudo">onBegin:
-    commandBus.submit(
-        targetEntity,
-        sourceId,
-        command = AllowMove(speedScale)
-    )
-
-onFinishOrInterrupt:
-    commandBus.release(targetEntity, sourceId)</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
-        <h3>第十二步：实体侧仲裁、落地并清理</h3>
-        <p>命令桥把 Timeline 世界中的实体引用映射为真正的运行时单位，再路由到运动、动画、输入或效果组件。实体组件才拥有最终决定权。</p>
-        <ul><li>命令接收器完成实体到运行时对象的映射</li><li>组件按优先级、来源和当前状态进行仲裁</li><li>Timeline 控制锁可以压制普通移动</li><li>特殊 Clip 可以临时开放移动或旋转</li><li>片段结束、打断、实体销毁时都要按来源释放</li><li>源数据是否正确</li><li>构建结果是否包含该 Clip</li><li>播放器是否进入正确帧</li><li>Task 是否 Begin、Tick、Finish 或 Interrupt</li><li>语义命令是否被接收</li><li>实体组件是否因优先级、锁或状态拒绝</li><li>最终执行结果是否符合请求</li></ul>
-        <pre><code class="language-text">Task 发出移动意图
-  ↓
-命令桥定位实体
-  ↓
-运动组件收集多个来源
-  ↓
-优先级与控制锁仲裁
-  ↓
-最终速度和朝向
-  ↓
-移动组件真正修改实体</code></pre>
-      </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
-        <h3>最终总结</h3>
-        <p>一套完整的 Timeline 运行流程可以压缩成三个阶段：</p>
-        <ul><li>编辑数据与运行时状态是否分离</li><li>派生字段是否只有一个计算来源</li><li>损坏引用是否在构建前被拦截</li><li>Task 是否通过语义边界影响实体</li><li>Finish、Interrupt 和销毁是否都能回收状态</li></ul>
-        <pre><code class="language-text">数据准备
-编辑源数据 → 计算派生字段 → 结构与引用校验 → 生成强类型快照
-
-Timeline 创建
-建立只读索引 → 解析模板 → 实例化 Task → 初始化播放状态
-
-实体消费
-固定帧调度 → Clip 生命周期 → 语义命令 → 组件仲裁 → 状态释放</code></pre>
-      </article></div>
+      <div class="timeline-lab__notice" data-timeline-notice role="status" aria-live="polite">拖动片段主体可改变位置，拖动两侧把手可修改起止帧。</div>
+      <div class="timeline-lab__workspace">
+        <div class="timeline-editor">
+          <div class="timeline-editor__toolbar">
+            <div><span>SOURCE DATA</span><strong>4 TRACKS / 4 CLIPS</strong></div>
+            <div class="timeline-editor__readout">FRAME <b data-timeline-frame>00</b><span data-timeline-time>0.00s</span></div>
+          </div>
+          <div class="timeline-editor__scroll">
+            <div class="timeline-editor__canvas" data-timeline-canvas>
+              <div class="timeline-ruler"><div class="timeline-ruler__label">FRAME</div><div class="timeline-ruler__ticks" data-timeline-ruler></div></div>
+              <div class="timeline-tracks" data-timeline-tracks></div>
+              <button class="timeline-playhead" data-timeline-playhead type="button" aria-label="当前播放帧，可拖动定位"><i></i><span></span></button>
+            </div>
+          </div>
+          <p class="timeline-editor__hint">拖动播放头可逐帧预览；片段边缘吸附到整数帧。</p>
+        </div>
+        <div class="timeline-preview">
+          <div class="timeline-preview__topline"><span>ENTITY PREVIEW</span><strong data-timeline-phase>等待播放</strong></div>
+          <div class="timeline-stage" data-timeline-stage>
+            <div class="timeline-stage__grid" aria-hidden="true"></div>
+            <div class="timeline-actor" data-timeline-actor><i class="timeline-actor__head"></i><i class="timeline-actor__body"></i><i class="timeline-actor__arm"></i><span>ACTOR</span></div>
+            <div class="timeline-attack" data-timeline-attack aria-hidden="true"></div>
+            <div class="timeline-target" data-timeline-target><i></i><span>TARGET</span></div>
+            <div class="timeline-sound" data-timeline-sound aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="timeline-stage__caption" data-timeline-caption>实体尚未收到命令</div>
+          </div>
+          <div class="timeline-entity-state">
+            <div><span>动作</span><strong data-timeline-action>Idle</strong></div><div><span>音效</span><strong data-timeline-audio>未播放</strong></div>
+            <div><span>命中</span><strong data-timeline-hit>未触发</strong></div><div><span>移动</span><strong data-timeline-movement>自由</strong></div>
+          </div>
+        </div>
       </div>
-      <footer class="deck-controls">
-        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
-        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
-        <button type="button" data-deck-next data-lab-control>下一步 →</button>
-        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
-        <div data-deck-runtime-dots hidden></div>
+      <div class="timeline-runtime">
+        <section class="timeline-runtime__tasks"><header><span>ACTIVE TASKS</span><b data-timeline-active-count>0</b></header><div data-timeline-active-tasks></div></section>
+        <section class="timeline-runtime__log"><header><span>EVENT STREAM</span><button type="button" data-timeline-clear-log>清空显示</button></header><ol data-timeline-log aria-live="polite"></ol></section>
+        <section class="timeline-runtime__code">
+          <header><span>SYNCED PSEUDOCODE</span><b data-timeline-code-state>IDLE</b></header>
+          <div data-timeline-code>
+            <p data-code-line="1"><span>1</span><code>targetFrame = floor(elapsed × fps)</code></p><p data-code-line="2"><span>2</span><code>while currentFrame &lt; targetFrame</code></p>
+            <p data-code-line="3"><span>3</span><code>if frame == start → Begin()</code></p><p data-code-line="4"><span>4</span><code>if clip is active → Tick()</code></p>
+            <p data-code-line="5"><span>5</span><code>if frame == end → Finish()</code></p><p data-code-line="6"><span>6</span><code>command → entity component</code></p><p data-code-line="7"><span>7</span><code>Interrupt() → release active state</code></p>
+          </div>
+        </section>
+      </div>
+      <footer class="timeline-lab__controls">
+        <button type="button" data-timeline-reset data-lab-control>重置数据</button><button type="button" data-timeline-prev data-lab-control>← 上一帧</button>
+        <button class="is-primary" type="button" data-timeline-play data-lab-control aria-pressed="false">自动播放</button><button type="button" data-timeline-next data-lab-control>下一帧 →</button>
+        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
       </footer>
     </section>
         <p>分类：工程设计</p>
