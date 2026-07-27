@@ -26,7 +26,7 @@
 
   <main>
     <section class="library-hero knowledge-shell">
-      <div class="eyebrow">KNOWLEDGE LIBRARY / 27 NOTES</div>
+      <div class="eyebrow">KNOWLEDGE LIBRARY / 29 NOTES</div>
       <h1>把知识变成<br>可探索的系统</h1>
       <p class="hero-copy">算法、数据结构、游戏 AI 与工程设计。普通笔记用于系统阅读，重点主题配有可单步调试的交互实验。</p>
       <div class="library-search">
@@ -44,6 +44,16 @@
         <a class="feature-card" href="/knowledge/effect-lifecycle/">
           <small>EFFECT / LIFECYCLE</small>
           <div><h3>Effect / Buff 生命周期</h3><p>对比瞬时、持续、周期、叠层、刷新、到期和主动移除。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/target-filter/">
+          <small>TARGET QUERY / GEOMETRY TRACE</small>
+          <div><h3>目标筛选与命中判定</h3><p>拖动角色与目标，拆开圆形、扇形、盒形的粗筛和精确判断。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/resource-scope/">
+          <small>RESOURCE / OWNERSHIP</small>
+          <div><h3>资源作用域与引用释放</h3><p>观察请求合并、缓存命中、Owner 矩阵和最终底层释放。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
         <a class="feature-card" href="/#lab">
@@ -82,7 +92,7 @@
       <div class="section-heading"><h2>专题地图</h2><span>7 CATEGORIES</span></div>
       <div class="category-grid">
       <a class="category-card" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">
-        <small>07 NOTES</small>
+        <small>08 NOTES</small>
         <h3>工程设计</h3>
         <span class="card-arrow">进入专题 →</span>
       </a>
@@ -92,7 +102,7 @@
         <span class="card-arrow">进入专题 →</span>
       </a>
       <a class="category-card" href="/knowledge/library/%E7%AE%97%E6%B3%95/">
-        <small>06 NOTES</small>
+        <small>07 NOTES</small>
         <h3>算法</h3>
         <span class="card-arrow">进入专题 →</span>
       </a>
@@ -118,7 +128,7 @@
       </a></div>
     </section>
     <section class="section knowledge-shell">
-      <div class="section-heading"><h2>全部笔记</h2><span>27 ARTICLES</span></div>
+      <div class="section-heading"><h2>全部笔记</h2><span>29 ARTICLES</span></div>
       <div class="article-grid">
       <a class="article-card" data-article-card data-search="对象池 工程设计 游戏里有很多对象会频繁创建和销毁：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">
         <small>工程设计</small>
@@ -160,11 +170,19 @@
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
-      <a class="article-card" data-article-card data-search="资源生命周期统一管理 工程设计 资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">
+      <a class="article-card" data-article-card data-search="资源生命周期统一管理 工程设计 资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、owner 矩阵和最终释放，可进入资源作用域与引用释放。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">
         <small>工程设计</small>
         <div>
           <h3>资源生命周期统一管理</h3>
-          <p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。</p>
+          <p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、Owner 矩阵和最终释放，可进入资源作用域与引用释放。</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="资源作用域与引用释放：让“谁还需要它”成为可观察状态 工程设计 资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E9%87%8A%E6%94%BE/">
+        <small>工程设计</small>
+        <div>
+          <h3>资源作用域与引用释放：让“谁还需要它”成为可观察状态</h3>
+          <p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>
@@ -197,6 +215,14 @@
         <div>
           <h3>空间划分：九宫格与四叉树</h3>
           <p>空间划分解决的是：</p>
+        </div>
+        <span class="card-arrow">阅读笔记 →</span>
+      </a>
+      <a class="article-card" data-article-card data-search="目标筛选与命中判定：从世界坐标到入选原因 算法 “找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%9B%AE%E6%A0%87%E7%AD%9B%E9%80%89%E4%B8%8E%E5%91%BD%E4%B8%AD%E5%88%A4%E5%AE%9A/">
+        <small>算法</small>
+        <div>
+          <h3>目标筛选与命中判定：从世界坐标到入选原因</h3>
+          <p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
         </div>
         <span class="card-arrow">阅读笔记 →</span>
       </a>

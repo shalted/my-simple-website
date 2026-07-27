@@ -400,6 +400,22 @@ function interactiveCallout(document) {
         <p><a href="/knowledge/effect-lifecycle/">打开 Effect / Buff 实验 →</a></p>
       </aside>`;
   }
+  if (/目标筛选|命中判定/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套几何调试器</strong>
+        <span>拖动施法者与目标，逐层观察世界姿态、空间粗筛、阵营过滤、精确判断和入选原因。</span>
+        <p><a href="/knowledge/target-filter/">打开目标筛选实验 →</a></p>
+      </aside>`;
+  }
+  if (/资源作用域|引用释放/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套所有权实验</strong>
+        <span>观察并发请求合并、Owner 矩阵、单独 Release、场景 Dispose 与最终底层释放。</span>
+        <p><a href="/knowledge/resource-scope/">打开资源作用域实验 →</a></p>
+      </aside>`;
+  }
   if (/Flags|BitMask|位标记/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -609,7 +625,7 @@ function renderTimelineLab() {
         </div>
         <div class="timeline-lab__settings">
           <label>总帧数<input data-timeline-length type="number" min="1" max="120" value="15" inputmode="numeric"></label>
-          <label>播放帧率<input data-timeline-fps type="number" min="1" max="30" value="6" inputmode="numeric"></label>
+          <label>演示速度（网页帧/秒）<input data-timeline-demo-speed type="number" min="1" max="30" value="6" inputmode="numeric"></label>
         </div>
       </header>
       <div class="timeline-lab__notice" data-timeline-notice role="status" aria-live="polite">拖动片段主体可改变位置，拖动两侧把手可修改起止帧。</div>
@@ -617,7 +633,7 @@ function renderTimelineLab() {
         <div class="timeline-editor">
           <div class="timeline-editor__toolbar">
             <div><span>SOURCE DATA</span><strong>4 TRACKS / 4 CLIPS</strong></div>
-            <div class="timeline-editor__readout">FRAME <b data-timeline-frame>00</b><span data-timeline-time>0.00s</span></div>
+            <div class="timeline-editor__readout">FRAME <b data-timeline-frame>00</b><span data-timeline-time>逻辑帧 0</span></div>
           </div>
           <div class="timeline-editor__scroll">
             <div class="timeline-editor__canvas" data-timeline-canvas>
@@ -650,7 +666,7 @@ function renderTimelineLab() {
         <section class="timeline-runtime__code">
           <header><span>SYNCED PSEUDOCODE</span><b data-timeline-code-state>IDLE</b></header>
           <div data-timeline-code>
-            <p data-code-line="1"><span>1</span><code>targetFrame = floor(elapsed × fps)</code></p><p data-code-line="2"><span>2</span><code>while currentFrame &lt; targetFrame</code></p>
+            <p data-code-line="1"><span>1</span><code>targetFrame = floor(elapsed × globalLogicFrameRate)</code></p><p data-code-line="2"><span>2</span><code>while currentFrame &lt; targetFrame</code></p>
             <p data-code-line="3"><span>3</span><code>if frame == start → Begin()</code></p><p data-code-line="4"><span>4</span><code>if clip is active → Tick()</code></p>
             <p data-code-line="5"><span>5</span><code>if frame == end → Finish()</code></p><p data-code-line="6"><span>6</span><code>command → entity component</code></p><p data-code-line="7"><span>7</span><code>Interrupt() → release active state</code></p>
           </div>
@@ -659,7 +675,7 @@ function renderTimelineLab() {
       <footer class="timeline-lab__controls">
         <button type="button" data-timeline-reset data-lab-control>重置数据</button><button type="button" data-timeline-prev data-lab-control>← 上一帧</button>
         <button class="is-primary" type="button" data-timeline-play data-lab-control aria-pressed="false">自动播放</button><button type="button" data-timeline-next data-lab-control>下一帧 →</button>
-        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
+        <button type="button" data-timeline-catchup data-lab-control>模拟卡顿 +3 帧</button><button type="button" data-timeline-same-frame data-lab-control aria-pressed="false">同帧命中：已关闭</button><button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
       </footer>
     </section>`;
 }
@@ -814,6 +830,16 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/effect-lifecycle/">
           <small>EFFECT / LIFECYCLE</small>
           <div><h3>Effect / Buff 生命周期</h3><p>对比瞬时、持续、周期、叠层、刷新、到期和主动移除。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/target-filter/">
+          <small>TARGET QUERY / GEOMETRY TRACE</small>
+          <div><h3>目标筛选与命中判定</h3><p>拖动角色与目标，拆开圆形、扇形、盒形的粗筛和精确判断。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/resource-scope/">
+          <small>RESOURCE / OWNERSHIP</small>
+          <div><h3>资源作用域与引用释放</h3><p>观察请求合并、缓存命中、Owner 矩阵和最终底层释放。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
         <a class="feature-card" href="/#lab">

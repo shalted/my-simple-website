@@ -252,19 +252,21 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
   ];
   const state = {
     length: 15,
-    fps: 6,
+    demoStepsPerSecond: 6,
     frame: 0,
-    clips: initialClips.map((clip) => ({ ...clip })),
+    clips: [],
     playing: false,
     interruptedAt: null,
     hideLog: false,
-    catchupFrom: null
+    catchupFrom: null,
+    events: [],
+    sameFrameCase: false
   };
   let timer = null;
 
   const refs = {
     length: required("[data-timeline-length]"),
-    fps: required("[data-timeline-fps]"),
+    demoSpeed: required("[data-timeline-demo-speed]"),
     notice: required("[data-timeline-notice]"),
     canvas: required("[data-timeline-canvas]"),
     ruler: required("[data-timeline-ruler]"),
@@ -293,6 +295,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     next: required("[data-timeline-next]"),
     catchup: required("[data-timeline-catchup]"),
     interrupt: required("[data-timeline-interrupt]"),
+    sameFrame: required("[data-timeline-same-frame]"),
     clearLog: required("[data-timeline-clear-log]")
   };
   const codeLines = [...lab.querySelectorAll("[data-code-line]")];
@@ -302,7 +305,19 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     if (!clip) throw new Error(`[TimelineLab] 未知 Clip：${id}`);
     return clip;
   };
-  const isActive = (clip, frame = state.frame) => frame >= clip.start && frame <= clip.end;
+  const isActive = (clip) => clip.begun && !clip.finished;
+  const createRuntimeClip = (clip) => ({
+    ...clip,
+    begun: false,
+    finished: false,
+    interrupted: false,
+    lastTickFrame: null
+  });
+  const createScenarioClips = () => initialClips.map((clip) => {
+    const source = { ...clip };
+    if (state.sameFrameCase && source.id === "hit") source.end = source.start;
+    return createRuntimeClip(source);
+  });
   const stop = () => {
     if (timer !== null) window.clearInterval(timer);
     timer = null;
@@ -314,6 +329,54 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     refs.notice.textContent = message;
     refs.notice.classList.toggle("is-error", error);
   };
+
+  function recordEvent(frame, type, clip) {
+    state.events.push({ frame, type, clip });
+  }
+
+  function processFrame(frame) {
+    state.clips.forEach((clip) => {
+      if (!clip.begun && frame === clip.start) {
+        clip.begun = true;
+        recordEvent(frame, "BEGIN", clip);
+      }
+      if (clip.begun && !clip.finished && frame >= clip.start && frame <= clip.end) {
+        clip.lastTickFrame = frame;
+        recordEvent(frame, "TICK", clip);
+      }
+      if (clip.begun && !clip.finished && frame >= clip.end) {
+        clip.finished = true;
+        recordEvent(frame, "FINISH", clip);
+      }
+    });
+  }
+
+  function replayTo(frame) {
+    state.clips.forEach((clip) => {
+      clip.begun = false;
+      clip.finished = false;
+      clip.interrupted = false;
+      clip.lastTickFrame = null;
+    });
+    state.events = [];
+    state.interruptedAt = null;
+    for (let logicalFrame = 0; logicalFrame <= frame; logicalFrame += 1) {
+      processFrame(logicalFrame);
+    }
+    state.frame = frame;
+  }
+
+  function advanceTo(frame) {
+    const target = Math.max(0, Math.min(state.length - 1, frame));
+    if (target < state.frame || state.interruptedAt !== null) {
+      replayTo(target);
+      return;
+    }
+    for (let logicalFrame = state.frame + 1; logicalFrame <= target; logicalFrame += 1) {
+      processFrame(logicalFrame);
+    }
+    state.frame = target;
+  }
 
   function renderRuler() {
     refs.ruler.replaceChildren();
@@ -360,6 +423,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
         state.interruptedAt = null;
         state.frame = Math.min(state.frame, state.length - 1);
         state.hideLog = false;
+        replayTo(state.frame);
         renderAll();
         setNotice(`${clip.track} / ${clip.name}：${clip.start}—${clip.end} 帧`);
       };
@@ -398,20 +462,8 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     });
   }
 
-  function buildEvents(frame) {
-    const events = [];
-    for (let logicalFrame = 0; logicalFrame <= frame; logicalFrame += 1) {
-      state.clips.forEach((clip) => {
-        if (logicalFrame === clip.start) events.push({ frame: logicalFrame, type: "BEGIN", clip });
-        if (logicalFrame === clip.end) events.push({ frame: logicalFrame, type: "FINISH", clip });
-      });
-    }
-    if (state.interruptedAt !== null) {
-      state.clips.filter((clip) => isActive(clip, state.interruptedAt)).forEach((clip) => {
-        events.push({ frame: state.interruptedAt, type: "INTERRUPT", clip });
-      });
-    }
-    return events.sort((left, right) => left.frame - right.frame || left.type.localeCompare(right.type));
+  function buildEvents() {
+    return [...state.events];
   }
 
   function renderPreview() {
@@ -423,6 +475,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     const actionActive = !interrupted && isActive(action);
     const audioActive = !interrupted && isActive(audio);
     const hitActive = !interrupted && isActive(hit);
+    const hitTriggeredThisFrame = !interrupted && hit.lastTickFrame === state.frame;
     const movementLocked = !interrupted && isActive(movement);
     const actionSpan = action.end - action.start + 1;
     const actionStep = state.frame - action.start;
@@ -433,17 +486,17 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     refs.stage.dataset.actionPhase = actionPhase;
     refs.stage.classList.toggle("has-action", actionActive);
     refs.stage.classList.toggle("has-audio", audioActive);
-    refs.stage.classList.toggle("has-hit", hitActive);
+    refs.stage.classList.toggle("has-hit", hitTriggeredThisFrame);
     refs.stage.classList.toggle("is-interrupted", interrupted);
     refs.action.textContent = actionActive ? ({ windup: "蓄力", strike: "挥击", recover: "收招" })[actionPhase] : "Idle";
-    refs.audio.textContent = audioActive ? "播放中" : state.frame > audio.end ? "已结束" : "未播放";
-    refs.hit.textContent = hitActive ? "命中提交" : state.frame > hit.end ? "已结算" : "未触发";
+    refs.audio.textContent = audioActive ? "播放中" : audio.finished ? "已结束" : "未播放";
+    refs.hit.textContent = hitActive ? "命中提交" : hit.finished ? "已结算" : "未触发";
     refs.movement.textContent = movementLocked ? "Timeline 锁定" : "自由";
 
     if (interrupted) {
       refs.phase.textContent = `第 ${state.interruptedAt} 帧中断`;
       refs.caption.textContent = "Interrupt 回收活动 Task，实体控制权已释放";
-    } else if (hitActive) {
+    } else if (hitTriggeredThisFrame) {
       refs.phase.textContent = "实体消费 / 命中";
       refs.caption.textContent = "命中 Task 提交语义命令，目标组件产生反馈";
     } else if (actionActive) {
@@ -476,7 +529,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
 
     refs.log.replaceChildren();
     if (!state.hideLog) {
-      const events = buildEvents(state.frame);
+      const events = buildEvents();
       if (state.catchupFrom !== null) {
         const catchup = document.createElement("li");
         catchup.className = "is-catchup";
@@ -497,26 +550,28 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
       refs.log.append(empty);
     }
 
-    let activeLine = 2;
+    let activeLines = [2];
     let codeState = "TICK";
-    if (interrupted) { activeLine = 7; codeState = "INTERRUPT"; }
-    else if (state.clips.some((clip) => clip.end === state.frame)) { activeLine = 5; codeState = "FINISH"; }
-    else if (state.clips.some((clip) => clip.start === state.frame)) { activeLine = 3; codeState = "BEGIN"; }
-    else if (active.length) { activeLine = 4; codeState = "TICK"; }
-    codeLines.forEach((line) => line.classList.toggle("is-active", Number(line.dataset.codeLine) === activeLine));
+    const sameFrameClip = state.clips.some((clip) => clip.start === state.frame && clip.end === state.frame);
+    if (interrupted) { activeLines = [7]; codeState = "INTERRUPT"; }
+    else if (sameFrameClip) { activeLines = [3, 4, 5]; codeState = "BEGIN → TICK → FINISH"; }
+    else if (state.clips.some((clip) => clip.end === state.frame)) { activeLines = [5]; codeState = "FINISH"; }
+    else if (state.clips.some((clip) => clip.start === state.frame)) { activeLines = [3]; codeState = "BEGIN"; }
+    else if (active.length) { activeLines = [4]; codeState = "TICK"; }
+    codeLines.forEach((line) => line.classList.toggle("is-active", activeLines.includes(Number(line.dataset.codeLine))));
     refs.codeState.textContent = codeState;
   }
 
   function renderPlayhead() {
     refs.frame.textContent = String(state.frame).padStart(2, "0");
-    refs.time.textContent = `${(state.frame / state.fps).toFixed(2)}s`;
+    refs.time.textContent = `逻辑帧 ${state.frame}`;
     const playheadLeft = refs.ruler.offsetLeft + ((state.frame + 0.5) / state.length) * refs.ruler.offsetWidth;
     refs.playhead.style.left = `${playheadLeft}px`;
     refs.playhead.querySelector("span").textContent = String(state.frame);
     refs.previous.toggleAttribute("disabled", state.frame === 0 || state.interruptedAt !== null);
     refs.next.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
     refs.catchup.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
-    refs.interrupt.toggleAttribute("disabled", state.interruptedAt !== null);
+    refs.interrupt.toggleAttribute("disabled", state.interruptedAt !== null || !state.clips.some(isActive));
     refs.play.toggleAttribute("disabled", state.frame >= state.length - 1 || state.interruptedAt !== null);
   }
 
@@ -530,7 +585,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
 
   function goTo(frame, catchupFrom = null) {
     if (state.interruptedAt !== null) return;
-    state.frame = Math.max(0, Math.min(state.length - 1, frame));
+    advanceTo(frame);
     state.catchupFrom = catchupFrom;
     state.hideLog = false;
     renderAll();
@@ -543,7 +598,7 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     state.playing = true;
     refs.play.textContent = "暂停播放";
     refs.play.setAttribute("aria-pressed", "true");
-    timer = window.setInterval(() => goTo(state.frame + 1), 1000 / state.fps);
+    timer = window.setInterval(() => goTo(state.frame + 1), 1000 / state.demoStepsPerSecond);
     renderAll();
   }
 
@@ -587,17 +642,17 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
     setNotice(`Timeline 已改为 ${next} 帧；所有 Clip 保持原始区间。`);
     renderAll();
   });
-  refs.fps.addEventListener("input", () => {
-    const next = Number(refs.fps.value);
+  refs.demoSpeed.addEventListener("input", () => {
+    const next = Number(refs.demoSpeed.value);
     if (!Number.isInteger(next) || next < 1 || next > 30) {
-      refs.fps.setCustomValidity("播放帧率必须是 1—30 的整数。");
-      setNotice("播放帧率必须是 1—30 的整数；播放速度没有改变。", true);
+      refs.demoSpeed.setCustomValidity("演示速度必须是每秒 1—30 个逻辑帧。");
+      setNotice("演示速度只控制网页自动播放节奏，不会写入 Timeline 数据。", true);
       return;
     }
-    refs.fps.setCustomValidity("");
+    refs.demoSpeed.setCustomValidity("");
     stop();
-    state.fps = next;
-    setNotice(`播放帧率已改为 ${next} FPS。`);
+    state.demoStepsPerSecond = next;
+    setNotice(`网页演示速度已改为每秒 ${next} 个逻辑帧；源数据没有改变。`);
     renderAll();
   });
   refs.previous.addEventListener("click", () => { stop(); goTo(state.frame - 1); });
@@ -611,29 +666,56 @@ document.querySelectorAll("[data-timeline-lab]").forEach((lab) => {
   });
   refs.interrupt.addEventListener("click", () => {
     stop();
+    const active = state.clips.filter(isActive);
+    if (active.length === 0) return;
     state.interruptedAt = state.frame;
     state.hideLog = false;
-    setNotice(`第 ${state.frame} 帧触发 Interrupt：活动 Task 清理状态并释放实体控制权。`);
+    active.forEach((clip) => {
+      clip.interrupted = true;
+      clip.finished = true;
+      recordEvent(state.frame, "INTERRUPT", clip);
+    });
+    setNotice(`第 ${state.frame} 帧触发 Interrupt：只清理已 Begin 且尚未 Finish 的 ${active.length} 个 Task。`);
+    renderAll();
+  });
+  refs.sameFrame.addEventListener("click", () => {
+    stop();
+    state.sameFrameCase = !state.sameFrameCase;
+    state.frame = 0;
+    state.clips = createScenarioClips();
+    replayTo(0);
+    state.hideLog = false;
+    state.catchupFrom = null;
+    refs.sameFrame.setAttribute("aria-pressed", String(state.sameFrameCase));
+    refs.sameFrame.textContent = state.sameFrameCase ? "同帧命中：已开启" : "同帧命中：已关闭";
+    setNotice(state.sameFrameCase
+      ? "边界案例：命中 Clip 在第 8 帧依次 Begin、Tick、Finish，处理后不会留在 Active Tasks。"
+      : "已恢复标准命中区间；运行状态从第 0 帧重新建立。");
     renderAll();
   });
   refs.clearLog.addEventListener("click", () => { state.hideLog = true; state.catchupFrom = null; renderRuntime(); });
   refs.reset.addEventListener("click", () => {
     stop();
     state.length = 15;
-    state.fps = 6;
+    state.demoStepsPerSecond = 6;
     state.frame = 0;
-    state.clips = initialClips.map((clip) => ({ ...clip }));
-    state.interruptedAt = null;
+    state.sameFrameCase = false;
+    state.clips = createScenarioClips();
+    replayTo(0);
     state.hideLog = false;
     state.catchupFrom = null;
     refs.length.value = "15";
-    refs.fps.value = "6";
+    refs.demoSpeed.value = "6";
     refs.length.setCustomValidity("");
-    refs.fps.setCustomValidity("");
+    refs.demoSpeed.setCustomValidity("");
+    refs.sameFrame.setAttribute("aria-pressed", "false");
+    refs.sameFrame.textContent = "同帧命中：已关闭";
     setNotice("已恢复文章中的最小 Timeline 示例。拖动片段开始编辑。" );
     renderAll();
   });
 
+  state.clips = createScenarioClips();
+  replayTo(0);
   bindPlayhead();
   window.addEventListener("resize", renderPlayhead);
   renderAll();

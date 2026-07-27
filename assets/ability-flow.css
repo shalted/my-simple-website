@@ -246,7 +246,7 @@ main { width: min(1600px, 100%); margin: 0 auto; }
 
 .reading-path { border-bottom: 1px solid var(--line); }
 .reading-grid, .limit-grid { display: grid; gap: 18px; }
-.reading-grid { grid-template-columns: 1fr 1fr; }
+.reading-grid { grid-template-columns: repeat(3, 1fr); }
 .reading-grid a { min-height: 230px; padding: 28px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; transition: transform .2s ease, border-color .2s ease; }
 .reading-grid a:hover { transform: translateY(-4px); border-color: var(--amber); }
 .reading-grid small { color: var(--amber); font: 700 12px var(--mono); letter-spacing: .12em; }

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：">
+  <title>资源作用域与引用释放：让“谁还需要它”成为可观察状态 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>资源作用域与引用释放：让“谁还需要它”成为可观察状态</h1>
+      <p class="hero-copy">资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#1-三张表">1. 三张表</a>
+    <a data-toc-link href="#2-正常加载与缓存命中">2. 正常加载与缓存命中</a>
+    <a data-toc-link href="#3-并发请求合并">3. 并发请求合并</a>
+    <a data-toc-link href="#4-单独-release">4. 单独 Release</a>
+    <a data-toc-link href="#5-dispose-与场景卸载">5. Dispose 与场景卸载</a>
+    <a data-toc-link href="#6-失败与冲突">6. 失败与冲突</a>
+    <a class="sub" data-toc-link href="#加载返回空">加载返回空</a>
+    <a class="sub" data-toc-link href="#启动加载抛异常">启动加载抛异常</a>
+    <a class="sub" data-toc-link href="#同-location-不同类型">同 location、不同类型</a>
+    <a class="sub" data-toc-link href="#完成时已无有效-owner">完成时已无有效 Owner</a>
+    <a class="sub" data-toc-link href="#完成时出现另一个对象">完成时出现另一个对象</a>
+    <a data-toc-link href="#7-状态复杂度与代价">7. 状态复杂度与代价</a>
+    <a data-toc-link href="#8-不应从名字推断的能力">8. 不应从名字推断的能力</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套所有权实验</strong>
+        <span>观察并发请求合并、Owner 矩阵、单独 Release、场景 Dispose 与最终底层释放。</span>
+        <p><a href="/knowledge/resource-scope/">打开资源作用域实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 三张表">
+      <span>01</span>
+      <strong>1. 三张表</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 正常加载与缓存命中">
+      <span>02</span>
+      <strong>2. 正常加载与缓存命中</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 并发请求合并">
+      <span>03</span>
+      <strong>3. 并发请求合并</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 单独 Release">
+      <span>04</span>
+      <strong>4. 单独 Release</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. Dispose 与场景卸载">
+      <span>05</span>
+      <strong>5. Dispose 与场景卸载</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 失败与冲突">
+      <span>06</span>
+      <strong>6. 失败与冲突</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 状态复杂度与代价">
+      <span>07</span>
+      <strong>7. 状态复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 不应从名字推断的能力">
+      <span>08</span>
+      <strong>8. 不应从名字推断的能力</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>1. 三张表</h3>
+        <p><code>Entries</code> 回答“资源被谁持有”，<code>Scopes</code> 回答“某个 Owner 持有哪些资源”，<code>PendingLoads</code> 回答“哪些请求正在等待同一次加载”。</p>
+
+        <pre><code class="language-text">Entries[location] = {
+    asset,
+    owners: Set&lt;scopeId&gt;
+}
+
+Scopes[scopeId] = {
+    label,
+    locations: Set&lt;location&gt;
+}
+
+PendingLoads[location] = {
+    assetType,
+    requests: [{ scopeId, callback, canceled }]
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>2. 正常加载与缓存命中</h3>
+        <p>每次请求先把外部键解析成稳定的 location，然后查询缓存：</p>
+
+        <pre><code class="language-csharp">location = Resolve(request.Key);
+
+if (entries.TryGet(location, out entry)) {
+    if (entry.Asset matches request.Type) {
+        entry.Owners.Add(scope.Id);
+        scope.Locations.Add(location);
+        return entry.Asset;
+    }
+
+    return TypeMismatch;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>3. 并发请求合并</h3>
+        <p>异步请求未命中缓存后，先检查相同 location 是否已有 PendingLoad。</p>
+        <ul><li>类型一致：把请求追加到等待列表，不启动第二次底层加载；</li><li>类型冲突：立即失败，不加入错误类型的等待队列；</li><li>没有 PendingLoad：创建一条 PendingLoad，并启动一次底层加载。</li></ul>
+        <pre><code class="language-csharp">pending = PendingLoads.Remove(location);
+
+foreach (request in pending.Requests) {
+    if (!request.Canceled &amp;&amp; Scopes.Contains(request.ScopeId)) {
+        TrackOwnership(request.ScopeId, location);
+        request.Callback(asset);
+    }
+}
+
+if (entry.Owners.Count == 0)
+    ReleaseUnderlying(asset);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>4. 单独 Release</h3>
+        <p>释放一个 Owner 对某资源的所有权，需要同时更新两边：</p>
+
+        <pre><code class="language-csharp">scope.Locations.Remove(location);
+entry.Owners.Remove(scope.Id);
+
+if (entry.Owners.Count == 0) {
+    Entries.Remove(location);
+    ReleaseUnderlying(entry.Asset);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
+        <h3>5. Dispose 与场景卸载</h3>
+        <p>Scope.Dispose 的含义是：</p>
+        <ul><li>对 Scope 当前持有的 location 快照逐个 Release；</li><li>从场景绑定索引中移除 Scope；</li><li>删除 Scope 状态；</li><li>令 Scope 对象进入 disposed 状态，后续请求不再产生所有权。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+        <h3>6. 失败与冲突</h3>
+        <p>不创建缓存条目，所有未取消请求收到失败结果，PendingLoad 被移除。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+        <h3>7. 状态复杂度与代价</h3>
+        <p>代价是需要维护双向索引，并认真处理取消、回调异常、类型冲突和完成顺序。收益是底层释放只发生在 Owners 真正归零时，而且每次状态变化都能被诊断工具展示。</p>
+        <ul><li>缓存命中、Owner 添加与 Pending 查找平均为 <code>O(1)</code>。</li><li>单资源 Release 平均为 <code>O(1)</code>。</li><li>Scope.Dispose 为 <code>O(R)</code>，R 是该 Scope 持有的资源数。</li><li>场景卸载为 <code>O(S + ΣR)</code>，S 是场景 Scope 数。</li><li>Pending 完成为 <code>O(P)</code>，P 是合并的等待请求数。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+        <h3>8. 不应从名字推断的能力</h3>
+        <p>好的资源系统不是“有一个字典”，而是让请求、等待、所有权、释放原因和底层对象的最终去向都可以被逐步解释。</p>
+        <ul><li>同一 Scope 的重复 Load 不等于引用计数增加；Owner 是集合。</li><li>请求取消只取消该请求的交付，不等于取消底层共享加载。</li><li>普通 Scope 不会自动跟随场景卸载。</li><li>系统是否支持全局 Shutdown、超时、失败重试或容量淘汰，需要独立的入口和消费证据；没有链路就不要宣称已支持。</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
+<ul>
+<li>谁正在使用这份资源？</li>
+<li>两个并发请求会不会启动两次底层加载？</li>
+<li>一个使用者释放后，另一个还能否安全访问？</li>
+<li>场景卸载时，哪些资源应该一起释放？</li>
+<li>加载失败、请求取消或类型冲突时，是否留下悬空状态？</li>
+</ul>
+<p>一个可靠的资源作用域系统，把缓存条目、Owner 集合、Scope 持有集合和 Pending 请求放在同一套状态机中。更宽的生命周期职责与统一入口，可先查看<a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">资源生命周期统一管理</a>。</p>
+<h2 id="1-三张表">1. 三张表</h2>
+<pre><code class="language-text">Entries[location] = {
+    asset,
+    owners: Set&lt;scopeId&gt;
+}
+
+Scopes[scopeId] = {
+    label,
+    locations: Set&lt;location&gt;
+}
+
+PendingLoads[location] = {
+    assetType,
+    requests: [{ scopeId, callback, canceled }]
+}</code></pre>
+<p><code>Entries</code> 回答“资源被谁持有”，<code>Scopes</code> 回答“某个 Owner 持有哪些资源”，<code>PendingLoads</code> 回答“哪些请求正在等待同一次加载”。</p>
+<p>Owner 用集合而不是引用计数：同一个 Scope 重复请求同一资源，Owner 仍只出现一次。这里统计的是“作用域所有权”，不是 Load 调用次数。</p>
+<h2 id="2-正常加载与缓存命中">2. 正常加载与缓存命中</h2>
+<p>每次请求先把外部键解析成稳定的 location，然后查询缓存：</p>
+<pre><code class="language-csharp">location = Resolve(request.Key);
+
+if (entries.TryGet(location, out entry)) {
+    if (entry.Asset matches request.Type) {
+        entry.Owners.Add(scope.Id);
+        scope.Locations.Add(location);
+        return entry.Asset;
+    }
+
+    return TypeMismatch;
+}</code></pre>
+<p>缓存命中仍要登记 Owner。否则第二个 Scope 虽然拿到了对象，释放第一个 Scope 时系统却会误以为已经无人使用。</p>
+<h2 id="3-并发请求合并">3. 并发请求合并</h2>
+<p>异步请求未命中缓存后，先检查相同 location 是否已有 PendingLoad。</p>
+<ul>
+<li>类型一致：把请求追加到等待列表，不启动第二次底层加载；</li>
+<li>类型冲突：立即失败，不加入错误类型的等待队列；</li>
+<li>没有 PendingLoad：创建一条 PendingLoad，并启动一次底层加载。</li>
+</ul>
+<p>加载完成时先移除 PendingLoad，再只为仍然有效、未取消且 Scope 仍存在的请求登记 Owner。若没有任何有效请求保留资源，应立即调用底层释放。</p>
+<pre><code class="language-csharp">pending = PendingLoads.Remove(location);
+
+foreach (request in pending.Requests) {
+    if (!request.Canceled &amp;&amp; Scopes.Contains(request.ScopeId)) {
+        TrackOwnership(request.ScopeId, location);
+        request.Callback(asset);
+    }
+}
+
+if (entry.Owners.Count == 0)
+    ReleaseUnderlying(asset);</code></pre>
+<p>回调异常应被隔离：一个使用者的回调失败，不能阻止其他等待者收到结果。</p>
+<h2 id="4-单独-release">4. 单独 Release</h2>
+<p>释放一个 Owner 对某资源的所有权，需要同时更新两边：</p>
+<pre><code class="language-csharp">scope.Locations.Remove(location);
+entry.Owners.Remove(scope.Id);
+
+if (entry.Owners.Count == 0) {
+    Entries.Remove(location);
+    ReleaseUnderlying(entry.Asset);
+}</code></pre>
+<p>只要 Owners 仍非空，就保留缓存条目和底层对象。重复 Release 返回失败，但不能影响其他 Owner。</p>
+<h2 id="5-dispose-与场景卸载">5. Dispose 与场景卸载</h2>
+<p>Scope.Dispose 的含义是：</p>
+<ol>
+<li>对 Scope 当前持有的 location 快照逐个 Release；</li>
+<li>从场景绑定索引中移除 Scope；</li>
+<li>删除 Scope 状态；</li>
+<li>令 Scope 对象进入 disposed 状态，后续请求不再产生所有权。</li>
+</ol>
+<p>场景 Scope 额外登记 <code>scene → scopeIds</code>。场景卸载时对这组 ID 做快照，再逐个 Dispose。普通 Scope 不会因为任意场景卸载而自动释放，它必须由自己的生命周期负责人 Dispose。</p>
+<p>缓存包装器可以在“绑定到新场景”时先 Dispose 旧 Scope，再创建新的场景 Scope，避免一份管理器状态跨场景错误复用。</p>
+<h2 id="6-失败与冲突">6. 失败与冲突</h2>
+<h3 id="加载返回空">加载返回空</h3>
+<p>不创建缓存条目，所有未取消请求收到失败结果，PendingLoad 被移除。</p>
+<h3 id="启动加载抛异常">启动加载抛异常</h3>
+<p>移除 PendingLoad，通知所有未取消请求失败。失败不能伪装成缓存命中。</p>
+<h3 id="同-location-不同类型">同 location、不同类型</h3>
+<p>缓存已存在或加载正在进行时，类型不匹配都应直接失败。不能把错误类型强制转换为空后继续登记 Owner。</p>
+<h3 id="完成时已无有效-owner">完成时已无有效 Owner</h3>
+<p>Scope 可能在加载完成前 Dispose，请求也可能取消。若完成时没有任何有效请求，应释放刚加载的底层对象，不把“无人认领”的资源放进缓存。</p>
+<h3 id="完成时出现另一个对象">完成时出现另一个对象</h3>
+<p>同步路径可能已经建立缓存，而异步加载随后返回另一对象。系统应保留已有对象，并释放重复返回的对象。</p>
+<h2 id="7-状态复杂度与代价">7. 状态复杂度与代价</h2>
+<ul>
+<li>缓存命中、Owner 添加与 Pending 查找平均为 <code>O(1)</code>。</li>
+<li>单资源 Release 平均为 <code>O(1)</code>。</li>
+<li>Scope.Dispose 为 <code>O(R)</code>，R 是该 Scope 持有的资源数。</li>
+<li>场景卸载为 <code>O(S + ΣR)</code>，S 是场景 Scope 数。</li>
+<li>Pending 完成为 <code>O(P)</code>，P 是合并的等待请求数。</li>
+</ul>
+<p>代价是需要维护双向索引，并认真处理取消、回调异常、类型冲突和完成顺序。收益是底层释放只发生在 Owners 真正归零时，而且每次状态变化都能被诊断工具展示。</p>
+<h2 id="8-不应从名字推断的能力">8. 不应从名字推断的能力</h2>
+<ul>
+<li>同一 Scope 的重复 Load 不等于引用计数增加；Owner 是集合。</li>
+<li>请求取消只取消该请求的交付，不等于取消底层共享加载。</li>
+<li>普通 Scope 不会自动跟随场景卸载。</li>
+<li>系统是否支持全局 Shutdown、超时、失败重试或容量淘汰，需要独立的入口和消费证据；没有链路就不要宣称已支持。</li>
+</ul>
+<p>好的资源系统不是“有一个字典”，而是让请求、等待、所有权、释放原因和底层对象的最终去向都可以被逐步解释。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/"><small>← PREVIOUS</small>资源生命周期统一管理</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><small>NEXT →</small>Effect 与 Buff 生命周期：从一次申请到彻底清理</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

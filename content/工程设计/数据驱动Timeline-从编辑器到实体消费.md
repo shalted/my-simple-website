@@ -43,7 +43,6 @@ Task 生命周期
 // 编辑态根对象：只保存可序列化数据，不保存播放进度。
 public sealed record TimelineDocument(
     string Id,
-    int FrameRate,
     IReadOnlyList<TrackDocument> Tracks);
 
 // Track 负责组织内容与提升可读性，不参与运行时业务判断。
@@ -66,7 +65,7 @@ public sealed record ApplyHitTask(string HitProfile) : TaskDefinition;
 public sealed record MovementLockTask(bool Locked) : TaskDefinition;
 ```
 
-这里故意没有 `currentFrame`、预览对象或运行时 Task 实例。它们属于一次播放过程，不应该被保存进编辑文档。编辑器真正修改的只有 `StartFrame`、`EndFrame` 和 Task 参数。
+这里故意没有 `currentFrame`、预览对象或运行时 Task 实例。它们属于一次播放过程，不应该被保存进编辑文档。编辑器真正修改的只有 `StartFrame`、`EndFrame` 和 Task 参数。示例采用系统统一的全局逻辑帧率；如果另一套系统选择让每条 Timeline 自带帧率，也必须明确它是源字段还是全局调度规则，不能让网页播放速度冒充导出配置。
 
 ```text
 Timeline
@@ -123,7 +122,6 @@ onPointerMove(pointerX):
 ```json
 {
   "id": "demo_attack",
-  "frameRate": 6,
   "tracks": [
     {
       "name": "动作",
@@ -177,12 +175,11 @@ for each track:
 
 如果总时长既能手填又能自动计算，就可能出现“Clip 已结束，但 Timeline 仍占用控制锁”的幽灵时间。派生字段只有一个计算入口，能够消除这类不一致。
 
-构建以后可以把 Track 展平，并写入已经验证过的 Task 类型。下面是同一份数据的运行时形态示例：
+构建以后可以保留 Track 作为组织层，也可以生成只含 Clip 的调度视图。关键不是必须展平，而是运行时调度不依赖 Track 名称。下面为了突出调度信息，展示同一份数据的展平视图：
 
 ```json
 {
   "id": "demo_attack",
-  "frameRate": 6,
   "lifeTime": 14,
   "clips": [
     { "start": 0, "end": 12, "taskType": "PlayAnimation", "payload": { "animationKey": "attack_basic" } },
@@ -258,7 +255,7 @@ TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
 
     var runtimeClips = new List<CompiledClip>();
 
-    // 展平 Track：运行时调度只需要 Clip。
+    // 这里选择生成调度视图；保留 Track 也可以，但调度不能依赖 Track 名称。
     foreach (TrackDocument track in source.Tracks)
     foreach (ClipDocument clip in track.Clips)
     {
@@ -270,7 +267,7 @@ TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
 
     // 生命周期由最晚结束的 Clip 推导，不维护第二份人工值。
     int lifeTime = runtimeClips.Max(clip => clip.EndFrame);
-    return new TimelineData(source.Id, source.FrameRate, lifeTime, runtimeClips);
+    return new TimelineData(source.Id, lifeTime, runtimeClips);
 }
 
 // 构建阶段解析资源键，并把每种参数固定成明确的运行时类型。
@@ -298,33 +295,33 @@ CompiledTask CompileTask(TaskDefinition source, ResourceCatalog catalog) => sour
 - 查询入口保持单一，调用方不关心数据来自哪里
 
 ```csharp
-IReadOnlyDictionary<string, TimelineData> BuildIndex(RuntimeSnapshot snapshot)
+IReadOnlyDictionary<string, TimelineData> BuildVerifiedIndex(RuntimeSnapshot verifiedSnapshot)
 {
+    // 重复 ID 已在构建期阻止；运行时只消费通过校验的快照。
     var index = new Dictionary<string, TimelineData>();
-
-    foreach (TimelineData timeline in snapshot.Timelines)
-    {
-        // TryAdd 同时完成建索引和重复 ID 检查。
-        if (!index.TryAdd(timeline.Id, timeline))
-            throw new DuplicateTimelineIdException(timeline.Id);
-    }
-
+    foreach (TimelineData timeline in verifiedSnapshot.Timelines)
+        index[timeline.Id] = timeline;
     return index;
 }
 
-TimelineData ResolveTimeline(
+bool TryResolveTimeline(
     IReadOnlyDictionary<string, TimelineData> index,
-    string timelineId)
-{
-    // 缺失引用必须显式失败，不能悄悄返回空 Timeline。
-    if (!index.TryGetValue(timelineId, out TimelineData timeline))
-        throw new MissingTimelineException(timelineId);
+    string timelineId,
+    out TimelineData timeline) => index.TryGetValue(timelineId, out timeline);
 
-    return timeline;
+ActivationResult Activate(string timelineId)
+{
+    if (!TryResolveTimeline(index, timelineId, out TimelineData timeline))
+    {
+        // 运行时保留明确失败并取消本次激活，不伪装成成功的空 Timeline。
+        diagnostics.ReportMissingTimeline(timelineId);
+        return ActivationResult.Cancelled;
+    }
+    return StartTimeline(timeline);
 }
 ```
 
-索引建立完成后，上层对象只保存 Timeline 标识或只读引用。找不到标识时直接暴露数据错误，不返回一个“什么也不做”的空 Timeline。
+重复标识和静态缺失引用应在构建期阻止生成。运行时查询仍可能因版本或装载问题失败，此时不要求所有实现都抛异常，但必须让调用方得到明确失败、记录诊断并取消本次流程，不能替换成“什么也不做却算成功”的空 Timeline。
 
 索引解决的是定位，不负责复制数据。只读 Timeline 可以被多个实例共享；真正的播放进度、Task 状态和目标实体必须属于每次播放实例。
 
@@ -359,14 +356,14 @@ TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
 
     // 从 -1 开始，第一次 Advance 才会正式进入第 0 帧。
     return new TimelinePlayer(
-        frameRate: template.FrameRate,
+        logicFrameRate: globalLogicFrameRate,
         lifeTime: template.LifeTime,
         clips: runtimeClips,
         currentFrame: -1);
 }
 ```
 
-模板中的四个 `CompiledClip` 会得到四个独立 Task 实例。两个实体同时播放同一个模板时，它们共享只读配置，但各自拥有 `currentFrame`、生命周期标记和实体上下文。
+模板中的四个 `CompiledClip` 会得到四个独立 Task 实例。两个实体同时播放同一个模板时，它们共享只读配置，但各自拥有 `currentFrame`、生命周期标记和实体上下文。这里的 `globalLogicFrameRate` 来自系统级调度配置，不是 Timeline 文档字段；页面上的“演示速度”也只控制网页自动播放节奏。
 
 部分 Task 的真实持续时间可能由曲线或资源长度决定，因此允许 Task 在实例化阶段修正结束帧，但修正结果只能属于本次运行时 Clip。
 
@@ -385,7 +382,7 @@ void Advance(float deltaTime)
 {
     elapsed += deltaTime * playbackSpeed;
     // 真实时间先换算成目标逻辑帧。
-    int targetFrame = FloorToInt(elapsed * frameRate);
+    int targetFrame = FloorToInt(elapsed * logicFrameRate);
     targetFrame = Min(targetFrame, lifeTime);
 
     // 逐帧追赶，保证短 Clip 的边界事件不会被跳过。
@@ -424,7 +421,7 @@ void TickFrame(int frame)
 
 假设渲染线程从第 7 帧一次跳到第 10 帧，`while` 会依次执行第 8、9、10 帧。因此 8—9 帧的短命中 Clip 仍然能够完整经历 Begin、Tick 和 Finish。
 
-备注：如果 Begin 与 Finish 落在同一帧，这一帧仍会依次执行 Begin、Tick、Finish，生命周期不会缺段。
+备注：如果 Begin 与 Finish 落在同一帧，这一帧仍会依次执行 Begin、Tick、Finish，生命周期不会缺段。页面下方可开启“同帧命中”观察：该 Clip 在这一帧处理完成后会立即退出活动集合，随后执行中断时不会再次收到 Interrupt。
 
 逐帧追赶可以保证低帧率下不会跳过短 Clip。代价是单帧卡顿后可能集中执行多次，因此 Task 的每帧逻辑应保持轻量，并避免无界循环。
 

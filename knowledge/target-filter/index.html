@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="拖动施法者与目标，逐步观察圆形、扇形、盒形查询如何从世界坐标经过空间粗筛与精确几何得到最终命中。">
+  <title>目标筛选与命中判定 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/target-filter.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/target-filter.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / SPATIAL TRACE</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/算法/目标筛选与命中判定/">完整文章</a>
+      <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">TARGET QUERY / GEOMETRY DEBUGGER</p>
+      <h1>进入范围，<br>不等于<em>最终命中</em></h1>
+      <p>拖动施法者与目标，沿着“世界坐标 → 空间粗筛 → 阵营过滤 → 精确几何 → 入选原因”逐步检查。</p>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="目标筛选交互实验">
+      <div class="toolbar">
+        <div class="shape-tabs" role="group" aria-label="查询形状">
+          <button class="shape-tab is-active" type="button" data-shape="circle" aria-pressed="true">○ 圆形</button>
+          <button class="shape-tab" type="button" data-shape="sector" aria-pressed="false">◔ 扇形</button>
+          <button class="shape-tab" type="button" data-shape="box" aria-pressed="false">◇ 盒形</button>
+        </div>
+        <div class="scenario-tabs" role="group" aria-label="教学场景">
+          <button class="scenario-tab is-active" type="button" data-scenario="normal" aria-pressed="true">正常</button>
+          <button class="scenario-tab" type="button" data-scenario="boundary" aria-pressed="false">边界</button>
+          <button class="scenario-tab" type="button" data-scenario="failure" aria-pressed="false">失败</button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 6</strong></div>
+      </div>
+
+      <div class="lab-grid">
+        <section class="stage-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">DRAGGABLE WORLD</p><h2>二维平面查询现场</h2></div>
+            <p id="teaching-parameter">教学参数 · 半径 2.8 / 目标半径 0.22</p>
+          </div>
+          <svg id="world-stage" viewBox="0 0 720 520" role="img" aria-label="可拖动的施法者、目标和查询形状">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#27302e" stroke-width="1"/>
+              </pattern>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f3b85b"/>
+              </marker>
+            </defs>
+            <rect width="720" height="520" fill="url(#grid)"/>
+            <g id="broad-shape"></g>
+            <g id="exact-shape"></g>
+            <g id="caster-layer"></g>
+            <g id="target-layer"></g>
+          </svg>
+          <div class="legend">
+            <span><i class="caster-dot"></i>施法者</span>
+            <span><i class="candidate-dot"></i>粗筛候选</span>
+            <span><i class="hit-dot"></i>最终入选</span>
+            <span><i class="reject-dot"></i>已排除</span>
+          </div>
+        </section>
+
+        <article class="explain-panel">
+          <p class="panel-label">CURRENT FILTER</p>
+          <p class="phase" id="phase">WORLD POSE</p>
+          <h2 id="step-title">解析查询姿态</h2>
+          <p id="step-copy">把本地偏移和旋转组合到施法者的世界姿态。</p>
+          <div class="change-box"><span>本步改变</span><p id="step-change">查询中心与朝向已确定</p></div>
+          <div class="why-box"><span>WHY</span><p id="step-why">后续所有目标必须在同一个坐标系中比较。</p></div>
+          <div class="reason-card">
+            <span>选中目标诊断</span>
+            <strong id="selected-target">目标 A</strong>
+            <dl>
+              <div><dt>世界坐标</dt><dd id="world-position">(+0.00, +0.00)</dd></div>
+              <div><dt>局部坐标</dt><dd id="local-position">(+0.00, +0.00)</dd></div>
+              <div><dt>距离</dt><dd id="distance-value">0.00</dd></div>
+              <div><dt>角度</dt><dd id="angle-value">—</dd></div>
+            </dl>
+            <p id="target-reason">等待精确判断</p>
+          </div>
+        </article>
+
+        <aside class="inspect-panel">
+          <div class="counter-grid">
+            <div><span>SCENE</span><strong id="scene-count">4</strong><small>可观察目标</small></div>
+            <div><span>BROAD</span><strong id="broad-count">0</strong><small>粗筛候选</small></div>
+            <div><span>CAMP</span><strong id="camp-count">0</strong><small>关系通过</small></div>
+            <div><span>EXACT</span><strong id="exact-count">0</strong><small>精确计算</small></div>
+            <div class="final-count"><span>HIT</span><strong id="hit-count">0</strong><small>最终入选</small></div>
+          </div>
+          <div class="target-list">
+            <div class="list-head"><span>TARGET TRACE</span><small>点击行或拖动圆点</small></div>
+            <ol id="target-trace"></ol>
+          </div>
+          <div class="code-panel">
+            <div class="code-head"><span>SYNCED PSEUDOCODE</span><strong id="code-status">POSE</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="progress">
+          <div class="step-dots" id="step-dots" data-lab-dots></div>
+          <label for="speed-seconds">自动每步 <input id="speed-seconds" type="number" value="2" inputmode="decimal"> 秒</label>
+          <span id="speed-message" role="status">站内基准 2 秒</span>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置位置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button type="button" id="auto-button" data-lab-control aria-pressed="false">▶ 自动播放</button>
+          <button class="primary" type="button" id="next-button" data-lab-control>下一步 →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="notes">
+      <article><span>01</span><h3>粗筛不是命中</h3><p>外接圆会带入扇形背后和盒角外的对象，必须继续精确判断。</p></article>
+      <article><span>02</span><h3>目标不是点</h3><p>目标半径会同时扩大粗筛范围，并为圆、扇形、盒形边界提供容差。</p></article>
+      <article><span>03</span><h3>平面不是三维</h3><p>此模型只处理水平平面。高度规则必须单独加入，不能从二维结果推断。</p></article>
+      <article><span>04</span><h3>优化候选数</h3><p>精确判断都是 O(1)，整体成本主要由空间索引返回的候选数量决定。</p></article>
+    </section>
+  </main>
+</body>
+</html>

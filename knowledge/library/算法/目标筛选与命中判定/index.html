@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：">
+  <title>目标筛选与命中判定：从世界坐标到入选原因 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>目标筛选与命中判定：从世界坐标到入选原因</h1>
+      <p class="hero-copy">“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#第一步-把本地形状放进世界">第一步：把本地形状放进世界</a>
+    <a data-toc-link href="#第二步-空间粗筛只负责减少候选">第二步：空间粗筛只负责减少候选</a>
+    <a data-toc-link href="#第三步-先过滤阵营与无效对象">第三步：先过滤阵营与无效对象</a>
+    <a data-toc-link href="#圆形-比较平方距离">圆形：比较平方距离</a>
+    <a data-toc-link href="#扇形-先距离-再角度">扇形：先距离，再角度</a>
+    <a data-toc-link href="#盒形-先转到局部坐标">盒形：先转到局部坐标</a>
+    <a data-toc-link href="#第四步-命中任务消费最终集合">第四步：命中任务消费最终集合</a>
+    <a data-toc-link href="#三类调试场景">三类调试场景</a>
+    <a data-toc-link href="#计算次数如何观察">计算次数如何观察</a>
+    <a data-toc-link href="#边界与失效条件">边界与失效条件</a>
+    <a class="sub" data-toc-link href="#零尺寸">零尺寸</a>
+    <a class="sub" data-toc-link href="#无法解析姿态">无法解析姿态</a>
+    <a class="sub" data-toc-link href="#垂直维度">垂直维度</a>
+    <a class="sub" data-toc-link href="#高速移动">高速移动</a>
+    <a class="sub" data-toc-link href="#目标半径">目标半径</a>
+    <a data-toc-link href="#复杂度">复杂度</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套几何调试器</strong>
+        <span>拖动施法者与目标，逐层观察世界姿态、空间粗筛、阵营过滤、精确判断和入选原因。</span>
+        <p><a href="/knowledge/target-filter/">打开目标筛选实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：第一步：把本地形状放进世界">
+      <span>01</span>
+      <strong>第一步：把本地形状放进世界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第二步：空间粗筛只负责减少候选">
+      <span>02</span>
+      <strong>第二步：空间粗筛只负责减少候选</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第三步：先过滤阵营与无效对象">
+      <span>03</span>
+      <strong>第三步：先过滤阵营与无效对象</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：圆形：比较平方距离">
+      <span>04</span>
+      <strong>圆形：比较平方距离</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：扇形：先距离，再角度">
+      <span>05</span>
+      <strong>扇形：先距离，再角度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：盒形：先转到局部坐标">
+      <span>06</span>
+      <strong>盒形：先转到局部坐标</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第四步：命中任务消费最终集合">
+      <span>07</span>
+      <strong>第四步：命中任务消费最终集合</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：三类调试场景">
+      <span>08</span>
+      <strong>三类调试场景</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：计算次数如何观察">
+      <span>09</span>
+      <strong>计算次数如何观察</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界与失效条件">
+      <span>10</span>
+      <strong>边界与失效条件</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：复杂度">
+      <span>11</span>
+      <strong>复杂度</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>第一步：把本地形状放进世界</h3>
+        <p>查询形状可以使用固定世界坐标，也可以跟随施法者。跟随模式下，偏移和旋转都要继承施法者姿态：</p>
+
+        <pre><code class="language-csharp">QueryPose ResolvePose(Actor caster, ShapeConfig config)
+{
+    if (config.UseWorldSpace)
+        return new QueryPose(config.Offset, config.Rotation);
+
+    Vector2 center =
+        caster.Position +
+        Rotate(config.Offset, caster.Rotation);
+
+    float rotation =
+        caster.Rotation +
+        config.Rotation;
+
+    return new QueryPose(center, rotation);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>第二步：空间粗筛只负责减少候选</h3>
+        <p>圆形和扇形可以用外接圆查询附近对象；旋转盒形可以用覆盖四个角的外接圆。粗筛半径还要考虑目标自身碰撞半径：</p>
+
+        <pre><code class="language-csharp">float ResolveBroadRadius(Shape shape, float targetRadius)
+{
+    return shape switch
+    {
+        Circle c =&gt; c.Radius + targetRadius,
+        Sector s =&gt; s.Radius + targetRadius,
+        Box b    =&gt; Length(b.HalfExtents) + targetRadius
+    };
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>第三步：先过滤阵营与无效对象</h3>
+        <p>在精确几何之前排除自己、友方、已销毁对象或缺少空间位置的对象，能减少后续计算。</p>
+
+        <pre><code class="language-csharp">foreach (Target target in broadCandidates)
+{
+    if (!campRule.Accept(caster, target))
+    {
+        trace.Reject(target, &quot;阵营不匹配&quot;);
+        continue;
+    }
+
+    preciseCandidates.Add(target);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>圆形：比较平方距离</h3>
+        <p>圆形只关心目标中心到查询中心的平面距离。把目标半径加到技能半径上，可以让目标边缘进入范围时也算命中。</p>
+
+        <pre><code class="language-csharp">bool HitCircle(
+    Vector2 point,
+    Vector2 center,
+    float radius,
+    float targetRadius)
+{
+    float combined = radius + targetRadius;
+    return DistanceSquared(point, center)
+        &lt;= combined * combined;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>扇形：先距离，再角度</h3>
+        <p>扇形先复用圆形距离判断，再把目标方向与扇形前向做点积：</p>
+
+        <pre><code class="language-csharp">bool HitSector(
+    Vector2 point,
+    QueryPose pose,
+    float radius,
+    float angle,
+    float targetRadius)
+{
+    if (!HitCircle(point, pose.Center, radius, targetRadius))
+        return false;
+
+    Vector2 toTarget = Normalize(point - pose.Center);
+    float pointAngle =
+        Acos(Clamp(Dot(pose.Forward, toTarget), -1, 1));
+
+    float tolerance =
+        Asin(Clamp(targetRadius / Max(distance, targetRadius), 0, 1));
+
+    return pointAngle &lt;= angle * 0.5f + tolerance;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>盒形：先转到局部坐标</h3>
+        <p>旋转盒形在世界空间不好判断。先把目标相对盒子中心的向量旋转到盒子的局部坐标：</p>
+
+        <pre><code class="language-csharp">Vector2 local =
+    RotateInverse(target.Position - box.Center, box.Rotation);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>第四步：命中任务消费最终集合</h3>
+        <p>查询器只负责返回目标。命中任务再处理同一目标的重复命中间隔、目标数量上限、效果结算与反馈：</p>
+
+        <pre><code class="language-csharp">void ApplyHitFrame(HitContext context)
+{
+    results.Clear();
+    catcher.QueryNonAlloc(context.Reference, results);
+
+    foreach (Target target in results)
+    {
+        if (!hitInterval.Allow(target, context.Frame))
+            continue;
+
+        effects.Apply(context.Source, target);
+        feedback.Play(context.Source, target);
+        hitInterval.Record(target, context.Frame);
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+        <h3>三类调试场景</h3>
+        <p>本文交互实验中的尺寸、角度、坐标和目标半径都是教学场景参数：</p>
+        <ul><li>正常：多个目标分布在形状内外，观察候选集逐层缩小；</li><li>边界：目标中心位于几何边缘附近，观察目标半径与 <code>&lt;=</code> 如何影响结果；</li><li>失败：目标进入空间粗筛，却因阵营或精确几何失败而被排除。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
+        <h3>计算次数如何观察</h3>
+        <p>一次查询至少记录四个数字：</p>
+        <ul><li>场景中可观察对象数；</li><li>空间索引返回的粗筛候选数；</li><li>通过阵营与有效性过滤的目标数；</li><li>实际执行精确几何判断的次数。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CONCEPT</div>
+        <h3>边界与失效条件</h3>
+        <p>半径、角度、盒形半宽或半深接近零时，查询应明确返回空集合，不要悄悄改成另一种形状。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+        <h3>复杂度</h3>
+        <p>设空间粗筛返回 <code>k</code> 个候选：</p>
+        <ul><li>粗筛成本取决于空间索引；</li><li>阵营过滤是 O(k)；</li><li>圆形、扇形、盒形对每个候选都是 O(1)；</li><li>精确阶段总成本为 O(k)；</li><li>结果列表复用可把每次查询的额外分配降到接近零。</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
+<pre><code class="language-text">形状配置 + 施法者姿态
+  → 世界空间查询姿态
+  → 空间索引粗筛
+  → 阵营与有效性过滤
+  → 圆形距离 / 扇形距离与角度 / 盒形局部坐标判断
+  → 最终目标集合
+  → 命中任务消费</code></pre>
+<p>把这些步骤压成一个 <code>IsHit</code> 布尔值，运行快，却很难回答“为什么没命中”。更实用的调试模型应同时记录候选数量、每层计算次数和每个目标的入选或排除原因。</p>
+<h2 id="第一步-把本地形状放进世界">第一步：把本地形状放进世界</h2>
+<p>查询形状可以使用固定世界坐标，也可以跟随施法者。跟随模式下，偏移和旋转都要继承施法者姿态：</p>
+<pre><code class="language-csharp">QueryPose ResolvePose(Actor caster, ShapeConfig config)
+{
+    if (config.UseWorldSpace)
+        return new QueryPose(config.Offset, config.Rotation);
+
+    Vector2 center =
+        caster.Position +
+        Rotate(config.Offset, caster.Rotation);
+
+    float rotation =
+        caster.Rotation +
+        config.Rotation;
+
+    return new QueryPose(center, rotation);
+}</code></pre>
+<p>在平面查询中，通常只使用世界坐标的两个水平轴。垂直高度应由独立的高度规则处理，不能看到一个三维参数就假定查询也使用了三维距离。</p>
+<h2 id="第二步-空间粗筛只负责减少候选">第二步：空间粗筛只负责减少候选</h2>
+<p>圆形和扇形可以用外接圆查询附近对象；旋转盒形可以用覆盖四个角的外接圆。粗筛半径还要考虑目标自身碰撞半径：</p>
+<pre><code class="language-csharp">float ResolveBroadRadius(Shape shape, float targetRadius)
+{
+    return shape switch
+    {
+        Circle c =&gt; c.Radius + targetRadius,
+        Sector s =&gt; s.Radius + targetRadius,
+        Box b    =&gt; Length(b.HalfExtents) + targetRadius
+    };
+}</code></pre>
+<p>空间索引返回的是候选，不是最终命中。一个位于扇形背后的目标仍可能进入扇形外接圆；一个位于盒形角外的目标也可能进入盒形外接圆。</p>
+<h2 id="第三步-先过滤阵营与无效对象">第三步：先过滤阵营与无效对象</h2>
+<p>在精确几何之前排除自己、友方、已销毁对象或缺少空间位置的对象，能减少后续计算。</p>
+<pre><code class="language-csharp">foreach (Target target in broadCandidates)
+{
+    if (!campRule.Accept(caster, target))
+    {
+        trace.Reject(target, &quot;阵营不匹配&quot;);
+        continue;
+    }
+
+    preciseCandidates.Add(target);
+}</code></pre>
+<p>阵营规则必须明确表达“敌方、友方、仅自己”等语义。不要让一个含义不清的数字层同时承担物理碰撞层和关系阵营。</p>
+<h2 id="圆形-比较平方距离">圆形：比较平方距离</h2>
+<p>圆形只关心目标中心到查询中心的平面距离。把目标半径加到技能半径上，可以让目标边缘进入范围时也算命中。</p>
+<pre><code class="language-csharp">bool HitCircle(
+    Vector2 point,
+    Vector2 center,
+    float radius,
+    float targetRadius)
+{
+    float combined = radius + targetRadius;
+    return DistanceSquared(point, center)
+        &lt;= combined * combined;
+}</code></pre>
+<p>比较平方距离可以避免每个目标都开平方。边界使用 <code>&lt;=</code> 时，刚好贴边的目标算命中。</p>
+<h2 id="扇形-先距离-再角度">扇形：先距离，再角度</h2>
+<p>扇形先复用圆形距离判断，再把目标方向与扇形前向做点积：</p>
+<pre><code class="language-csharp">bool HitSector(
+    Vector2 point,
+    QueryPose pose,
+    float radius,
+    float angle,
+    float targetRadius)
+{
+    if (!HitCircle(point, pose.Center, radius, targetRadius))
+        return false;
+
+    Vector2 toTarget = Normalize(point - pose.Center);
+    float pointAngle =
+        Acos(Clamp(Dot(pose.Forward, toTarget), -1, 1));
+
+    float tolerance =
+        Asin(Clamp(targetRadius / Max(distance, targetRadius), 0, 1));
+
+    return pointAngle &lt;= angle * 0.5f + tolerance;
+}</code></pre>
+<p>目标不是数学上的点。目标半径形成角度容差，使圆形目标的边缘碰到扇形边界时也能入选。目标恰好位于扇形中心时，不存在稳定方向，应直接视为通过角度判断。</p>
+<h2 id="盒形-先转到局部坐标">盒形：先转到局部坐标</h2>
+<p>旋转盒形在世界空间不好判断。先把目标相对盒子中心的向量旋转到盒子的局部坐标：</p>
+<pre><code class="language-csharp">Vector2 local =
+    RotateInverse(target.Position - box.Center, box.Rotation);</code></pre>
+<p>对于有半径的目标，不能只把宽高简单扩大，否则会把盒子圆角外的一小块区域错误纳入。更精确的方式是计算点到盒形的有符号距离：</p>
+<pre><code class="language-csharp">bool HitBox(Vector2 local, Vector2 halfSize, float targetRadius)
+{
+    Vector2 q = Abs(local) - halfSize;
+    float outside = Length(Max(q, Vector2.Zero));
+    float inside = Min(Max(q.X, q.Y), 0);
+    float signedDistance = outside + inside;
+
+    return signedDistance &lt;= targetRadius;
+}</code></pre>
+<p>局部坐标也非常适合调试：看到 <code>local.x</code> 超宽、<code>local.y</code> 超深，比只看到 <code>false</code> 更容易理解。</p>
+<h2 id="第四步-命中任务消费最终集合">第四步：命中任务消费最终集合</h2>
+<p>查询器只负责返回目标。命中任务再处理同一目标的重复命中间隔、目标数量上限、效果结算与反馈：</p>
+<pre><code class="language-csharp">void ApplyHitFrame(HitContext context)
+{
+    results.Clear();
+    catcher.QueryNonAlloc(context.Reference, results);
+
+    foreach (Target target in results)
+    {
+        if (!hitInterval.Allow(target, context.Frame))
+            continue;
+
+        effects.Apply(context.Source, target);
+        feedback.Play(context.Source, target);
+        hitInterval.Record(target, context.Frame);
+    }
+}</code></pre>
+<p>复用结果列表并在每次查询前 <code>Clear</code>，可以避免热路径反复分配。持续命中任务还要在新一轮开始时清空“上次命中帧”等运行状态。</p>
+<h2 id="三类调试场景">三类调试场景</h2>
+<p>本文交互实验中的尺寸、角度、坐标和目标半径都是教学场景参数：</p>
+<ul>
+<li>正常：多个目标分布在形状内外，观察候选集逐层缩小；</li>
+<li>边界：目标中心位于几何边缘附近，观察目标半径与 <code>&lt;=</code> 如何影响结果；</li>
+<li>失败：目标进入空间粗筛，却因阵营或精确几何失败而被排除。</li>
+</ul>
+<p>拖动施法者时，本地形状的中心与朝向同步变化；拖动目标时，世界坐标、局部坐标、距离、角度和入选原因实时更新。</p>
+<h2 id="计算次数如何观察">计算次数如何观察</h2>
+<p>一次查询至少记录四个数字：</p>
+<ol>
+<li>场景中可观察对象数；</li>
+<li>空间索引返回的粗筛候选数；</li>
+<li>通过阵营与有效性过滤的目标数；</li>
+<li>实际执行精确几何判断的次数。</li>
+</ol>
+<p>粗筛的价值不是让精确判断消失，而是让它只发生在少量候选上。若粗筛候选始终接近全场对象数，应该检查空间分区粒度或查询半径，而不是继续微优化点积。</p>
+<h2 id="边界与失效条件">边界与失效条件</h2>
+<h3 id="零尺寸">零尺寸</h3>
+<p>半径、角度、盒形半宽或半深接近零时，查询应明确返回空集合，不要悄悄改成另一种形状。</p>
+<h3 id="无法解析姿态">无法解析姿态</h3>
+<p>本地空间查询依赖施法者的位置与旋转。引用失效时应直接暴露姿态解析失败，不能在世界原点继续查询。</p>
+<h3 id="垂直维度">垂直维度</h3>
+<p>平面查询会忽略高度差。如果设计需要空中与地面分层，必须增加独立高度过滤，或改用真正的三维查询。</p>
+<h3 id="高速移动">高速移动</h3>
+<p>离散帧查询可能漏掉两个采样点之间的目标。可用上一帧中心到当前帧中心的胶囊轨迹补扫，但这会扩大候选并增加去重成本。</p>
+<h3 id="目标半径">目标半径</h3>
+<p>使用配置半径、运行时碰撞半径还是统一最小半径，必须有单一规则。半径会同时改变粗筛距离和精确边界，不能只在其中一层使用。</p>
+<h2 id="复杂度">复杂度</h2>
+<p>设空间粗筛返回 <code>k</code> 个候选：</p>
+<ul>
+<li>粗筛成本取决于空间索引；</li>
+<li>阵营过滤是 O(k)；</li>
+<li>圆形、扇形、盒形对每个候选都是 O(1)；</li>
+<li>精确阶段总成本为 O(k)；</li>
+<li>结果列表复用可把每次查询的额外分配降到接近零。</li>
+</ul>
+<p>最值得优化的通常是 <code>k</code>，最值得展示的则是每个目标从哪一层被排除。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%A9%BA%E9%97%B4%E5%88%92%E5%88%86-%E4%B9%9D%E5%AE%AB%E6%A0%BC%E4%B8%8E%E5%9B%9B%E5%8F%89%E6%A0%91/"><small>← PREVIOUS</small>空间划分：九宫格与四叉树</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/"><small>NEXT →</small>启发式决策模型：怪物集群候选打分</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

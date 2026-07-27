@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="交互观察资源请求合并、Owner 集合、Scope 释放与场景卸载。">
+  <title>资源作用域与引用释放 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/resource-scope.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/resource-scope.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / DEV LAB</span></a>
+    <nav><a href="/knowledge/library/">知识库</a><a href="/knowledge/ability-flow/">技能运行地图</a><a class="github-link" href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div><span class="eyebrow">OWNER SCOPES / RETAIN & RELEASE</span><h1>不是“加载几次”，<br>而是<em>谁还需要它</em>。</h1></div>
+      <p>观察两个 Scope 如何共享一次底层加载，Owner 集合如何保护缓存，以及单独释放、场景卸载与失败冲突如何收尾。</p>
+    </section>
+
+    <section class="lab" data-resource-lab>
+      <div class="lab-head">
+        <div><span class="panel-label">RESOURCE LIFECYCLE</span><h2>请求、所有权与最终释放</h2></div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 8</strong></div>
+      </div>
+
+      <div class="case-tabs" role="group" aria-label="选择案例">
+        <button class="case-tab is-active" data-case="shared" type="button" aria-pressed="true">正常 · 并发共享</button>
+        <button class="case-tab" data-case="single-release" type="button" aria-pressed="false">边界 · 单 Owner 释放</button>
+        <button class="case-tab" data-case="scene" type="button" aria-pressed="false">场景 · Dispose</button>
+        <button class="case-tab" data-case="failure" type="button" aria-pressed="false">失败 · 类型冲突</button>
+      </div>
+
+      <section class="principle-lenses">
+        <article><span>PROBLEM / 为什么</span><p id="problem"></p></article>
+        <article><span>MECHANISM / 怎么做</span><p id="mechanism"></p></article>
+        <article><span>BOUNDARY / 何时失效</span><p id="boundary"></p></article>
+        <article><span>COST / 代价</span><p id="cost"></p></article>
+      </section>
+
+      <div class="lab-grid">
+        <article class="explain-panel">
+          <span class="phase" id="phase"></span><h2 id="title"></h2><p id="copy"></p>
+          <div class="change-box"><span>这一步改变了什么</span><p id="change"></p></div>
+          <div class="why-box"><span>WHY</span><p id="why"></p></div>
+          <a class="article-link" href="/knowledge/library/工程设计/资源作用域与引用释放/">阅读完整原理 →</a>
+        </article>
+
+        <section class="visual-panel">
+          <div class="visual-head"><div><span class="panel-label">OWNERSHIP MATRIX</span><h2>Scope × Resource</h2></div><strong id="status">EMPTY</strong></div>
+          <div class="matrix-wrap">
+            <table class="owner-matrix">
+              <thead><tr><th>Owner</th><th>资源 α</th><th>资源 β</th><th>Scope 状态</th></tr></thead>
+              <tbody id="owner-matrix"></tbody>
+            </table>
+          </div>
+          <div class="pipeline">
+            <div><span>REQUESTS</span><strong id="requests">0</strong></div>
+            <i>→</i><div><span>PENDING</span><strong id="pending">0</strong></div>
+            <i>→</i><div><span>UNDERLYING LOADS</span><strong id="loads">0</strong></div>
+            <i>→</i><div><span>CACHE ENTRIES</span><strong id="entries">0</strong></div>
+          </div>
+          <section class="entry-card">
+            <div><span>ENTRY / 资源 α</span><strong id="entry-state">不存在</strong></div>
+            <dl><div><dt>Owners</dt><dd id="owners">∅</dd></div><div><dt>底层对象</dt><dd id="asset">未加载</dd></div><div><dt>最终释放次数</dt><dd id="unloads">0</dd></div></dl>
+          </section>
+          <ol class="event-log" id="event-log"><li>等待第一步</li></ol>
+        </section>
+
+        <aside class="inspect-panel">
+          <section><span class="panel-label">KEY STATE</span><dl class="metrics" id="metrics"></dl></section>
+          <div class="code-block"><div class="code-head"><span>同步伪代码</span><strong id="code-status">READY</strong></div><ol id="code-lines"></ol></div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <label>自动速度<select id="speed"><option value="3000">慢 · 3.0s</option><option value="2100" selected>标准 · 2.1s</option><option value="1300">快 · 1.3s</option></select></label>
+        <div class="step-dots" id="dots"></div>
+        <div class="control-buttons"><button id="reset" type="button">重置</button><button id="previous" type="button">← 上一步</button><button class="auto-button" id="auto" type="button" aria-pressed="false">自动演示</button><button class="next-button" id="next" type="button">下一步 →</button></div>
+      </div>
+    </section>
+
+    <section class="notes">
+      <article><span>01</span><h2>Owner 是集合</h2><p>同一 Scope 重复 Load 不增加引用次数；它仍只拥有该资源一次。</p></article>
+      <article><span>02</span><h2>取消不等于停载</h2><p>共享加载继续服务其他请求；完成时没有有效 Owner，才立即释放结果。</p></article>
+      <article><span>03</span><h2>场景只是一个 Scope 索引</h2><p>场景卸载 Dispose 绑定 Scope；普通 Scope 仍由自己的生命周期负责人管理。</p></article>
+    </section>
+  </main>
+</body>
+</html>
