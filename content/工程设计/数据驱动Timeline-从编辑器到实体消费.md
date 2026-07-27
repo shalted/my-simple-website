@@ -35,24 +35,28 @@ Task 生命周期
 - Clip：开始帧、结束帧、名称和 Task
 - Task：类型标识与该类型需要的参数
 
-可以先把它写成不依赖任何引擎对象的纯数据类型。下面只是知识示例，类型名和资源键都是通用占位，不对应具体项目源码。
+可以先把它写成不依赖任何引擎对象的纯数据类型，让编辑器数据可以独立保存、校验和构建。
 
 ```csharp
+// 编辑态根对象：只保存可序列化数据，不保存播放进度。
 public sealed record TimelineDocument(
     string Id,
     int FrameRate,
     IReadOnlyList<TrackDocument> Tracks);
 
+// Track 负责组织内容与提升可读性，不参与运行时业务判断。
 public sealed record TrackDocument(
     string Name,
     TrackKind Kind,
     IReadOnlyList<ClipDocument> Clips);
 
+// Clip 是最小调度单元，帧区间与 Task 一起保存。
 public sealed record ClipDocument(
     int StartFrame,
     int EndFrame,
     TaskDefinition Task);
 
+// Task 参数保持为纯数据，运行时再实例化具体执行器。
 public abstract record TaskDefinition;
 public sealed record PlayAnimationTask(string AnimationKey) : TaskDefinition;
 public sealed record PlayAudioTask(string AudioKey) : TaskDefinition;
@@ -241,6 +245,7 @@ if errors.any:
 ```csharp
 TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
 {
+    // 一次收集全部构建错误，避免修完一个才看到下一个。
     var errors = ValidateStructure(source)
         .Concat(ValidateReferences(source, catalog))
         .Concat(ValidateSemantics(source))
@@ -251,6 +256,7 @@ TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
 
     var runtimeClips = new List<CompiledClip>();
 
+    // 展平 Track：运行时调度只需要 Clip。
     foreach (TrackDocument track in source.Tracks)
     foreach (ClipDocument clip in track.Clips)
     {
@@ -260,10 +266,12 @@ TimelineData CompileTimeline(TimelineDocument source, ResourceCatalog catalog)
             Task: CompileTask(clip.Task, catalog)));
     }
 
+    // 生命周期由最晚结束的 Clip 推导，不维护第二份人工值。
     int lifeTime = runtimeClips.Max(clip => clip.EndFrame);
     return new TimelineData(source.Id, source.FrameRate, lifeTime, runtimeClips);
 }
 
+// 构建阶段解析资源键，并把每种参数固定成明确的运行时类型。
 CompiledTask CompileTask(TaskDefinition source, ResourceCatalog catalog) => source switch
 {
     PlayAnimationTask task => new AnimationTaskData(catalog.RequireAnimation(task.AnimationKey)),
@@ -294,6 +302,7 @@ IReadOnlyDictionary<string, TimelineData> BuildIndex(RuntimeSnapshot snapshot)
 
     foreach (TimelineData timeline in snapshot.Timelines)
     {
+        // TryAdd 同时完成建索引和重复 ID 检查。
         if (!index.TryAdd(timeline.Id, timeline))
             throw new DuplicateTimelineIdException(timeline.Id);
     }
@@ -305,6 +314,7 @@ TimelineData ResolveTimeline(
     IReadOnlyDictionary<string, TimelineData> index,
     string timelineId)
 {
+    // 缺失引用必须显式失败，不能悄悄返回空 Timeline。
     if (!index.TryGetValue(timelineId, out TimelineData timeline))
         throw new MissingTimelineException(timelineId);
 
@@ -333,6 +343,7 @@ TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
 
     foreach (CompiledClip clip in template.Clips)
     {
+        // 每次播放都创建独立 Task，避免把可变状态写回共享模板。
         IRuntimeTask task = taskFactory.Create(clip.Task.Type);
         task.Initialize(clip.Task, context);
 
@@ -344,6 +355,7 @@ TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
             finished: false));
     }
 
+    // 从 -1 开始，第一次 Advance 才会正式进入第 0 帧。
     return new TimelinePlayer(
         frameRate: template.FrameRate,
         lifeTime: template.LifeTime,
@@ -370,9 +382,11 @@ TimelinePlayer CreatePlayer(TimelineData template, PlayContext context)
 void Advance(float deltaTime)
 {
     elapsed += deltaTime * playbackSpeed;
+    // 真实时间先换算成目标逻辑帧。
     int targetFrame = FloorToInt(elapsed * frameRate);
     targetFrame = Min(targetFrame, lifeTime);
 
+    // 逐帧追赶，保证短 Clip 的边界事件不会被跳过。
     while (currentFrame < targetFrame)
     {
         currentFrame += 1;
@@ -387,6 +401,7 @@ void TickFrame(int frame)
 {
     foreach (RuntimeClip clip in runtimeClips)
     {
+        // 同一逻辑帧内统一按 Begin → Tick → Finish 的顺序处理。
         if (frame == clip.StartFrame && !clip.Begun)
         {
             clip.Task.Begin(frame);
@@ -406,6 +421,8 @@ void TickFrame(int frame)
 ```
 
 假设渲染线程从第 7 帧一次跳到第 10 帧，`while` 会依次执行第 8、9、10 帧。因此 8—9 帧的短命中 Clip 仍然能够完整经历 Begin、Tick 和 Finish。
+
+备注：如果 Begin 与 Finish 落在同一帧，这一帧仍会依次执行 Begin、Tick、Finish，生命周期不会缺段。
 
 逐帧追赶可以保证低帧率下不会跳过短 Clip。代价是单帧卡顿后可能集中执行多次，因此 Task 的每帧逻辑应保持轻量，并避免无界循环。
 
@@ -440,6 +457,7 @@ void InterruptTimeline()
 {
     foreach (RuntimeClip clip in runtimeClips)
     {
+        // 只中断已经开始且尚未正常结束的 Clip。
         if (!clip.Begun || clip.Finished)
             continue;
 
@@ -447,6 +465,7 @@ void InterruptTimeline()
         clip.Finished = true;
     }
 
+    // 先清理所有活动 Task，再改变播放器状态。
     state = PlayerState.Interrupted;
 }
 ```
@@ -468,6 +487,7 @@ sealed class MovementLockRuntimeTask : IRuntimeTask
 {
     public void Begin(int frame)
     {
+        // 用 sourceId 获取本次 Timeline 独有的控制锁。
         commands.Submit(targetEntity, sourceId, new AcquireMovementLock());
     }
 
@@ -478,6 +498,7 @@ sealed class MovementLockRuntimeTask : IRuntimeTask
 
     public void Finish(int frame)
     {
+        // 正常结束与中断都必须释放同一个 sourceId。
         commands.Submit(targetEntity, sourceId, new ReleaseMovementLock());
     }
 
@@ -491,6 +512,7 @@ sealed class HitRuntimeTask : IRuntimeTask
 {
     public void Begin(int frame)
     {
+        // 命中只提交语义命令，具体结算由实体侧完成。
         commands.Submit(targetEntity, sourceId, new ApplyHit(hitProfile));
     }
 
@@ -533,6 +555,7 @@ Task 发出移动意图
 ```csharp
 void Consume(EntityCommand command)
 {
+    // 接收器只负责路由，组件保留最终业务决定权。
     switch (command)
     {
         case PlayAnimation value:
@@ -548,6 +571,7 @@ void Consume(EntityCommand command)
             break;
 
         case AcquireMovementLock value:
+            // 保存来源集合，释放一个来源不会影响其他锁。
             movementLocks.Add(value.SourceId);
             movement.Recalculate(movementLocks);
             break;
@@ -563,7 +587,7 @@ void Consume(EntityCommand command)
 }
 ```
 
-注意移动锁保存的是 `SourceId` 集合，而不是单个布尔值。这样一个 Timeline 释放自己的锁时，不会误删另一个系统仍然持有的锁。
+备注：移动锁保存的是 `SourceId` 集合，而不是单个布尔值。这样一个 Timeline 释放自己的锁时，不会误删另一个系统仍然持有的锁。
 
 完整调试也应沿这条链逐层观察：
 
