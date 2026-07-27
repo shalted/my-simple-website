@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="逐 Tick 观察客户端预测、服务器权威状态、校正与输入重放，并调整教学延迟和丢包。">
+  <title>网络预测与服务器校正 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <link rel="stylesheet" href="/assets/network-prediction.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <script src="/assets/network-prediction.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">X</span><span>XIANYUWO / TICK TRACE</span></a>
+    <nav>
+      <a href="/knowledge/library/">知识库</a>
+      <a href="/knowledge/library/工程设计/网络预测与服务器校正/">完整文章</a>
+      <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">CLIENT PREDICTION / AUTHORITY / REPLAY</p>
+      <h1>先让输入响应，<br>再让结果<em>收敛</em></h1>
+      <p>沿 Tick 检查输入历史、预测轨迹、权威回包、误差和重放队列，而不是只盯着一次位置跳变。</p>
+    </section>
+
+    <section class="lab" data-interactive-lab aria-label="网络预测交互实验">
+      <div class="toolbar">
+        <div class="scenario-tabs" role="group" aria-label="教学场景">
+          <button class="scenario-tab is-active" type="button" data-scenario="normal" aria-pressed="true">正常往返</button>
+          <button class="scenario-tab" type="button" data-scenario="jitter" aria-pressed="false">延迟抖动</button>
+          <button class="scenario-tab" type="button" data-scenario="conflict" aria-pressed="false">丢包 / 冲突</button>
+        </div>
+        <div class="network-fields">
+          <label for="delay-ticks">教学延迟 <input id="delay-ticks" type="number" min="1" max="6" value="2" inputmode="numeric"> Tick</label>
+          <label for="loss-percent">教学丢包 <input id="loss-percent" type="number" min="0" max="80" step="10" value="0" inputmode="numeric"> %</label>
+          <button id="apply-network" type="button">应用参数</button>
+        </div>
+        <div class="step-readout"><span id="step-label">STEP 01</span><strong id="step-count">1 / 8</strong></div>
+      </div>
+
+      <div class="lab-grid">
+        <section class="trace-panel">
+          <div class="panel-head">
+            <div><p class="panel-label">TICK SPACE</p><h2>预测与权威轨迹</h2></div>
+            <p id="teaching-note">教学场景 · 延迟 2 Tick / 丢包 0%</p>
+          </div>
+          <svg id="trajectory" viewBox="0 0 760 350" role="img" aria-label="客户端预测轨迹与服务器权威轨迹">
+            <defs>
+              <pattern id="trace-grid" width="60" height="50" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 50" fill="none" stroke="#26302f" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="760" height="350" fill="url(#trace-grid)"/>
+            <g id="tick-axis"></g>
+            <polyline id="authority-line" class="authority-line" points=""/>
+            <polyline id="prediction-line" class="prediction-line" points=""/>
+            <g id="authority-points"></g>
+            <g id="prediction-points"></g>
+            <g id="error-link"></g>
+          </svg>
+          <div class="legend">
+            <span><i class="prediction-dot"></i>客户端预测</span>
+            <span><i class="authority-dot"></i>服务器权威</span>
+            <span><i class="error-dot"></i>确认 Tick 误差</span>
+          </div>
+          <div class="packet-strip">
+            <div class="strip-head"><span>INPUT TRANSIT</span><small>每格代表一个教学 Tick</small></div>
+            <ol id="packet-list"></ol>
+          </div>
+        </section>
+
+        <article class="explain-panel">
+          <p class="panel-label">CURRENT TRANSITION</p>
+          <p class="phase" id="phase">CAPTURE INPUT</p>
+          <h2 id="step-title">采样并编号输入</h2>
+          <p id="step-copy">当前方向被封装为 Tick 输入快照。</p>
+          <div class="change-box"><span>本步改变</span><p id="step-change">当前输入获得 Tick</p></div>
+          <div class="why-box"><span>WHY</span><p id="step-why">输入和状态只有共享 Tick，才能被比较与重放。</p></div>
+          <div class="queue-card">
+            <span>REPLAY QUEUE</span>
+            <div id="replay-queue" class="tick-chips" aria-live="polite"></div>
+            <p id="queue-note">尚未进入校正阶段</p>
+          </div>
+        </article>
+
+        <aside class="inspect-panel">
+          <div class="counter-grid">
+            <div><span>LOCAL</span><strong id="local-tick">0</strong><small>客户端 Tick</small></div>
+            <div><span>ACK</span><strong id="confirmed-tick">—</strong><small>确认 Tick</small></div>
+            <div><span>ERROR</span><strong id="error-value">0.00</strong><small>确认点误差</small></div>
+            <div><span>REPLAY</span><strong id="replay-count">0</strong><small>待重放输入</small></div>
+          </div>
+          <dl class="state-list">
+            <div><dt>预测位置</dt><dd id="predicted-position">0.00</dd></div>
+            <div><dt>权威位置</dt><dd id="authority-position">0.00</dd></div>
+            <div><dt>输入历史</dt><dd id="history-size">0</dd></div>
+            <div><dt>网络状态</dt><dd id="network-status">等待输入</dd></div>
+          </dl>
+          <div class="code-panel">
+            <div class="code-head"><span>SYNCED PSEUDOCODE</span><strong id="code-status">INPUT</strong></div>
+            <ol id="code-lines"></ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls">
+        <div class="progress">
+          <div class="step-dots" id="step-dots" data-lab-dots></div>
+          <label for="speed-seconds">自动每步 <input id="speed-seconds" type="number" value="2" min="0.8" max="8" step="0.2" inputmode="decimal"> 秒</label>
+          <span id="speed-message" role="status">站内基准 2 秒</span>
+        </div>
+        <div class="control-buttons">
+          <button type="button" id="reset-button" data-lab-control>重置</button>
+          <button type="button" id="prev-button" data-lab-control>← 上一步</button>
+          <button type="button" id="next-button" class="primary-button" data-lab-control>下一步 →</button>
+          <button type="button" id="auto-button" data-lab-control aria-pressed="false">自动播放</button>
+        </div>
+      </div>
+      <p class="keyboard-hint">键盘：← / → 单步，空格播放或暂停，R 重置。输入框聚焦时不会触发快捷键。</p>
+    </section>
+
+    <section class="concept-grid" aria-label="机制与边界">
+      <article><span>01</span><h2>问题</h2><p>等待服务器才移动会产生输入延迟；只信客户端又无法保持一致。</p></article>
+      <article><span>02</span><h2>机制</h2><p>本地立即模拟并保存输入，权威结果回来后回退、裁剪、重放。</p></article>
+      <article><span>03</span><h2>失效边界</h2><p>模拟不确定、历史不足或重放产生副作用时，误差会反复出现。</p></article>
+      <article><span>04</span><h2>代价</h2><p>输入历史占内存，冗余发送占带宽，长延迟会放大重放成本。</p></article>
+    </section>
+  </main>
+</body>
+</html>

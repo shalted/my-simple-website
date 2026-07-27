@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：">
+  <title>虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口</h1>
+      <p class="hero-copy">普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#1-三个必须分开的量">1. 三个必须分开的量</a>
+    <a data-toc-link href="#2-初始化只创建固定槽位">2. 初始化只创建固定槽位</a>
+    <a data-toc-link href="#3-找到第一个可见索引">3. 找到第一个可见索引</a>
+    <a data-toc-link href="#4-槽位到数据的映射">4. 槽位到数据的映射</a>
+    <a data-toc-link href="#5-异步内容为什么必须取消">5. 异步内容为什么必须取消</a>
+    <a data-toc-link href="#6-数据变化与滚动更新">6. 数据变化与滚动更新</a>
+    <a data-toc-link href="#7-dispose">7. Dispose</a>
+    <a data-toc-link href="#8-复杂度与代价">8. 复杂度与代价</a>
+    <a data-toc-link href="#9-容易失效的边界">9. 容易失效的边界</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套节点复用实验</strong>
+        <span>对比普通列表与固定槽位，观察首个可见索引、节点映射、快速跳转和异步旧结果。</span>
+        <p><a href="/knowledge/virtual-list/">打开虚拟列表实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 三个必须分开的量">
+      <span>01</span>
+      <strong>1. 三个必须分开的量</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 初始化只创建固定槽位">
+      <span>02</span>
+      <strong>2. 初始化只创建固定槽位</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 找到第一个可见索引">
+      <span>03</span>
+      <strong>3. 找到第一个可见索引</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 槽位到数据的映射">
+      <span>04</span>
+      <strong>4. 槽位到数据的映射</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 异步内容为什么必须取消">
+      <span>05</span>
+      <strong>5. 异步内容为什么必须取消</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 数据变化与滚动更新">
+      <span>06</span>
+      <strong>6. 数据变化与滚动更新</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. Dispose">
+      <span>07</span>
+      <strong>7. Dispose</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 复杂度与代价">
+      <span>08</span>
+      <strong>8. 复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：9. 容易失效的边界">
+      <span>09</span>
+      <strong>9. 容易失效的边界</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>1. 三个必须分开的量</h3>
+        <p>节点数接近可视容量，而不是数据总量：</p>
+        <ul><li><code>itemCount</code>：数据总量，例如 10,000。</li><li><code>visibleCapacity</code>：视口需要的节点槽位数，例如可见 6 行，再加 2 个缓冲槽位，共 8。</li><li><code>firstVisibleIndex</code>：当前滚动位置对应的第一条可见数据索引。</li></ul>
+        <pre><code class="language-text">普通列表节点数 = itemCount
+虚拟列表节点数 ≈ ceil(viewport / itemStep) + buffer</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>2. 初始化只创建固定槽位</h3>
+        <p>布局根据视口大小计算容量。列表一次创建固定数量的节点，保存 <code>slots[]</code> 与对应的矩形节点。之后滚动不再创建新节点。</p>
+
+        <pre><code class="language-csharp">capacity = layout.GetVisibleCapacity(viewport.Size);
+
+for (var slot = 0; slot &lt; capacity; slot++)
+    slots.Add(factory.CreateNode());</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>3. 找到第一个可见索引</h3>
+        <p>固定高度网格可以直接用除法：</p>
+
+        <pre><code class="language-text">firstRow = floor(scrollPosition / rowStep)
+firstIndex = firstRow × columns</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>4. 槽位到数据的映射</h3>
+        <p>每次刷新都从 firstVisibleIndex 开始重新绑定：</p>
+
+        <pre><code class="language-csharp">for (var slot = 0; slot &lt; slots.Count; slot++) {
+    var dataIndex = firstVisibleIndex + slot;
+
+    if (dataIndex &gt;= itemCount) {
+        CancelAsync(slots[slot]);
+        slots[slot].Visible = false;
+        continue;
+    }
+
+    slots[slot].Visible = true;
+    slots[slot].SetDataIndex(dataIndex);
+    RenewAsyncToken(slots[slot]);
+    Bind(slots[slot], adapter.GetItem(dataIndex));
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>5. 异步内容为什么必须取消</h3>
+        <p>节点绑定数据 12 后开始加载图片；用户快速滚动，节点立刻改绑数据 80。若数据 12 的旧请求稍后完成，它可能把旧图片写到正在显示数据 80 的节点上。</p>
+        <ul><li>取消并释放旧令牌；</li><li>创建新令牌；</li><li>异步请求持有新令牌；</li><li>完成时确认令牌未取消，且节点的 dataIndex 仍匹配。</li></ul>
+        <pre><code class="language-csharp">slot.RequestToken?.Cancel();
+slot.RequestToken?.Dispose();
+slot.RequestToken = new CancellationTokenSource();
+
+var expectedIndex = slot.DataIndex;
+var image = await LoadImage(data.ImageKey, slot.RequestToken.Token);
+
+if (slot.DataIndex == expectedIndex)
+    slot.SetImage(image);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
+        <h3>6. 数据变化与滚动更新</h3>
+        <p>适配器的数据变化事件触发：</p>
+        <ul><li><code>layout.Rebuild(itemCount)</code>；</li><li>更新 ContentLength；</li><li>按当前 ScrollPosition 刷新槽位。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+        <h3>7. Dispose</h3>
+        <p>完整清理至少包括：</p>
+        <ul><li>取消滚动监听；</li><li>取消数据变化监听；</li><li>取消并释放每个槽位尚未完成的异步请求；</li><li>销毁固定节点；</li><li>清空 adapter、layout、bind 与 interaction 引用；</li><li>滚动器停止动画并移除滚动回调。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+        <h3>8. 复杂度与代价</h3>
+        <p>假设总数据量为 N，可视槽位为 V：</p>
+        <ul><li>节点内存：普通列表 <code>O(N)</code>，虚拟列表 <code>O(V)</code>；</li><li>固定高度首项计算：<code>O(1)</code>；</li><li>可变高度首项查找：预建 offsets 后 <code>O(log N)</code>；</li><li>一次滚动刷新与绑定：<code>O(V)</code>；</li><li>可变高度布局重建：<code>O(N)</code>；</li><li>快速滚动会频繁取消和重启异步内容，适合再配合资源缓存。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
+        <h3>9. 容易失效的边界</h3>
+
+        <ul><li>可视容量依据默认高度估算，而真实条目高度差异极大，缓冲槽位可能不足；</li><li>一次大跳转会让所有槽位换绑，旧异步结果必须全部失效；</li><li>数据缩短后，超出 Count 的槽位要取消请求并隐藏；</li><li>重复滚动事件可能让相同 dataIndex 也更新令牌并重新绑定，需要结合实际性能决定是否增加“索引未变则跳过”的优化；</li><li>没有真实初始化调用点、异步 Item 消费点或专项测试时，只能确认机制代码存在，不能确认它已被具体页面正确使用。</li></ul>
+
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：</p>
+<p>&gt; 当前视口真正能看到几条？只创建这些节点，再让它们不断扮演不同的数据行。</p>
+<p>本文的所有数量均为教学场景参数。节点复用关注“固定槽位改绑哪条数据”；若要进一步理解节点创建与回收策略，可配合阅读<a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池</a>。</p>
+<h2 id="1-三个必须分开的量">1. 三个必须分开的量</h2>
+<ul>
+<li><code>itemCount</code>：数据总量，例如 10,000。</li>
+<li><code>visibleCapacity</code>：视口需要的节点槽位数，例如可见 6 行，再加 2 个缓冲槽位，共 8。</li>
+<li><code>firstVisibleIndex</code>：当前滚动位置对应的第一条可见数据索引。</li>
+</ul>
+<p>节点数接近可视容量，而不是数据总量：</p>
+<pre><code class="language-text">普通列表节点数 = itemCount
+虚拟列表节点数 ≈ ceil(viewport / itemStep) + buffer</code></pre>
+<h2 id="2-初始化只创建固定槽位">2. 初始化只创建固定槽位</h2>
+<p>布局根据视口大小计算容量。列表一次创建固定数量的节点，保存 <code>slots[]</code> 与对应的矩形节点。之后滚动不再创建新节点。</p>
+<pre><code class="language-csharp">capacity = layout.GetVisibleCapacity(viewport.Size);
+
+for (var slot = 0; slot &lt; capacity; slot++)
+    slots.Add(factory.CreateNode());</code></pre>
+<p>数据变化时，布局重建所有数据项的 offset/size 索引，并把总长度交给滚动器。滚动器的 Content 很长，但其中真实存在的节点很少。</p>
+<h2 id="3-找到第一个可见索引">3. 找到第一个可见索引</h2>
+<p>固定高度网格可以直接用除法：</p>
+<pre><code class="language-text">firstRow = floor(scrollPosition / rowStep)
+firstIndex = firstRow × columns</code></pre>
+<p>可变高度线性列表预先保存每项的 offset 与 size，再用二分查找第一个 <code>bottom &gt;= scrollPosition</code> 的条目，复杂度为 <code>O(log N)</code>。</p>
+<p>快速跳转必须先把目标位置钳制到 <code>[0, contentLength - viewportSize]</code>。目标索引也要钳制到 <code>[0, itemCount - 1]</code>。</p>
+<h2 id="4-槽位到数据的映射">4. 槽位到数据的映射</h2>
+<p>每次刷新都从 firstVisibleIndex 开始重新绑定：</p>
+<pre><code class="language-csharp">for (var slot = 0; slot &lt; slots.Count; slot++) {
+    var dataIndex = firstVisibleIndex + slot;
+
+    if (dataIndex &gt;= itemCount) {
+        CancelAsync(slots[slot]);
+        slots[slot].Visible = false;
+        continue;
+    }
+
+    slots[slot].Visible = true;
+    slots[slot].SetDataIndex(dataIndex);
+    RenewAsyncToken(slots[slot]);
+    Bind(slots[slot], adapter.GetItem(dataIndex));
+}</code></pre>
+<p>节点身份不变，数据身份变化。例如 <code>slot 0</code> 可以先显示数据 0，滚动后显示 37。调试时应同时展示 slotId 与 dataIndex，否则很容易把节点复用误解成数据对象复用。</p>
+<h2 id="5-异步内容为什么必须取消">5. 异步内容为什么必须取消</h2>
+<p>节点绑定数据 12 后开始加载图片；用户快速滚动，节点立刻改绑数据 80。若数据 12 的旧请求稍后完成，它可能把旧图片写到正在显示数据 80 的节点上。</p>
+<p>一种常用机制是每次绑定前：</p>
+<ol>
+<li>取消并释放旧令牌；</li>
+<li>创建新令牌；</li>
+<li>异步请求持有新令牌；</li>
+<li>完成时确认令牌未取消，且节点的 dataIndex 仍匹配。</li>
+</ol>
+<pre><code class="language-csharp">slot.RequestToken?.Cancel();
+slot.RequestToken?.Dispose();
+slot.RequestToken = new CancellationTokenSource();
+
+var expectedIndex = slot.DataIndex;
+var image = await LoadImage(data.ImageKey, slot.RequestToken.Token);
+
+if (slot.DataIndex == expectedIndex)
+    slot.SetImage(image);</code></pre>
+<p>只有“生成令牌”还不够，异步 Item 的实现必须把令牌传给请求并在完成前检查。没有消费点，就不能宣称旧结果一定被挡住。</p>
+<h2 id="6-数据变化与滚动更新">6. 数据变化与滚动更新</h2>
+<p>适配器的数据变化事件触发：</p>
+<ol>
+<li><code>layout.Rebuild(itemCount)</code>；</li>
+<li>更新 ContentLength；</li>
+<li>按当前 ScrollPosition 刷新槽位。</li>
+</ol>
+<p>滚动事件只刷新槽位映射。动画跳转在驱动滚动位置时持续发出变化事件，因此同一套 Refresh 逻辑可以处理拖拽、惯性和程序化跳转。</p>
+<h2 id="7-dispose">7. Dispose</h2>
+<p>完整清理至少包括：</p>
+<ul>
+<li>取消滚动监听；</li>
+<li>取消数据变化监听；</li>
+<li>取消并释放每个槽位尚未完成的异步请求；</li>
+<li>销毁固定节点；</li>
+<li>清空 adapter、layout、bind 与 interaction 引用；</li>
+<li>滚动器停止动画并移除滚动回调。</li>
+</ul>
+<p>如果实现只销毁节点却没有显式取消 Item 令牌，那么“销毁会安全阻止旧异步结果”仍是未解决项，不能依赖猜测。</p>
+<h2 id="8-复杂度与代价">8. 复杂度与代价</h2>
+<p>假设总数据量为 N，可视槽位为 V：</p>
+<ul>
+<li>节点内存：普通列表 <code>O(N)</code>，虚拟列表 <code>O(V)</code>；</li>
+<li>固定高度首项计算：<code>O(1)</code>；</li>
+<li>可变高度首项查找：预建 offsets 后 <code>O(log N)</code>；</li>
+<li>一次滚动刷新与绑定：<code>O(V)</code>；</li>
+<li>可变高度布局重建：<code>O(N)</code>；</li>
+<li>快速滚动会频繁取消和重启异步内容，适合再配合资源缓存。</li>
+</ul>
+<p>虚拟列表没有消除数据量，只把昂贵的节点与渲染成本限制在视口附近。它的代价是节点状态必须完全可重绑，异步结果必须具备版本或取消保护。</p>
+<h2 id="9-容易失效的边界">9. 容易失效的边界</h2>
+<ul>
+<li>可视容量依据默认高度估算，而真实条目高度差异极大，缓冲槽位可能不足；</li>
+<li>一次大跳转会让所有槽位换绑，旧异步结果必须全部失效；</li>
+<li>数据缩短后，超出 Count 的槽位要取消请求并隐藏；</li>
+<li>重复滚动事件可能让相同 dataIndex 也更新令牌并重新绑定，需要结合实际性能决定是否增加“索引未变则跳过”的优化；</li>
+<li>没有真实初始化调用点、异步 Item 消费点或专项测试时，只能确认机制代码存在，不能确认它已被具体页面正确使用。</li>
+</ul>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E9%A2%84%E6%B5%8B%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A0%A1%E6%AD%A3/"><small>← PREVIOUS</small>网络预测与服务器校正：先响应，再用权威结果收敛</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/"><small>NEXT →</small>一次技能从输入到结束</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

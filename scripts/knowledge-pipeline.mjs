@@ -400,6 +400,22 @@ function interactiveCallout(document) {
         <p><a href="/knowledge/effect-lifecycle/">打开 Effect / Buff 实验 →</a></p>
       </aside>`;
   }
+  if (/网络预测|服务器校正/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套预测校正实验</strong>
+        <span>调整教学延迟与丢包，逐步观察输入 Tick、预测轨迹、权威确认、历史裁剪与重放。</span>
+        <p><a href="/knowledge/network-prediction/">打开网络预测实验 →</a></p>
+      </aside>`;
+  }
+  if (/虚拟列表|节点复用/i.test(combined)) {
+    return `
+      <aside class="article-callout">
+        <strong>配套节点复用实验</strong>
+        <span>对比普通列表与固定槽位，观察首个可见索引、节点映射、快速跳转和异步旧结果。</span>
+        <p><a href="/knowledge/virtual-list/">打开虚拟列表实验 →</a></p>
+      </aside>`;
+  }
   if (/目标筛选|命中判定/i.test(combined)) {
     return `
       <aside class="article-callout">
@@ -840,6 +856,16 @@ function renderLibraryIndex(documents) {
         <a class="feature-card" href="/knowledge/resource-scope/">
           <small>RESOURCE / OWNERSHIP</small>
           <div><h3>资源作用域与引用释放</h3><p>观察请求合并、缓存命中、Owner 矩阵和最终底层释放。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/network-prediction/">
+          <small>NETWORK / RECONCILE</small>
+          <div><h3>网络预测与服务器校正</h3><p>调整延迟与丢包，对齐输入 Tick、预测轨迹、权威状态和重放队列。</p></div>
+          <span class="card-arrow">进入实验 →</span>
+        </a>
+        <a class="feature-card" href="/knowledge/virtual-list/">
+          <small>UI / VIRTUALIZATION</small>
+          <div><h3>虚拟列表与节点复用</h3><p>用固定槽位滚动大量数据，观察索引映射、复用和异步取消。</p></div>
           <span class="card-arrow">进入实验 →</span>
         </a>
         <a class="feature-card" href="/#lab">
