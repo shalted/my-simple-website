@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象一本互动导览册：">
+  <title>对话系统：节点、条件、效果与跳转 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>对话系统：节点、条件、效果与跳转</h1>
+      <p class="hero-copy">想象一本互动导览册：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#生活化模型-一本可以选择路线的导览册">生活化模型：一本可以选择路线的导览册</a>
+    <a data-toc-link href="#通用概念与具体框架边界">通用概念与具体框架边界</a>
+    <a data-toc-link href="#职责图">职责图</a>
+    <a data-toc-link href="#node-对话状态">Node：对话状态</a>
+    <a data-toc-link href="#option-从当前节点发出的边">Option：从当前节点发出的边</a>
+    <a data-toc-link href="#condition-只读判断">Condition：只读判断</a>
+    <a data-toc-link href="#effect-受控状态变化">Effect：受控状态变化</a>
+    <a class="sub" data-toc-link href="#多个效果的提交语义">多个效果的提交语义</a>
+    <a data-toc-link href="#jump-用稳定-id-跳转">Jump：用稳定 ID 跳转</a>
+    <a data-toc-link href="#内容加载时验证">内容加载时验证</a>
+    <a data-toc-link href="#逐步状态-选择一个选项">逐步状态：选择一个选项</a>
+    <a class="sub" data-toc-link href="#可交互面板">可交互面板</a>
+    <a data-toc-link href="#最小-c-数据模型">最小 C# 数据模型</a>
+    <a data-toc-link href="#最小-c-跳转流程">最小 C# 跳转流程</a>
+    <a data-toc-link href="#异步条件与效果">异步条件与效果</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a data-toc-link href="#代价与复杂度">代价与复杂度</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 18</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：一本可以选择路线的导览册">
+      <span>01</span>
+      <strong>生活化模型：一本可以选择路线的导览册</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：通用概念与具体框架边界">
+      <span>02</span>
+      <strong>通用概念与具体框架边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：职责图">
+      <span>03</span>
+      <strong>职责图</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Node：对话状态">
+      <span>04</span>
+      <strong>Node：对话状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Option：从当前节点发出的边">
+      <span>05</span>
+      <strong>Option：从当前节点发出的边</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Condition：只读判断">
+      <span>06</span>
+      <strong>Condition：只读判断</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Effect：受控状态变化">
+      <span>07</span>
+      <strong>Effect：受控状态变化</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Jump：用稳定 ID 跳转">
+      <span>08</span>
+      <strong>Jump：用稳定 ID 跳转</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：内容加载时验证">
+      <span>09</span>
+      <strong>内容加载时验证</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：逐步状态：选择一个选项">
+      <span>10</span>
+      <strong>逐步状态：选择一个选项</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最小 C# 数据模型">
+      <span>11</span>
+      <strong>最小 C# 数据模型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最小 C# 跳转流程">
+      <span>12</span>
+      <strong>最小 C# 跳转流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：异步条件与效果">
+      <span>13</span>
+      <strong>异步条件与效果</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：正常路径">
+      <span>14</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：边界路径">
+      <span>15</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：失败路径">
+      <span>16</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：代价与复杂度">
+      <span>17</span>
+      <strong>代价与复杂度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：最重要的收获">
+      <span>18</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>生活化模型：一本可以选择路线的导览册</h3>
+        <p>想象一本互动导览册：</p>
+
+        <pre><code class="language-text">当前页：正在展示的内容。
+页面选项：读者接下来可以选什么。
+条件：某条路线是否对当前读者开放。
+效果：选择后盖章、领取票券或改变记录。
+跳转：翻到哪一页。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>通用概念与具体框架边界</h3>
+        <p>下面是通用设计概念：</p>
+
+        <pre><code class="language-text">内容以节点和边组织。
+条件决定候选是否可用。
+效果在明确提交点改变上下文。
+跳转决定下一个节点。
+加载前验证引用和规则。
+运行时保留失败原因。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>职责图</h3>
+        <p>“条件不满足”和“条件求值失败”必须区分。前者是正常业务结果，后者可能是数据缺失或表达式错误。</p>
+
+        <pre><code class="language-text">                   ┌──────────────────┐
+                   │ Dialogue Graph   │
+                   │ Nodes by ID      │
+                   └────────┬─────────┘
+                            │ 查找
+                            ▼
+                   ┌──────────────────┐
+                   │   Current Node   │
+                   │ Text + Options   │
+                   └────────┬─────────┘
+                            │ 枚举
+             ┌──────────────┼──────────────┐
+             ▼              ▼              ▼
+          Option A       Option B       Option C
+             │              │              │
+          Condition      Condition      Condition
+             │ 通过          │ 失败          │ 错误
+             ▼              ▼              ▼
+        可选择并展示      隐藏或禁用      暴露验证失败
+             │
+             ▼
+           Effect ──成功──&gt; Target Node
+             │
+             └──失败──&gt; 保持失败可见，不伪装成跳转成功</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>Node：对话状态</h3>
+        <p>一个节点至少需要稳定标识，并可包含：</p>
+
+        <pre><code class="language-text">要展示的文本引用。
+说话者或表现元数据。
+可选的进入条件。
+可选的进入效果。
+一组 Options。
+结束标记或明确的终止类型。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>Option：从当前节点发出的边</h3>
+        <p>Option 通常包含：</p>
+
+        <pre><code class="language-text">选项自身标识。
+显示文本。
+可用条件。
+选择效果。
+目标节点 ID。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>Condition：只读判断</h3>
+        <p>Condition 应尽量只读取 Context，并返回结构化结果：</p>
+
+        <pre><code class="language-text">Passed：条件成立。
+Rejected：条件正常计算，但不成立。
+Faulted：条件无法正确计算，并携带错误。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>Effect：受控状态变化</h3>
+        <p>Effect 在确认选择或进入节点的明确阶段执行。</p>
+
+        <pre><code class="language-text">设置标记。
+修改数值。
+发出命令。
+记录已访问节点。
+启动外部流程。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>Jump：用稳定 ID 跳转</h3>
+        <p>跳转通常保存目标节点 ID，而不是直接依赖编辑器中的临时列表位置。</p>
+
+        <pre><code class="language-text">目标 ID 存在。
+目标节点类型可进入。
+目标进入条件成功求值并通过。
+当前运行上下文仍有效。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>内容加载时验证</h3>
+        <p>能在运行前发现的问题，不应等用户选到那一支才暴露。</p>
+
+        <pre><code class="language-text">节点 ID 是否唯一。
+入口节点是否存在。
+每个 Target 是否存在。
+Option ID 在所属节点内是否唯一。
+必填文本或资源引用是否存在。
+节点类型所需字段是否齐全。
+条件和效果类型是否已注册。
+不允许循环的图是否存在环。
+必须可达的节点是否从入口可达。
+非终止节点是否至少有一条结构出口。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>逐步状态：选择一个选项</h3>
+        <p>以下 ID 都是<strong>教学示例</strong>：</p>
+
+        <pre><code class="language-text">当前节点：N_Ask
+候选选项：O_Accept、O_Leave</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最小 C# 数据模型</h3>
+        <p>这里用 <code>Exception?</code> 是为了展示原始失败可见性。实际系统也可以使用不依赖异常的结构化错误类型。</p>
+
+        <pre><code class="language-csharp">public sealed record DialogueNode(
+    string Id,
+    string TextKey,
+    IReadOnlyList&lt;DialogueOption&gt; Options,
+    bool IsTerminal);
+
+public sealed record DialogueOption(
+    string Id,
+    string TextKey,
+    IReadOnlyList&lt;ICondition&gt; Conditions,
+    IReadOnlyList&lt;IEffect&gt; Effects,
+    string TargetNodeId);
+
+public sealed record Evaluation(
+    bool Passed,
+    Exception? Error = null);
+
+public interface ICondition
+{
+    Evaluation Evaluate(DialogueContext context);
+}
+
+public interface IEffect
+{
+    Exception? Apply(DialogueContext context);
+}
+
+public sealed record TransitionResult(
+    bool Succeeded,
+    DialogueNode? Node,
+    string? Stage,
+    Exception? Error);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>最小 C# 跳转流程</h3>
+        <p>这个最小示例没有目标节点进入条件、事务和异步效果；这些需要在扩展模型时明确加入。</p>
+
+        <pre><code class="language-csharp">public static TransitionResult Select(
+    IReadOnlyDictionary&lt;string, DialogueNode&gt; nodes,
+    DialogueContext context,
+    DialogueNode current,
+    string optionId)
+{
+    DialogueOption? option =
+        current.Options.FirstOrDefault(item =&gt; item.Id == optionId);
+
+    if (option is null)
+    {
+        return new TransitionResult(
+            false, null, &quot;FindOption&quot;,
+            new InvalidOperationException($&quot;Unknown option: {optionId}&quot;));
+    }
+
+    foreach (ICondition condition in option.Conditions)
+    {
+        Evaluation evaluation = condition.Evaluate(context);
+
+        if (evaluation.Error is not null)
+            return new TransitionResult(false, null, &quot;Condition&quot;, evaluation.Error);
+
+        if (!evaluation.Passed)
+        {
+            return new TransitionResult(
+                false, null, &quot;ConditionRejected&quot;, null);
+        }
+    }
+
+    foreach (IEffect effect in option.Effects)
+    {
+        Exception? error = effect.Apply(context);
+
+        if (error is not null)
+            return new TransitionResult(false, null, &quot;Effect&quot;, error);
+    }
+
+    if (!nodes.TryGetValue(option.TargetNodeId, out DialogueNode? target))
+    {
+        return new TransitionResult(
+            false, null, &quot;ResolveTarget&quot;,
+            new InvalidOperationException(
+                $&quot;Unknown target node: {option.TargetNodeId}&quot;));
+    }
+
+    return new TransitionResult(true, target, null, null);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>异步条件与效果</h3>
+        <p>如果 Condition 或 Effect 依赖异步操作，还要增加：</p>
+
+        <pre><code class="language-text">对话会话 generation。
+CancellationToken。
+选择提交期间的重复点击保护。
+晚到回调的归属验证。
+失败和取消的独立结果。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+
+
+        <pre><code class="language-text">入口节点存在。
+当前节点成功展示。
+条件正常求值。
+用户选择可用 Option。
+效果全部成功。
+Target 存在且允许进入。
+Current Node 更新。
+终止节点按明确规则结束会话。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>最后一种情况说明条件不能只在 UI 展示时检查一次，提交前还要验证仍然成立。</p>
+
+        <pre><code class="language-text">节点是合法终止节点，没有 Options。
+多个 Options 文本相同，但 ID 不同。
+条件正常返回 Rejected。
+图中存在明确允许的循环。
+节点可由外部事件进入，因此从主入口不可达。
+效果列表为空，选择只负责跳转。
+选项显示后、点击前 Context 已变化，需要重新验证。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>失败应指出：</p>
+
+        <pre><code class="language-text">入口节点缺失。
+节点或 Option ID 重复。
+Target ID 不存在。
+条件求值抛错或引用缺失数据。
+效果执行到一半失败。
+目标进入条件失败。
+异步回调属于旧会话。
+不允许循环的数据中检测到环。
+非终止节点没有任何可用出口。
+本地化或表现资源缺失。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>代价与复杂度</h3>
+        <p>若节点按 ID 使用哈希表索引，平均查找目标通常可接近常数时间。展示一个含 <code>O</code> 个选项、每项平均 <code>C</code> 个条件的节点，条件枚举成本可粗略写为：</p>
+
+        <pre><code class="language-text">O(O × C)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">Node 表达状态，Option 表达候选边。
+Condition 应是无副作用判断，并区分 Rejected 与 Faulted。
+Effect 是明确提交的状态变化。
+Jump 必须解析稳定 Target ID，缺失时暴露错误。
+静态验证负责提前发现重复 ID、悬空引用和违反规则的图结构。
+效果失败不能伪装成跳转成功，部分提交也必须可见。
+异步对话同样需要 generation、取消和晚到回调验证。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计</p>
+<h2 id="生活化模型-一本可以选择路线的导览册">生活化模型：一本可以选择路线的导览册</h2>
+<p>想象一本互动导览册：</p>
+<pre><code class="language-text">当前页：正在展示的内容。
+页面选项：读者接下来可以选什么。
+条件：某条路线是否对当前读者开放。
+效果：选择后盖章、领取票券或改变记录。
+跳转：翻到哪一页。</code></pre>
+<p>对应到对话系统：</p>
+<pre><code class="language-text">节点 Node：一段对话状态。
+选项 Option：从当前节点发出的候选动作。
+条件 Condition：选项或节点是否可进入。
+效果 Effect：确认选择后产生的状态变化。
+跳转 Target：下一节点标识。
+上下文 Context：条件读取和效果修改的数据。</code></pre>
+<p>对话系统不是只有一串文字。它是一台根据上下文在图上移动、执行受控状态变化的解释器。</p>
+<h2 id="通用概念与具体框架边界">通用概念与具体框架边界</h2>
+<p>下面是通用设计概念：</p>
+<pre><code class="language-text">内容以节点和边组织。
+条件决定候选是否可用。
+效果在明确提交点改变上下文。
+跳转决定下一个节点。
+加载前验证引用和规则。
+运行时保留失败原因。</code></pre>
+<p>具体框架可以选择：</p>
+<pre><code class="language-text">树、一般有向图或脚本语言。
+条件使用代码、表达式还是数据表。
+效果立即执行、排队执行或事务提交。
+节点 ID 使用字符串、整数还是资源标识。
+是否允许循环。
+文本与本地化怎样存储。</code></pre>
+<p>这些选择没有唯一标准。本文使用有向图作为教学模型。</p>
+<h2 id="职责图">职责图</h2>
+<pre><code class="language-text">                   ┌──────────────────┐
+                   │ Dialogue Graph   │
+                   │ Nodes by ID      │
+                   └────────┬─────────┘
+                            │ 查找
+                            ▼
+                   ┌──────────────────┐
+                   │   Current Node   │
+                   │ Text + Options   │
+                   └────────┬─────────┘
+                            │ 枚举
+             ┌──────────────┼──────────────┐
+             ▼              ▼              ▼
+          Option A       Option B       Option C
+             │              │              │
+          Condition      Condition      Condition
+             │ 通过          │ 失败          │ 错误
+             ▼              ▼              ▼
+        可选择并展示      隐藏或禁用      暴露验证失败
+             │
+             ▼
+           Effect ──成功──&gt; Target Node
+             │
+             └──失败──&gt; 保持失败可见，不伪装成跳转成功</code></pre>
+<p>“条件不满足”和“条件求值失败”必须区分。前者是正常业务结果，后者可能是数据缺失或表达式错误。</p>
+<h2 id="node-对话状态">Node：对话状态</h2>
+<p>一个节点至少需要稳定标识，并可包含：</p>
+<pre><code class="language-text">要展示的文本引用。
+说话者或表现元数据。
+可选的进入条件。
+可选的进入效果。
+一组 Options。
+结束标记或明确的终止类型。</code></pre>
+<p>不是每个节点都必须有文字。例如分支节点可以只负责条件路由；等待节点可以由外部事件继续。但这些节点类型必须在数据模型中明确，而不是用空字符串猜测含义。</p>
+<h2 id="option-从当前节点发出的边">Option：从当前节点发出的边</h2>
+<p>Option 通常包含：</p>
+<pre><code class="language-text">选项自身标识。
+显示文本。
+可用条件。
+选择效果。
+目标节点 ID。</code></pre>
+<p>显示顺序、隐藏或禁用策略、是否允许自动选择，都是表现或交互规则。</p>
+<p>当没有可用选项时，系统不能擅自跳到第一条边。它应根据节点的明确终止规则结束，或报告“无可用出口”。</p>
+<h2 id="condition-只读判断">Condition：只读判断</h2>
+<p>Condition 应尽量只读取 Context，并返回结构化结果：</p>
+<pre><code class="language-text">Passed：条件成立。
+Rejected：条件正常计算，但不成立。
+Faulted：条件无法正确计算，并携带错误。</code></pre>
+<p>条件求值不应偷偷修改上下文，否则：</p>
+<pre><code class="language-text">仅仅预览选项就可能改变状态。
+多次刷新 UI 会重复产生副作用。
+验证与真正选择难以分离。</code></pre>
+<p>如果确实需要有副作用的检查，它应被建模为明确命令，而不是伪装成 Condition。</p>
+<h2 id="effect-受控状态变化">Effect：受控状态变化</h2>
+<p>Effect 在确认选择或进入节点的明确阶段执行。</p>
+<p>常见效果概念包括：</p>
+<pre><code class="language-text">设置标记。
+修改数值。
+发出命令。
+记录已访问节点。
+启动外部流程。</code></pre>
+<p>效果的权威性与持久化方式取决于宿主系统，不能假定所有效果都只改本地字典。</p>
+<h3 id="多个效果的提交语义">多个效果的提交语义</h3>
+<p>一个 Option 有多个效果时必须明确：</p>
+<pre><code class="language-text">按什么顺序执行？
+中途失败时，前面的效果是否保留？
+是否支持事务或补偿？
+跳转发生在效果之前还是之后？</code></pre>
+<p>本文的最小示例采用：</p>
+<pre><code class="language-text">效果按数据顺序执行。
+任一效果失败则停止，不执行跳转。
+已经执行的效果不会被假定自动回滚。</code></pre>
+<p>这只是明确的教学语义。若需要原子提交，必须由 Context 或命令层提供事务能力。</p>
+<h2 id="jump-用稳定-id-跳转">Jump：用稳定 ID 跳转</h2>
+<p>跳转通常保存目标节点 ID，而不是直接依赖编辑器中的临时列表位置。</p>
+<p>执行跳转前要验证：</p>
+<pre><code class="language-text">目标 ID 存在。
+目标节点类型可进入。
+目标进入条件成功求值并通过。
+当前运行上下文仍有效。</code></pre>
+<p>目标缺失时不能默认跳到开始节点，因为这会掩盖数据错误，也可能形成难以发现的循环。</p>
+<h2 id="内容加载时验证">内容加载时验证</h2>
+<p>能在运行前发现的问题，不应等用户选到那一支才暴露。</p>
+<p>静态验证可以检查：</p>
+<pre><code class="language-text">节点 ID 是否唯一。
+入口节点是否存在。
+每个 Target 是否存在。
+Option ID 在所属节点内是否唯一。
+必填文本或资源引用是否存在。
+节点类型所需字段是否齐全。
+条件和效果类型是否已注册。
+不允许循环的图是否存在环。
+必须可达的节点是否从入口可达。
+非终止节点是否至少有一条结构出口。</code></pre>
+<p>“不可达节点”和“环”不一定永远是错误：</p>
+<pre><code class="language-text">隐藏入口可能由外部事件进入。
+循环可能用于重复询问。</code></pre>
+<p>验证器应根据明确内容规则分类为错误、警告或允许，而不是凭图形特征一刀切。</p>
+<h2 id="逐步状态-选择一个选项">逐步状态：选择一个选项</h2>
+<p>以下 ID 都是<strong>教学示例</strong>：</p>
+<pre><code class="language-text">当前节点：N_Ask
+候选选项：O_Accept、O_Leave</code></pre>
+<p>执行链：</p>
+<pre><code class="language-text">1. 验证当前节点仍是 N_Ask。
+2. 按 Option ID 找到 O_Accept。
+3. 求值 O_Accept 的 Conditions。
+4. 条件全部 Passed，选项获得提交资格。
+5. 执行 Effects。
+6. 每个 Effect 都成功。
+7. 查找 Target Node。
+8. 求值目标进入条件。
+9. 更新 Current Node。
+10. 返回新节点快照。</code></pre>
+<p>任一步失败，都应返回阶段、节点 ID、选项 ID 和原始错误。</p>
+<h3 id="可交互面板">可交互面板</h3>
+<p>可以同时显示：</p>
+<pre><code class="language-text">图中的当前节点。
+所有候选选项。
+每个条件的 Passed / Rejected / Faulted。
+待执行效果列表。
+已经执行到哪个效果。
+目标节点解析结果。
+本次跳转结果。
+访问历史。</code></pre>
+<p>拖动条件结果或删除目标节点，可以观察系统停在哪一阶段，而不是只看到“对话没反应”。</p>
+<h2 id="最小-c-数据模型">最小 C# 数据模型</h2>
+<pre><code class="language-csharp">public sealed record DialogueNode(
+    string Id,
+    string TextKey,
+    IReadOnlyList&lt;DialogueOption&gt; Options,
+    bool IsTerminal);
+
+public sealed record DialogueOption(
+    string Id,
+    string TextKey,
+    IReadOnlyList&lt;ICondition&gt; Conditions,
+    IReadOnlyList&lt;IEffect&gt; Effects,
+    string TargetNodeId);
+
+public sealed record Evaluation(
+    bool Passed,
+    Exception? Error = null);
+
+public interface ICondition
+{
+    Evaluation Evaluate(DialogueContext context);
+}
+
+public interface IEffect
+{
+    Exception? Apply(DialogueContext context);
+}
+
+public sealed record TransitionResult(
+    bool Succeeded,
+    DialogueNode? Node,
+    string? Stage,
+    Exception? Error);</code></pre>
+<p>这里用 <code>Exception?</code> 是为了展示原始失败可见性。实际系统也可以使用不依赖异常的结构化错误类型。</p>
+<h2 id="最小-c-跳转流程">最小 C# 跳转流程</h2>
+<pre><code class="language-csharp">public static TransitionResult Select(
+    IReadOnlyDictionary&lt;string, DialogueNode&gt; nodes,
+    DialogueContext context,
+    DialogueNode current,
+    string optionId)
+{
+    DialogueOption? option =
+        current.Options.FirstOrDefault(item =&gt; item.Id == optionId);
+
+    if (option is null)
+    {
+        return new TransitionResult(
+            false, null, &quot;FindOption&quot;,
+            new InvalidOperationException($&quot;Unknown option: {optionId}&quot;));
+    }
+
+    foreach (ICondition condition in option.Conditions)
+    {
+        Evaluation evaluation = condition.Evaluate(context);
+
+        if (evaluation.Error is not null)
+            return new TransitionResult(false, null, &quot;Condition&quot;, evaluation.Error);
+
+        if (!evaluation.Passed)
+        {
+            return new TransitionResult(
+                false, null, &quot;ConditionRejected&quot;, null);
+        }
+    }
+
+    foreach (IEffect effect in option.Effects)
+    {
+        Exception? error = effect.Apply(context);
+
+        if (error is not null)
+            return new TransitionResult(false, null, &quot;Effect&quot;, error);
+    }
+
+    if (!nodes.TryGetValue(option.TargetNodeId, out DialogueNode? target))
+    {
+        return new TransitionResult(
+            false, null, &quot;ResolveTarget&quot;,
+            new InvalidOperationException(
+                $&quot;Unknown target node: {option.TargetNodeId}&quot;));
+    }
+
+    return new TransitionResult(true, target, null, null);
+}</code></pre>
+<p>这个最小示例没有目标节点进入条件、事务和异步效果；这些需要在扩展模型时明确加入。</p>
+<p>它也没有以下 fallback：</p>
+<pre><code class="language-text">找不到 Option 就选择第一项。
+条件报错就当作 false。
+效果失败仍继续跳转。
+目标缺失就回到入口。</code></pre>
+<h2 id="异步条件与效果">异步条件与效果</h2>
+<p>如果 Condition 或 Effect 依赖异步操作，还要增加：</p>
+<pre><code class="language-text">对话会话 generation。
+CancellationToken。
+选择提交期间的重复点击保护。
+晚到回调的归属验证。
+失败和取消的独立结果。</code></pre>
+<p>异步完成时必须确认：</p>
+<pre><code class="language-text">当前仍是同一对话会话。
+当前节点与选择请求仍匹配。
+该选择尚未被取消或替代。</code></pre>
+<p>否则旧效果可能在用户已经离开节点后写入新上下文。</p>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">入口节点存在。
+当前节点成功展示。
+条件正常求值。
+用户选择可用 Option。
+效果全部成功。
+Target 存在且允许进入。
+Current Node 更新。
+终止节点按明确规则结束会话。</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<pre><code class="language-text">节点是合法终止节点，没有 Options。
+多个 Options 文本相同，但 ID 不同。
+条件正常返回 Rejected。
+图中存在明确允许的循环。
+节点可由外部事件进入，因此从主入口不可达。
+效果列表为空，选择只负责跳转。
+选项显示后、点击前 Context 已变化，需要重新验证。</code></pre>
+<p>最后一种情况说明条件不能只在 UI 展示时检查一次，提交前还要验证仍然成立。</p>
+<h2 id="失败路径">失败路径</h2>
+<pre><code class="language-text">入口节点缺失。
+节点或 Option ID 重复。
+Target ID 不存在。
+条件求值抛错或引用缺失数据。
+效果执行到一半失败。
+目标进入条件失败。
+异步回调属于旧会话。
+不允许循环的数据中检测到环。
+非终止节点没有任何可用出口。
+本地化或表现资源缺失。</code></pre>
+<p>失败应指出：</p>
+<pre><code class="language-text">Graph / Node / Option。
+Condition 或 Effect 类型。
+执行阶段。
+原始错误。
+是否已经产生部分效果。</code></pre>
+<h2 id="代价与复杂度">代价与复杂度</h2>
+<p>若节点按 ID 使用哈希表索引，平均查找目标通常可接近常数时间。展示一个含 <code>O</code> 个选项、每项平均 <code>C</code> 个条件的节点，条件枚举成本可粗略写为：</p>
+<pre><code class="language-text">O(O × C)</code></pre>
+<p>实际成本主要取决于条件本身。如果条件触发文件、网络或复杂查询，图查找成本反而不是重点。</p>
+<p>静态验证常包含：</p>
+<pre><code class="language-text">遍历所有节点和边：O(V + E)。
+唯一性与引用检查：取决于索引结构。
+环与可达性检查：通常也可在线性图遍历内完成。</code></pre>
+<p>其中 <code>V</code> 是节点数量，<code>E</code> 是跳转边数量。</p>
+<p>更多数据驱动能力会增加：</p>
+<pre><code class="language-text">编辑器与验证器复杂度。
+版本迁移成本。
+错误定位链长度。
+异步和事务语义。
+本地化资源管理。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">Node 表达状态，Option 表达候选边。
+Condition 应是无副作用判断，并区分 Rejected 与 Faulted。
+Effect 是明确提交的状态变化。
+Jump 必须解析稳定 Target ID，缺失时暴露错误。
+静态验证负责提前发现重复 ID、悬空引用和违反规则的图结构。
+效果失败不能伪装成跳转成功，部分提交也必须可见。
+异步对话同样需要 generation、取消和晚到回调验证。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%8A%A8%E4%BD%9C%E6%B8%B8%E6%88%8F%E5%AE%8C%E6%95%B4%E6%88%98%E6%96%97%E5%88%A4%E5%AE%9A/"><small>← PREVIOUS</small>动作游戏完整战斗判定</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/"><small>NEXT →</small>对象池</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

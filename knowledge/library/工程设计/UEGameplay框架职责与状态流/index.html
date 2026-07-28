@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="可以把一局多人比赛想成：">
+  <title>UE Gameplay 框架：职责与状态流 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>UE Gameplay 框架：职责与状态流</h1>
+      <p class="hero-copy">可以把一局多人比赛想成：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#生活化模型-一场有裁判和记分牌的比赛">生活化模型：一场有裁判和记分牌的比赛</a>
+    <a data-toc-link href="#通用概念与-ue-具体约定">通用概念与 UE 具体约定</a>
+    <a data-toc-link href="#职责图">职责图</a>
+    <a data-toc-link href="#actor-世界对象的基础">Actor：世界对象的基础</a>
+    <a class="sub" data-toc-link href="#网络边界">网络边界</a>
+    <a data-toc-link href="#component-组合能力">Component：组合能力</a>
+    <a data-toc-link href="#pawn-可被控制的世界实体">Pawn：可被控制的世界实体</a>
+    <a data-toc-link href="#playercontroller-玩家控制入口">PlayerController：玩家控制入口</a>
+    <a class="sub" data-toc-link href="#网络可见性边界">网络可见性边界</a>
+    <a data-toc-link href="#gamemode-服务端规则与流程">GameMode：服务端规则与流程</a>
+    <a data-toc-link href="#gamestate-全局可观察状态">GameState：全局可观察状态</a>
+    <a data-toc-link href="#一次加入与受控流程">一次加入与受控流程</a>
+    <a data-toc-link href="#最小伪代码">最小伪代码</a>
+    <a data-toc-link href="#可交互的逐步状态">可交互的逐步状态</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a data-toc-link href="#代价与权衡">代价与权衡</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：一场有裁判和记分牌的比赛">
+      <span>01</span>
+      <strong>生活化模型：一场有裁判和记分牌的比赛</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：通用概念与 UE 具体约定">
+      <span>02</span>
+      <strong>通用概念与 UE 具体约定</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：职责图">
+      <span>03</span>
+      <strong>职责图</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Actor：世界对象的基础">
+      <span>04</span>
+      <strong>Actor：世界对象的基础</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Component：组合能力">
+      <span>05</span>
+      <strong>Component：组合能力</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Pawn：可被控制的世界实体">
+      <span>06</span>
+      <strong>Pawn：可被控制的世界实体</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：PlayerController：玩家控制入口">
+      <span>07</span>
+      <strong>PlayerController：玩家控制入口</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：GameMode：服务端规则与流程">
+      <span>08</span>
+      <strong>GameMode：服务端规则与流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：GameState：全局可观察状态">
+      <span>09</span>
+      <strong>GameState：全局可观察状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：一次加入与受控流程">
+      <span>10</span>
+      <strong>一次加入与受控流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最小伪代码">
+      <span>11</span>
+      <strong>最小伪代码</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：可交互的逐步状态">
+      <span>12</span>
+      <strong>可交互的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常路径">
+      <span>13</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：边界路径">
+      <span>14</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：失败路径">
+      <span>15</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：代价与权衡">
+      <span>16</span>
+      <strong>代价与权衡</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最重要的收获">
+      <span>17</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>生活化模型：一场有裁判和记分牌的比赛</h3>
+        <p>可以把一局多人比赛想成：</p>
+
+        <pre><code class="language-text">裁判：决定规则、允许谁入场、何时开始和结束。
+记分牌：展示所有参赛者都应该知道的局面。
+每位参赛者的遥控席：接收这个人的操作意图。
+场上的运动员：在世界中移动、碰撞并执行动作。
+场地物件：球门、球、触发区和道具。
+物件上的部件：碰撞、外观、声音、移动能力。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>通用概念与 UE 具体约定</h3>
+        <p>“规则、共享状态、输入代理、世界实体、组合能力”是通用架构概念。</p>
+
+        <pre><code class="language-text">AGameModeBase / AGameMode 作为规则类。
+AGameStateBase / AGameState 作为全局状态类。
+APlayerController 代表人类玩家的 Controller。
+APawn 是可被 Controller Possess 的 Actor。
+AActor 是世界对象的基础类型。
+UActorComponent 及其派生类型用于组合 Actor 能力。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>职责图</h3>
+        <p>这张图表示职责与常见关系，不表示每次调用都沿箭头直接发生，也不表示所有属性都会自动复制。</p>
+
+        <pre><code class="language-text">                    服务端
+
+          ┌─────────────────────┐
+          │      GameMode       │
+          │ 规则、准入、出生流程 │
+          └──────────┬──────────┘
+                     │ 更新全局结果
+                     ▼
+          ┌─────────────────────┐
+          │      GameState      │────────复制────────&gt; 客户端可观察状态
+          └─────────────────────┘
+
+拥有客户端输入
+      │
+      ▼
+┌──────────────────┐   Possess   ┌──────────────────┐
+│ PlayerController │────────────&gt;│       Pawn       │
+│ 玩家意图与视角入口│             │ 世界中的受控实体  │
+└──────────────────┘             └────────┬─────────┘
+                                          │ 是一种
+                                          ▼
+                                  ┌──────────────────┐
+                                  │      Actor       │
+                                  │ 世界身份与生命周期│
+                                  └────────┬─────────┘
+                                           │ 拥有
+                                  ┌────────▼─────────┐
+                                  │    Components    │
+                                  │ 碰撞、表现、移动等│
+                                  └──────────────────┘</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>Actor：世界对象的基础</h3>
+        <p><code>AActor</code> 是 UE 中可以放入关卡或在运行时生成、销毁的世界对象基础类型。许多 Gameplay Framework 类型本身也是 Actor 的派生类。</p>
+
+        <pre><code class="language-text">世界中的身份与生命周期。
+变换或变换根节点的组织。
+拥有一组 Actor Components。
+按明确配置参与网络复制。
+接收引擎生命周期事件。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>Component：组合能力</h3>
+        <p>Actor Component 是附着于 Actor 的可复用构建块。</p>
+
+        <pre><code class="language-text">可被多个 Actor 复用的能力。
+与拥有者生命周期相关的数据。
+碰撞、移动、音频、渲染等可组合职责。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>Pawn：可被控制的世界实体</h3>
+        <p><code>APawn</code> 是一种 Actor，核心语义是：</p>
+
+        <pre><code class="language-text">它可以被玩家 Controller 或 AI Controller 控制。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>PlayerController：玩家控制入口</h3>
+        <p><code>APlayerController</code> 是用于人类玩家的 Controller。它可以 Possess Pawn，把玩家输入与视角意图传给当前受控对象。</p>
+
+        <pre><code class="language-text">与玩家连接和控制视角相关的逻辑。
+输入意图到受控 Pawn 命令的转换。
+切换或失去 Pawn 后仍应存在的控制上下文。
+拥有客户端与服务端之间的玩家请求入口。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>GameMode：服务端规则与流程</h3>
+        <p><code>AGameModeBase</code> / <code>AGameMode</code> 表达当前会话的规则和结构，例如：</p>
+
+        <pre><code class="language-text">玩家如何加入。
+使用哪些默认框架类型。
+如何选择出生位置与生成 Pawn。
+何时允许开始、暂停或结束。
+如何判定规则事件。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>GameState：全局可观察状态</h3>
+        <p><code>AGameStateBase</code> / <code>AGameState</code> 表达与当前会话相关、并且需要让所有连接方知道的状态。</p>
+
+        <pre><code class="language-text">会话是否已经开始。
+全局阶段。
+队伍分数。
+公共目标进度。
+所有参与者都需要观察的计时信息。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>一次加入与受控流程</h3>
+        <p>下面是职责级状态流，具体回调名称和扩展点应以所用 UE 版本文档为准：</p>
+
+        <pre><code class="language-text">1. 世界加载并选择 GameMode 类型。
+2. 服务端创建 GameMode 与对应 GameState。
+3. 玩家连接请求到达服务端。
+4. GameMode 执行准入和加入流程。
+5. 服务端建立该玩家的 PlayerController。
+6. GameMode 按规则选择出生位置并创建 Pawn。
+7. PlayerController Possess Pawn。
+8. 拥有客户端产生输入意图。
+9. 服务端验证并驱动权威状态变化。
+10. 公共结果写入合适的复制状态，例如 GameState。
+11. 客户端接收状态更新并刷新表现。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最小伪代码</h3>
+        <p>以下伪代码表达职责，不对应完整 UE API：</p>
+
+        <pre><code class="language-text">class SessionGameMode:
+    function TryJoin(connection):
+        decision = ValidateJoinRules(connection)
+
+        if decision is Failure:
+            return Failure(decision.Error)
+
+        controller = CreatePlayerController(connection)
+        spawn = SelectAndValidateSpawn(controller)
+
+        if spawn is Failure:
+            return Failure(spawn.Error)
+
+        pawn = SpawnPawn(spawn.Position)
+
+        if pawn is Failure:
+            return Failure(pawn.Error)
+
+        controller.Possess(pawn)
+        return Success(controller)
+
+    function ApplyScoringEvent(event):
+        result = EvaluateAuthoritativeRule(event)
+
+        if result is Failure:
+            return Failure(result.Error)
+
+        SessionGameState.PublishScore(result.NewScore)
+        return Success</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>可交互的逐步状态</h3>
+        <p>教学面板可以同时显示：</p>
+
+        <pre><code class="language-text">准入成功或失败。
+Pawn 生成成功或失败。
+Possess、UnPossess 与切换 Pawn。
+GameMode 规则变化是否正确写入 GameState。
+某字段配置为复制或不复制。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+
+
+        <pre><code class="language-text">服务端 GameMode 接受玩家。
+PlayerController 建立。
+合法出生位置被规则确认。
+Pawn 成功生成并被 Possess。
+输入从拥有玩家进入控制链。
+服务端裁决产生全局结果。
+GameState 把公共状态同步给客户端。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>这些状态都说明“玩家、控制者和身体”不是同一个对象。</p>
+
+        <pre><code class="language-text">Controller 已存在，但 Pawn 尚未生成。
+Pawn 已销毁，PlayerController 等待重新 Possess。
+一个 PlayerController 在不同 Pawn 之间切换。
+Pawn 由 AIController 而不是 PlayerController 控制。
+客户端收到 GameState，但相关 Pawn 尚未完成生成。
+Component 初始化顺序与 Actor 生命周期交错。
+关卡切换导致世界级 Actor 生命周期结束。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>失败必须保留所属阶段和原因，不能用默认 Pawn、默认出生点或默认成功掩盖。</p>
+
+        <pre><code class="language-text">客户端尝试读取不存在的远端 PlayerController。
+把仅服务端存在的 GameMode 当成客户端数据源。
+把公共比赛状态只存在 GameMode，导致客户端无法观察。
+出生点无效但仍生成 Pawn。
+Possess 失败后仍报告玩家已可控制。
+Actor 复制开启，但关键属性未按规则复制。
+Component 依赖的拥有者状态尚未准备好。
+服务端拒绝请求，却由客户端本地表现成规则已成功。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>代价与权衡</h3>
+        <p>职责分离增加：</p>
+
+        <pre><code class="language-text">对象之间的状态同步。
+生命周期与初始化顺序管理。
+服务端权威和客户端表现的两套观察视角。
+复制配置、带宽和调试成本。
+Possess 与重生等边界状态。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">GameMode 是服务端规则裁决者。
+GameState 是面向全体的会话状态。
+PlayerController 是某位人类玩家的控制入口，不会出现在所有远端客户端。
+Pawn 是可被 Controller 控制的 Actor，不等于玩家身份本身。
+Actor 提供世界身份与生命周期。
+Component 为 Actor 组合可复用职责。
+框架类型给出边界，但具体数据放置、复制与失败策略仍需明确设计。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计</p>
+<h2 id="生活化模型-一场有裁判和记分牌的比赛">生活化模型：一场有裁判和记分牌的比赛</h2>
+<p>可以把一局多人比赛想成：</p>
+<pre><code class="language-text">裁判：决定规则、允许谁入场、何时开始和结束。
+记分牌：展示所有参赛者都应该知道的局面。
+每位参赛者的遥控席：接收这个人的操作意图。
+场上的运动员：在世界中移动、碰撞并执行动作。
+场地物件：球门、球、触发区和道具。
+物件上的部件：碰撞、外观、声音、移动能力。</code></pre>
+<p>这个类比对应 UE Gameplay Framework 中几个常见职责：</p>
+<pre><code class="language-text">GameMode         → 服务端规则与流程裁决
+GameState        → 全局可观察的会话状态
+PlayerController → 某位人类玩家的控制入口
+Pawn             → 可被玩家或 AI Controller 控制的场上 Actor
+Actor            → 能存在于世界中的基础对象
+Component        → 组合到 Actor 上的可复用能力或数据</code></pre>
+<p>类比只帮助理解职责，不能替代引擎的生命周期、网络权限和复制规则。</p>
+<h2 id="通用概念与-ue-具体约定">通用概念与 UE 具体约定</h2>
+<p>“规则、共享状态、输入代理、世界实体、组合能力”是通用架构概念。</p>
+<p>下面这些则是 UE Gameplay Framework 的具体约定：</p>
+<pre><code class="language-text">AGameModeBase / AGameMode 作为规则类。
+AGameStateBase / AGameState 作为全局状态类。
+APlayerController 代表人类玩家的 Controller。
+APawn 是可被 Controller Possess 的 Actor。
+AActor 是世界对象的基础类型。
+UActorComponent 及其派生类型用于组合 Actor 能力。</code></pre>
+<p>其他框架可能把这些职责合并或拆得更细。不能因为 UE 有这些类，就把同样的类名当成所有游戏架构的必需结构。</p>
+<h2 id="职责图">职责图</h2>
+<pre><code class="language-text">                    服务端
+
+          ┌─────────────────────┐
+          │      GameMode       │
+          │ 规则、准入、出生流程 │
+          └──────────┬──────────┘
+                     │ 更新全局结果
+                     ▼
+          ┌─────────────────────┐
+          │      GameState      │────────复制────────&gt; 客户端可观察状态
+          └─────────────────────┘
+
+拥有客户端输入
+      │
+      ▼
+┌──────────────────┐   Possess   ┌──────────────────┐
+│ PlayerController │────────────&gt;│       Pawn       │
+│ 玩家意图与视角入口│             │ 世界中的受控实体  │
+└──────────────────┘             └────────┬─────────┘
+                                          │ 是一种
+                                          ▼
+                                  ┌──────────────────┐
+                                  │      Actor       │
+                                  │ 世界身份与生命周期│
+                                  └────────┬─────────┘
+                                           │ 拥有
+                                  ┌────────▼─────────┐
+                                  │    Components    │
+                                  │ 碰撞、表现、移动等│
+                                  └──────────────────┘</code></pre>
+<p>这张图表示职责与常见关系，不表示每次调用都沿箭头直接发生，也不表示所有属性都会自动复制。</p>
+<h2 id="actor-世界对象的基础">Actor：世界对象的基础</h2>
+<p><code>AActor</code> 是 UE 中可以放入关卡或在运行时生成、销毁的世界对象基础类型。许多 Gameplay Framework 类型本身也是 Actor 的派生类。</p>
+<p>Actor 常负责：</p>
+<pre><code class="language-text">世界中的身份与生命周期。
+变换或变换根节点的组织。
+拥有一组 Actor Components。
+按明确配置参与网络复制。
+接收引擎生命周期事件。</code></pre>
+<p>不要把 Actor 等同于“所有数据对象”。不需要世界身份、生成销毁或组件组合的数据，未必应该做成 Actor。</p>
+<h3 id="网络边界">网络边界</h3>
+<p>Actor 支持网络复制机制，不等于：</p>
+<pre><code class="language-text">创建 Actor 后所有客户端天然都有完全相同的数据。</code></pre>
+<p>是否复制、复制哪些属性、由谁拥有、哪些连接相关，都是具体配置和代码选择。</p>
+<h2 id="component-组合能力">Component：组合能力</h2>
+<p>Actor Component 是附着于 Actor 的可复用构建块。</p>
+<p>适合表达：</p>
+<pre><code class="language-text">可被多个 Actor 复用的能力。
+与拥有者生命周期相关的数据。
+碰撞、移动、音频、渲染等可组合职责。</code></pre>
+<p>UE 中 Component 还有不同派生层次。例如需要变换层级的 Scene Component 与不以场景变换为核心的一般 Actor Component 并不相同。</p>
+<p>Component 不应被理解为：</p>
+<pre><code class="language-text">脱离拥有者的全局规则中心。
+任意跨世界对象共享的单例。
+自动拥有网络权威的模块。</code></pre>
+<p>组件是否复制及如何初始化仍取决于具体类型和配置。</p>
+<h2 id="pawn-可被控制的世界实体">Pawn：可被控制的世界实体</h2>
+<p><code>APawn</code> 是一种 Actor，核心语义是：</p>
+<pre><code class="language-text">它可以被玩家 Controller 或 AI Controller 控制。</code></pre>
+<p>Pawn 可以是人物、车辆或其他可控实体，并不天然限定为人形。</p>
+<p>Pawn 通常承载：</p>
+<pre><code class="language-text">世界中的身体表现。
+移动与碰撞相关组件。
+与当前身体绑定的动作状态。
+接受 Controller 转换后的控制意图。</code></pre>
+<p>“可以被控制”不等于“当前一定已被 Possess”。一个 Pawn 可以暂时没有 Controller，一个 Controller 也可能在切换 Pawn 时暂时没有受控对象。</p>
+<h2 id="playercontroller-玩家控制入口">PlayerController：玩家控制入口</h2>
+<p><code>APlayerController</code> 是用于人类玩家的 Controller。它可以 Possess Pawn，把玩家输入与视角意图传给当前受控对象。</p>
+<p>适合承载：</p>
+<pre><code class="language-text">与玩家连接和控制视角相关的逻辑。
+输入意图到受控 Pawn 命令的转换。
+切换或失去 Pawn 后仍应存在的控制上下文。
+拥有客户端与服务端之间的玩家请求入口。</code></pre>
+<h3 id="网络可见性边界">网络可见性边界</h3>
+<p>在网络游戏中，某位玩家的 PlayerController 通常存在于：</p>
+<pre><code class="language-text">服务端。
+该玩家自己的拥有客户端。</code></pre>
+<p>其他远端客户端通常没有这位玩家的 PlayerController 实例。因此“让所有客户端从其他人的 PlayerController 读取公开数据”不是可靠设计。</p>
+<p>面向所有人的玩家状态通常应由合适的复制对象承担；具体是否使用 PlayerState 取决于数据语义。本文只聚焦题目指定的六类职责。</p>
+<h2 id="gamemode-服务端规则与流程">GameMode：服务端规则与流程</h2>
+<p><code>AGameModeBase</code> / <code>AGameMode</code> 表达当前会话的规则和结构，例如：</p>
+<pre><code class="language-text">玩家如何加入。
+使用哪些默认框架类型。
+如何选择出生位置与生成 Pawn。
+何时允许开始、暂停或结束。
+如何判定规则事件。</code></pre>
+<p>关键边界：</p>
+<pre><code class="language-text">GameMode 实例只存在于服务端，不复制给远端客户端。</code></pre>
+<p>所以客户端不能把读取 GameMode 变量当成获取实时规则状态的通用方式。</p>
+<p><code>AGameMode</code> 在 <code>AGameModeBase</code> 基础上提供了更具体的 Match State 支持；选择哪一个是 UE 内的实现决定，不是所有玩法都必须使用完整比赛状态机。</p>
+<h2 id="gamestate-全局可观察状态">GameState：全局可观察状态</h2>
+<p><code>AGameStateBase</code> / <code>AGameState</code> 表达与当前会话相关、并且需要让所有连接方知道的状态。</p>
+<p>例如：</p>
+<pre><code class="language-text">会话是否已经开始。
+全局阶段。
+队伍分数。
+公共目标进度。
+所有参与者都需要观察的计时信息。</code></pre>
+<p>GameState 存在于服务端，并可复制到客户端。它不是第二个 GameMode：</p>
+<pre><code class="language-text">GameMode 决定和裁决规则。
+GameState 公开规则执行后形成的全局事实。</code></pre>
+<p>客户端看到复制后的 GameState 是已同步状态，不意味着客户端获得了服务端裁决权。</p>
+<h2 id="一次加入与受控流程">一次加入与受控流程</h2>
+<p>下面是职责级状态流，具体回调名称和扩展点应以所用 UE 版本文档为准：</p>
+<pre><code class="language-text">1. 世界加载并选择 GameMode 类型。
+2. 服务端创建 GameMode 与对应 GameState。
+3. 玩家连接请求到达服务端。
+4. GameMode 执行准入和加入流程。
+5. 服务端建立该玩家的 PlayerController。
+6. GameMode 按规则选择出生位置并创建 Pawn。
+7. PlayerController Possess Pawn。
+8. 拥有客户端产生输入意图。
+9. 服务端验证并驱动权威状态变化。
+10. 公共结果写入合适的复制状态，例如 GameState。
+11. 客户端接收状态更新并刷新表现。</code></pre>
+<p>不是每个体验都必须自动生成默认 Pawn。观察者、载具切换、死亡等待或无身体控制模式都可能改变第 6、7 步。</p>
+<h2 id="最小伪代码">最小伪代码</h2>
+<p>以下伪代码表达职责，不对应完整 UE API：</p>
+<pre><code class="language-text">class SessionGameMode:
+    function TryJoin(connection):
+        decision = ValidateJoinRules(connection)
+
+        if decision is Failure:
+            return Failure(decision.Error)
+
+        controller = CreatePlayerController(connection)
+        spawn = SelectAndValidateSpawn(controller)
+
+        if spawn is Failure:
+            return Failure(spawn.Error)
+
+        pawn = SpawnPawn(spawn.Position)
+
+        if pawn is Failure:
+            return Failure(pawn.Error)
+
+        controller.Possess(pawn)
+        return Success(controller)
+
+    function ApplyScoringEvent(event):
+        result = EvaluateAuthoritativeRule(event)
+
+        if result is Failure:
+            return Failure(result.Error)
+
+        SessionGameState.PublishScore(result.NewScore)
+        return Success</code></pre>
+<p>这里没有“出生失败就使用原点”或“规则失败仍返回成功”的分支。出生选择、默认 Pawn 类型和失败处理都必须来自明确规则。</p>
+<h2 id="可交互的逐步状态">可交互的逐步状态</h2>
+<p>教学面板可以同时显示：</p>
+<table><thead><tr>
+<th>步骤</th>
+<th>服务端对象</th>
+<th>拥有客户端对象</th>
+<th>其他客户端对象</th>
+</tr></thead><tbody>
+<tr>
+<td>世界建立</td>
+<td>GameMode、GameState</td>
+<td>GameState 副本</td>
+<td>GameState 副本</td>
+</tr>
+<tr>
+<td>玩家加入</td>
+<td>PlayerController 建立</td>
+<td>自己的 PlayerController</td>
+<td>不持有该远端 PlayerController</td>
+</tr>
+<tr>
+<td>Pawn 生成</td>
+<td>权威 Pawn</td>
+<td>相关 Pawn 表现</td>
+<td>相关 Pawn 表现</td>
+</tr>
+<tr>
+<td>Possess</td>
+<td>绑定 Controller 与 Pawn</td>
+<td>获得控制关系</td>
+<td>只观察相关状态</td>
+</tr>
+<tr>
+<td>规则更新</td>
+<td>GameMode 裁决</td>
+<td>接收 GameState 更新</td>
+<td>接收 GameState 更新</td>
+</tr>
+</tbody></table>
+<p>这是一张<strong>教学状态表</strong>。实际网络相关性、生成时序和对象复制必须以运行配置为准。</p>
+<p>可交互演示可以切换：</p>
+<pre><code class="language-text">准入成功或失败。
+Pawn 生成成功或失败。
+Possess、UnPossess 与切换 Pawn。
+GameMode 规则变化是否正确写入 GameState。
+某字段配置为复制或不复制。</code></pre>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">服务端 GameMode 接受玩家。
+PlayerController 建立。
+合法出生位置被规则确认。
+Pawn 成功生成并被 Possess。
+输入从拥有玩家进入控制链。
+服务端裁决产生全局结果。
+GameState 把公共状态同步给客户端。</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<pre><code class="language-text">Controller 已存在，但 Pawn 尚未生成。
+Pawn 已销毁，PlayerController 等待重新 Possess。
+一个 PlayerController 在不同 Pawn 之间切换。
+Pawn 由 AIController 而不是 PlayerController 控制。
+客户端收到 GameState，但相关 Pawn 尚未完成生成。
+Component 初始化顺序与 Actor 生命周期交错。
+关卡切换导致世界级 Actor 生命周期结束。</code></pre>
+<p>这些状态都说明“玩家、控制者和身体”不是同一个对象。</p>
+<h2 id="失败路径">失败路径</h2>
+<pre><code class="language-text">客户端尝试读取不存在的远端 PlayerController。
+把仅服务端存在的 GameMode 当成客户端数据源。
+把公共比赛状态只存在 GameMode，导致客户端无法观察。
+出生点无效但仍生成 Pawn。
+Possess 失败后仍报告玩家已可控制。
+Actor 复制开启，但关键属性未按规则复制。
+Component 依赖的拥有者状态尚未准备好。
+服务端拒绝请求，却由客户端本地表现成规则已成功。</code></pre>
+<p>失败必须保留所属阶段和原因，不能用默认 Pawn、默认出生点或默认成功掩盖。</p>
+<h2 id="代价与权衡">代价与权衡</h2>
+<p>职责分离增加：</p>
+<pre><code class="language-text">对象之间的状态同步。
+生命周期与初始化顺序管理。
+服务端权威和客户端表现的两套观察视角。
+复制配置、带宽和调试成本。
+Possess 与重生等边界状态。</code></pre>
+<p>它换来：</p>
+<pre><code class="language-text">规则、公开状态、玩家控制和世界身体不再混成一个类。
+Pawn 可以切换，而玩家控制上下文继续存在。
+客户端只接收需要观察的状态，不获得服务端规则对象。
+Actor 能通过 Component 组合能力。</code></pre>
+<p>Component 过细会增加依赖和调度成本，过粗又会降低复用；复制字段过多增加网络代价，过少则无法形成正确客户端状态。这些粒度需要根据已验证的数据所有权决定。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">GameMode 是服务端规则裁决者。
+GameState 是面向全体的会话状态。
+PlayerController 是某位人类玩家的控制入口，不会出现在所有远端客户端。
+Pawn 是可被 Controller 控制的 Actor，不等于玩家身份本身。
+Actor 提供世界身份与生命周期。
+Component 为 Actor 组合可复用职责。
+框架类型给出边界，但具体数据放置、复制与失败策略仍需明确设计。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><small>← PREVIOUS</small>Effect 与 Buff 生命周期：从一次申请到彻底清理</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E4%BE%9D%E8%B5%96%E8%BF%BD%E8%B8%AA%E4%B8%8E%E6%89%B9%E9%87%8F%E5%88%B7%E6%96%B0/"><small>NEXT →</small>UI 数据绑定：依赖追踪与批量刷新</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

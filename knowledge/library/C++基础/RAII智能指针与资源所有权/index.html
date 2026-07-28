@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象借用一把钥匙：">
+  <title>RAII、智能指针与资源所有权 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
+      <h1>RAII、智能指针与资源所有权</h1>
+      <p class="hero-copy">想象借用一把钥匙：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先用生活模型理解所有权">先用生活模型理解所有权</a>
+    <a data-toc-link href="#raii-是什么">RAII 是什么</a>
+    <a data-toc-link href="#一个最小-raii-类型">一个最小 RAII 类型</a>
+    <a data-toc-link href="#raii-的逐步状态">RAII 的逐步状态</a>
+    <a data-toc-link href="#std-unique-ptr-独占所有权">`std::unique_ptr`：独占所有权</a>
+    <a class="sub" data-toc-link href="#自定义删除器">自定义删除器</a>
+    <a class="sub" data-toc-link href="#观察而不转移">观察而不转移</a>
+    <a data-toc-link href="#std-shared-ptr-共享所有权">`std::shared_ptr`：共享所有权</a>
+    <a class="sub" data-toc-link href="#最小示例">最小示例</a>
+    <a class="sub" data-toc-link href="#make-shared">`make_shared`</a>
+    <a class="sub" data-toc-link href="#不要从同一个裸指针创建两个独立控制块">不要从同一个裸指针创建两个独立控制块</a>
+    <a data-toc-link href="#std-weak-ptr-不延长生命周期的观察者">`std::weak_ptr`：不延长生命周期的观察者</a>
+    <a data-toc-link href="#共享指针环">共享指针环</a>
+    <a data-toc-link href="#enable-shared-from-this">`enable_shared_from_this`</a>
+    <a data-toc-link href="#智能指针的线程安全边界">智能指针的线程安全边界</a>
+    <a class="sub" data-toc-link href="#同一个-shared-ptr-对象">同一个 `shared_ptr` 对象</a>
+    <a class="sub" data-toc-link href="#指向的对象">指向的对象</a>
+    <a class="sub" data-toc-link href="#weak-ptr-lock">`weak_ptr::lock`</a>
+    <a class="sub" data-toc-link href="#unique-ptr">`unique_ptr`</a>
+    <a data-toc-link href="#异常与失败路径">异常与失败路径</a>
+    <a class="sub" data-toc-link href="#分配失败">分配失败</a>
+    <a class="sub" data-toc-link href="#解引用空智能指针">解引用空智能指针</a>
+    <a class="sub" data-toc-link href="#release-后遗失裸指针">`release()` 后遗失裸指针</a>
+    <a class="sub" data-toc-link href="#错误使用-get">错误使用 `get()`</a>
+    <a class="sub" data-toc-link href="#循环强引用">循环强引用</a>
+    <a class="sub" data-toc-link href="#析构函数抛出异常">析构函数抛出异常</a>
+    <a class="sub" data-toc-link href="#所有权语义不清">所有权语义不清</a>
+    <a data-toc-link href="#标准保证与常见实现细节">标准保证与常见实现细节</a>
+    <a data-toc-link href="#怎样选择所有权类型">怎样选择所有权类型</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#一段完整所有权示例">一段完整所有权示例</a>
+    <a data-toc-link href="#小结">小结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解所有权">
+      <span>01</span>
+      <strong>先用生活模型理解所有权</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：RAII 是什么">
+      <span>02</span>
+      <strong>RAII 是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：一个最小 RAII 类型">
+      <span>03</span>
+      <strong>一个最小 RAII 类型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：RAII 的逐步状态">
+      <span>04</span>
+      <strong>RAII 的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：`std::unique_ptr`：独占所有权">
+      <span>05</span>
+      <strong>`std::unique_ptr`：独占所有权</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：`std::shared_ptr`：共享所有权">
+      <span>06</span>
+      <strong>`std::shared_ptr`：共享所有权</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：`std::weak_ptr`：不延长生命周期的观察者">
+      <span>07</span>
+      <strong>`std::weak_ptr`：不延长生命周期的观察者</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：共享指针环">
+      <span>08</span>
+      <strong>共享指针环</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：`enable_shared_from_this`">
+      <span>09</span>
+      <strong>`enable_shared_from_this`</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：智能指针的线程安全边界">
+      <span>10</span>
+      <strong>智能指针的线程安全边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：异常与失败路径">
+      <span>11</span>
+      <strong>异常与失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：标准保证与常见实现细节">
+      <span>12</span>
+      <strong>标准保证与常见实现细节</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：怎样选择所有权类型">
+      <span>13</span>
+      <strong>怎样选择所有权类型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：复杂度与代价">
+      <span>14</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：一段完整所有权示例">
+      <span>15</span>
+      <strong>一段完整所有权示例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：小结">
+      <span>16</span>
+      <strong>小结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先用生活模型理解所有权</h3>
+        <p>想象借用一把钥匙：</p>
+        <ul><li>钥匙只能由一个保管员负责归还，这是<strong>独占所有权</strong>。</li><li>多名登记人共同决定何时归还，这是<strong>共享所有权</strong>。</li><li>门口告示牌可以观察“钥匙是否仍在”，但不能阻止归还，这是<strong>弱观察关系</strong>。</li><li>保管员离开岗位时自动归还钥匙，这是 <strong>RAII</strong>。</li></ul>
+        <pre><code class="language-text">谁负责释放资源？
+责任能否转移？
+资源可以被几名所有者共同延长生命周期？
+谁只观察而不拥有？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>RAII 是什么</h3>
+        <p>RAII 是 Resource Acquisition Is Initialization，常译为“资源获取即初始化”。</p>
+
+        <pre><code class="language-text">把资源生命周期绑定到对象生命周期。
+对象建立有效状态时获得资源。
+对象析构时释放资源。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>一个最小 RAII 类型</h3>
+        <p>这个教学类型展示：</p>
+        <ul><li>构造失败时抛出异常，不产生一个假装有效的对象；</li><li>析构函数释放资源；</li><li>禁止复制，避免两个对象都以为自己负责关闭同一文件；</li><li>移动操作显式转移责任；</li><li>被移动对象进入不拥有资源的有效状态。</li></ul>
+        <pre><code class="language-cpp">#include &lt;cstdio&gt;
+#include &lt;stdexcept&gt;
+
+class FileHandle
+{
+public:
+    explicit FileHandle(const char* path)
+        : file_(std::fopen(path, &quot;rb&quot;))
+    {
+        if (file_ == nullptr)
+        {
+            throw std::runtime_error(&quot;教学示例文件打开失败。&quot;);
+        }
+    }
+
+    ~FileHandle()
+    {
+        if (file_ != nullptr)
+        {
+            std::fclose(file_);
+        }
+    }
+
+    FileHandle(const FileHandle&amp;) = delete;
+    FileHandle&amp; operator=(const FileHandle&amp;) = delete;
+
+    FileHandle(FileHandle&amp;&amp; other) noexcept
+        : file_(other.file_)
+    {
+        // 转移所有权后，源对象不再负责关闭文件。
+        other.file_ = nullptr;
+    }
+
+    FileHandle&amp; operator=(FileHandle&amp;&amp; other) noexcept
+    {
+        if (this == &amp;other)
+        {
+            return *this;
+        }
+
+        if (file_ != nullptr)
+        {
+            std::fclose(file_);
+        }
+
+        file_ = other.file_;
+        other.file_ = nullptr;
+        return *this;
+    }
+
+    std::FILE* get() const noexcept
+    {
+        return file_;
+    }
+
+private:
+    std::FILE* file_;
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>RAII 的逐步状态</h3>
+        <p>构造失败路径：</p>
+
+        <pre><code class="language-text">尚未获得资源
+    ↓ 构造
+Owning：对象持有资源
+    ↓ 移动
+源对象 NonOwning，目标对象 Owning
+    ↓ 离开作用域
+析构 Owning 对象并释放资源</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3><code>std::unique_ptr</code>：独占所有权</h3>
+        <p><code>std::unique_ptr&lt;T&gt;</code> 表示一个资源在当前时刻只有一个所有者。</p>
+
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+struct Message
+{
+    explicit Message(int value)
+        : value(value)
+    {
+    }
+
+    int value;
+};
+
+int main()
+{
+    auto first = std::make_unique&lt;Message&gt;(7);
+    // 7 是教学示例值。
+
+    std::unique_ptr&lt;Message&gt; second = std::move(first);
+
+    if (first == nullptr)
+    {
+        std::cout &lt;&lt; &quot;所有权已转移\n&quot;;
+    }
+
+    std::cout &lt;&lt; second-&gt;value &lt;&lt; &#39;\n&#39;;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3><code>std::shared_ptr</code>：共享所有权</h3>
+        <p><code>std::shared_ptr&lt;T&gt;</code> 允许多个所有者共同延长对象生命周期。</p>
+
+        <pre><code class="language-text">强引用计数；
+弱引用相关计数；
+删除器；
+可能还有分配器和其他实现数据。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3><code>std::weak_ptr</code>：不延长生命周期的观察者</h3>
+        <p><code>std::weak_ptr&lt;T&gt;</code> 与 <code>shared_ptr</code> 关联，但不增加强所有权。</p>
+
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+int main()
+{
+    std::weak_ptr&lt;int&gt; observer;
+
+    {
+        auto owner = std::make_shared&lt;int&gt;(9);
+        observer = owner;
+        // 9 是教学示例值。
+
+        if (auto value = observer.lock())
+        {
+            std::cout &lt;&lt; *value &lt;&lt; &#39;\n&#39;;
+        }
+    }
+
+    if (observer.expired())
+    {
+        std::cout &lt;&lt; &quot;教学示例对象已结束生命周期\n&quot;;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>共享指针环</h3>
+        <p>如果两个对象用 <code>shared_ptr</code> 互相拥有，强引用计数可能永远不能归零。</p>
+
+        <pre><code class="language-cpp">struct Parent;
+
+struct Child
+{
+    std::shared_ptr&lt;Parent&gt; parent;
+};
+
+struct Parent
+{
+    std::shared_ptr&lt;Child&gt; child;
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3><code>enable_shared_from_this</code></h3>
+        <p>对象成员有时需要取得与现有控制块共享所有权的 <code>shared_ptr</code>：</p>
+
+        <pre><code class="language-cpp">struct Node : std::enable_shared_from_this&lt;Node&gt;
+{
+    std::shared_ptr&lt;Node&gt; share()
+    {
+        return shared_from_this();
+    }
+};
+
+auto node = std::make_shared&lt;Node&gt;();
+auto sameOwner = node-&gt;share();</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>智能指针的线程安全边界</h3>
+        <p>“<code>shared_ptr</code> 是线程安全的”这句话不够精确。</p>
+
+        <pre><code class="language-text">不同 shared_ptr 对象即使共享同一控制块，
+也可以由不同线程执行相应的所有权操作，
+而不会仅因控制块引用计数产生数据竞争。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CONCEPT</div>
+        <h3>异常与失败路径</h3>
+        <p><code>make_unique</code> 和 <code>make_shared</code> 在无法分配时通常通过异常报告失败。不要捕获后返回一个未经约定的空指针并声称创建成功。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+        <h3>标准保证与常见实现细节</h3>
+        <p>| 问题 | 标准语义 | 常见实现 | |---|---|---| | <code>unique_ptr</code> 是否独占 | 不可复制、可移动，按删除器释放 | 保存指针及可能的删除器状态 | | <code>shared_ptr</code> 何时销毁对象 | 最后一份强所有权结束 | 控制块维护原子式引用计数 | | 控制块布局 | 未规定固定布局 | 存放强弱计数、删除器等 | | <code>make_shared</code> 对象地址关系 | 不应依赖具体布局 | 常见为对象与控制块合并分配 | | <code>weak_ptr</code> 是否延长对象生命 | 不延长强所有权 | 保留控制块观察关系 | | 引用计数是否保护对象内容 | 不保护 <code>T</code> 的普通成员访问 | 只同步所有权元数据 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>怎样选择所有权类型</h3>
+        <p>优先从 <code>unique_ptr</code> 开始，因为它的所有权图最清楚。只有确认存在真实共享生命周期需求时，才引入 <code>shared_ptr</code>。</p>
+
+        <pre><code class="language-text">对象只由一个责任方拥有
+    -&gt; unique_ptr
+
+所有权需要明确转移
+    -&gt; 移动 unique_ptr
+
+多个独立责任方确实需要共同延长生命周期
+    -&gt; shared_ptr
+
+只观察共享对象，不负责延长生命周期
+    -&gt; weak_ptr
+
+仅在调用期间借用，调用者保证生命周期
+    -&gt; 引用或非拥有指针</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / FLOW / RULES</div>
+        <h3>复杂度与代价</h3>
+        <p>| 操作 | 常见抽象时间 | 主要代价 | |---|---:|---| | <code>unique_ptr</code> 移动 | <code>O(1)</code> | 转移指针与删除器状态 | | <code>unique_ptr</code> 析构 | <code>O(1)</code> 加资源释放成本 | 调用删除器 | | <code>shared_ptr</code> 复制 | <code>O(1)</code> | 更新共享计数，可能含同步成本 | | <code>shared_ptr</code> 析构 | <code>O(1)</code> 加可能的对象销毁 | 更新计数 | | <code>weak_ptr::lock</code> | <code>O(1)</code> | 尝试增加强所有权 | | <code>make_shared</code> | <code>O(1)</code> 次对象建立，加构造成本 | 分配与控制块管理 |</p>
+        <ul><li><code>shared_ptr</code> 的控制块需要额外内存；</li><li>引用计数更新可能带来跨线程同步与缓存竞争；</li><li>自定义删除器和分配器增加类型或控制块状态；</li><li><code>weak_ptr</code> 可能让控制块在对象析构后继续存活；</li><li>所有权图复杂时，理解成本会超过裸指针语法本身。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>一段完整所有权示例</h3>
+        <p>这里：</p>
+
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;stdexcept&gt;
+#include &lt;string&gt;
+#include &lt;utility&gt;
+
+class Page
+{
+public:
+    explicit Page(std::string title)
+        : title_(std::move(title))
+    {
+    }
+
+    const std::string&amp; title() const noexcept
+    {
+        return title_;
+    }
+
+private:
+    std::string title_;
+};
+
+class Viewer
+{
+public:
+    explicit Viewer(std::weak_ptr&lt;Page&gt; page)
+        : page_(std::move(page))
+    {
+    }
+
+    void print() const
+    {
+        std::shared_ptr&lt;Page&gt; page = page_.lock();
+        if (!page)
+        {
+            throw std::runtime_error(&quot;教学示例页面已结束生命周期。&quot;);
+        }
+
+        std::cout &lt;&lt; page-&gt;title() &lt;&lt; &#39;\n&#39;;
+    }
+
+private:
+    std::weak_ptr&lt;Page&gt; page_;
+};
+
+int main()
+{
+    auto page = std::make_shared&lt;Page&gt;(&quot;教学示例页面&quot;);
+    Viewer viewer(page); // Viewer 只观察，不拥有 Page。
+
+    viewer.print();
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>小结</h3>
+        <p>选择智能指针前，先画出所有权图：</p>
+        <ul><li>哪条边负责让对象继续存活？</li><li>哪条边只是临时借用？</li><li>是否形成强引用环？</li><li>所有权会在哪个线程转移或结束？</li><li>资源释放失败怎样保持可见？</li></ul>
+        <pre><code class="language-text">RAII 把资源释放绑定到对象析构。
+unique_ptr 表达独占所有权和可移动的责任。
+shared_ptr 表达真实的共享生命周期。
+weak_ptr 观察共享对象并打破不应存在的强所有权环。
+引用计数线程安全不等于对象内容线程安全。
+控制块和内存布局属于实现细节，不是固定标准 ABI。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：C++ 基础</p>
+<h2 id="先用生活模型理解所有权">先用生活模型理解所有权</h2>
+<p>想象借用一把钥匙：</p>
+<ul>
+<li>钥匙只能由一个保管员负责归还，这是<strong>独占所有权</strong>。</li>
+<li>多名登记人共同决定何时归还，这是<strong>共享所有权</strong>。</li>
+<li>门口告示牌可以观察“钥匙是否仍在”，但不能阻止归还，这是<strong>弱观察关系</strong>。</li>
+<li>保管员离开岗位时自动归还钥匙，这是 <strong>RAII</strong>。</li>
+</ul>
+<p>资源管理最重要的问题不是“用哪个智能指针”，而是：</p>
+<pre><code class="language-text">谁负责释放资源？
+责任能否转移？
+资源可以被几名所有者共同延长生命周期？
+谁只观察而不拥有？</code></pre>
+<h2 id="raii-是什么">RAII 是什么</h2>
+<p>RAII 是 Resource Acquisition Is Initialization，常译为“资源获取即初始化”。</p>
+<p>它的核心不是“所有资源必须在构造函数里申请”，而是：</p>
+<pre><code class="language-text">把资源生命周期绑定到对象生命周期。
+对象建立有效状态时获得资源。
+对象析构时释放资源。</code></pre>
+<p>当控制流因正常返回、提前返回或异常离开作用域时，已经完成构造的局部对象都会按语言规则析构，因此资源释放不依赖每条路径手写清理代码。</p>
+<h2 id="一个最小-raii-类型">一个最小 RAII 类型</h2>
+<pre><code class="language-cpp">#include &lt;cstdio&gt;
+#include &lt;stdexcept&gt;
+
+class FileHandle
+{
+public:
+    explicit FileHandle(const char* path)
+        : file_(std::fopen(path, &quot;rb&quot;))
+    {
+        if (file_ == nullptr)
+        {
+            throw std::runtime_error(&quot;教学示例文件打开失败。&quot;);
+        }
+    }
+
+    ~FileHandle()
+    {
+        if (file_ != nullptr)
+        {
+            std::fclose(file_);
+        }
+    }
+
+    FileHandle(const FileHandle&amp;) = delete;
+    FileHandle&amp; operator=(const FileHandle&amp;) = delete;
+
+    FileHandle(FileHandle&amp;&amp; other) noexcept
+        : file_(other.file_)
+    {
+        // 转移所有权后，源对象不再负责关闭文件。
+        other.file_ = nullptr;
+    }
+
+    FileHandle&amp; operator=(FileHandle&amp;&amp; other) noexcept
+    {
+        if (this == &amp;other)
+        {
+            return *this;
+        }
+
+        if (file_ != nullptr)
+        {
+            std::fclose(file_);
+        }
+
+        file_ = other.file_;
+        other.file_ = nullptr;
+        return *this;
+    }
+
+    std::FILE* get() const noexcept
+    {
+        return file_;
+    }
+
+private:
+    std::FILE* file_;
+};</code></pre>
+<p>这个教学类型展示：</p>
+<ul>
+<li>构造失败时抛出异常，不产生一个假装有效的对象；</li>
+<li>析构函数释放资源；</li>
+<li>禁止复制，避免两个对象都以为自己负责关闭同一文件；</li>
+<li>移动操作显式转移责任；</li>
+<li>被移动对象进入不拥有资源的有效状态。</li>
+</ul>
+<p>实际代码优先复用标准库和成熟资源封装。手写 RAII 类型时还要仔细验证移动赋值、自赋值、析构不抛异常等边界。</p>
+<h2 id="raii-的逐步状态">RAII 的逐步状态</h2>
+<pre><code class="language-text">尚未获得资源
+    ↓ 构造
+Owning：对象持有资源
+    ↓ 移动
+源对象 NonOwning，目标对象 Owning
+    ↓ 离开作用域
+析构 Owning 对象并释放资源</code></pre>
+<p>构造失败路径：</p>
+<pre><code class="language-text">尝试获取资源
+    ↓ 失败
+抛出异常
+    ↓
+对象未完成构造，不调用该对象析构函数</code></pre>
+<p>因此构造函数中若依次获取多个裸资源，后一个步骤失败时，前一个资源也必须已经由完成构造的成员对象管理。组合多个 RAII 成员比在构造函数末尾统一手工释放更安全。</p>
+<h2 id="std-unique-ptr-独占所有权"><code>std::unique_ptr</code>：独占所有权</h2>
+<p><code>std::unique_ptr&lt;T&gt;</code> 表示一个资源在当前时刻只有一个所有者。</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+struct Message
+{
+    explicit Message(int value)
+        : value(value)
+    {
+    }
+
+    int value;
+};
+
+int main()
+{
+    auto first = std::make_unique&lt;Message&gt;(7);
+    // 7 是教学示例值。
+
+    std::unique_ptr&lt;Message&gt; second = std::move(first);
+
+    if (first == nullptr)
+    {
+        std::cout &lt;&lt; &quot;所有权已转移\n&quot;;
+    }
+
+    std::cout &lt;&lt; second-&gt;value &lt;&lt; &#39;\n&#39;;
+}</code></pre>
+<p>逐步状态：</p>
+<pre><code class="language-text">make_unique 创建对象
+    ↓
+first 独占对象
+    ↓ std::move
+second 独占对象
+first 不再拥有对象
+    ↓
+second 离开作用域，对象被销毁</code></pre>
+<p><code>unique_ptr</code> 不能复制，但可以移动。<code>std::move</code> 本身只是允许选择移动操作，真正的所有权转移由移动构造或移动赋值完成。</p>
+<h3 id="自定义删除器">自定义删除器</h3>
+<p>不是所有资源都用 <code>delete</code> 释放。<code>unique_ptr</code> 可以携带删除器：</p>
+<pre><code class="language-cpp">struct FileCloser
+{
+    void operator()(std::FILE* file) const noexcept
+    {
+        if (file != nullptr)
+        {
+            std::fclose(file);
+        }
+    }
+};
+
+using UniqueFile = std::unique_ptr&lt;std::FILE, FileCloser&gt;;</code></pre>
+<p>删除器类型可能影响 <code>unique_ptr</code> 的大小。具体对象布局是实现细节，不应假设智能指针永远只占一个机器字。</p>
+<h3 id="观察而不转移">观察而不转移</h3>
+<p>函数若只在调用期间使用对象，可以接收引用或指针：</p>
+<pre><code class="language-cpp">void print(const Message&amp; message)
+{
+    std::cout &lt;&lt; message.value &lt;&lt; &#39;\n&#39;;
+}
+
+print(*second);</code></pre>
+<p>不要为了“安全”把所有参数都改成 <code>shared_ptr</code>。参数类型应该表达它是否共享所有权。</p>
+<h2 id="std-shared-ptr-共享所有权"><code>std::shared_ptr</code>：共享所有权</h2>
+<p><code>std::shared_ptr&lt;T&gt;</code> 允许多个所有者共同延长对象生命周期。</p>
+<p>常见实现使用控制块保存：</p>
+<pre><code class="language-text">强引用计数；
+弱引用相关计数；
+删除器；
+可能还有分配器和其他实现数据。</code></pre>
+<p>控制块的具体布局不是 C++ 标准规定的固定 ABI。</p>
+<h3 id="最小示例">最小示例</h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+struct Document
+{
+    explicit Document(int id)
+        : id(id)
+    {
+    }
+
+    ~Document()
+    {
+        std::cout &lt;&lt; &quot;销毁教学示例文档\n&quot;;
+    }
+
+    int id;
+};
+
+int main()
+{
+    auto first = std::make_shared&lt;Document&gt;(42);
+    // 42 是教学示例编号。
+
+    {
+        std::shared_ptr&lt;Document&gt; second = first;
+        std::cout &lt;&lt; second-&gt;id &lt;&lt; &#39;\n&#39;;
+    } // second 释放一份共享所有权，对象仍由 first 拥有。
+
+    std::cout &lt;&lt; first-&gt;id &lt;&lt; &#39;\n&#39;;
+} // 最后一份共享所有权结束，对象被销毁。</code></pre>
+<p>概念状态：</p>
+<pre><code class="language-text">first 创建共享所有权
+    ↓
+second 复制，共享所有权数量增加
+    ↓
+second 析构，数量减少
+    ↓
+first 析构，最后一份共享所有权结束
+    ↓
+托管对象析构</code></pre>
+<p>引用计数的精确内部表示与更新策略属于实现细节。</p>
+<h3 id="make-shared"><code>make_shared</code></h3>
+<p><code>std::make_shared&lt;T&gt;</code> 一次建立对象和相应共享所有权管理信息。</p>
+<p>实现通常可以把对象与控制块放在一次分配中，从而减少分配次数并改善局部性，但不应依赖它们的具体相邻布局。</p>
+<p>当仍有 <code>weak_ptr</code> 关联控制块时，即使托管对象已经析构，合并分配所占的整块存储也可能继续保留到弱引用结束。这是选择 <code>make_shared</code> 时需要理解的生命周期代价。</p>
+<h3 id="不要从同一个裸指针创建两个独立控制块">不要从同一个裸指针创建两个独立控制块</h3>
+<pre><code class="language-cpp">int* raw = new int(5); // 5 是教学示例值。
+
+std::shared_ptr&lt;int&gt; first(raw);
+// std::shared_ptr&lt;int&gt; second(raw); // 错误所有权设计</code></pre>
+<p>若 <code>first</code> 和 <code>second</code> 分别从同一个裸指针构造，它们不知道彼此存在，会分别认为自己最终负责删除对象，可能导致重复释放和未定义行为。</p>
+<p>共享所有权必须通过已有 <code>shared_ptr</code> 复制，或从同一控制块派生。</p>
+<h2 id="std-weak-ptr-不延长生命周期的观察者"><code>std::weak_ptr</code>：不延长生命周期的观察者</h2>
+<p><code>std::weak_ptr&lt;T&gt;</code> 与 <code>shared_ptr</code> 关联，但不增加强所有权。</p>
+<p>使用前通过 <code>lock()</code> 尝试取得临时 <code>shared_ptr</code>：</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+int main()
+{
+    std::weak_ptr&lt;int&gt; observer;
+
+    {
+        auto owner = std::make_shared&lt;int&gt;(9);
+        observer = owner;
+        // 9 是教学示例值。
+
+        if (auto value = observer.lock())
+        {
+            std::cout &lt;&lt; *value &lt;&lt; &#39;\n&#39;;
+        }
+    }
+
+    if (observer.expired())
+    {
+        std::cout &lt;&lt; &quot;教学示例对象已结束生命周期\n&quot;;
+    }
+}</code></pre>
+<p>逐步状态：</p>
+<pre><code class="language-text">owner 持有对象
+observer 只观察控制块
+    ↓
+lock 成功，临时 shared_ptr 保证本次使用期间对象存活
+    ↓
+owner 和临时所有者都结束
+对象析构
+    ↓
+observer 仍可判断过期，但不能取得对象</code></pre>
+<p>不要先调用 <code>expired()</code> 再假设对象持续有效。检查与使用之间可能发生状态变化。<code>lock()</code> 把“检查并在成功时取得临时所有权”合成一个操作。</p>
+<h2 id="共享指针环">共享指针环</h2>
+<p>如果两个对象用 <code>shared_ptr</code> 互相拥有，强引用计数可能永远不能归零。</p>
+<pre><code class="language-cpp">struct Parent;
+
+struct Child
+{
+    std::shared_ptr&lt;Parent&gt; parent;
+};
+
+struct Parent
+{
+    std::shared_ptr&lt;Child&gt; child;
+};</code></pre>
+<p>教学环：</p>
+<pre><code class="language-text">Parent --shared--&gt; Child
+   ^                 |
+   |------shared-----|</code></pre>
+<p>外部所有者离开后，两个对象仍互相提供强所有权，不能自动销毁。</p>
+<p>如果子对象只需要观察父对象，而不负责延长父对象生命周期，可以把反向关系改为 <code>weak_ptr</code>：</p>
+<pre><code class="language-cpp">struct Child
+{
+    std::weak_ptr&lt;Parent&gt; parent;
+};</code></pre>
+<p>但不能机械规定“反向指针一律 weak”。必须先画出所有权图，确定哪条边真正负责延长生命周期。</p>
+<h2 id="enable-shared-from-this"><code>enable_shared_from_this</code></h2>
+<p>对象成员有时需要取得与现有控制块共享所有权的 <code>shared_ptr</code>：</p>
+<pre><code class="language-cpp">struct Node : std::enable_shared_from_this&lt;Node&gt;
+{
+    std::shared_ptr&lt;Node&gt; share()
+    {
+        return shared_from_this();
+    }
+};
+
+auto node = std::make_shared&lt;Node&gt;();
+auto sameOwner = node-&gt;share();</code></pre>
+<p>不能在成员函数中写：</p>
+<pre><code class="language-cpp">// return std::shared_ptr&lt;Node&gt;(this);</code></pre>
+<p>这会创建新的独立控制块，产生重复释放风险。</p>
+<p><code>shared_from_this()</code> 只有在对象已经由合适的 <code>shared_ptr</code> 所有权关系管理后才能成功使用。过早调用会失败；构造函数执行期间通常尚不具备可用的共享所有权上下文。</p>
+<h2 id="智能指针的线程安全边界">智能指针的线程安全边界</h2>
+<p>“<code>shared_ptr</code> 是线程安全的”这句话不够精确。</p>
+<p>C++ 标准提供的关键边界是：</p>
+<pre><code class="language-text">不同 shared_ptr 对象即使共享同一控制块，
+也可以由不同线程执行相应的所有权操作，
+而不会仅因控制块引用计数产生数据竞争。</code></pre>
+<p>例如两个线程各自持有 <code>shared_ptr</code> 副本，并分别销毁自己的副本，控制块计数管理具备所需同步。</p>
+<p>但以下内容不自动安全：</p>
+<h3 id="同一个-shared-ptr-对象">同一个 <code>shared_ptr</code> 对象</h3>
+<p>多个线程同时对同一个 <code>shared_ptr</code> 变量执行非只读操作，会产生数据竞争，除非使用相应同步机制或 <code>std::atomic&lt;std::shared_ptr&lt;T&gt;&gt;</code>。</p>
+<pre><code class="language-cpp">std::shared_ptr&lt;int&gt; sharedVariable;</code></pre>
+<p>“同一控制块”与“同一个变量对象”是两个不同概念。</p>
+<h3 id="指向的对象">指向的对象</h3>
+<p>引用计数安全不代表 <code>T</code> 的成员安全：</p>
+<pre><code class="language-cpp">auto value = std::make_shared&lt;int&gt;(0);</code></pre>
+<p>多个线程同时写 <code>*value</code> 仍需要满足普通数据竞争规则。<code>shared_ptr</code> 管理生命周期，不为对象内容自动加锁。</p>
+<h3 id="weak-ptr-lock"><code>weak_ptr::lock</code></h3>
+<p><code>lock()</code> 能以线程安全的所有权语义尝试取得共享所有权，但取得对象后怎样访问其成员，仍由对象自己的同步策略决定。</p>
+<h3 id="unique-ptr"><code>unique_ptr</code></h3>
+<p><code>unique_ptr</code> 表达单一所有权，但它可以被移动到另一个线程。转移前后必须有明确同步，不能在一个线程移动所有权时另一个线程仍访问原指针。</p>
+<h2 id="异常与失败路径">异常与失败路径</h2>
+<h3 id="分配失败">分配失败</h3>
+<p><code>make_unique</code> 和 <code>make_shared</code> 在无法分配时通常通过异常报告失败。不要捕获后返回一个未经约定的空指针并声称创建成功。</p>
+<h3 id="解引用空智能指针">解引用空智能指针</h3>
+<p>默认构造、移动后的 <code>unique_ptr</code>、失败的 <code>weak_ptr::lock</code> 都可能得到空状态。解引用前必须由控制流证明非空。</p>
+<h3 id="release-后遗失裸指针"><code>release()</code> 后遗失裸指针</h3>
+<p><code>unique_ptr::release()</code> 放弃所有权并返回裸指针，但不删除对象。调用方必须立即把责任交给另一个明确所有者，否则会泄漏。</p>
+<h3 id="错误使用-get">错误使用 <code>get()</code></h3>
+<p><code>get()</code> 只借出裸指针，不转移所有权。把它交给会 <code>delete</code> 的代码会造成重复释放。</p>
+<h3 id="循环强引用">循环强引用</h3>
+<p>所有引用计数都可能正常工作，但计数永远不归零，造成逻辑泄漏。</p>
+<h3 id="析构函数抛出异常">析构函数抛出异常</h3>
+<p>资源释放函数应设计为不抛异常。尤其在栈展开期间，析构函数再抛异常可能导致程序终止。需要报告关闭失败的资源，应提供显式关闭操作并设计错误边界，同时让析构保持不抛异常。</p>
+<h3 id="所有权语义不清">所有权语义不清</h3>
+<p>一个函数接收裸指针并不自动说明它会不会保存或删除该指针。接口应通过引用、智能指针类型、命名和文档明确借用与转移。</p>
+<h2 id="标准保证与常见实现细节">标准保证与常见实现细节</h2>
+<table><thead><tr>
+<th>问题</th>
+<th>标准语义</th>
+<th>常见实现</th>
+</tr></thead><tbody>
+<tr>
+<td><code>unique_ptr</code> 是否独占</td>
+<td>不可复制、可移动，按删除器释放</td>
+<td>保存指针及可能的删除器状态</td>
+</tr>
+<tr>
+<td><code>shared_ptr</code> 何时销毁对象</td>
+<td>最后一份强所有权结束</td>
+<td>控制块维护原子式引用计数</td>
+</tr>
+<tr>
+<td>控制块布局</td>
+<td>未规定固定布局</td>
+<td>存放强弱计数、删除器等</td>
+</tr>
+<tr>
+<td><code>make_shared</code> 对象地址关系</td>
+<td>不应依赖具体布局</td>
+<td>常见为对象与控制块合并分配</td>
+</tr>
+<tr>
+<td><code>weak_ptr</code> 是否延长对象生命</td>
+<td>不延长强所有权</td>
+<td>保留控制块观察关系</td>
+</tr>
+<tr>
+<td>引用计数是否保护对象内容</td>
+<td>不保护 <code>T</code> 的普通成员访问</td>
+<td>只同步所有权元数据</td>
+</tr>
+</tbody></table>
+<p>写可移植代码时依赖左侧语义；分析内存和性能时再结合具体标准库实现。</p>
+<h2 id="怎样选择所有权类型">怎样选择所有权类型</h2>
+<pre><code class="language-text">对象只由一个责任方拥有
+    -&gt; unique_ptr
+
+所有权需要明确转移
+    -&gt; 移动 unique_ptr
+
+多个独立责任方确实需要共同延长生命周期
+    -&gt; shared_ptr
+
+只观察共享对象，不负责延长生命周期
+    -&gt; weak_ptr
+
+仅在调用期间借用，调用者保证生命周期
+    -&gt; 引用或非拥有指针</code></pre>
+<p>优先从 <code>unique_ptr</code> 开始，因为它的所有权图最清楚。只有确认存在真实共享生命周期需求时，才引入 <code>shared_ptr</code>。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<table><thead><tr>
+<th>操作</th>
+<th>常见抽象时间</th>
+<th>主要代价</th>
+</tr></thead><tbody>
+<tr>
+<td><code>unique_ptr</code> 移动</td>
+<td><code>O(1)</code></td>
+<td>转移指针与删除器状态</td>
+</tr>
+<tr>
+<td><code>unique_ptr</code> 析构</td>
+<td><code>O(1)</code> 加资源释放成本</td>
+<td>调用删除器</td>
+</tr>
+<tr>
+<td><code>shared_ptr</code> 复制</td>
+<td><code>O(1)</code></td>
+<td>更新共享计数，可能含同步成本</td>
+</tr>
+<tr>
+<td><code>shared_ptr</code> 析构</td>
+<td><code>O(1)</code> 加可能的对象销毁</td>
+<td>更新计数</td>
+</tr>
+<tr>
+<td><code>weak_ptr::lock</code></td>
+<td><code>O(1)</code></td>
+<td>尝试增加强所有权</td>
+</tr>
+<tr>
+<td><code>make_shared</code></td>
+<td><code>O(1)</code> 次对象建立，加构造成本</td>
+<td>分配与控制块管理</td>
+</tr>
+</tbody></table>
+<p>智能指针解决的是生命周期正确性，不保证它们没有成本：</p>
+<ul>
+<li><code>shared_ptr</code> 的控制块需要额外内存；</li>
+<li>引用计数更新可能带来跨线程同步与缓存竞争；</li>
+<li>自定义删除器和分配器增加类型或控制块状态；</li>
+<li><code>weak_ptr</code> 可能让控制块在对象析构后继续存活；</li>
+<li>所有权图复杂时，理解成本会超过裸指针语法本身。</li>
+</ul>
+<h2 id="一段完整所有权示例">一段完整所有权示例</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;stdexcept&gt;
+#include &lt;string&gt;
+#include &lt;utility&gt;
+
+class Page
+{
+public:
+    explicit Page(std::string title)
+        : title_(std::move(title))
+    {
+    }
+
+    const std::string&amp; title() const noexcept
+    {
+        return title_;
+    }
+
+private:
+    std::string title_;
+};
+
+class Viewer
+{
+public:
+    explicit Viewer(std::weak_ptr&lt;Page&gt; page)
+        : page_(std::move(page))
+    {
+    }
+
+    void print() const
+    {
+        std::shared_ptr&lt;Page&gt; page = page_.lock();
+        if (!page)
+        {
+            throw std::runtime_error(&quot;教学示例页面已结束生命周期。&quot;);
+        }
+
+        std::cout &lt;&lt; page-&gt;title() &lt;&lt; &#39;\n&#39;;
+    }
+
+private:
+    std::weak_ptr&lt;Page&gt; page_;
+};
+
+int main()
+{
+    auto page = std::make_shared&lt;Page&gt;(&quot;教学示例页面&quot;);
+    Viewer viewer(page); // Viewer 只观察，不拥有 Page。
+
+    viewer.print();
+}</code></pre>
+<p>这里：</p>
+<pre><code class="language-text">main 中的 shared_ptr 拥有 Page；
+Viewer 只保存 weak_ptr；
+print 使用 lock 取得本次调用期间的临时所有权；
+若 Page 已结束生命周期，失败通过异常保持可见。</code></pre>
+<h2 id="小结">小结</h2>
+<pre><code class="language-text">RAII 把资源释放绑定到对象析构。
+unique_ptr 表达独占所有权和可移动的责任。
+shared_ptr 表达真实的共享生命周期。
+weak_ptr 观察共享对象并打破不应存在的强所有权环。
+引用计数线程安全不等于对象内容线程安全。
+控制块和内存布局属于实现细节，不是固定标准 ABI。</code></pre>
+<p>选择智能指针前，先画出所有权图：</p>
+<ol>
+<li>哪条边负责让对象继续存活？</li>
+<li>哪条边只是临时借用？</li>
+<li>是否形成强引用环？</li>
+<li>所有权会在哪个线程转移或结束？</li>
+<li>资源释放失败怎样保持可见？</li>
+</ol>
+<p>智能指针只有在这些问题已经清楚时，才能准确表达设计，而不是替代设计。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/%E5%B7%A6%E5%80%BC%E5%8F%B3%E5%80%BC%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97/"><small>← PREVIOUS</small>C++ 左值、右值、移动语义与任务队列</a>
+          <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E5%B8%B8%E8%A7%81%E9%85%8D%E5%A5%97%E8%AF%AD%E6%B3%95/"><small>NEXT →</small>集合常见配套语法</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

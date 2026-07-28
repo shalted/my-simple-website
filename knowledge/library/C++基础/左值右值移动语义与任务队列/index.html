@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象仓库里有一个带固定货位的箱子：">
+  <title>C++ 左值、右值、移动语义与任务队列 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
+      <h1>C++ 左值、右值、移动语义与任务队列</h1>
+      <p class="hero-copy">想象仓库里有一个带固定货位的箱子：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</a>
+    <a data-toc-link href="#表达式的值类别">表达式的值类别</a>
+    <a data-toc-link href="#std-move-到底做什么">std::move 到底做什么</a>
+    <a data-toc-link href="#最小资源类型">最小资源类型</a>
+    <a data-toc-link href="#复制-移动与异常保证">复制、移动与异常保证</a>
+    <a data-toc-link href="#完美转发与移动不是一回事">完美转发与移动不是一回事</a>
+    <a data-toc-link href="#从对象转交到生产者-消费者">从对象转交到生产者—消费者</a>
+    <a data-toc-link href="#线程-锁与条件变量的边界">线程、锁与条件变量的边界</a>
+    <a data-toc-link href="#为什么条件变量必须配合条件">为什么条件变量必须配合条件</a>
+    <a data-toc-link href="#最小任务队列">最小任务队列</a>
+    <a data-toc-link href="#一次任务的逐步状态">一次任务的逐步状态</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#移动自身">移动自身</a>
+    <a class="sub" data-toc-link href="#const-对象">const 对象</a>
+    <a class="sub" data-toc-link href="#通知早于等待">通知早于等待</a>
+    <a class="sub" data-toc-link href="#多消费者被唤醒">多消费者被唤醒</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#移动构造抛异常">移动构造抛异常</a>
+    <a class="sub" data-toc-link href="#任务执行抛异常">任务执行抛异常</a>
+    <a class="sub" data-toc-link href="#忘记关闭或连接线程">忘记关闭或连接线程</a>
+    <a class="sub" data-toc-link href="#在锁内执行任务">在锁内执行任务</a>
+    <a data-toc-link href="#代价">代价</a>
+    <a data-toc-link href="#标准-操作系统与实现选择">标准、操作系统与实现选择</a>
+    <a class="sub" data-toc-link href="#c-标准可验证的部分">C++ 标准可验证的部分</a>
+    <a class="sub" data-toc-link href="#操作系统通常负责的部分">操作系统通常负责的部分</a>
+    <a class="sub" data-toc-link href="#具体实现必须确定的部分">具体实现必须确定的部分</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：物品、标签与转交">
+      <span>01</span>
+      <strong>生活化模型：物品、标签与转交</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：表达式的值类别">
+      <span>02</span>
+      <strong>表达式的值类别</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：std::move 到底做什么">
+      <span>03</span>
+      <strong>std::move 到底做什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：最小资源类型">
+      <span>04</span>
+      <strong>最小资源类型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：复制、移动与异常保证">
+      <span>05</span>
+      <strong>复制、移动与异常保证</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：完美转发与移动不是一回事">
+      <span>06</span>
+      <strong>完美转发与移动不是一回事</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从对象转交到生产者—消费者">
+      <span>07</span>
+      <strong>从对象转交到生产者—消费者</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：线程、锁与条件变量的边界">
+      <span>08</span>
+      <strong>线程、锁与条件变量的边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：为什么条件变量必须配合条件">
+      <span>09</span>
+      <strong>为什么条件变量必须配合条件</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小任务队列">
+      <span>10</span>
+      <strong>最小任务队列</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：一次任务的逐步状态">
+      <span>11</span>
+      <strong>一次任务的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：正常路径">
+      <span>12</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：边界路径">
+      <span>13</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败路径">
+      <span>14</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价">
+      <span>15</span>
+      <strong>代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：标准、操作系统与实现选择">
+      <span>16</span>
+      <strong>标准、操作系统与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
+      <span>17</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>生活化模型：物品、标签与转交</h3>
+        <p>想象仓库里有一个带固定货位的箱子：</p>
+
+        <pre><code class="language-text">货位 A-17 上的箱子</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>表达式的值类别</h3>
+        <p>C++ 标准描述的是表达式类别，不是“变量天生属于左值或右值”这么简单。</p>
+
+        <pre><code class="language-text">glvalue：有身份，可确定所指对象。
+  lvalue：通常可重复访问的对象表达式。
+  xvalue：有身份，但其资源允许被复用。
+
+prvalue：用于初始化对象或计算操作数的纯右值。
+
+rvalue = prvalue + xvalue</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>std::move 到底做什么</h3>
+        <p><code>std::move</code> 本质上进行值类别转换，近似于：</p>
+
+        <pre><code class="language-cpp">static_cast&lt;T&amp;&amp;&gt;(value)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>最小资源类型</h3>
+        <p>这段示例的移动成本较低，是因为 <code>Buffer</code> 的资源由一个指针间接持有。这个结论属于该类型的实现，不是所有移动操作的标准保证。</p>
+
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;cstddef&gt;
+#include &lt;utility&gt;
+
+class Buffer
+{
+public:
+    explicit Buffer(std::size_t size)
+        : data_(size == 0 ? nullptr : new unsigned char[size]),
+          size_(size)
+    {
+    }
+
+    ~Buffer()
+    {
+        delete[] data_;
+    }
+
+    Buffer(const Buffer&amp; other)
+        : data_(other.size_ == 0
+                    ? nullptr
+                    : new unsigned char[other.size_]),
+          size_(other.size_)
+    {
+        // 复制构造建立独立存储，并复制实际字节。
+        if (size_ != 0)
+        {
+            std::copy_n(other.data_, size_, data_);
+        }
+    }
+
+    Buffer(Buffer&amp;&amp; other) noexcept
+        : data_(std::exchange(other.data_, nullptr)),
+          size_(std::exchange(other.size_, 0))
+    {
+        // 接管指针后，把源对象恢复为可析构的空状态。
+    }
+
+    Buffer&amp; operator=(Buffer&amp;&amp; other) noexcept
+    {
+        if (this == &amp;other)
+        {
+            return *this;
+        }
+
+        delete[] data_;
+        data_ = std::exchange(other.data_, nullptr);
+        size_ = std::exchange(other.size_, 0);
+        return *this;
+    }
+
+private:
+    unsigned char* data_;
+    std::size_t size_;
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>复制、移动与异常保证</h3>
+        <p>容器扩容时，需要把旧存储中的元素构造到新存储。</p>
+
+        <pre><code class="language-cpp">std::move_if_noexcept(value)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>完美转发与移动不是一回事</h3>
+        <p>模板中的转发引用用于保留调用方值类别：</p>
+
+        <pre><code class="language-cpp">template &lt;class T&gt;
+void Relay(T&amp;&amp; value)
+{
+    Consume(std::forward&lt;T&gt;(value));
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>从对象转交到生产者—消费者</h3>
+        <p>生活化模型继续扩展：</p>
+
+        <pre><code class="language-text">多个打包人员生产包裹。
+一个运输队列暂存包裹。
+运输人员从队列取走并处理。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>线程、锁与条件变量的边界</h3>
+        <p>C++ 标准库定义：</p>
+
+        <pre><code class="language-text">std::thread 的线程抽象
+std::mutex 的互斥同步
+std::condition_variable 的等待与通知
+满足条件时的 happens-before 关系</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>为什么条件变量必须配合条件</h3>
+        <p>错误直觉：</p>
+
+        <pre><code class="language-text">收到一次 notify，就一定有一个任务。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最小任务队列</h3>
+        <p>这个示例明确规定：</p>
+
+        <pre><code class="language-cpp">#include &lt;condition_variable&gt;
+#include &lt;deque&gt;
+#include &lt;mutex&gt;
+#include &lt;optional&gt;
+#include &lt;utility&gt;
+
+template &lt;class Task&gt;
+class TaskQueue
+{
+public:
+    enum class PushResult
+    {
+        Accepted,
+        Closed
+    };
+
+    PushResult Push(Task&amp;&amp; task)
+    {
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(mutex_);
+
+            if (closed_)
+            {
+                // 尚未执行移动；命名源对象仍保留原值。
+                return PushResult::Closed;
+            }
+
+            tasks_.push_back(std::move(task));
+        }
+
+        available_.notify_one();
+        return PushResult::Accepted;
+    }
+
+    std::optional&lt;Task&gt; WaitPop()
+    {
+        std::unique_lock&lt;std::mutex&gt; lock(mutex_);
+        available_.wait(lock, [this]
+        {
+            return closed_ || !tasks_.empty();
+        });
+
+        if (tasks_.empty())
+        {
+            // 谓词保证这里只可能表示：队列已关闭且任务已排空。
+            return std::nullopt;
+        }
+
+        Task task = std::move(tasks_.front());
+        tasks_.pop_front();
+        return task;
+    }
+
+    void Close()
+    {
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(mutex_);
+            closed_ = true;
+        }
+
+        // 唤醒所有等待者，让它们观察关闭状态。
+        available_.notify_all();
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable available_;
+    std::deque&lt;Task&gt; tasks_;
+    bool closed_ = false;
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>一次任务的逐步状态</h3>
+        <p>任务所有权可以经历：</p>
+
+        <pre><code class="language-text">Created
+  任务由生产者独占。
+
+Enqueuing
+  生产者取得队列锁并检查关闭状态。
+
+Queued
+  任务对象已经移动进队列。
+
+Dequeuing
+  消费者持锁，从队列取得任务。
+
+OwnedByConsumer
+  队列锁已释放，消费者独占任务。
+
+Running
+  消费者执行任务。
+
+Completed 或 Failed
+  任务结果被明确记录。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+        <p>这里发生两次“移动”：</p>
+
+        <pre><code class="language-text">生产者构造 Task
+Push 取得锁
+Task 移入 deque
+释放锁并 notify_one
+消费者醒来并重新检查谓词
+Task 移出 deque
+释放锁
+消费者执行 Task</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>移动赋值可能遇到：</p>
+
+        <pre><code class="language-cpp">object = std::move(object);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>如果 <code>Task</code> 移入容器时抛出：</p>
+
+        <pre><code class="language-text">Push 没有完成。
+是否保留源值取决于 Task 的异常保证。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>代价</h3>
+        <p>移动语义可能减少资源复制，但仍可能产生：</p>
+
+        <pre><code class="language-text">移动构造函数自身工作
+容器节点分配
+缓存失效
+源对象状态维护
+异常保证需要的额外路径</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>标准、操作系统与实现选择</h3>
+
+
+        <pre><code class="language-text">表达式值类别和重载决议规则
+std::move 是到右值引用类型的转换工具
+标准库类型移动后的契约
+mutex、condition_variable 和线程同步关系
+数据竞争导致未定义行为的规则</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+
+
+        <pre><code class="language-text">左值和右值是表达式类别。
+std::move 只表达“允许把它当作可复用资源的对象”。
+真正成本由选中的构造、赋值和类型表示决定。
+移动所有权不等于同步共享状态。
+生产者—消费者队列仍需要锁、条件谓词和清晰关闭协议。
+线程中的失败必须进入可观察结果，不能靠静默丢任务维持表面成功。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：C++ 基础 / 对象语义与并发</p>
+<h2 id="生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</h2>
+<p>想象仓库里有一个带固定货位的箱子：</p>
+<pre><code class="language-text">货位 A-17 上的箱子</code></pre>
+<p>可以反复通过货位找到它，也可以给箱子贴标签、检查内容。这接近“有身份、可定位”的表达式。</p>
+<p>另一个场景是临时打包：</p>
+<pre><code class="language-text">刚刚装好的临时包裹，马上交给运输车。</code></pre>
+<p>这个包裹的值可以使用，但没有必要长期保留原来的名字。接收者可能复用它已经拥有的包装资源。</p>
+<p>移动语义的核心不是“神奇地免费搬运”，而是：</p>
+<pre><code class="language-text">源对象即将不再保留原值时，
+允许目标对象接管源对象能够转移的资源。</code></pre>
+<p>能否低成本接管，取决于类型怎样表示资源：</p>
+<pre><code class="language-text">持有堆内存指针的容器，可能只需转移控制信息。
+内嵌大数组的类型，移动仍可能复制全部元素。
+带外部注册关系的类型，移动可能需要额外维护。</code></pre>
+<h2 id="表达式的值类别">表达式的值类别</h2>
+<p>C++ 标准描述的是表达式类别，不是“变量天生属于左值或右值”这么简单。</p>
+<p>常用分类：</p>
+<pre><code class="language-text">glvalue：有身份，可确定所指对象。
+  lvalue：通常可重复访问的对象表达式。
+  xvalue：有身份，但其资源允许被复用。
+
+prvalue：用于初始化对象或计算操作数的纯右值。
+
+rvalue = prvalue + xvalue</code></pre>
+<p>例子：</p>
+<pre><code class="language-cpp">std::string name = &quot;book&quot;;
+
+name;                   // lvalue：有名字，可再次定位。
+std::move(name);        // xvalue：仍指向 name，但允许复用资源。
+std::string(&quot;note&quot;);    // prvalue：临时值。</code></pre>
+<p>一个容易混淆的规则：</p>
+<pre><code class="language-cpp">void Consume(std::string&amp;&amp; text)
+{
+    Use(text);            // text 是有名字的表达式，所以这里是 lvalue。
+    Use(std::move(text)); // 显式转换为 xvalue。
+}</code></pre>
+<p><code>std::string&amp;&amp;</code> 是变量 <code>text</code> 的声明类型；表达式 <code>text</code> 本身仍是左值。</p>
+<h2 id="std-move-到底做什么">std::move 到底做什么</h2>
+<p><code>std::move</code> 本质上进行值类别转换，近似于：</p>
+<pre><code class="language-cpp">static_cast&lt;T&amp;&amp;&gt;(value)</code></pre>
+<p>它自身通常不：</p>
+<pre><code class="language-text">移动内存
+调用操作系统
+保证不分配
+清空源对象
+保证常数时间</code></pre>
+<p>真正的资源转移发生在随后被选中的：</p>
+<pre><code class="language-text">移动构造函数
+移动赋值运算符
+接收右值引用的重载</code></pre>
+<p>例如：</p>
+<pre><code class="language-cpp">std::string source = &quot;payload&quot;;
+std::string target = std::move(source);</code></pre>
+<p>逐步发生：</p>
+<pre><code class="language-text">source 是左值表达式。
+std::move(source) 产生指向 source 的 xvalue。
+重载决议选择可用的移动构造函数。
+target 根据 std::string 的移动构造规则建立。
+source 仍是有效对象，但其具体值通常不能按移动前假设。</code></pre>
+<p>对标准库类型，移动后对象通常处于“有效但未指定状态”，除非该类型对具体操作另有保证。它必须可以安全析构，也可以执行类型明确允许的操作。</p>
+<h2 id="最小资源类型">最小资源类型</h2>
+<pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;cstddef&gt;
+#include &lt;utility&gt;
+
+class Buffer
+{
+public:
+    explicit Buffer(std::size_t size)
+        : data_(size == 0 ? nullptr : new unsigned char[size]),
+          size_(size)
+    {
+    }
+
+    ~Buffer()
+    {
+        delete[] data_;
+    }
+
+    Buffer(const Buffer&amp; other)
+        : data_(other.size_ == 0
+                    ? nullptr
+                    : new unsigned char[other.size_]),
+          size_(other.size_)
+    {
+        // 复制构造建立独立存储，并复制实际字节。
+        if (size_ != 0)
+        {
+            std::copy_n(other.data_, size_, data_);
+        }
+    }
+
+    Buffer(Buffer&amp;&amp; other) noexcept
+        : data_(std::exchange(other.data_, nullptr)),
+          size_(std::exchange(other.size_, 0))
+    {
+        // 接管指针后，把源对象恢复为可析构的空状态。
+    }
+
+    Buffer&amp; operator=(Buffer&amp;&amp; other) noexcept
+    {
+        if (this == &amp;other)
+        {
+            return *this;
+        }
+
+        delete[] data_;
+        data_ = std::exchange(other.data_, nullptr);
+        size_ = std::exchange(other.size_, 0);
+        return *this;
+    }
+
+private:
+    unsigned char* data_;
+    std::size_t size_;
+};</code></pre>
+<p>这段示例的移动成本较低，是因为 <code>Buffer</code> 的资源由一个指针间接持有。这个结论属于该类型的实现，不是所有移动操作的标准保证。</p>
+<h2 id="复制-移动与异常保证">复制、移动与异常保证</h2>
+<p>容器扩容时，需要把旧存储中的元素构造到新存储。</p>
+<p>如果类型的移动构造可能抛异常，而复制可用，某些标准容器操作可能选择复制，以维护自身异常保证。常见辅助工具：</p>
+<pre><code class="language-cpp">std::move_if_noexcept(value)</code></pre>
+<p>它表达：</p>
+<pre><code class="language-text">在类型特征允许时使用移动，
+否则可能保留复制路径。</code></pre>
+<p>是否发生复制仍取决于具体容器操作、类型能力和标准规定。不能看到源码中写了 <code>std::move</code>，就断言运行时一定没有复制。</p>
+<h2 id="完美转发与移动不是一回事">完美转发与移动不是一回事</h2>
+<p>模板中的转发引用用于保留调用方值类别：</p>
+<pre><code class="language-cpp">template &lt;class T&gt;
+void Relay(T&amp;&amp; value)
+{
+    Consume(std::forward&lt;T&gt;(value));
+}</code></pre>
+<p><code>std::forward&lt;T&gt;</code> 根据 <code>T</code> 的推导结果：</p>
+<pre><code class="language-text">调用方传左值 -&gt; 继续传左值
+调用方传右值 -&gt; 继续传右值</code></pre>
+<p>而无条件 <code>std::move(value)</code> 会把有名字的 <code>value</code> 转为 xvalue。</p>
+<h2 id="从对象转交到生产者-消费者">从对象转交到生产者—消费者</h2>
+<p>生活化模型继续扩展：</p>
+<pre><code class="language-text">多个打包人员生产包裹。
+一个运输队列暂存包裹。
+运输人员从队列取走并处理。</code></pre>
+<p>对应并发模型：</p>
+<pre><code class="language-text">生产者线程：创建任务并入队。
+共享队列：保存尚未处理的任务。
+消费者线程：等待任务、出队并执行。
+锁：保护队列不被并发破坏。
+条件变量：没有任务时休眠，有变化时唤醒。
+关闭状态：明确停止接收并让消费者结束。</code></pre>
+<p>移动语义适合把任务所有权转入和转出队列，但不自动提供线程安全。</p>
+<h2 id="线程-锁与条件变量的边界">线程、锁与条件变量的边界</h2>
+<p>C++ 标准库定义：</p>
+<pre><code class="language-text">std::thread 的线程抽象
+std::mutex 的互斥同步
+std::condition_variable 的等待与通知
+满足条件时的 happens-before 关系</code></pre>
+<p>操作系统通常负责：</p>
+<pre><code class="language-text">调度可运行线程
+阻塞与唤醒
+线程内核资源
+部分同步原语的底层支持</code></pre>
+<p>标准库实现可以：</p>
+<pre><code class="language-text">在无竞争时使用用户态原子操作
+竞争时进入内核等待
+采用不同的锁与条件变量实现</code></pre>
+<p>这些底层路径不由 C++ 源码表面形式固定。</p>
+<h2 id="为什么条件变量必须配合条件">为什么条件变量必须配合条件</h2>
+<p>错误直觉：</p>
+<pre><code class="language-text">收到一次 notify，就一定有一个任务。</code></pre>
+<p>实际需要处理：</p>
+<pre><code class="language-text">伪唤醒
+多个消费者竞争同一个任务
+通知发生后条件又被其他线程改变
+关闭时没有剩余任务</code></pre>
+<p>因此等待形式应检查谓词：</p>
+<pre><code class="language-cpp">condition.wait(lock, [&amp;]
+{
+    return closed || !tasks.empty();
+});</code></pre>
+<p>被唤醒后，在持锁状态下重新判断共享条件。</p>
+<h2 id="最小任务队列">最小任务队列</h2>
+<pre><code class="language-cpp">#include &lt;condition_variable&gt;
+#include &lt;deque&gt;
+#include &lt;mutex&gt;
+#include &lt;optional&gt;
+#include &lt;utility&gt;
+
+template &lt;class Task&gt;
+class TaskQueue
+{
+public:
+    enum class PushResult
+    {
+        Accepted,
+        Closed
+    };
+
+    PushResult Push(Task&amp;&amp; task)
+    {
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(mutex_);
+
+            if (closed_)
+            {
+                // 尚未执行移动；命名源对象仍保留原值。
+                return PushResult::Closed;
+            }
+
+            tasks_.push_back(std::move(task));
+        }
+
+        available_.notify_one();
+        return PushResult::Accepted;
+    }
+
+    std::optional&lt;Task&gt; WaitPop()
+    {
+        std::unique_lock&lt;std::mutex&gt; lock(mutex_);
+        available_.wait(lock, [this]
+        {
+            return closed_ || !tasks_.empty();
+        });
+
+        if (tasks_.empty())
+        {
+            // 谓词保证这里只可能表示：队列已关闭且任务已排空。
+            return std::nullopt;
+        }
+
+        Task task = std::move(tasks_.front());
+        tasks_.pop_front();
+        return task;
+    }
+
+    void Close()
+    {
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(mutex_);
+            closed_ = true;
+        }
+
+        // 唤醒所有等待者，让它们观察关闭状态。
+        available_.notify_all();
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable available_;
+    std::deque&lt;Task&gt; tasks_;
+    bool closed_ = false;
+};</code></pre>
+<p>这个示例明确规定：</p>
+<pre><code class="language-text">关闭前入队成功。
+关闭后入队返回 Closed。
+关闭后仍会取完已经存在的任务。
+关闭且队列为空时，WaitPop 返回 nullopt。</code></pre>
+<p>这是示例协议，不是所有任务队列的唯一正确关闭语义。</p>
+<p>它没有实现：</p>
+<pre><code class="language-text">容量限制
+优先级
+取消
+超时
+异常任务处理
+公平性保证</code></pre>
+<p>这些都需要上层要求和明确状态，不能用静默丢弃作为默认处理。</p>
+<h2 id="一次任务的逐步状态">一次任务的逐步状态</h2>
+<p>任务所有权可以经历：</p>
+<pre><code class="language-text">Created
+  任务由生产者独占。
+
+Enqueuing
+  生产者取得队列锁并检查关闭状态。
+
+Queued
+  任务对象已经移动进队列。
+
+Dequeuing
+  消费者持锁，从队列取得任务。
+
+OwnedByConsumer
+  队列锁已释放，消费者独占任务。
+
+Running
+  消费者执行任务。
+
+Completed 或 Failed
+  任务结果被明确记录。</code></pre>
+<p>移动后生产者仍拥有一个有效的源对象，但不能继续假设它保留原任务内容。</p>
+<p>共享队列锁只保护：</p>
+<pre><code class="language-text">队列容器
+关闭标记
+与二者共同维护的不变量</code></pre>
+<p>任务出队后执行不应继续持有队列锁，否则长任务会阻塞所有生产者和其他消费者。</p>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">生产者构造 Task
+Push 取得锁
+Task 移入 deque
+释放锁并 notify_one
+消费者醒来并重新检查谓词
+Task 移出 deque
+释放锁
+消费者执行 Task</code></pre>
+<p>这里发生两次“移动”：</p>
+<pre><code class="language-text">生产者局部对象 -&gt; 队列元素
+队列元素 -&gt; 消费者局部对象</code></pre>
+<p>实际成本由 <code>Task</code> 的移动构造、容器节点与分配器决定。</p>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="移动自身">移动自身</h3>
+<p>移动赋值可能遇到：</p>
+<pre><code class="language-cpp">object = std::move(object);</code></pre>
+<p>类型应按自己的契约处理自移动。示例通过 <code>this == &amp;other</code> 保持原状，但标准没有要求所有用户类型采用同一策略。</p>
+<h3 id="const-对象">const 对象</h3>
+<pre><code class="language-cpp">const std::string text = &quot;data&quot;;
+std::string copy = std::move(text);</code></pre>
+<p><code>std::move(text)</code> 得到 <code>const std::string&amp;&amp;</code>。通常的移动构造需要非 const 右值引用，因为移动要修改源对象，所以这里可能选择复制。</p>
+<h3 id="通知早于等待">通知早于等待</h3>
+<p>条件变量不是消息计数器。正确性来自受互斥锁保护的谓词：</p>
+<pre><code class="language-text">如果任务已在队列中，消费者即使错过 notify，
+进入 wait 前也会看到 tasks 非空而不阻塞。</code></pre>
+<h3 id="多消费者被唤醒">多消费者被唤醒</h3>
+<p><code>notify_all</code> 后多个消费者竞争锁：</p>
+<pre><code class="language-text">每个线程取得锁后都重新检查 closed 或 tasks。</code></pre>
+<p>不能假设被唤醒就拥有任务。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="移动构造抛异常">移动构造抛异常</h3>
+<p>如果 <code>Task</code> 移入容器时抛出：</p>
+<pre><code class="language-text">Push 没有完成。
+是否保留源值取决于 Task 的异常保证。</code></pre>
+<p>任务队列应让异常保持可见，或定义结构化失败结果；不能报告 <code>Accepted</code>。</p>
+<h3 id="任务执行抛异常">任务执行抛异常</h3>
+<p>消费者线程入口若让异常逃出，会触发 <code>std::terminate</code>。</p>
+<p>任务执行层必须明确：</p>
+<pre><code class="language-text">异常记录在哪里
+任务状态怎样变为 Failed
+是否继续消费后续任务
+线程由谁重新建立</code></pre>
+<p>这些是执行器协议，不应由基础队列擅自吞掉异常。</p>
+<h3 id="忘记关闭或连接线程">忘记关闭或连接线程</h3>
+<p>等待线程可能永久阻塞；一个仍为 joinable 的 <code>std::thread</code> 在析构时会导致 <code>std::terminate</code>。</p>
+<p>所有权模型需要明确：</p>
+<pre><code class="language-text">谁发起 Close
+谁负责 join
+销毁顺序
+生产者何时停止</code></pre>
+<h3 id="在锁内执行任务">在锁内执行任务</h3>
+<p>会造成：</p>
+<pre><code class="language-text">生产者长时间无法入队
+其他消费者无法出队
+任务若再次访问同一队列，可能死锁</code></pre>
+<p>所以示例在出队后释放锁，再由调用方执行任务。</p>
+<h2 id="代价">代价</h2>
+<p>移动语义可能减少资源复制，但仍可能产生：</p>
+<pre><code class="language-text">移动构造函数自身工作
+容器节点分配
+缓存失效
+源对象状态维护
+异常保证需要的额外路径</code></pre>
+<p>任务队列还会产生：</p>
+<pre><code class="language-text">锁竞争
+线程唤醒
+上下文切换
+队列内存
+任务排队延迟</code></pre>
+<p>更多线程不保证更快。任务粒度过小时，同步与调度成本可能超过任务本身。</p>
+<h2 id="标准-操作系统与实现选择">标准、操作系统与实现选择</h2>
+<h3 id="c-标准可验证的部分">C++ 标准可验证的部分</h3>
+<pre><code class="language-text">表达式值类别和重载决议规则
+std::move 是到右值引用类型的转换工具
+标准库类型移动后的契约
+mutex、condition_variable 和线程同步关系
+数据竞争导致未定义行为的规则</code></pre>
+<h3 id="操作系统通常负责的部分">操作系统通常负责的部分</h3>
+<pre><code class="language-text">线程调度
+内核阻塞与唤醒
+线程资源和优先级机制
+上下文切换</code></pre>
+<h3 id="具体实现必须确定的部分">具体实现必须确定的部分</h3>
+<pre><code class="language-text">某个类型移动的实际成本
+标准库锁的底层原语
+任务队列容量与公平性
+关闭、取消和异常协议
+线程数量与亲和性
+任务结果的生命周期</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<pre><code class="language-text">左值和右值是表达式类别。
+std::move 只表达“允许把它当作可复用资源的对象”。
+真正成本由选中的构造、赋值和类型表示决定。
+移动所有权不等于同步共享状态。
+生产者—消费者队列仍需要锁、条件谓词和清晰关闭协议。
+线程中的失败必须进入可观察结果，不能靠静默丢任务维持表面成功。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/C%2B%2B%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B%E8%99%9A%E8%A1%A8%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A/"><small>← PREVIOUS</small>C++ 对象模型、虚表与动态绑定</a>
+          <a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/RAII%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8E%E8%B5%84%E6%BA%90%E6%89%80%E6%9C%89%E6%9D%83/"><small>NEXT →</small>RAII、智能指针与资源所有权</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

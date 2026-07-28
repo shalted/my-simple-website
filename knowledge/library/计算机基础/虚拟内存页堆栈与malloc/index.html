@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象每个旅行团都拿到一本自己的酒店手册。">
+  <title>虚拟内存、页、堆栈与 malloc · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">计算机基础 / KNOWLEDGE NOTE</div>
+      <h1>虚拟内存、页、堆栈与 malloc</h1>
+      <p class="hero-copy">想象每个旅行团都拿到一本自己的酒店手册。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#生活化模型-酒店房号与真实房间">生活化模型：酒店房号与真实房间</a>
+    <a data-toc-link href="#先区分四个概念">先区分四个概念</a>
+    <a class="sub" data-toc-link href="#虚拟地址空间">虚拟地址空间</a>
+    <a class="sub" data-toc-link href="#物理内存">物理内存</a>
+    <a class="sub" data-toc-link href="#页">页</a>
+    <a class="sub" data-toc-link href="#分配块">分配块</a>
+    <a data-toc-link href="#地址转换怎样逐步发生">地址转换怎样逐步发生</a>
+    <a class="sub" data-toc-link href="#第一步-拆分虚拟地址">第一步：拆分虚拟地址</a>
+    <a class="sub" data-toc-link href="#第二步-查询地址转换缓存">第二步：查询地址转换缓存</a>
+    <a class="sub" data-toc-link href="#第三步-检查页表项">第三步：检查页表项</a>
+    <a class="sub" data-toc-link href="#第四步-形成物理地址">第四步：形成物理地址</a>
+    <a class="sub" data-toc-link href="#第五步-访问缓存或内存">第五步：访问缓存或内存</a>
+    <a data-toc-link href="#页错误不是一种单一故障">页错误不是一种单一故障</a>
+    <a data-toc-link href="#进程地址空间常见区域">进程地址空间常见区域</a>
+    <a data-toc-link href="#栈到底是什么">栈到底是什么</a>
+    <a class="sub" data-toc-link href="#语言与调用语境">语言与调用语境</a>
+    <a class="sub" data-toc-link href="#操作系统线程栈">操作系统线程栈</a>
+    <a data-toc-link href="#堆到底是什么">堆到底是什么</a>
+    <a data-toc-link href="#malloc-与操作系统的关系">malloc 与操作系统的关系</a>
+    <a data-toc-link href="#malloc-的逐步状态">malloc 的逐步状态</a>
+    <a data-toc-link href="#最小-c-malloc-示例">最小 C++ malloc 示例</a>
+    <a data-toc-link href="#new-失败与-malloc-失败">new 失败与 malloc 失败</a>
+    <a data-toc-link href="#free-之后发生什么">free 之后发生什么</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#零字节分配">零字节分配</a>
+    <a class="sub" data-toc-link href="#对齐">对齐</a>
+    <a class="sub" data-toc-link href="#大量小块与碎片">大量小块与碎片</a>
+    <a class="sub" data-toc-link href="#栈增长">栈增长</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#空指针未检查">空指针未检查</a>
+    <a class="sub" data-toc-link href="#整数溢出">整数溢出</a>
+    <a class="sub" data-toc-link href="#释放后使用">释放后使用</a>
+    <a class="sub" data-toc-link href="#重复释放">重复释放</a>
+    <a class="sub" data-toc-link href="#配对错误">配对错误</a>
+    <a class="sub" data-toc-link href="#栈溢出">栈溢出</a>
+    <a data-toc-link href="#页共享与写时复制">页共享与写时复制</a>
+    <a data-toc-link href="#代价">代价</a>
+    <a data-toc-link href="#标准-操作系统与实现选择">标准、操作系统与实现选择</a>
+    <a class="sub" data-toc-link href="#c-与-c-标准可验证的部分">C 与 C++ 标准可验证的部分</a>
+    <a class="sub" data-toc-link href="#操作系统与硬件负责的部分">操作系统与硬件负责的部分</a>
+    <a class="sub" data-toc-link href="#具体实现必须确定的部分">具体实现必须确定的部分</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 19</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：酒店房号与真实房间">
+      <span>01</span>
+      <strong>生活化模型：酒店房号与真实房间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先区分四个概念">
+      <span>02</span>
+      <strong>先区分四个概念</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：地址转换怎样逐步发生">
+      <span>03</span>
+      <strong>地址转换怎样逐步发生</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：页错误不是一种单一故障">
+      <span>04</span>
+      <strong>页错误不是一种单一故障</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：进程地址空间常见区域">
+      <span>05</span>
+      <strong>进程地址空间常见区域</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：栈到底是什么">
+      <span>06</span>
+      <strong>栈到底是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：堆到底是什么">
+      <span>07</span>
+      <strong>堆到底是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：malloc 与操作系统的关系">
+      <span>08</span>
+      <strong>malloc 与操作系统的关系</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：malloc 的逐步状态">
+      <span>09</span>
+      <strong>malloc 的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小 C++ malloc 示例">
+      <span>10</span>
+      <strong>最小 C++ malloc 示例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：new 失败与 malloc 失败">
+      <span>11</span>
+      <strong>new 失败与 malloc 失败</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：free 之后发生什么">
+      <span>12</span>
+      <strong>free 之后发生什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常路径">
+      <span>13</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：边界路径">
+      <span>14</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：失败路径">
+      <span>15</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：页共享与写时复制">
+      <span>16</span>
+      <strong>页共享与写时复制</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：代价">
+      <span>17</span>
+      <strong>代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：标准、操作系统与实现选择">
+      <span>18</span>
+      <strong>标准、操作系统与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="18" aria-label="查看第 19 步：最后总结">
+      <span>19</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>生活化模型：酒店房号与真实房间</h3>
+        <p>想象每个旅行团都拿到一本自己的酒店手册。</p>
+
+        <pre><code class="language-text">101 号房
+102 号房
+103 号房</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>先区分四个概念</h3>
+        <p>一个进程可使用的地址集合及其映射状态。</p>
+
+        <pre><code class="language-text">未映射
+已保留
+已映射但尚未实际驻留
+已映射且物理页驻留
+被换出或由文件支持</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>地址转换怎样逐步发生</h3>
+        <p>处理器执行一次内存访问：</p>
+
+        <pre><code class="language-text">load [virtualAddress]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>页错误不是一种单一故障</h3>
+        <p>当页表状态不能直接完成访问时，处理器把控制权交给操作系统。常见情形：</p>
+
+        <pre><code class="language-text">首次触碰已经保留但尚未落实的匿名页
+写入写时复制页面
+访问尚未驻留的文件映射页
+访问已经换出的页
+违反读写执行权限
+访问未映射地址</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>进程地址空间常见区域</h3>
+        <p>常见示意：</p>
+
+        <pre><code class="language-text">可执行代码与只读数据
+静态存储期数据
+动态链接映射
+内存映射区域
+堆相关区域
+线程栈
+内核保留或不可访问区域</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>栈到底是什么</h3>
+        <p>“栈”至少有两种语境。</p>
+
+        <pre><code class="language-text">返回位置
+部分寄存器状态
+局部自动对象
+参数或临时数据
+异常展开信息</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>堆到底是什么</h3>
+        <p>“堆”在这里指动态分配使用的内存区域，不是数据结构中的二叉堆。</p>
+
+        <pre><code class="language-cpp">new T(...)
+new T[count]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>malloc 与操作系统的关系</h3>
+        <p>典型分层：</p>
+
+        <pre><code class="language-text">应用调用 malloc
+  ↓
+用户态分配器查找可用块
+  ↓
+必要时向操作系统申请或映射更多虚拟地址空间
+  ↓
+操作系统在访问时或申请时建立页映射
+  ↓
+物理页按系统策略驻留</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>malloc 的逐步状态</h3>
+        <p>一次小块申请可能是：</p>
+
+        <pre><code class="language-text">Requested
+  调用者请求若干字节。
+
+Classified
+  分配器映射到内部大小类别。
+
+Searching
+  在线程缓存或共享空闲结构中查找。
+
+Split
+  必要时把更大的空闲块切分。
+
+Allocated
+  更新元数据并返回对齐地址。
+
+InUse
+  调用者拥有该块。
+
+Freed
+  调用者交还给分配器。
+
+Cached 或 Coalesced
+  分配器缓存，或与相邻空闲块合并。
+
+ReleasedToOS
+  满足实现策略时，部分页可能解除映射或被标记可回收。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最小 C++ malloc 示例</h3>
+        <p>这个示例只适用于不需要显式构造和析构过程的简单使用方式。一般 C++ 对象应优先使用：</p>
+
+        <pre><code class="language-cpp">#include &lt;cstdlib&gt;
+#include &lt;limits&gt;
+#include &lt;new&gt;
+
+struct Record
+{
+    int id;
+    double value;
+};
+
+Record* AllocateRecords(std::size_t count)
+{
+    if (count &gt; std::numeric_limits&lt;std::size_t&gt;::max()
+                    / sizeof(Record))
+    {
+        // 乘法会溢出，明确报告分配失败。
+        throw std::bad_array_new_length();
+    }
+
+    const std::size_t bytes = count * sizeof(Record);
+    void* raw = std::malloc(bytes);
+
+    if (raw == nullptr &amp;&amp; bytes != 0)
+    {
+        // malloc 失败通过空指针报告；这里转换成显式异常。
+        throw std::bad_alloc();
+    }
+
+    return static_cast&lt;Record*&gt;(raw);
+}
+
+void ReleaseRecords(Record* records)
+{
+    std::free(records);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>new 失败与 malloc 失败</h3>
+        <p>常见标准接口：</p>
+
+        <pre><code class="language-text">malloc 失败返回空指针。
+通常的 throwing new 失败抛出 std::bad_alloc。
+nothrow new 失败返回空指针。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>free 之后发生什么</h3>
+        <p><code>free(pointer)</code> 表示：</p>
+
+        <pre><code class="language-text">调用者不再拥有该分配块。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+        <p>整个过程可能完全不进入内核。</p>
+
+        <pre><code class="language-text">程序请求一块存储
+分配器从已有 arena 找到空闲块
+更新元数据并返回地址
+程序在对象生命周期内使用
+程序调用匹配的释放接口
+分配器回收该块供以后复用</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>标准允许 <code>malloc(0)</code>：</p>
+
+        <pre><code class="language-text">返回空指针
+或返回一个不可解引用但可传给 free 的唯一指针</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>会把分配失败变成后续非法访问，丢失原始失败位置。</p>
+
+        <pre><code class="language-cpp">void* raw = std::malloc(bytes);
+Write(raw); // raw 可能为空。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>页共享与写时复制</h3>
+        <p>进程创建或文件映射时，多个虚拟页可能暂时引用同一物理页。</p>
+
+        <pre><code class="language-text">父子映射最初共享只读物理页
+某一方尝试写入
+触发页错误
+操作系统复制页面
+写入方映射到新物理页
+另一方仍看到旧页</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>代价</h3>
+        <p>虚拟内存提供隔离和灵活映射，但会带来：</p>
+
+        <pre><code class="language-text">页表内存
+TLB 未命中
+页表遍历
+页错误处理
+换入换出或文件读取
+地址空间碎片</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
+        <h3>标准、操作系统与实现选择</h3>
+
+
+        <pre><code class="language-text">对象存储期和生命周期
+malloc/free 接口契约
+new/delete 行为与失败形式
+越界、释放后使用和错误配对的语言后果
+对齐和对象构造规则</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="18" hidden>
+        <div class="deck-step-meta">STEP 19 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+
+
+        <pre><code class="language-text">指针通常保存进程虚拟地址。
+页表把虚拟页映射到物理页框并附带访问权限。
+TLB 缓存地址转换，数据缓存保存数据，两者职责不同。
+栈与堆是常见运行时组织，不是 C++ 标准规定的固定地址布局。
+malloc 通常先经过用户态分配器，不等于每次直接请求 OS。
+free 结束调用者所有权，不保证立即归还物理内存。
+分配成功、页面驻留和未来访问必然成功不是同一件事。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：计算机基础 / 内存系统</p>
+<h2 id="生活化模型-酒店房号与真实房间">生活化模型：酒店房号与真实房间</h2>
+<p>想象每个旅行团都拿到一本自己的酒店手册。</p>
+<p>手册上写着：</p>
+<pre><code class="language-text">101 号房
+102 号房
+103 号房</code></pre>
+<p>但不同旅行团手册里的“101”，可以由前台安排到不同的真实房间。旅行团只使用自己的房号体系，前台维护：</p>
+<pre><code class="language-text">手册房号 -&gt; 真实房间</code></pre>
+<p>虚拟内存的直觉类似：</p>
+<pre><code class="language-text">程序发出虚拟地址。
+处理器与操作系统维护的映射把它转换为物理内存位置。
+不同进程可以看到相似的虚拟地址，却映射到不同物理页。</code></pre>
+<p>房间通常不是一个字节一个字节安排，而是按一批固定大小的房间组管理。这接近“页”。</p>
+<p>而 <code>malloc</code> 更像旅行团内部的物资管理员：</p>
+<pre><code class="language-text">管理员先取得一批可用空间，
+再把其中不同大小的小区域分给各个请求。</code></pre>
+<p>所以：</p>
+<pre><code class="language-text">malloc 不一定每次都直接请求操作系统映射新页。
+free 也不一定立刻把物理内存归还操作系统。</code></pre>
+<h2 id="先区分四个概念">先区分四个概念</h2>
+<h3 id="虚拟地址空间">虚拟地址空间</h3>
+<p>一个进程可使用的地址集合及其映射状态。</p>
+<p>地址区间可能处于：</p>
+<pre><code class="language-text">未映射
+已保留
+已映射但尚未实际驻留
+已映射且物理页驻留
+被换出或由文件支持</code></pre>
+<p>具体状态和术语随操作系统而异。</p>
+<h3 id="物理内存">物理内存</h3>
+<p>机器实际内存资源。程序通常不能把普通指针直接解释成物理地址。</p>
+<h3 id="页">页</h3>
+<p>虚拟内存映射和保护的基本粒度之一：</p>
+<pre><code class="language-text">虚拟页号 + 页内偏移</code></pre>
+<p>常规页大小、巨大页种类和支持方式由硬件与操作系统确定，不是 C++ 标准规定。</p>
+<h3 id="分配块">分配块</h3>
+<p><code>malloc</code> 返回给调用者的一段连续虚拟地址区间。</p>
+<p>它可以：</p>
+<pre><code class="language-text">小于一页
+跨越多页
+来自分配器已经管理的空闲块</code></pre>
+<p>分配块边界不等于虚拟页边界。</p>
+<h2 id="地址转换怎样逐步发生">地址转换怎样逐步发生</h2>
+<p>处理器执行一次内存访问：</p>
+<pre><code class="language-text">load [virtualAddress]</code></pre>
+<p>概念上可拆成：</p>
+<h3 id="第一步-拆分虚拟地址">第一步：拆分虚拟地址</h3>
+<pre><code class="language-text">virtualAddress =
+    virtualPageNumber + pageOffset</code></pre>
+<h3 id="第二步-查询地址转换缓存">第二步：查询地址转换缓存</h3>
+<p>处理器通常先查询 TLB：</p>
+<pre><code class="language-text">TLB 命中 -&gt; 得到物理页框与权限。
+TLB 未命中 -&gt; 进行页表遍历或触发体系结构规定的处理。</code></pre>
+<p>TLB 是地址转换缓存。它的层级、容量和替换策略属于处理器实现。</p>
+<h3 id="第三步-检查页表项">第三步：检查页表项</h3>
+<p>页表项通常描述：</p>
+<pre><code class="language-text">虚拟页映射到哪个物理页框
+是否存在
+是否可读、可写、可执行
+用户态是否可访问
+其他体系结构状态</code></pre>
+<h3 id="第四步-形成物理地址">第四步：形成物理地址</h3>
+<p>概念关系：</p>
+<pre><code class="language-text">physicalAddress =
+    physicalFrameNumber + pageOffset</code></pre>
+<p>页内偏移在映射过程中保持不变。</p>
+<h3 id="第五步-访问缓存或内存">第五步：访问缓存或内存</h3>
+<p>地址转换完成后，数据访问还会经过处理器缓存层次。TLB 缓存的是转换，CPU 数据缓存缓存的是数据，两者不是同一个东西。</p>
+<h2 id="页错误不是一种单一故障">页错误不是一种单一故障</h2>
+<p>当页表状态不能直接完成访问时，处理器把控制权交给操作系统。常见情形：</p>
+<pre><code class="language-text">首次触碰已经保留但尚未落实的匿名页
+写入写时复制页面
+访问尚未驻留的文件映射页
+访问已经换出的页
+违反读写执行权限
+访问未映射地址</code></pre>
+<p>前几类可能由操作系统建立映射后继续执行。</p>
+<p>后两类可能导致：</p>
+<pre><code class="language-text">进程收到错误通知
+访问异常
+进程终止</code></pre>
+<p>具体表现由操作系统和运行环境决定。</p>
+<p>“发生 page fault”不必然表示程序崩溃；但非法访问也不能假设总能恢复。</p>
+<h2 id="进程地址空间常见区域">进程地址空间常见区域</h2>
+<p>常见示意：</p>
+<pre><code class="language-text">可执行代码与只读数据
+静态存储期数据
+动态链接映射
+内存映射区域
+堆相关区域
+线程栈
+内核保留或不可访问区域</code></pre>
+<p>这只是常见布局，不是 C++ 标准规定的固定地址顺序。地址随机化、加载器、平台和构建方式都会改变实际布局。</p>
+<h2 id="栈到底是什么">栈到底是什么</h2>
+<p>“栈”至少有两种语境。</p>
+<h3 id="语言与调用语境">语言与调用语境</h3>
+<p>函数调用需要保存：</p>
+<pre><code class="language-text">返回位置
+部分寄存器状态
+局部自动对象
+参数或临时数据
+异常展开信息</code></pre>
+<p>编译器可能建立栈帧，也可能：</p>
+<pre><code class="language-text">把局部值只放在寄存器
+内联函数而不产生独立帧
+优化掉对象
+使用平台 ABI 规定的其他位置</code></pre>
+<p>C++ 标准规定对象的存储期和语义，不要求每个自动变量都真实放在硬件栈内存里。</p>
+<h3 id="操作系统线程栈">操作系统线程栈</h3>
+<p>每个线程通常拥有自己的栈地址区间：</p>
+<pre><code class="language-text">保留范围
+当前已提交或已映射范围
+保护页
+增长方向与上限</code></pre>
+<p>具体机制由操作系统、运行库和线程创建参数决定。</p>
+<h2 id="堆到底是什么">堆到底是什么</h2>
+<p>“堆”在这里指动态分配使用的内存区域，不是数据结构中的二叉堆。</p>
+<p>C++ 动态存储期对象可能通过：</p>
+<pre><code class="language-cpp">new T(...)
+new T[count]</code></pre>
+<p>建立。</p>
+<p>C 接口常见：</p>
+<pre><code class="language-cpp">void* memory = std::malloc(byteCount);
+std::free(memory);</code></pre>
+<p><code>new</code> 与 <code>malloc</code> 不能简单等同：</p>
+<pre><code class="language-text">new 表达式获得存储并构造对象。
+delete 表达式析构对象并释放存储。
+malloc 只提供满足要求的原始存储，不调用构造函数。
+free 释放由兼容分配函数取得的块，不调用析构函数。</code></pre>
+<p>配对错误会产生未定义行为。</p>
+<h2 id="malloc-与操作系统的关系">malloc 与操作系统的关系</h2>
+<p>典型分层：</p>
+<pre><code class="language-text">应用调用 malloc
+  ↓
+用户态分配器查找可用块
+  ↓
+必要时向操作系统申请或映射更多虚拟地址空间
+  ↓
+操作系统在访问时或申请时建立页映射
+  ↓
+物理页按系统策略驻留</code></pre>
+<p>分配器可能维护：</p>
+<pre><code class="language-text">大小类别
+空闲链表
+线程本地缓存
+中心分配区
+大块单独映射
+块头元数据
+对齐填充</code></pre>
+<p>具体实现可能使用不同操作系统接口。不能把某个分配器的阈值、arena 数量或系统调用路径当成 C/C++ 保证。</p>
+<h2 id="malloc-的逐步状态">malloc 的逐步状态</h2>
+<p>一次小块申请可能是：</p>
+<pre><code class="language-text">Requested
+  调用者请求若干字节。
+
+Classified
+  分配器映射到内部大小类别。
+
+Searching
+  在线程缓存或共享空闲结构中查找。
+
+Split
+  必要时把更大的空闲块切分。
+
+Allocated
+  更新元数据并返回对齐地址。
+
+InUse
+  调用者拥有该块。
+
+Freed
+  调用者交还给分配器。
+
+Cached 或 Coalesced
+  分配器缓存，或与相邻空闲块合并。
+
+ReleasedToOS
+  满足实现策略时，部分页可能解除映射或被标记可回收。</code></pre>
+<p>并非每次申请都经过系统调用，也并非每次 <code>free</code> 都到达 <code>ReleasedToOS</code>。</p>
+<h2 id="最小-c-malloc-示例">最小 C++ malloc 示例</h2>
+<pre><code class="language-cpp">#include &lt;cstdlib&gt;
+#include &lt;limits&gt;
+#include &lt;new&gt;
+
+struct Record
+{
+    int id;
+    double value;
+};
+
+Record* AllocateRecords(std::size_t count)
+{
+    if (count &gt; std::numeric_limits&lt;std::size_t&gt;::max()
+                    / sizeof(Record))
+    {
+        // 乘法会溢出，明确报告分配失败。
+        throw std::bad_array_new_length();
+    }
+
+    const std::size_t bytes = count * sizeof(Record);
+    void* raw = std::malloc(bytes);
+
+    if (raw == nullptr &amp;&amp; bytes != 0)
+    {
+        // malloc 失败通过空指针报告；这里转换成显式异常。
+        throw std::bad_alloc();
+    }
+
+    return static_cast&lt;Record*&gt;(raw);
+}
+
+void ReleaseRecords(Record* records)
+{
+    std::free(records);
+}</code></pre>
+<p>这个示例只适用于不需要显式构造和析构过程的简单使用方式。一般 C++ 对象应优先使用：</p>
+<pre><code class="language-text">标准容器
+智能指针
+分配器感知容器
+正确配对的 new/delete</code></pre>
+<p>如果在 <code>malloc</code> 返回的存储中用 placement new 构造对象，释放前必须按对象生命周期规则显式析构。</p>
+<h2 id="new-失败与-malloc-失败">new 失败与 malloc 失败</h2>
+<p>常见标准接口：</p>
+<pre><code class="language-text">malloc 失败返回空指针。
+通常的 throwing new 失败抛出 std::bad_alloc。
+nothrow new 失败返回空指针。</code></pre>
+<p>具体申请是否因为物理内存不足、地址空间耗尽、系统限制或分配器元数据问题失败，属于实现与操作系统诊断。</p>
+<p>某些系统存在内存过量承诺：</p>
+<pre><code class="language-text">申请虚拟地址空间时看似成功，
+以后真正触碰页面时才无法满足。</code></pre>
+<p>因此“malloc 返回非空”不等于所有页面已经有物理内存保障。</p>
+<h2 id="free-之后发生什么">free 之后发生什么</h2>
+<p><code>free(pointer)</code> 表示：</p>
+<pre><code class="language-text">调用者不再拥有该分配块。</code></pre>
+<p>之后该地址不能继续读写，也不能再次 <code>free</code>。</p>
+<p>分配器可以：</p>
+<pre><code class="language-text">把块放进线程缓存
+放回空闲链表
+与相邻空闲块合并
+让页面保持映射以服务未来申请
+把合适页面归还操作系统</code></pre>
+<p>任务管理器中的进程内存不立刻下降，并不能单独证明 <code>free</code> 没有工作。</p>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">程序请求一块存储
+分配器从已有 arena 找到空闲块
+更新元数据并返回地址
+程序在对象生命周期内使用
+程序调用匹配的释放接口
+分配器回收该块供以后复用</code></pre>
+<p>整个过程可能完全不进入内核。</p>
+<p>另一条正常路径：</p>
+<pre><code class="language-text">分配器没有合适大块
+请求新的虚拟映射
+首次写入触发页面落实
+释放后满足实现条件
+映射被部分或全部归还</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="零字节分配">零字节分配</h3>
+<p>标准允许 <code>malloc(0)</code>：</p>
+<pre><code class="language-text">返回空指针
+或返回一个不可解引用但可传给 free 的唯一指针</code></pre>
+<p>调用方不能把其结果当成至少一个可写字节。</p>
+<h3 id="对齐">对齐</h3>
+<p><code>malloc</code> 返回满足标准所保证的基本对齐要求的存储。</p>
+<p>过度对齐类型可能需要：</p>
+<pre><code class="language-text">对齐版本的 new
+aligned_alloc
+平台或库提供的对齐接口</code></pre>
+<p>精确规则取决于所用语言版本和接口。</p>
+<h3 id="大量小块与碎片">大量小块与碎片</h3>
+<p>即使空闲字节总量足够，也可能：</p>
+<pre><code class="language-text">没有足够大的连续虚拟块
+空闲块分散在不同大小类别
+内部对齐与元数据浪费空间</code></pre>
+<p>区分：</p>
+<pre><code class="language-text">外部碎片：空闲空间分散。
+内部碎片：分配块大于请求大小。</code></pre>
+<h3 id="栈增长">栈增长</h3>
+<p>深递归或大型自动对象可能接近线程栈上限。</p>
+<p>是否自动扩大、保护页怎样移动、最终错误怎样报告，由平台决定。C++ 不提供可移植的栈剩余空间查询。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="空指针未检查">空指针未检查</h3>
+<pre><code class="language-cpp">void* raw = std::malloc(bytes);
+Write(raw); // raw 可能为空。</code></pre>
+<p>会把分配失败变成后续非法访问，丢失原始失败位置。</p>
+<h3 id="整数溢出">整数溢出</h3>
+<pre><code class="language-cpp">malloc(count * elementSize)</code></pre>
+<p>如果乘法先溢出，实际分配块比预期小，随后写入越界。必须在乘法前验证。</p>
+<h3 id="释放后使用">释放后使用</h3>
+<pre><code class="language-text">free(pointer)
+继续读取 pointer</code></pre>
+<p>这是 use-after-free，属于未定义行为。块可能：</p>
+<pre><code class="language-text">暂时看起来还在
+已经被其他对象复用
+分配器检测到损坏
+触发访问异常</code></pre>
+<p>“偶尔还能读到旧值”不是合法保证。</p>
+<h3 id="重复释放">重复释放</h3>
+<p>同一块交还两次可能破坏分配器元数据，属于未定义行为。基础分配器不能靠返回成功掩盖它。</p>
+<h3 id="配对错误">配对错误</h3>
+<pre><code class="language-text">malloc 配 delete
+new 配 free
+new[] 配 delete</code></pre>
+<p>都是错误组合。必须使用与取得存储相匹配的释放机制。</p>
+<h3 id="栈溢出">栈溢出</h3>
+<p>当栈越过可用映射或保护边界，结果可能是访问异常或进程终止。此时不能假设普通 C++ 异常处理一定有足够栈空间恢复。</p>
+<h2 id="页共享与写时复制">页共享与写时复制</h2>
+<p>进程创建或文件映射时，多个虚拟页可能暂时引用同一物理页。</p>
+<p>写时复制的概念流程：</p>
+<pre><code class="language-text">父子映射最初共享只读物理页
+某一方尝试写入
+触发页错误
+操作系统复制页面
+写入方映射到新物理页
+另一方仍看到旧页</code></pre>
+<p>是否采用、适用于哪些映射，由操作系统接口和策略决定。</p>
+<h2 id="代价">代价</h2>
+<p>虚拟内存提供隔离和灵活映射，但会带来：</p>
+<pre><code class="language-text">页表内存
+TLB 未命中
+页表遍历
+页错误处理
+换入换出或文件读取
+地址空间碎片</code></pre>
+<p>动态分配还会带来：</p>
+<pre><code class="language-text">分配器元数据
+锁或线程缓存协调
+大小类别浪费
+碎片
+缓存局部性变化
+系统调用和映射成本</code></pre>
+<p>栈分配通常只需调整栈指针，但不能由此推导所有自动对象都“零成本”；构造、析构、页面首次触碰和缓存行为仍然存在。</p>
+<h2 id="标准-操作系统与实现选择">标准、操作系统与实现选择</h2>
+<h3 id="c-与-c-标准可验证的部分">C 与 C++ 标准可验证的部分</h3>
+<pre><code class="language-text">对象存储期和生命周期
+malloc/free 接口契约
+new/delete 行为与失败形式
+越界、释放后使用和错误配对的语言后果
+对齐和对象构造规则</code></pre>
+<h3 id="操作系统与硬件负责的部分">操作系统与硬件负责的部分</h3>
+<pre><code class="language-text">进程虚拟地址空间
+页表与页权限
+页错误处理
+物理页管理
+文件映射、换页和写时复制
+线程栈映射</code></pre>
+<h3 id="具体实现必须确定的部分">具体实现必须确定的部分</h3>
+<pre><code class="language-text">页大小与页表层级
+地址空间布局
+malloc 的 arena、大小类别和缓存
+何时向 OS 申请或归还页面
+内存过量承诺策略
+栈默认大小与增长机制
+大块分配使用的系统接口</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<pre><code class="language-text">指针通常保存进程虚拟地址。
+页表把虚拟页映射到物理页框并附带访问权限。
+TLB 缓存地址转换，数据缓存保存数据，两者职责不同。
+栈与堆是常见运行时组织，不是 C++ 标准规定的固定地址布局。
+malloc 通常先经过用户态分配器，不等于每次直接请求 OS。
+free 结束调用者所有权，不保证立即归还物理内存。
+分配成功、页面驻留和未来访问必然成功不是同一件事。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E9%A1%B5%E9%9D%A2%E6%A0%88%E4%B8%8E%E9%9D%A2%E6%9D%BF%E6%B1%A0/"><small>← PREVIOUS</small>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</a>
+          <a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C%E4%B8%8E%E7%BA%BF%E7%A8%8B%E5%8F%AF%E8%A7%81%E6%80%A7/"><small>NEXT →</small>原子操作、内存屏障与线程可见性</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

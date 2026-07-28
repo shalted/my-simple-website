@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象一个统一的“发声”按钮。">
+  <title>C++ 对象模型、虚表与动态绑定 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
+      <h1>C++ 对象模型、虚表与动态绑定</h1>
+      <p class="hero-copy">想象一个统一的“发声”按钮。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先用生活模型理解动态绑定">先用生活模型理解动态绑定</a>
+    <a data-toc-link href="#静态类型与动态类型">静态类型与动态类型</a>
+    <a data-toc-link href="#标准保证与常见实现必须分开">标准保证与常见实现必须分开</a>
+    <a data-toc-link href="#常见虚表实现怎样工作">常见虚表实现怎样工作</a>
+    <a data-toc-link href="#覆写怎样确定">覆写怎样确定</a>
+    <a data-toc-link href="#正常调用的逐步状态">正常调用的逐步状态</a>
+    <a data-toc-link href="#对象切片">对象切片</a>
+    <a data-toc-link href="#为什么多态基类通常需要虚析构">为什么多态基类通常需要虚析构</a>
+    <a data-toc-link href="#构造与析构期间的虚调用">构造与析构期间的虚调用</a>
+    <a data-toc-link href="#纯虚函数与抽象类">纯虚函数与抽象类</a>
+    <a data-toc-link href="#多重继承与指针调整">多重继承与指针调整</a>
+    <a data-toc-link href="#rtti-与-dynamic-cast">RTTI 与 `dynamic_cast`</a>
+    <a data-toc-link href="#final-与去虚拟化">`final` 与去虚拟化</a>
+    <a data-toc-link href="#失败与边界路径">失败与边界路径</a>
+    <a class="sub" data-toc-link href="#忘记虚析构">忘记虚析构</a>
+    <a class="sub" data-toc-link href="#签名看似相同但未覆写">签名看似相同但未覆写</a>
+    <a class="sub" data-toc-link href="#对象切片-2">对象切片</a>
+    <a class="sub" data-toc-link href="#悬空引用">悬空引用</a>
+    <a class="sub" data-toc-link href="#构造期间访问派生状态">构造期间访问派生状态</a>
+    <a class="sub" data-toc-link href="#跨二进制边界的-abi-变化">跨二进制边界的 ABI 变化</a>
+    <a class="sub" data-toc-link href="#手工读取虚表">手工读取虚表</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#标准语义与-abi-示意对照">标准语义与 ABI 示意对照</a>
+    <a data-toc-link href="#小结">小结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解动态绑定">
+      <span>01</span>
+      <strong>先用生活模型理解动态绑定</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：静态类型与动态类型">
+      <span>02</span>
+      <strong>静态类型与动态类型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：标准保证与常见实现必须分开">
+      <span>03</span>
+      <strong>标准保证与常见实现必须分开</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：常见虚表实现怎样工作">
+      <span>04</span>
+      <strong>常见虚表实现怎样工作</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：覆写怎样确定">
+      <span>05</span>
+      <strong>覆写怎样确定</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：正常调用的逐步状态">
+      <span>06</span>
+      <strong>正常调用的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：对象切片">
+      <span>07</span>
+      <strong>对象切片</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：为什么多态基类通常需要虚析构">
+      <span>08</span>
+      <strong>为什么多态基类通常需要虚析构</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：构造与析构期间的虚调用">
+      <span>09</span>
+      <strong>构造与析构期间的虚调用</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：纯虚函数与抽象类">
+      <span>10</span>
+      <strong>纯虚函数与抽象类</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：多重继承与指针调整">
+      <span>11</span>
+      <strong>多重继承与指针调整</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：RTTI 与 `dynamic_cast`">
+      <span>12</span>
+      <strong>RTTI 与 `dynamic_cast`</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：`final` 与去虚拟化">
+      <span>13</span>
+      <strong>`final` 与去虚拟化</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败与边界路径">
+      <span>14</span>
+      <strong>失败与边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：复杂度与代价">
+      <span>15</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：标准语义与 ABI 示意对照">
+      <span>16</span>
+      <strong>标准语义与 ABI 示意对照</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：小结">
+      <span>17</span>
+      <strong>小结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先用生活模型理解动态绑定</h3>
+        <p>想象一个统一的“发声”按钮。</p>
+        <ul><li>门铃播放铃声；</li><li>计时器播放提示音；</li><li>静音设备记录一次请求。</li></ul>
+        <pre><code class="language-text">按下后，请当前设备发声。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>静态类型与动态类型</h3>
+        <p>这里：</p>
+
+        <pre><code class="language-cpp">struct Device
+{
+    virtual ~Device() = default;
+    virtual void sound() const = 0;
+};
+
+struct Bell final : Device
+{
+    void sound() const override
+    {
+        std::cout &lt;&lt; &quot;教学示例铃声\n&quot;;
+    }
+};
+
+Bell bell;
+Device&amp; device = bell;
+device.sound();</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / FLOW / RULES</div>
+        <h3>标准保证与常见实现必须分开</h3>
+        <p>C++ 语言标准规定的是可观察语义，例如：</p>
+        <ul><li>虚函数调用会按规则选择最终覆写函数；</li><li>多态基类可以通过虚析构正确销毁派生对象；</li><li><code>dynamic_cast</code> 和 <code>typeid</code> 在规定条件下提供运行时类型操作；</li><li>对象布局、大小和地址关系满足标准规定的约束。</li><li>对象必须含有一个名为 <code>vptr</code> 的字段；</li><li>虚表必须是某种数组；</li><li>虚表位于对象前几个字节；</li><li>每个类只有一张虚表；</li><li>虚函数槽位按源码声明顺序排列；</li><li>多继承必须使用某一种固定指针调整方式。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>常见虚表实现怎样工作</h3>
+        <p>一种常见的简化示意：</p>
+
+        <pre><code class="language-text">Bell 对象
+┌──────────────┐
+│ vptr ──────────────┐
+│ Bell 的实例数据 │  │
+└──────────────┘  │
+                  ▼
+            Bell 的虚表
+            ┌────────────────┐
+            │ 析构相关入口    │
+            │ Bell::sound    │
+            │ 其他 ABI 信息   │
+            └────────────────┘</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>覆写怎样确定</h3>
+        <p>派生类成员要与基类虚函数形成合法覆写关系。</p>
+
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+struct Shape
+{
+    virtual ~Shape() = default;
+    virtual void draw() const
+    {
+        std::cout &lt;&lt; &quot;绘制教学示例形状\n&quot;;
+    }
+};
+
+struct Circle final : Shape
+{
+    void draw() const override
+    {
+        std::cout &lt;&lt; &quot;绘制教学示例圆形\n&quot;;
+    }
+};
+
+int main()
+{
+    std::unique_ptr&lt;Shape&gt; shape = std::make_unique&lt;Circle&gt;();
+    shape-&gt;draw();
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>正常调用的逐步状态</h3>
+        <p>以上面的 <code>Shape</code> 示例为教学流程：</p>
+
+        <pre><code class="language-text">创建 Circle 对象
+    ↓
+用 unique_ptr&lt;Shape&gt; 保存其基类指针
+    ↓
+表达式 shape-&gt;draw() 通过基类接口发起调用
+    ↓
+动态绑定选择 Circle::draw()
+    ↓
+输出教学示例圆形
+    ↓
+unique_ptr 析构，通过 Shape 的虚析构链销毁对象</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>对象切片</h3>
+        <p><code>sliced</code> 是一个独立的 <code>Animal</code> 对象。把 <code>Cat</code> 按值赋给它时，只有基类子对象被复制，派生部分被切掉。</p>
+
+        <pre><code class="language-cpp">struct Animal
+{
+    virtual ~Animal() = default;
+    virtual const char* name() const
+    {
+        return &quot;教学示例动物&quot;;
+    }
+};
+
+struct Cat final : Animal
+{
+    const char* name() const override
+    {
+        return &quot;教学示例猫&quot;;
+    }
+};
+
+Cat cat;
+Animal sliced = cat;
+std::cout &lt;&lt; sliced.name() &lt;&lt; &#39;\n&#39;;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>为什么多态基类通常需要虚析构</h3>
+        <p>通过基类指针删除派生对象时，基类析构函数必须满足虚析构规则，才能按动态类型执行正确析构链。</p>
+
+        <pre><code class="language-cpp">struct Base
+{
+    virtual ~Base() = default;
+};
+
+struct Derived final : Base
+{
+    ~Derived() override
+    {
+        std::cout &lt;&lt; &quot;销毁教学示例派生对象\n&quot;;
+    }
+};
+
+Base* value = new Derived();
+delete value;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>构造与析构期间的虚调用</h3>
+        <p>在基类构造函数执行时，派生部分尚未完成构造；在基类析构函数执行时，派生部分已经结束相应生命周期。</p>
+
+        <pre><code class="language-cpp">struct Base
+{
+    Base()
+    {
+        show(); // 调用 Base::show，不会调用 Derived::show
+    }
+
+    virtual ~Base() = default;
+
+    virtual void show() const
+    {
+        std::cout &lt;&lt; &quot;教学示例基类\n&quot;;
+    }
+};
+
+struct Derived final : Base
+{
+    void show() const override
+    {
+        std::cout &lt;&lt; &quot;教学示例派生类\n&quot;;
+    }
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>纯虚函数与抽象类</h3>
+        <p>包含未被实现的纯虚函数时，类型是抽象类，不能直接创建实例。</p>
+
+        <pre><code class="language-cpp">struct Encoder
+{
+    virtual ~Encoder() = default;
+    virtual void encode() = 0;
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>多重继承与指针调整</h3>
+        <p>一个 <code>Buffer</code> 对象包含 <code>Readable</code> 和 <code>Writable</code> 基类子对象。</p>
+
+        <pre><code class="language-cpp">struct Readable
+{
+    virtual ~Readable() = default;
+    virtual void read() const = 0;
+};
+
+struct Writable
+{
+    virtual ~Writable() = default;
+    virtual void write() = 0;
+};
+
+struct Buffer final : Readable, Writable
+{
+    void read() const override {}
+    void write() override {}
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>RTTI 与 <code>dynamic_cast</code></h3>
+        <p>当基类是多态类型时，可以使用 <code>dynamic_cast</code> 检查运行时类型关系：</p>
+
+        <pre><code class="language-cpp">void inspect(Shape&amp; shape)
+{
+    if (auto* circle = dynamic_cast&lt;Circle*&gt;(&amp;shape))
+    {
+        circle-&gt;draw();
+        return;
+    }
+
+    std::cout &lt;&lt; &quot;不是教学示例圆形\n&quot;;
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3><code>final</code> 与去虚拟化</h3>
+        <p><code>final</code> 可以表示类不能继续派生，或虚函数不能继续覆写：</p>
+
+        <pre><code class="language-cpp">struct FinalShape final : Shape
+{
+    void draw() const override final
+    {
+    }
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CONCEPT</div>
+        <h3>失败与边界路径</h3>
+        <p>通过基类指针删除派生对象会破坏多态销毁契约。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / FLOW / RULES</div>
+        <h3>复杂度与代价</h3>
+        <p>从抽象算法角度，单次虚调用通常视为 <code>O(1)</code>。常见实现的实际代价可能包括：</p>
+        <ul><li>通过间接地址调用；</li><li>更难内联；</li><li>对象可能增加一个或多个实现相关指针；</li><li>多重继承可能需要指针调整；</li><li>RTTI 查询存在额外运行时工作。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CONCEPT</div>
+        <h3>标准语义与 ABI 示意对照</h3>
+        <p>| 问题 | C++ 标准层面 | 常见 ABI 实现 | |---|---|---| | 调哪个覆写函数 | 按虚函数最终覆写规则 | 查虚表槽位 | | 怎样保存分派信息 | 未规定固定布局 | 对象中保存虚表相关指针 | | 多继承怎样转换指针 | 结果需指向正确基类子对象 | 使用固定偏移或调整跳板 | | RTTI 怎样存储 | 规定可观察行为 | 类型信息常与虚表关联 | | 虚析构怎样调用 | 按动态类型执行析构链 | 可能有多个析构入口 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>小结</h3>
+        <p>设计多态层次时，先回答：</p>
+        <ul><li>调用方真正需要哪些稳定行为？</li><li>对象由谁拥有并销毁？</li><li>是否会通过基类指针销毁派生对象？</li><li>是否真的需要运行时多态，还是编译期组合更清楚？</li><li>当前结论来自语言标准，还是某个平台 ABI？</li></ul>
+        <pre><code class="language-text">静态类型决定编译期可用接口。
+动态类型决定虚调用的最终覆写函数。
+虚表是常见实现，不是 C++ 标准强制布局。
+多态基类公开支持基类指针删除时需要虚析构。
+按基类值复制会切片。
+构造与析构期间不能假设完整派生行为。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：C++ 基础</p>
+<h2 id="先用生活模型理解动态绑定">先用生活模型理解动态绑定</h2>
+<p>想象一个统一的“发声”按钮。</p>
+<p>按钮只规定：</p>
+<pre><code class="language-text">按下后，请当前设备发声。</code></pre>
+<p>不同设备有不同实现：</p>
+<ul>
+<li>门铃播放铃声；</li>
+<li>计时器播放提示音；</li>
+<li>静音设备记录一次请求。</li>
+</ul>
+<p>调用者只持有“可发声设备”的引用。实际按下按钮时，系统根据对象的动态类型选择对应实现。</p>
+<p>这就是动态绑定要解决的问题：</p>
+<pre><code class="language-text">调用代码只依赖基类接口，
+运行时根据实际对象选择虚函数实现。</code></pre>
+<h2 id="静态类型与动态类型">静态类型与动态类型</h2>
+<pre><code class="language-cpp">struct Device
+{
+    virtual ~Device() = default;
+    virtual void sound() const = 0;
+};
+
+struct Bell final : Device
+{
+    void sound() const override
+    {
+        std::cout &lt;&lt; &quot;教学示例铃声\n&quot;;
+    }
+};
+
+Bell bell;
+Device&amp; device = bell;
+device.sound();</code></pre>
+<p>这里：</p>
+<pre><code class="language-text">device 的静态类型：Device&amp;
+device 引用对象的动态类型：Bell</code></pre>
+<p>编译器根据静态类型检查“能否调用 <code>sound</code>”。运行时虚调用根据动态类型选择 <code>Bell::sound</code>。</p>
+<h2 id="标准保证与常见实现必须分开">标准保证与常见实现必须分开</h2>
+<p>C++ 语言标准规定的是可观察语义，例如：</p>
+<ul>
+<li>虚函数调用会按规则选择最终覆写函数；</li>
+<li>多态基类可以通过虚析构正确销毁派生对象；</li>
+<li><code>dynamic_cast</code> 和 <code>typeid</code> 在规定条件下提供运行时类型操作；</li>
+<li>对象布局、大小和地址关系满足标准规定的约束。</li>
+</ul>
+<p>C++ 标准<strong>没有强制规定</strong>：</p>
+<ul>
+<li>对象必须含有一个名为 <code>vptr</code> 的字段；</li>
+<li>虚表必须是某种数组；</li>
+<li>虚表位于对象前几个字节；</li>
+<li>每个类只有一张虚表；</li>
+<li>虚函数槽位按源码声明顺序排列；</li>
+<li>多继承必须使用某一种固定指针调整方式。</li>
+</ul>
+<p>许多 ABI 和编译器使用虚表实现动态绑定，这是常见实现方式，不是语言标准唯一允许的实现。</p>
+<p>后文会使用“虚表”和“虚表指针”帮助理解常见机器实现，但不能把示意布局当成可移植代码依据。</p>
+<h2 id="常见虚表实现怎样工作">常见虚表实现怎样工作</h2>
+<p>一种常见的简化示意：</p>
+<pre><code class="language-text">Bell 对象
+┌──────────────┐
+│ vptr ──────────────┐
+│ Bell 的实例数据 │  │
+└──────────────┘  │
+                  ▼
+            Bell 的虚表
+            ┌────────────────┐
+            │ 析构相关入口    │
+            │ Bell::sound    │
+            │ 其他 ABI 信息   │
+            └────────────────┘</code></pre>
+<p>教学式虚调用过程：</p>
+<pre><code class="language-text">1. 通过对象取得实现使用的虚表信息。
+2. 在对应虚函数入口处取得函数地址。
+3. 必要时调整 this 指针。
+4. 调用最终覆写函数。</code></pre>
+<p>这些步骤描述常见 ABI 的思路。具体表项、析构函数槽位、RTTI 信息和指针调整方式由实现与 ABI 决定。</p>
+<h2 id="覆写怎样确定">覆写怎样确定</h2>
+<p>派生类成员要与基类虚函数形成合法覆写关系。</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+
+struct Shape
+{
+    virtual ~Shape() = default;
+    virtual void draw() const
+    {
+        std::cout &lt;&lt; &quot;绘制教学示例形状\n&quot;;
+    }
+};
+
+struct Circle final : Shape
+{
+    void draw() const override
+    {
+        std::cout &lt;&lt; &quot;绘制教学示例圆形\n&quot;;
+    }
+};
+
+int main()
+{
+    std::unique_ptr&lt;Shape&gt; shape = std::make_unique&lt;Circle&gt;();
+    shape-&gt;draw();
+}</code></pre>
+<p><code>override</code> 不是动态绑定本身，但它让编译器验证当前函数确实覆写了基类虚函数。</p>
+<p>如果签名不匹配：</p>
+<pre><code class="language-cpp">struct WrongCircle : Shape
+{
+    // void draw() override; // 编译失败：缺少 const，未形成覆写
+};</code></pre>
+<p>这比悄悄创建一个新的同名函数更容易发现问题。</p>
+<h2 id="正常调用的逐步状态">正常调用的逐步状态</h2>
+<p>以上面的 <code>Shape</code> 示例为教学流程：</p>
+<pre><code class="language-text">创建 Circle 对象
+    ↓
+用 unique_ptr&lt;Shape&gt; 保存其基类指针
+    ↓
+表达式 shape-&gt;draw() 通过基类接口发起调用
+    ↓
+动态绑定选择 Circle::draw()
+    ↓
+输出教学示例圆形
+    ↓
+unique_ptr 析构，通过 Shape 的虚析构链销毁对象</code></pre>
+<p>动态绑定发生的前提是通过指针或引用调用虚函数。若对象已经被按值复制为基类对象，派生部分不会保留。</p>
+<h2 id="对象切片">对象切片</h2>
+<pre><code class="language-cpp">struct Animal
+{
+    virtual ~Animal() = default;
+    virtual const char* name() const
+    {
+        return &quot;教学示例动物&quot;;
+    }
+};
+
+struct Cat final : Animal
+{
+    const char* name() const override
+    {
+        return &quot;教学示例猫&quot;;
+    }
+};
+
+Cat cat;
+Animal sliced = cat;
+std::cout &lt;&lt; sliced.name() &lt;&lt; &#39;\n&#39;;</code></pre>
+<p><code>sliced</code> 是一个独立的 <code>Animal</code> 对象。把 <code>Cat</code> 按值赋给它时，只有基类子对象被复制，派生部分被切掉。</p>
+<p>此后的动态类型就是 <code>Animal</code>，虚调用不会“记住它原来来自 Cat”。</p>
+<p>需要保留多态对象时，通常通过引用或具有明确所有权的智能指针传递，而不是按基类值传递。</p>
+<h2 id="为什么多态基类通常需要虚析构">为什么多态基类通常需要虚析构</h2>
+<pre><code class="language-cpp">struct Base
+{
+    virtual ~Base() = default;
+};
+
+struct Derived final : Base
+{
+    ~Derived() override
+    {
+        std::cout &lt;&lt; &quot;销毁教学示例派生对象\n&quot;;
+    }
+};
+
+Base* value = new Derived();
+delete value;</code></pre>
+<p>通过基类指针删除派生对象时，基类析构函数必须满足虚析构规则，才能按动态类型执行正确析构链。</p>
+<p>如果基类析构函数不是虚函数，而代码通过基类指针删除派生对象，行为不满足正确多态销毁要求，可能进入未定义行为。</p>
+<p>另一种明确边界是让基类析构函数不可被外部通过基类指针调用，并由专门所有者负责销毁。但只要类型被设计为公开多态删除，虚析构通常是必要契约。</p>
+<h2 id="构造与析构期间的虚调用">构造与析构期间的虚调用</h2>
+<p>在基类构造函数执行时，派生部分尚未完成构造；在基类析构函数执行时，派生部分已经结束相应生命周期。</p>
+<p>因此，构造和析构期间的虚调用不会像完整对象状态下那样分派到尚未构造或已经销毁的派生部分。</p>
+<pre><code class="language-cpp">struct Base
+{
+    Base()
+    {
+        show(); // 调用 Base::show，不会调用 Derived::show
+    }
+
+    virtual ~Base() = default;
+
+    virtual void show() const
+    {
+        std::cout &lt;&lt; &quot;教学示例基类\n&quot;;
+    }
+};
+
+struct Derived final : Base
+{
+    void show() const override
+    {
+        std::cout &lt;&lt; &quot;教学示例派生类\n&quot;;
+    }
+};</code></pre>
+<p>不要依靠基类构造函数中的虚调用初始化派生状态。此时派生对象不具备完整不变量。</p>
+<p>在构造或析构过程中调用纯虚函数还可能进入未定义行为；具体诊断形式由实现决定，不能依赖某种固定运行时报错。</p>
+<h2 id="纯虚函数与抽象类">纯虚函数与抽象类</h2>
+<pre><code class="language-cpp">struct Encoder
+{
+    virtual ~Encoder() = default;
+    virtual void encode() = 0;
+};</code></pre>
+<p>包含未被实现的纯虚函数时，类型是抽象类，不能直接创建实例。</p>
+<p>纯虚函数表达接口要求，但 C++ 仍允许纯虚函数具有定义。是否提供定义、何时能以限定名调用，是独立的语言规则；它不改变类因纯虚声明而成为抽象类这一事实。</p>
+<h2 id="多重继承与指针调整">多重继承与指针调整</h2>
+<pre><code class="language-cpp">struct Readable
+{
+    virtual ~Readable() = default;
+    virtual void read() const = 0;
+};
+
+struct Writable
+{
+    virtual ~Writable() = default;
+    virtual void write() = 0;
+};
+
+struct Buffer final : Readable, Writable
+{
+    void read() const override {}
+    void write() override {}
+};</code></pre>
+<p>一个 <code>Buffer</code> 对象包含 <code>Readable</code> 和 <code>Writable</code> 基类子对象。</p>
+<p>转换：</p>
+<pre><code class="language-cpp">Buffer buffer;
+Readable* readable = &amp;buffer;
+Writable* writable = &amp;buffer;</code></pre>
+<p>两个基类指针的数值表示不保证相同，因为它们可能指向对象内部不同的基类子对象。</p>
+<p>常见 ABI 会在转换或虚调用时调整指针，并可能使用多个虚表相关指针或跳板函数。但具体布局不是标准保证。</p>
+<h2 id="rtti-与-dynamic-cast">RTTI 与 <code>dynamic_cast</code></h2>
+<p>当基类是多态类型时，可以使用 <code>dynamic_cast</code> 检查运行时类型关系：</p>
+<pre><code class="language-cpp">void inspect(Shape&amp; shape)
+{
+    if (auto* circle = dynamic_cast&lt;Circle*&gt;(&amp;shape))
+    {
+        circle-&gt;draw();
+        return;
+    }
+
+    std::cout &lt;&lt; &quot;不是教学示例圆形\n&quot;;
+}</code></pre>
+<p>指针形式转换失败返回空指针；引用形式转换失败抛出 <code>std::bad_cast</code>。</p>
+<p>若大量代码反复通过 <code>dynamic_cast</code> 区分每个派生类型，可能说明基类接口没有承载真正需要的多态行为。但类型检查也有合理用途，不能仅凭出现一次就断定设计错误。</p>
+<p>RTTI 的内部布局和查找算法同样受实现与 ABI 影响。</p>
+<h2 id="final-与去虚拟化"><code>final</code> 与去虚拟化</h2>
+<p><code>final</code> 可以表示类不能继续派生，或虚函数不能继续覆写：</p>
+<pre><code class="language-cpp">struct FinalShape final : Shape
+{
+    void draw() const override final
+    {
+    }
+};</code></pre>
+<p>编译器在能证明动态类型时，可能把虚调用优化为直接调用，这常被称为去虚拟化。</p>
+<p>是否发生优化取决于编译器、优化级别、链接信息和上下文。<code>final</code> 提供更多证明条件，但不保证生成某一条特定机器指令。</p>
+<h2 id="失败与边界路径">失败与边界路径</h2>
+<h3 id="忘记虚析构">忘记虚析构</h3>
+<p>通过基类指针删除派生对象会破坏多态销毁契约。</p>
+<h3 id="签名看似相同但未覆写">签名看似相同但未覆写</h3>
+<p>遗漏 <code>const</code>、引用限定符或参数差异都可能创建新函数。使用 <code>override</code> 让编译器检查。</p>
+<h3 id="对象切片-2">对象切片</h3>
+<p>按基类值传递会丢失派生部分。需要动态类型时使用引用或明确所有权指针。</p>
+<h3 id="悬空引用">悬空引用</h3>
+<p>动态绑定只选择函数，不管理对象生命周期。指针或引用指向已销毁对象时，调用虚函数仍是无效访问。</p>
+<h3 id="构造期间访问派生状态">构造期间访问派生状态</h3>
+<p>基类构造阶段派生不变量尚未建立，虚调用不会提供完整派生行为。</p>
+<h3 id="跨二进制边界的-abi-变化">跨二进制边界的 ABI 变化</h3>
+<p>改变虚函数集合、继承结构或编译选项可能改变 ABI。具体兼容规则依赖平台、编译器和接口约定，不能从 C++ 源码语义直接推断二进制兼容。</p>
+<h3 id="手工读取虚表">手工读取虚表</h3>
+<p>通过偏移读取对象内存并调用猜测的表项，不是可移植 C++，还可能违反对象模型、别名和函数调用约定。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<p>从抽象算法角度，单次虚调用通常视为 <code>O(1)</code>。常见实现的实际代价可能包括：</p>
+<ul>
+<li>通过间接地址调用；</li>
+<li>更难内联；</li>
+<li>对象可能增加一个或多个实现相关指针；</li>
+<li>多重继承可能需要指针调整；</li>
+<li>RTTI 查询存在额外运行时工作。</li>
+</ul>
+<p>但编译器可能去虚拟化，硬件预测也会影响实际成本。不能只凭“出现 virtual”判断性能问题，应该在真实编译配置下测量。</p>
+<table><thead><tr>
+<th>操作</th>
+<th>抽象时间量级</th>
+<th>主要风险</th>
+</tr></thead><tbody>
+<tr>
+<td>单次虚调用</td>
+<td><code>O(1)</code></td>
+<td>间接调用、内联机会</td>
+</tr>
+<tr>
+<td>基类到派生类 <code>dynamic_cast</code></td>
+<td>实现相关</td>
+<td>运行时类型查找</td>
+</tr>
+<tr>
+<td>按值复制基类</td>
+<td>复制成本</td>
+<td>对象切片</td>
+</tr>
+<tr>
+<td>多态销毁</td>
+<td>与析构工作相关</td>
+<td>基类需满足虚析构契约</td>
+</tr>
+</tbody></table>
+<h2 id="标准语义与-abi-示意对照">标准语义与 ABI 示意对照</h2>
+<table><thead><tr>
+<th>问题</th>
+<th>C++ 标准层面</th>
+<th>常见 ABI 实现</th>
+</tr></thead><tbody>
+<tr>
+<td>调哪个覆写函数</td>
+<td>按虚函数最终覆写规则</td>
+<td>查虚表槽位</td>
+</tr>
+<tr>
+<td>怎样保存分派信息</td>
+<td>未规定固定布局</td>
+<td>对象中保存虚表相关指针</td>
+</tr>
+<tr>
+<td>多继承怎样转换指针</td>
+<td>结果需指向正确基类子对象</td>
+<td>使用固定偏移或调整跳板</td>
+</tr>
+<tr>
+<td>RTTI 怎样存储</td>
+<td>规定可观察行为</td>
+<td>类型信息常与虚表关联</td>
+</tr>
+<tr>
+<td>虚析构怎样调用</td>
+<td>按动态类型执行析构链</td>
+<td>可能有多个析构入口</td>
+</tr>
+</tbody></table>
+<p>学习常见实现有助于读汇编、理解 ABI 和分析内存，但写可移植代码时应依赖左侧标准语义。</p>
+<h2 id="小结">小结</h2>
+<pre><code class="language-text">静态类型决定编译期可用接口。
+动态类型决定虚调用的最终覆写函数。
+虚表是常见实现，不是 C++ 标准强制布局。
+多态基类公开支持基类指针删除时需要虚析构。
+按基类值复制会切片。
+构造与析构期间不能假设完整派生行为。</code></pre>
+<p>设计多态层次时，先回答：</p>
+<ol>
+<li>调用方真正需要哪些稳定行为？</li>
+<li>对象由谁拥有并销毁？</li>
+<li>是否会通过基类指针销毁派生对象？</li>
+<li>是否真的需要运行时多态，还是编译期组合更清楚？</li>
+<li>当前结论来自语言标准，还是某个平台 ABI？</li>
+</ol>
+<p>最后一个问题能避免把调试器里看到的一种布局误写成所有 C++ 实现的规则。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/"><small>← PREVIOUS</small>后续学习计划</a>
+          <a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/%E5%B7%A6%E5%80%BC%E5%8F%B3%E5%80%BC%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97/"><small>NEXT →</small>C++ 左值、右值、移动语义与任务队列</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>
