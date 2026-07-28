@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。">
+  <meta name="description" content="更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。">
   <title>后续学习计划 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -30,7 +30,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">知识路线 / KNOWLEDGE NOTE</div>
       <h1>后续学习计划</h1>
-      <p class="hero-copy">更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。</p>
+      <p class="hero-copy">更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
@@ -41,7 +41,7 @@
     <a data-toc-link href="#chapter-04-游戏运行时与战斗系统">CHAPTER 04 · 游戏运行时与战斗系统</a>
     <a data-toc-link href="#chapter-05-ui-配置与网络闭环">CHAPTER 05 · UI、配置与网络闭环</a>
     <a data-toc-link href="#chapter-06-工程架构与底层能力">CHAPTER 06 · 工程架构与底层能力</a>
-    <a data-toc-link href="#推荐推进顺序">推荐推进顺序</a>
+    <a data-toc-link href="#下一阶段">下一阶段</a>
   </nav>
       <article class="article-body" id="article-start">
 
@@ -80,58 +80,58 @@
       <span>06</span>
       <strong>CHAPTER 06 · 工程架构与底层能力</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：推荐推进顺序">
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：下一阶段">
       <span>07</span>
-      <strong>推荐推进顺序</strong>
+      <strong>下一阶段</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / FLOW / RULES</div>
         <h3>CHAPTER 01 · 基础结构与状态建模</h3>
-        <p>状态：已覆盖，后续以复习和语法补充为主。</p>
-        <ul><li>List、Dictionary、HashSet、Queue、Stack 的使用边界。</li><li>集合排序、查找、筛选和常见配套语法。</li><li>Flags / BitMask 的组合、判断、移除和互斥建模。</li><li>二叉堆、优先队列以及提示队列从 FIFO 到优先堆的演进。</li><li><code>struct</code> 与 <code>class</code> 的值语义和引用语义。</li><li><code>interface</code>、泛型方法与职责边界。</li><li><code>delegate</code>、<code>Action</code>、<code>Func</code>、<code>event</code> 的关系。</li><li>属性、<code>readonly</code>、<code>const</code>、<code>static</code>、nullable 与空值判断。</li></ul>
+        <p>状态：已覆盖，本轮完成 C# 语义补强。</p>
+        <ul><li>List、Dictionary、HashSet、Queue、Stack 的使用边界。</li><li>集合排序、查找、筛选和常见配套语法。</li><li>Flags / BitMask、二叉堆与优先队列。</li><li><code>struct</code> / <code>class</code>、接口、泛型方法、委托、事件与空值语义。</li><li>属性、<code>const</code>、<code>static</code>、<code>readonly</code> 与只读语义。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / FLOW / RULES</div>
         <h3>CHAPTER 02 · 算法、空间与碰撞</h3>
-        <p>状态：继续补强。</p>
-        <ul><li>A* 的 G、H、F、Open / Closed 集合与 Parent 回溯。</li><li>普通随机、加权随机、稳定随机、保底和洗牌袋。</li><li>九宫格、空间 Hash、四叉树与“粗筛 → 精筛”。</li><li>Broad Phase / Narrow Phase、AABB、OBB、BVH、SAT、GJK。</li><li>圆形、扇形、盒形目标筛选与命中原因追踪。</li><li>BFS / DFS：遍历顺序、访问集合和适用问题。</li><li>Dijkstra：从无启发式最短路理解 A* 的来源。</li><li>二分查找、Top K、并查集和动态规划入门。</li><li>CCD：连续碰撞检测如何处理高速物体穿透。</li><li>NavMesh 多边形寻路、动态障碍和合法出生点。</li></ul>
+        <p>状态：已覆盖，本轮完成图搜索、算法工具箱、NavMesh 与 CCD。</p>
+        <ul><li>A*、BFS、DFS、Dijkstra 与访问集合、Parent 回溯。</li><li>二分查找、Top K、并查集与动态规划入门。</li><li>九宫格、空间 Hash、四叉树、Broad Phase / Narrow Phase。</li><li>AABB、OBB、BVH、SAT、GJK 与目标筛选。</li><li>NavMesh 多边形寻路、动态障碍、合法点检测与 CCD。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="2" hidden>
         <div class="deck-step-meta">STEP 03 / FLOW / RULES</div>
         <h3>CHAPTER 03 · 游戏 AI、导航与群体行为</h3>
-        <p>状态：继续补强。</p>
-        <ul><li>状态机、行为树、效用 AI 与 GOAP 的适用边界。</li><li>RVO / ORCA 的局部避障模型。</li><li>集群 AI 的槽位分配、候选评分、攻击令牌和非攻击意图。</li><li>全局寻路、局部移动和群体协调的基本分工。</li><li>NavMesh 烘焙数据与 A* 在多边形图上的搜索过程。</li><li>动态障碍、不可达点和出生点合法性检测。</li><li>行为树执行栈、节点返回值和中断。</li><li>HTN 与 MCTS：它们分别适合怎样的决策问题。</li><li>Steering、RVO、ORCA 的速度空间对比实验。</li></ul>
+        <p>状态：已覆盖，本轮完成执行细节与进阶决策模型。</p>
+        <ul><li>状态机、行为树、效用 AI、GOAP、HTN 与 MCTS 的适用边界。</li><li>行为树执行栈、节点返回值与中断。</li><li>Steering、RVO、ORCA 的速度空间与局部避障。</li><li>集群 AI 的槽位分配、候选评分、攻击令牌与非攻击意图。</li><li>全局寻路、局部移动与群体协调的分工。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="3" hidden>
         <div class="deck-step-meta">STEP 04 / FLOW / RULES</div>
         <h3>CHAPTER 04 · 游戏运行时与战斗系统</h3>
-        <p>状态：继续补强；完整技能运行链已经形成。</p>
-        <ul><li>冷却、计时器、延迟、Tick 与时间缩放。</li><li>对象池、资源生命周期、资源作用域和引用释放。</li><li>技能激活、标签仲裁、Timeline 编排、目标筛选、Effect / Buff、反馈与清理。</li><li>投射物、击退曲线、碰撞提前停止和终态清理。</li><li>Dirty Flag、属性局部重算和失效引用清理。</li><li>对象生命周期状态：<code>Created → Active → Releasing → Released</code>。</li><li>异步回调晚于对象释放时，如何保留原始失败并阻止越界写入。</li><li>缓存建立、版本、失效、重建和不同作用域。</li><li>命令模式：排队、撤销，以及命令与事件的区别。</li><li>事件系统进阶：事件队列、延迟事件、一次性监听、调试和事件风暴。</li><li>完整战斗判定：攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li></ul>
+        <p>状态：已覆盖，本轮完成生命周期、缓存、命令事件与完整战斗判定。</p>
+        <ul><li>对象与资源生命周期、资源作用域、对象池和异步竞态。</li><li>缓存建立、版本、失效、重建与作用域。</li><li>命令排队、撤销、命令与事件的边界。</li><li>事件队列、延迟事件、一次性监听、调试与事件风暴。</li><li>技能、目标筛选、Effect / Buff、投射物、运动与终态清理。</li><li>攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="4" hidden>
         <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
         <h3>CHAPTER 05 · UI、配置与网络闭环</h3>
-        <p>状态：本阶段已覆盖，后续以专项深化为主。</p>
-        <ul><li>虚拟列表的可视窗口、节点复用、索引映射与异步取消。</li><li>UI 页面栈、面板池、覆盖与返回、绑定清理和旧回调隔离。</li><li>配置数据的结构校验、引用校验、语义校验、强类型快照与发布闸门。</li><li>网络预测、服务器权威状态、Reconcile 和输入重放。</li><li>UI 数据绑定的依赖追踪与批量刷新。</li><li>配置热更新的版本一致性和失败可见性。</li><li>网络预测中的抖动缓冲、快照插值与可观测性。</li></ul>
+        <p>状态：已覆盖，本轮完成三项专项深化。</p>
+        <ul><li>虚拟列表、节点复用、UI 页面栈、面板池与旧回调隔离。</li><li>UI 数据绑定的依赖追踪、变更合并与批量刷新。</li><li>配置结构、引用、语义校验、强类型快照与发布闸门。</li><li>配置热更新的版本一致性与失败可见性。</li><li>网络预测、服务器校正、输入重放、抖动缓冲、快照插值与可观测性。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="5" hidden>
         <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
         <h3>CHAPTER 06 · 工程架构与底层能力</h3>
-        <p>状态：尚未开始，是后续长期主线。</p>
-        <ul><li>UE Gameplay：GameMode、GameState、PlayerController、Pawn、Actor 与 Component。</li><li>ECS：Entity、Component、System 和数据布局。</li><li>对话系统：节点、选项、条件、效果与跳转。</li><li>C++ 对象模型：虚表、虚指针和动态绑定。</li><li>RAII、构造析构、资源所有权与智能指针。</li><li>左值、右值、移动语义、线程、锁、任务队列和生产者消费者。</li><li>虚拟内存、页、堆、栈以及 malloc / free。</li><li>原子操作、可见性、有序性、内存屏障、进程与上下文切换。</li></ul>
+        <p>状态：已覆盖，本轮完成原“尚未开始”的长期主线。</p>
+        <ul><li>UE Gameplay 中 GameMode、GameState、PlayerController、Pawn、Actor 与 Component 的职责和状态流。</li><li>ECS 中 Entity、Component、System 与数据布局。</li><li>对话系统的节点、选项、条件、效果与跳转。</li><li>C++ 对象模型、动态绑定、RAII、智能指针与资源所有权。</li><li>左值、右值、移动语义、任务队列与生产者消费者边界。</li><li>虚拟内存、页、TLB、页错误、堆、栈以及 malloc / free。</li><li>原子操作、内存序、可见性、有序性、内存屏障与上下文切换。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
-        <h3>推荐推进顺序</h3>
-        <p>下一轮从第一个未完成主题开始：</p>
-        <ul><li>对象生命周期状态与异步竞态。</li><li>缓存与失效策略。</li><li>命令模式与事件系统进阶。</li><li>完整战斗判定流程。</li><li>NavMesh、动态障碍与合法点检测。</li><li>CCD 高速碰撞。</li><li>BFS / DFS、Dijkstra 与算法补充线。</li><li>HTN / MCTS 与行为树执行细节。</li><li>UE Gameplay、ECS 与对话系统。</li><li>C++、内存与并发基础。</li></ul>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
+        <h3>下一阶段</h3>
+        <p>本轮内容补齐已经完成。下一轮单独处理网站的信息架构与信息密度，包括导航分层、首页内容收束、分类浏览和长文阅读体验；不再把它混入本轮内容建设。</p>
+
 
       </article></div>
       </div>
@@ -143,132 +143,85 @@
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。</p>
+        <p>更新于 2026-07-28。当前知识库共有 <strong>61 篇学习笔记</strong>和 <strong>17 个交互专题</strong>；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。</p>
 <p>状态说明：</p>
 <ul>
-<li><code>已覆盖</code>：已有文章或交互专题，可以直接复习。</li>
-<li><code>继续补强</code>：已有基础内容，但仍有关键机制没有单独讲清。</li>
-<li><code>尚未开始</code>：知识库还没有对应的系统文章。</li>
+<li><code>已覆盖</code>：已有可直接阅读的系统文章或交互专题。</li>
+<li><code>本轮完成</code>：原计划中的缺口已补齐，并已进入知识索引。</li>
+<li>当前待补主题：<strong>0</strong>。</li>
 </ul>
 <h2 id="chapter-01-基础结构与状态建模">CHAPTER 01 · 基础结构与状态建模</h2>
-<p>状态：已覆盖，后续以复习和语法补充为主。</p>
-<p>已经覆盖：</p>
+<p>状态：已覆盖，本轮完成 C# 语义补强。</p>
+<p>覆盖内容：</p>
 <ul>
 <li>List、Dictionary、HashSet、Queue、Stack 的使用边界。</li>
 <li>集合排序、查找、筛选和常见配套语法。</li>
-<li>Flags / BitMask 的组合、判断、移除和互斥建模。</li>
-<li>二叉堆、优先队列以及提示队列从 FIFO 到优先堆的演进。</li>
+<li>Flags / BitMask、二叉堆与优先队列。</li>
+<li><code>struct</code> / <code>class</code>、接口、泛型方法、委托、事件与空值语义。</li>
+<li>属性、<code>const</code>、<code>static</code>、<code>readonly</code> 与只读语义。</li>
 </ul>
-<p>继续补充：</p>
-<ul>
-<li><code>struct</code> 与 <code>class</code> 的值语义和引用语义。</li>
-<li><code>interface</code>、泛型方法与职责边界。</li>
-<li><code>delegate</code>、<code>Action</code>、<code>Func</code>、<code>event</code> 的关系。</li>
-<li>属性、<code>readonly</code>、<code>const</code>、<code>static</code>、nullable 与空值判断。</li>
-</ul>
-<p>现有入口：<a href="/knowledge/systems-lab/#flags">Flags / BitMask 实验</a>、<a href="/knowledge/binary-heap/">二叉堆优先队列</a>。</p>
+<p>本轮新增：<a href="/knowledge/library/CSharp语言基础/CSharp类型接口委托与空值/">C# 类型、接口、委托与空值</a>、<a href="/knowledge/library/CSharp语言基础/CSharp属性常量静态与只读语义/">C# 属性、常量、静态与只读语义</a>。</p>
 <h2 id="chapter-02-算法-空间与碰撞">CHAPTER 02 · 算法、空间与碰撞</h2>
-<p>状态：继续补强。</p>
-<p>已经覆盖：</p>
+<p>状态：已覆盖，本轮完成图搜索、算法工具箱、NavMesh 与 CCD。</p>
+<p>覆盖内容：</p>
 <ul>
-<li>A* 的 G、H、F、Open / Closed 集合与 Parent 回溯。</li>
-<li>普通随机、加权随机、稳定随机、保底和洗牌袋。</li>
-<li>九宫格、空间 Hash、四叉树与“粗筛 → 精筛”。</li>
-<li>Broad Phase / Narrow Phase、AABB、OBB、BVH、SAT、GJK。</li>
-<li>圆形、扇形、盒形目标筛选与命中原因追踪。</li>
+<li>A*、BFS、DFS、Dijkstra 与访问集合、Parent 回溯。</li>
+<li>二分查找、Top K、并查集与动态规划入门。</li>
+<li>九宫格、空间 Hash、四叉树、Broad Phase / Narrow Phase。</li>
+<li>AABB、OBB、BVH、SAT、GJK 与目标筛选。</li>
+<li>NavMesh 多边形寻路、动态障碍、合法点检测与 CCD。</li>
 </ul>
-<p>下一批：</p>
-<ol>
-<li>BFS / DFS：遍历顺序、访问集合和适用问题。</li>
-<li>Dijkstra：从无启发式最短路理解 A* 的来源。</li>
-<li>二分查找、Top K、并查集和动态规划入门。</li>
-<li>CCD：连续碰撞检测如何处理高速物体穿透。</li>
-<li>NavMesh 多边形寻路、动态障碍和合法出生点。</li>
-</ol>
-<p>现有入口：<a href="/#lab">A* 寻路</a>、<a href="/knowledge/systems-lab/#space">空间划分实验</a>、<a href="/knowledge/target-filter/">目标筛选与命中判定</a>。</p>
+<p>本轮新增：<a href="/knowledge/library/算法/图遍历与最短路-BFS-DFS-Dijkstra/">图遍历与最短路</a>、<a href="/knowledge/library/算法/算法工具箱-二分TopK并查集与动态规划/">算法工具箱</a>、<a href="/knowledge/library/算法/NavMesh多边形寻路与动态障碍/">NavMesh 多边形寻路与动态障碍</a>、<a href="/knowledge/library/算法/CCD连续碰撞检测与高速穿透/">CCD 连续碰撞检测</a>。</p>
 <h2 id="chapter-03-游戏-ai-导航与群体行为">CHAPTER 03 · 游戏 AI、导航与群体行为</h2>
-<p>状态：继续补强。</p>
-<p>已经覆盖：</p>
+<p>状态：已覆盖，本轮完成执行细节与进阶决策模型。</p>
+<p>覆盖内容：</p>
 <ul>
-<li>状态机、行为树、效用 AI 与 GOAP 的适用边界。</li>
-<li>RVO / ORCA 的局部避障模型。</li>
-<li>集群 AI 的槽位分配、候选评分、攻击令牌和非攻击意图。</li>
-<li>全局寻路、局部移动和群体协调的基本分工。</li>
+<li>状态机、行为树、效用 AI、GOAP、HTN 与 MCTS 的适用边界。</li>
+<li>行为树执行栈、节点返回值与中断。</li>
+<li>Steering、RVO、ORCA 的速度空间与局部避障。</li>
+<li>集群 AI 的槽位分配、候选评分、攻击令牌与非攻击意图。</li>
+<li>全局寻路、局部移动与群体协调的分工。</li>
 </ul>
-<p>下一批：</p>
-<ol>
-<li>NavMesh 烘焙数据与 A* 在多边形图上的搜索过程。</li>
-<li>动态障碍、不可达点和出生点合法性检测。</li>
-<li>行为树执行栈、节点返回值和中断。</li>
-<li>HTN 与 MCTS：它们分别适合怎样的决策问题。</li>
-<li>Steering、RVO、ORCA 的速度空间对比实验。</li>
-</ol>
-<p>现有入口：<a href="/knowledge/swarm-ai/">怪物集群 AI</a>、<a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/">状态机、行为树、效用 AI 与 GOAP</a>。</p>
+<p>本轮新增：<a href="/knowledge/library/游戏AI与逻辑建模/行为树执行栈节点返回值与中断/">行为树执行栈、返回值与中断</a>、<a href="/knowledge/library/游戏AI与逻辑建模/HTN与MCTS决策模型/">HTN 与 MCTS 决策模型</a>、<a href="/knowledge/library/游戏AI与逻辑建模/Steering-RVO-ORCA速度空间/">Steering、RVO 与 ORCA 速度空间</a>。</p>
 <h2 id="chapter-04-游戏运行时与战斗系统">CHAPTER 04 · 游戏运行时与战斗系统</h2>
-<p>状态：继续补强；完整技能运行链已经形成。</p>
-<p>已经覆盖：</p>
+<p>状态：已覆盖，本轮完成生命周期、缓存、命令事件与完整战斗判定。</p>
+<p>覆盖内容：</p>
 <ul>
-<li>冷却、计时器、延迟、Tick 与时间缩放。</li>
-<li>对象池、资源生命周期、资源作用域和引用释放。</li>
-<li>技能激活、标签仲裁、Timeline 编排、目标筛选、Effect / Buff、反馈与清理。</li>
-<li>投射物、击退曲线、碰撞提前停止和终态清理。</li>
-<li>Dirty Flag、属性局部重算和失效引用清理。</li>
+<li>对象与资源生命周期、资源作用域、对象池和异步竞态。</li>
+<li>缓存建立、版本、失效、重建与作用域。</li>
+<li>命令排队、撤销、命令与事件的边界。</li>
+<li>事件队列、延迟事件、一次性监听、调试与事件风暴。</li>
+<li>技能、目标筛选、Effect / Buff、投射物、运动与终态清理。</li>
+<li>攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li>
 </ul>
-<p>下一批：</p>
-<ol>
-<li>对象生命周期状态：<code>Created → Active → Releasing → Released</code>。</li>
-<li>异步回调晚于对象释放时，如何保留原始失败并阻止越界写入。</li>
-<li>缓存建立、版本、失效、重建和不同作用域。</li>
-<li>命令模式：排队、撤销，以及命令与事件的区别。</li>
-<li>事件系统进阶：事件队列、延迟事件、一次性监听、调试和事件风暴。</li>
-<li>完整战斗判定：攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li>
-</ol>
-<p>现有入口：<a href="/knowledge/ability-flow/">一次技能从输入到结束</a>、<a href="/knowledge/effect-lifecycle/">Effect / Buff 生命周期</a>、<a href="/knowledge/projectile-motion/">命中后的运动与投射物</a>。</p>
+<p>本轮新增：<a href="/knowledge/library/工程设计/对象生命周期状态与异步竞态/">对象生命周期状态与异步竞态</a>、<a href="/knowledge/library/工程设计/缓存建立失效版本与重建/">缓存建立、失效、版本与重建</a>、<a href="/knowledge/library/工程设计/命令模式队列撤销与事件边界/">命令模式、队列、撤销与事件边界</a>、<a href="/knowledge/library/工程设计/事件队列延迟监听调试与事件风暴/">事件队列、监听调试与事件风暴</a>、<a href="/knowledge/library/工程设计/动作游戏完整战斗判定/">动作游戏完整战斗判定</a>。</p>
 <h2 id="chapter-05-ui-配置与网络闭环">CHAPTER 05 · UI、配置与网络闭环</h2>
-<p>状态：本阶段已覆盖，后续以专项深化为主。</p>
-<p>已经覆盖：</p>
+<p>状态：已覆盖，本轮完成三项专项深化。</p>
+<p>覆盖内容：</p>
 <ul>
-<li>虚拟列表的可视窗口、节点复用、索引映射与异步取消。</li>
-<li>UI 页面栈、面板池、覆盖与返回、绑定清理和旧回调隔离。</li>
-<li>配置数据的结构校验、引用校验、语义校验、强类型快照与发布闸门。</li>
-<li>网络预测、服务器权威状态、Reconcile 和输入重放。</li>
+<li>虚拟列表、节点复用、UI 页面栈、面板池与旧回调隔离。</li>
+<li>UI 数据绑定的依赖追踪、变更合并与批量刷新。</li>
+<li>配置结构、引用、语义校验、强类型快照与发布闸门。</li>
+<li>配置热更新的版本一致性与失败可见性。</li>
+<li>网络预测、服务器校正、输入重放、抖动缓冲、快照插值与可观测性。</li>
 </ul>
-<p>可选深化：</p>
-<ul>
-<li>UI 数据绑定的依赖追踪与批量刷新。</li>
-<li>配置热更新的版本一致性和失败可见性。</li>
-<li>网络预测中的抖动缓冲、快照插值与可观测性。</li>
-</ul>
-<p>现有入口：<a href="/knowledge/virtual-list/">虚拟列表与节点复用</a>、<a href="/knowledge/config-pipeline/">配置数据生成管线</a>、<a href="/knowledge/network-prediction/">网络预测与服务器校正</a>、<a href="/knowledge/ui-stack-pool/">UI 页面栈与面板池</a>。</p>
+<p>本轮新增：<a href="/knowledge/library/工程设计/UI数据绑定依赖追踪与批量刷新/">UI 数据绑定、依赖追踪与批量刷新</a>、<a href="/knowledge/library/工程设计/配置热更新版本一致性与失败可见性/">配置热更新版本一致性与失败可见性</a>、<a href="/knowledge/library/工程设计/网络抖动缓冲快照插值与可观测性/">网络抖动缓冲、快照插值与可观测性</a>。</p>
 <h2 id="chapter-06-工程架构与底层能力">CHAPTER 06 · 工程架构与底层能力</h2>
-<p>状态：尚未开始，是后续长期主线。</p>
-<p>下一批：</p>
-<ol>
-<li>UE Gameplay：GameMode、GameState、PlayerController、Pawn、Actor 与 Component。</li>
-<li>ECS：Entity、Component、System 和数据布局。</li>
-<li>对话系统：节点、选项、条件、效果与跳转。</li>
-<li>C++ 对象模型：虚表、虚指针和动态绑定。</li>
-<li>RAII、构造析构、资源所有权与智能指针。</li>
-<li>左值、右值、移动语义、线程、锁、任务队列和生产者消费者。</li>
-<li>虚拟内存、页、堆、栈以及 malloc / free。</li>
-<li>原子操作、可见性、有序性、内存屏障、进程与上下文切换。</li>
-</ol>
-<p>这些主题先写成结构清晰的文章；只有存在可观察状态、队列、图结构或计算过程时，再升级为交互专题。</p>
-<h2 id="推荐推进顺序">推荐推进顺序</h2>
-<p>下一轮从第一个未完成主题开始：</p>
-<ol>
-<li>对象生命周期状态与异步竞态。</li>
-<li>缓存与失效策略。</li>
-<li>命令模式与事件系统进阶。</li>
-<li>完整战斗判定流程。</li>
-<li>NavMesh、动态障碍与合法点检测。</li>
-<li>CCD 高速碰撞。</li>
-<li>BFS / DFS、Dijkstra 与算法补充线。</li>
-<li>HTN / MCTS 与行为树执行细节。</li>
-<li>UE Gameplay、ECS 与对话系统。</li>
-<li>C++、内存与并发基础。</li>
-</ol>
-<p>每完成一个主题，都要同步更新这份计划、网站章节目录、知识索引和相关交叉链接。</p>
+<p>状态：已覆盖，本轮完成原“尚未开始”的长期主线。</p>
+<p>覆盖内容：</p>
+<ul>
+<li>UE Gameplay 中 GameMode、GameState、PlayerController、Pawn、Actor 与 Component 的职责和状态流。</li>
+<li>ECS 中 Entity、Component、System 与数据布局。</li>
+<li>对话系统的节点、选项、条件、效果与跳转。</li>
+<li>C++ 对象模型、动态绑定、RAII、智能指针与资源所有权。</li>
+<li>左值、右值、移动语义、任务队列与生产者消费者边界。</li>
+<li>虚拟内存、页、TLB、页错误、堆、栈以及 malloc / free。</li>
+<li>原子操作、内存序、可见性、有序性、内存屏障与上下文切换。</li>
+</ul>
+<p>本轮新增：<a href="/knowledge/library/工程设计/UEGameplay框架职责与状态流/">UE Gameplay 框架职责与状态流</a>、<a href="/knowledge/library/工程设计/ECS实体组件系统与数据布局/">ECS 实体组件系统与数据布局</a>、<a href="/knowledge/library/工程设计/对话系统节点条件效果与跳转/">对话系统节点、条件、效果与跳转</a>、<a href="/knowledge/library/C++基础/C++对象模型虚表与动态绑定/">C++ 对象模型、虚表与动态绑定</a>、<a href="/knowledge/library/C++基础/RAII智能指针与资源所有权/">RAII、智能指针与资源所有权</a>、<a href="/knowledge/library/C++基础/左值右值移动语义与任务队列/">左值、右值、移动语义与任务队列</a>、<a href="/knowledge/library/计算机基础/虚拟内存页堆栈与malloc/">虚拟内存、页、堆栈与 malloc</a>、<a href="/knowledge/library/计算机基础/原子操作内存屏障与线程可见性/">原子操作、内存屏障与线程可见性</a>。</p>
+<h2 id="下一阶段">下一阶段</h2>
+<p>本轮内容补齐已经完成。下一轮单独处理网站的信息架构与信息密度，包括导航分层、首页内容收束、分类浏览和长文阅读体验；不再把它混入本轮内容建设。</p>
+<p>以后新增学习主题时，继续同步更新本地计划、网站章节目录、知识索引和相关交叉链接。</p>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/Steering-RVO-ORCA%E9%80%9F%E5%BA%A6%E7%A9%BA%E9%97%B4/"><small>← PREVIOUS</small>Steering、RVO、ORCA 与速度空间</a>
           <a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/C%2B%2B%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B%E8%99%9A%E8%A1%A8%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A/"><small>NEXT →</small>C++ 对象模型、虚表与动态绑定</a>

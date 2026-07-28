@@ -892,12 +892,12 @@ function renderLibraryIndex(documents) {
   }).join("");
 
   const learningChapters = [
-    { number: "01", status: "已覆盖", title: "基础结构与状态建模", summary: "集合、状态表达、二叉堆与优先队列。", anchor: "chapter-01-基础结构与状态建模" },
-    { number: "02", status: "继续补强", title: "算法、空间与碰撞", summary: "搜索、空间查询、碰撞检测与 NavMesh。", anchor: "chapter-02-算法-空间与碰撞" },
-    { number: "03", status: "继续补强", title: "游戏 AI、导航与群体行为", summary: "决策模型、局部避障与群体协同。", anchor: "chapter-03-游戏-ai-导航与群体行为" },
-    { number: "04", status: "继续补强", title: "游戏运行时与战斗系统", summary: "生命周期、技能运行链与完整战斗判定。", anchor: "chapter-04-游戏运行时与战斗系统" },
-    { number: "05", status: "已覆盖", title: "UI、配置与网络闭环", summary: "虚拟 UI、配置生成与网络校正。", anchor: "chapter-05-ui-配置与网络闭环" },
-    { number: "06", status: "尚未开始", title: "工程架构与底层能力", summary: "Gameplay、ECS、C++、内存与并发。", anchor: "chapter-06-工程架构与底层能力" },
+    { number: "01", status: "已覆盖", title: "基础结构与状态建模", summary: "集合、状态表达、C# 语义、二叉堆与优先队列。", anchor: "chapter-01-基础结构与状态建模" },
+    { number: "02", status: "已覆盖", title: "算法、空间与碰撞", summary: "图搜索、算法工具箱、碰撞检测与 NavMesh。", anchor: "chapter-02-算法-空间与碰撞" },
+    { number: "03", status: "已覆盖", title: "游戏 AI、导航与群体行为", summary: "行为树、HTN、MCTS、局部避障与群体协同。", anchor: "chapter-03-游戏-ai-导航与群体行为" },
+    { number: "04", status: "已覆盖", title: "游戏运行时与战斗系统", summary: "生命周期、缓存、命令事件与完整战斗判定。", anchor: "chapter-04-游戏运行时与战斗系统" },
+    { number: "05", status: "已覆盖", title: "UI、配置与网络闭环", summary: "数据绑定、配置热更新、网络预测与可观测性。", anchor: "chapter-05-ui-配置与网络闭环" },
+    { number: "06", status: "已覆盖", title: "工程架构与底层能力", summary: "Gameplay、ECS、C++、内存与并发。", anchor: "chapter-06-工程架构与底层能力" },
   ];
   const learningChapterCards = learningChapters.map((chapter) => `
       <a class="category-card" href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/#${encodeURIComponent(chapter.anchor)}">
