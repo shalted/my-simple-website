@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="配置生成管线关注：">
+  <title>配置热更新：版本一致性与失败可见性 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>配置热更新：版本一致性与失败可见性</h1>
+      <p class="hero-copy">配置生成管线关注：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
+    <a data-toc-link href="#生活化模型-用换菜单理解版本一致性">生活化模型：用换菜单理解版本一致性</a>
+    <a data-toc-link href="#版本清单是配置集合的身份证">版本清单是配置集合的身份证</a>
+    <a data-toc-link href="#三种版本不要混为一谈">三种版本不要混为一谈</a>
+    <a class="sub" data-toc-link href="#内容版本">内容版本</a>
+    <a class="sub" data-toc-link href="#结构版本">结构版本</a>
+    <a class="sub" data-toc-link href="#构建身份">构建身份</a>
+    <a data-toc-link href="#不可变配置快照">不可变配置快照</a>
+    <a data-toc-link href="#热更新状态机">热更新状态机</a>
+    <a data-toc-link href="#从发现版本到生效的逐步流程">从发现版本到生效的逐步流程</a>
+    <a class="sub" data-toc-link href="#第一步-读取并验证清单">第一步：读取并验证清单</a>
+    <a class="sub" data-toc-link href="#第二步-下载到隔离准备区">第二步：下载到隔离准备区</a>
+    <a class="sub" data-toc-link href="#第三步-校验产物完整性">第三步：校验产物完整性</a>
+    <a class="sub" data-toc-link href="#第四步-解析为候选快照">第四步：解析为候选快照</a>
+    <a class="sub" data-toc-link href="#第五步-语义校验">第五步：语义校验</a>
+    <a class="sub" data-toc-link href="#第六步-准备提交">第六步：准备提交</a>
+    <a class="sub" data-toc-link href="#第七步-原子切换">第七步：原子切换</a>
+    <a data-toc-link href="#最小-c-快照模型">最小 C# 快照模型</a>
+    <a data-toc-link href="#更新尝试的失败结果">更新尝试的失败结果</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#内容相同但清单重新发布">内容相同但清单重新发布</a>
+    <a class="sub" data-toc-link href="#更新准备期间又出现更新版本">更新准备期间又出现更新版本</a>
+    <a class="sub" data-toc-link href="#旧读取者长期持有旧快照">旧读取者长期持有旧快照</a>
+    <a class="sub" data-toc-link href="#结构版本变化">结构版本变化</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#清单与文件内容不一致">清单与文件内容不一致</a>
+    <a class="sub" data-toc-link href="#跨表引用断裂">跨表引用断裂</a>
+    <a class="sub" data-toc-link href="#提交竞争">提交竞争</a>
+    <a class="sub" data-toc-link href="#激活通知失败">激活通知失败</a>
+    <a data-toc-link href="#当前旧版本还在-不等于自动回退">当前旧版本还在，不等于自动回退</a>
+    <a data-toc-link href="#代价">代价</a>
+    <a data-toc-link href="#可观测性">可观测性</a>
+    <a data-toc-link href="#通用机制与实现选择">通用机制与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体系统确定">必须由具体系统确定</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+      <span>01</span>
+      <strong>这篇文章深化什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：用换菜单理解版本一致性">
+      <span>02</span>
+      <strong>生活化模型：用换菜单理解版本一致性</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：版本清单是配置集合的身份证">
+      <span>03</span>
+      <strong>版本清单是配置集合的身份证</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：三种版本不要混为一谈">
+      <span>04</span>
+      <strong>三种版本不要混为一谈</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：不可变配置快照">
+      <span>05</span>
+      <strong>不可变配置快照</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：热更新状态机">
+      <span>06</span>
+      <strong>热更新状态机</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从发现版本到生效的逐步流程">
+      <span>07</span>
+      <strong>从发现版本到生效的逐步流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最小 C# 快照模型">
+      <span>08</span>
+      <strong>最小 C# 快照模型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：更新尝试的失败结果">
+      <span>09</span>
+      <strong>更新尝试的失败结果</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常路径">
+      <span>10</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界路径">
+      <span>11</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：失败路径">
+      <span>12</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：当前旧版本还在，不等于自动回退">
+      <span>13</span>
+      <strong>当前旧版本还在，不等于自动回退</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：代价">
+      <span>14</span>
+      <strong>代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：可观测性">
+      <span>15</span>
+      <strong>可观测性</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
+      <span>16</span>
+      <strong>通用机制与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
+      <span>17</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>这篇文章深化什么</h3>
+        <p>配置生成管线关注：</p>
+
+        <pre><code class="language-text">源数据怎样经过校验、生成和打包，变成运行时可读取的数据。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>生活化模型：用换菜单理解版本一致性</h3>
+        <p>想象一家餐厅要更换整套菜单。</p>
+
+        <pre><code class="language-text">菜品表
+价格表
+套餐关系表
+过敏原说明表</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>版本清单是配置集合的身份证</h3>
+        <p>热更新包不应只是一组散落文件。它需要一个可验证清单：</p>
+
+        <pre><code class="language-text">ConfigSetVersion
+SchemaVersion
+BuildId
+Files
+Dependencies
+ContentHash</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>三种版本不要混为一谈</h3>
+        <p>表示配置数据内容发生了变化：</p>
+
+        <pre><code class="language-text">商品数值变化
+文本变化
+规则开关变化</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>不可变配置快照</h3>
+        <p>运行时读取配置时，不应让一个逻辑过程看到“切到一半”的集合。</p>
+
+        <pre><code class="language-text">ConfigSnapshot
+  Version
+  ItemTable
+  PriceTable
+  BundleTable
+  Metadata</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>热更新状态机</h3>
+        <p>一个明确的更新状态机可以包含：</p>
+
+        <pre><code class="language-text">Idle
+CheckingManifest
+Downloading
+VerifyingArtifacts
+Parsing
+Validating
+ReadyToCommit
+Committing
+Active
+Failed</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>从发现版本到生效的逐步流程</h3>
+        <p>检查：</p>
+
+        <pre><code class="language-text">清单格式可解析
+签名或可信来源符合系统协议
+目标内容版本明确
+结构版本被当前读取器支持
+文件集合完整</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>最小 C# 快照模型</h3>
+        <p>这段示例确定表达：</p>
+
+        <pre><code class="language-csharp">public sealed class ConfigSnapshot
+{
+    public string Version { get; }
+    public ItemTable Items { get; }
+    public PriceTable Prices { get; }
+
+    public ConfigSnapshot(
+        string version,
+        ItemTable items,
+        PriceTable prices)
+    {
+        Version = version;
+        Items = items;
+        Prices = prices;
+    }
+}
+
+public sealed class ConfigProvider
+{
+    private ConfigSnapshot current;
+
+    public ConfigProvider(ConfigSnapshot initial)
+    {
+        current = initial;
+    }
+
+    public ConfigSnapshot AcquireSnapshot()
+    {
+        // 返回不可变快照引用；一次逻辑应持续使用同一个引用。
+        return Volatile.Read(ref current);
+    }
+
+    public bool TryCommit(
+        ConfigSnapshot expectedCurrent,
+        ConfigSnapshot candidate,
+        out string? error)
+    {
+        ConfigSnapshot observed = Interlocked.CompareExchange(
+            ref current,
+            candidate,
+            expectedCurrent);
+
+        if (!ReferenceEquals(observed, expectedCurrent))
+        {
+            error =
+                $&quot;配置提交冲突：期望活动版本 {expectedCurrent.Version}，&quot; +
+                $&quot;实际活动版本 {observed.Version}。&quot;;
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>更新尝试的失败结果</h3>
+        <p>失败结果不应只是一个布尔值：</p>
+
+        <pre><code class="language-csharp">public enum ConfigUpdateStage
+{
+    Manifest,
+    Download,
+    ArtifactVerification,
+    Parsing,
+    SemanticValidation,
+    Commit
+}
+
+public sealed record ConfigUpdateFailure(
+    string AttemptId,
+    string TargetVersion,
+    ConfigUpdateStage Stage,
+    string ErrorCode,
+    string Message,
+    Exception? Cause);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+        <p><code>VersionActivated</code> 必须在提交成功后发布。</p>
+
+        <pre><code class="language-text">发现目标版本
+下载完整文件集
+哈希验证通过
+解析成功
+语义验证通过
+候选快照 ReadyToCommit
+原子切换成功
+发布 VersionActivated 事件
+状态 -&gt; Active</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>如果目标内容哈希与当前活动集合完全一致：</p>
+
+        <pre><code class="language-text">是否跳过提交
+是否记录为已检查但无变化</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>应报告：</p>
+
+        <pre><code class="language-text">Stage -&gt; ArtifactVerification
+状态 -&gt; Failed
+报告目标文件、期望哈希、实际哈希
+不进入解析与提交</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>当前旧版本还在，不等于自动回退</h3>
+        <p>如果候选版本在提交前失败，活动引用仍指向旧快照。这是因为：</p>
+
+        <pre><code class="language-text">新版本从未提交。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>代价</h3>
+        <p>版本一致性会增加：</p>
+
+        <pre><code class="language-text">候选快照与活动快照并存的内存
+下载准备区空间
+全量解析与语义校验时间
+清单和哈希计算
+旧快照引用追踪
+失败诊断数据</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>可观测性</h3>
+        <p>每次更新尝试应记录：</p>
+
+        <pre><code class="language-text">AttemptId
+Source
+CurrentVersion
+TargetVersion
+SchemaVersion
+Stage
+StageDuration
+DownloadedBytes
+VerifiedFileCount
+ValidationErrorCount
+CommitResult
+FailureCode
+OriginalError</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>通用机制与实现选择</h3>
+
+
+        <pre><code class="language-text">一组互相引用的配置必须以一致集合验证。
+候选数据应与活动数据隔离。
+不可变快照可以让一次读取固定在同一版本。
+准备完成后替换快照引用可避免逐表切换的混合状态。
+提交竞争必须验证预期活动版本。
+失败后的目标版本不能标记为 Active。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>配置管线保证：</p>
+
+        <pre><code class="language-text">源数据能生成符合规则的产物。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计 / 配置系统</p>
+<h2 id="这篇文章深化什么">这篇文章深化什么</h2>
+<p>配置生成管线关注：</p>
+<pre><code class="language-text">源数据怎样经过校验、生成和打包，变成运行时可读取的数据。</code></pre>
+<p>热更新继续追问：</p>
+<pre><code class="language-text">运行中的程序怎样发现新配置？
+多个配置文件怎样保证来自同一个版本？
+下载、解析或切换失败时，怎样让失败保持可见？
+读取方怎样保证一次逻辑只看到一致快照？</code></pre>
+<p>这篇文章是在配置管线基础上，深入：</p>
+<pre><code class="language-text">版本清单
+不可变配置快照
+准备与提交
+原子切换
+并发读取一致性
+失败状态与诊断证据</code></pre>
+<p>它不讨论某个具体表格工具，也不假设热更新一定允许程序继续运行。</p>
+<h2 id="生活化模型-用换菜单理解版本一致性">生活化模型：用换菜单理解版本一致性</h2>
+<p>想象一家餐厅要更换整套菜单。</p>
+<p>新菜单包含：</p>
+<pre><code class="language-text">菜品表
+价格表
+套餐关系表
+过敏原说明表</code></pre>
+<p>如果服务员先换了菜品表，但收银台仍使用旧价格表：</p>
+<pre><code class="language-text">菜单上出现新菜
+价格系统查不到或读到旧价格
+套餐引用到不存在的菜品</code></pre>
+<p>正确换菜单不是“哪个文件先下载完就先用哪个”，而是：</p>
+<pre><code class="language-text">把整套新菜单放到准备区。
+确认文件完整、版本一致、引用合法。
+所有检查都通过后，一次性宣布新菜单生效。</code></pre>
+<p>如果检查失败：</p>
+<pre><code class="language-text">新菜单不能标记为已发布。
+失败原因必须让维护者和调用方看到。</code></pre>
+<p>旧菜单是否还能继续服务，是业务运行策略，不应由热更新模块用“自动回退”偷偷决定。</p>
+<h2 id="版本清单是配置集合的身份证">版本清单是配置集合的身份证</h2>
+<p>热更新包不应只是一组散落文件。它需要一个可验证清单：</p>
+<pre><code class="language-text">ConfigSetVersion
+SchemaVersion
+BuildId
+Files
+Dependencies
+ContentHash</code></pre>
+<p>示意：</p>
+<pre><code class="language-text">ConfigSetVersion: 2026.07.28.1
+SchemaVersion: 14
+Files:
+  - ItemConfig.bin
+  - PriceConfig.bin
+  - BundleConfig.bin
+Dependencies:
+  BundleConfig -&gt; ItemConfig</code></pre>
+<p>这些值只是格式示意，不是推荐的生产版本号。</p>
+<p>清单至少要回答：</p>
+<pre><code class="language-text">这一组文件共同属于哪个配置版本？
+每个文件是否完整且未被替换？
+读取代码是否理解这个结构版本？
+跨表引用需要哪些成员同时存在？</code></pre>
+<h2 id="三种版本不要混为一谈">三种版本不要混为一谈</h2>
+<h3 id="内容版本">内容版本</h3>
+<p>表示配置数据内容发生了变化：</p>
+<pre><code class="language-text">商品数值变化
+文本变化
+规则开关变化</code></pre>
+<h3 id="结构版本">结构版本</h3>
+<p>表示读取协议或字段结构变化：</p>
+<pre><code class="language-text">字段新增或删除
+类型变化
+序列化布局变化
+枚举语义变化</code></pre>
+<h3 id="构建身份">构建身份</h3>
+<p>表示这套产物由哪次确定生成产生：</p>
+<pre><code class="language-text">源数据提交
+生成器版本
+构建任务
+产物哈希集合</code></pre>
+<p>是否把它们编码成一个字符串，是实现选择；但结构兼容与内容新旧不能只靠字符串大小比较替代。</p>
+<h2 id="不可变配置快照">不可变配置快照</h2>
+<p>运行时读取配置时，不应让一个逻辑过程看到“切到一半”的集合。</p>
+<p>把当前生效配置表示为不可变快照：</p>
+<pre><code class="language-text">ConfigSnapshot
+  Version
+  ItemTable
+  PriceTable
+  BundleTable
+  Metadata</code></pre>
+<p>读取方先获取一个快照引用：</p>
+<pre><code class="language-text">snapshot = configProvider.AcquireSnapshot()</code></pre>
+<p>随后同一逻辑使用这个引用完成所有查询：</p>
+<pre><code class="language-text">item = snapshot.ItemTable[id]
+price = snapshot.PriceTable[item.PriceId]
+bundle = snapshot.BundleTable.FindByItem(id)</code></pre>
+<p>即使全局当前快照在中途切换，这次逻辑仍读同一版本。</p>
+<p>这叫快照一致性：</p>
+<pre><code class="language-text">一次读取事务只观察一个完整版本。</code></pre>
+<p>快照是不可变的，切换时替换引用，而不是原地逐表修改。</p>
+<h2 id="热更新状态机">热更新状态机</h2>
+<p>一个明确的更新状态机可以包含：</p>
+<pre><code class="language-text">Idle
+CheckingManifest
+Downloading
+VerifyingArtifacts
+Parsing
+Validating
+ReadyToCommit
+Committing
+Active
+Failed</code></pre>
+<p>每次更新尝试还应有独立身份：</p>
+<pre><code class="language-text">UpdateAttemptId
+TargetVersion
+StartedAt
+CurrentStage
+Failure</code></pre>
+<p>失败不能直接跳回 <code>Idle</code>，否则观察者会看不出刚刚发生过更新失败。</p>
+<p>是否允许新的更新尝试覆盖旧失败记录，是保留策略选择；至少应有历史或外部日志保存证据。</p>
+<h2 id="从发现版本到生效的逐步流程">从发现版本到生效的逐步流程</h2>
+<h3 id="第一步-读取并验证清单">第一步：读取并验证清单</h3>
+<p>检查：</p>
+<pre><code class="language-text">清单格式可解析
+签名或可信来源符合系统协议
+目标内容版本明确
+结构版本被当前读取器支持
+文件集合完整</code></pre>
+<p>如果失败：</p>
+<pre><code class="language-text">状态 -&gt; Failed
+Stage -&gt; CheckingManifest
+保留原始响应与解析错误摘要
+不创建可提交快照</code></pre>
+<h3 id="第二步-下载到隔离准备区">第二步：下载到隔离准备区</h3>
+<p>新文件写入准备区，不覆盖当前活动快照的文件。</p>
+<p>准备区按更新尝试隔离：</p>
+<pre><code class="language-text">Attempt A 的部分文件
+不能与 Attempt B 的文件混成一套配置。</code></pre>
+<p>下载成功不等于配置可用。</p>
+<h3 id="第三步-校验产物完整性">第三步：校验产物完整性</h3>
+<p>对照清单验证：</p>
+<pre><code class="language-text">文件存在
+长度满足产物描述
+内容哈希一致
+成员版本一致</code></pre>
+<p>只要一个成员不一致：</p>
+<pre><code class="language-text">整套目标版本不能进入 ReadyToCommit。</code></pre>
+<h3 id="第四步-解析为候选快照">第四步：解析为候选快照</h3>
+<p>解析发生在隔离对象中：</p>
+<pre><code class="language-text">CandidateSnapshot</code></pre>
+<p>不应边解析边修改活动配置。</p>
+<p>解析错误应保留：</p>
+<pre><code class="language-text">文件
+表
+字段或记录位置
+结构版本
+原始错误</code></pre>
+<h3 id="第五步-语义校验">第五步：语义校验</h3>
+<p>二进制或 JSON 能解析，不代表业务关系合法。</p>
+<p>校验例子：</p>
+<pre><code class="language-text">主键唯一
+必填引用存在
+枚举值在支持范围内
+跨表版本相同
+有向关系满足约束</code></pre>
+<p>校验规则的具体内容必须来自配置协议和领域不变量，不能临时猜测。</p>
+<h3 id="第六步-准备提交">第六步：准备提交</h3>
+<p>到 <code>ReadyToCommit</code> 时，应具备：</p>
+<pre><code class="language-text">完整候选快照
+目标版本
+验证报告
+变更摘要
+提交前置条件</code></pre>
+<p>提交前置条件可能包括：</p>
+<pre><code class="language-text">当前活动版本仍是开始准备时读取的版本
+没有另一个提交正在进行
+所有必要消费者支持目标结构版本</code></pre>
+<h3 id="第七步-原子切换">第七步：原子切换</h3>
+<p>提交操作只做：</p>
+<pre><code class="language-text">将 CurrentSnapshot 引用从旧快照替换为候选快照。</code></pre>
+<p>切换成功后：</p>
+<pre><code class="language-text">新读取者获得新快照。
+已经持有旧快照的读取者继续完成旧版本读取。</code></pre>
+<p>这避免同一次逻辑跨版本读取。</p>
+<h2 id="最小-c-快照模型">最小 C# 快照模型</h2>
+<pre><code class="language-csharp">public sealed class ConfigSnapshot
+{
+    public string Version { get; }
+    public ItemTable Items { get; }
+    public PriceTable Prices { get; }
+
+    public ConfigSnapshot(
+        string version,
+        ItemTable items,
+        PriceTable prices)
+    {
+        Version = version;
+        Items = items;
+        Prices = prices;
+    }
+}
+
+public sealed class ConfigProvider
+{
+    private ConfigSnapshot current;
+
+    public ConfigProvider(ConfigSnapshot initial)
+    {
+        current = initial;
+    }
+
+    public ConfigSnapshot AcquireSnapshot()
+    {
+        // 返回不可变快照引用；一次逻辑应持续使用同一个引用。
+        return Volatile.Read(ref current);
+    }
+
+    public bool TryCommit(
+        ConfigSnapshot expectedCurrent,
+        ConfigSnapshot candidate,
+        out string? error)
+    {
+        ConfigSnapshot observed = Interlocked.CompareExchange(
+            ref current,
+            candidate,
+            expectedCurrent);
+
+        if (!ReferenceEquals(observed, expectedCurrent))
+        {
+            error =
+                $&quot;配置提交冲突：期望活动版本 {expectedCurrent.Version}，&quot; +
+                $&quot;实际活动版本 {observed.Version}。&quot;;
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+}</code></pre>
+<p>这段示例确定表达：</p>
+<pre><code class="language-text">快照不可原地修改
+读取方持有稳定引用
+提交使用比较并交换检测并发版本变化
+冲突通过错误返回给调用方</code></pre>
+<p>它没有定义冲突后应该重试、放弃还是重新准备。那是上层更新协议，不能在 <code>TryCommit</code> 内静默替换。</p>
+<h2 id="更新尝试的失败结果">更新尝试的失败结果</h2>
+<p>失败结果不应只是一个布尔值：</p>
+<pre><code class="language-csharp">public enum ConfigUpdateStage
+{
+    Manifest,
+    Download,
+    ArtifactVerification,
+    Parsing,
+    SemanticValidation,
+    Commit
+}
+
+public sealed record ConfigUpdateFailure(
+    string AttemptId,
+    string TargetVersion,
+    ConfigUpdateStage Stage,
+    string ErrorCode,
+    string Message,
+    Exception? Cause);</code></pre>
+<p>一个失败记录至少要能回答：</p>
+<pre><code class="language-text">哪次尝试失败
+目标版本是什么
+失败发生在哪个阶段
+稳定错误码是什么
+原始错误链是什么
+当前活动版本是什么
+候选快照是否已经被丢弃</code></pre>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">发现目标版本
+下载完整文件集
+哈希验证通过
+解析成功
+语义验证通过
+候选快照 ReadyToCommit
+原子切换成功
+发布 VersionActivated 事件
+状态 -&gt; Active</code></pre>
+<p><code>VersionActivated</code> 必须在提交成功后发布。</p>
+<p>订阅者收到事件时应能获得：</p>
+<pre><code class="language-text">旧版本
+新版本
+提交身份
+变更摘要或查询入口</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="内容相同但清单重新发布">内容相同但清单重新发布</h3>
+<p>如果目标内容哈希与当前活动集合完全一致：</p>
+<pre><code class="language-text">是否跳过提交
+是否记录为已检查但无变化</code></pre>
+<p>属于版本协议选择。无论如何，都不应虚构一次“新版本已激活”。</p>
+<h3 id="更新准备期间又出现更新版本">更新准备期间又出现更新版本</h3>
+<p>Attempt A 正在下载时发现目标 B。</p>
+<p>合法策略可能是：</p>
+<pre><code class="language-text">让 A 完成，再独立处理 B
+取消 A 并清晰记录取消原因
+并行准备，但提交时比较活动版本</code></pre>
+<p>具体策略需要显式确定。不同尝试的文件、状态和错误不得混合。</p>
+<h3 id="旧读取者长期持有旧快照">旧读取者长期持有旧快照</h3>
+<p>不可变快照允许旧读取者安全完成，但也会延迟旧快照回收。</p>
+<p>应观察：</p>
+<pre><code class="language-text">各版本活跃引用
+最长持有时间
+持有者类别
+旧快照内存</code></pre>
+<p>不能为了回收内存去原地清空旧快照，因为读取者仍可能使用它。</p>
+<h3 id="结构版本变化">结构版本变化</h3>
+<p>目标配置需要新字段，而当前读取代码不支持：</p>
+<pre><code class="language-text">候选版本必须在兼容性检查阶段失败。</code></pre>
+<p>返回空字段、默认枚举或忽略未知结构都属于兼容与降级策略，不能未经协议允许自动采用。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="清单与文件内容不一致">清单与文件内容不一致</h3>
+<pre><code class="language-text">Stage -&gt; ArtifactVerification
+状态 -&gt; Failed
+报告目标文件、期望哈希、实际哈希
+不进入解析与提交</code></pre>
+<h3 id="跨表引用断裂">跨表引用断裂</h3>
+<pre><code class="language-text">套餐引用不存在的商品</code></pre>
+<p>应报告：</p>
+<pre><code class="language-text">来源表和记录
+引用字段
+目标表与目标键
+候选版本</code></pre>
+<p>不能删除该套餐、填入默认商品或忽略引用后继续提交。</p>
+<h3 id="提交竞争">提交竞争</h3>
+<p>两个候选快照都基于版本 A 准备：</p>
+<pre><code class="language-text">Attempt B 先把 A 切到 B
+Attempt C 再尝试以 A 为前置提交 C</code></pre>
+<p>第二次比较并交换失败：</p>
+<pre><code class="language-text">期望版本 A
+实际版本 B
+候选版本 C</code></pre>
+<p>系统应把冲突暴露给协调层，不应绕过前置条件强行覆盖 B。</p>
+<h3 id="激活通知失败">激活通知失败</h3>
+<p>快照已经原子提交，但某个订阅者处理激活事件失败：</p>
+<pre><code class="language-text">提交事实不能伪装成未发生。
+订阅失败也不能被吞掉。</code></pre>
+<p>必须分别记录：</p>
+<pre><code class="language-text">配置版本已经激活
+哪个消费者通知失败
+原始错误
+消费者当前确认版本</code></pre>
+<p>如何恢复消费者一致性需要明确协议，不能由事件分发器返回默认成功。</p>
+<h2 id="当前旧版本还在-不等于自动回退">当前旧版本还在，不等于自动回退</h2>
+<p>如果候选版本在提交前失败，活动引用仍指向旧快照。这是因为：</p>
+<pre><code class="language-text">新版本从未提交。</code></pre>
+<p>它不是一次自动回退。</p>
+<p>此时系统真实状态应写成：</p>
+<pre><code class="language-text">ActiveVersion = old
+LatestUpdateAttempt = Failed
+TargetVersion = new
+Failure = ...</code></pre>
+<p>调用方必须明确决定：</p>
+<pre><code class="language-text">是否允许继续使用当前活动版本
+是否阻止某项功能
+是否终止启动或进入维护状态</code></pre>
+<p>热更新模块不能看到旧快照仍可读，就自行把失败转换成“继续成功运行”。</p>
+<h2 id="代价">代价</h2>
+<p>版本一致性会增加：</p>
+<pre><code class="language-text">候选快照与活动快照并存的内存
+下载准备区空间
+全量解析与语义校验时间
+清单和哈希计算
+旧快照引用追踪
+失败诊断数据</code></pre>
+<p>原子切换本身可以很小，但“准备一个确定正确的候选快照”通常才是主要成本。</p>
+<p>全量或增量更新是实现选择。增量更新如果最终仍要保证集合一致性，就必须能证明补丁应用后的完整版本身份。</p>
+<h2 id="可观测性">可观测性</h2>
+<p>每次更新尝试应记录：</p>
+<pre><code class="language-text">AttemptId
+Source
+CurrentVersion
+TargetVersion
+SchemaVersion
+Stage
+StageDuration
+DownloadedBytes
+VerifiedFileCount
+ValidationErrorCount
+CommitResult
+FailureCode
+OriginalError</code></pre>
+<p>运行时还应能查询：</p>
+<pre><code class="language-text">当前活动版本
+最近一次成功提交
+最近一次失败尝试
+当前是否正在准备候选版本
+各版本活跃读取引用
+各消费者确认版本</code></pre>
+<h2 id="通用机制与实现选择">通用机制与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">一组互相引用的配置必须以一致集合验证。
+候选数据应与活动数据隔离。
+不可变快照可以让一次读取固定在同一版本。
+准备完成后替换快照引用可避免逐表切换的混合状态。
+提交竞争必须验证预期活动版本。
+失败后的目标版本不能标记为 Active。</code></pre>
+<h3 id="必须由具体系统确定">必须由具体系统确定</h3>
+<pre><code class="language-text">版本编码规则
+清单签名与可信来源
+全量包还是增量包
+结构兼容协议
+更新失败后的运行决策
+更新并发策略
+旧快照回收条件
+消费者激活确认协议
+错误的阻断等级</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>配置管线保证：</p>
+<pre><code class="language-text">源数据能生成符合规则的产物。</code></pre>
+<p>热更新一致性保证：</p>
+<pre><code class="language-text">运行时只激活一套完整、验证通过的配置快照。</code></pre>
+<p>可靠的切换过程应满足：</p>
+<pre><code class="language-text">清单能标识完整集合
+结构版本和内容版本分开验证
+候选快照不污染活动快照
+一次逻辑只读取一个快照
+提交检查并发前置版本
+失败状态不会被 Idle 或默认成功覆盖
+旧版本仍存在时，继续运行与否仍由明确策略决定</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%B8%AD%E5%90%8E%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E6%8A%95%E5%B0%84%E7%89%A9/"><small>← PREVIOUS</small>命中后的运动与投射物</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90%E7%AE%A1%E7%BA%BF/"><small>NEXT →</small>配置数据生成管线：让错误停在构建期</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

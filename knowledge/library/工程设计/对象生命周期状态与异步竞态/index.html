@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="把一个对象想成餐厅里的一张取餐号牌。">
+  <title>对象生命周期状态与异步竞态 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>对象生命周期状态与异步竞态</h1>
+      <p class="hero-copy">把一个对象想成餐厅里的一张取餐号牌。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#生活化模型-一张取餐号牌">生活化模型：一张取餐号牌</a>
+    <a data-toc-link href="#为什么-对象还存在-不够">为什么“对象还存在”不够</a>
+    <a data-toc-link href="#用显式状态表达生命周期">用显式状态表达生命周期</a>
+    <a class="sub" data-toc-link href="#状态机提供什么">状态机提供什么</a>
+    <a class="sub" data-toc-link href="#状态机不能单独解决什么">状态机不能单独解决什么</a>
+    <a data-toc-link href="#generation-token-为每一代身份编号">Generation Token：为每一代身份编号</a>
+    <a class="sub" data-toc-link href="#token-解决的是归属-不是取消">Token 解决的是归属，不是取消</a>
+    <a data-toc-link href="#异步回调晚到的完整事实链">异步回调晚到的完整事实链</a>
+    <a data-toc-link href="#最小-c-示例">最小 C# 示例</a>
+    <a class="sub" data-toc-link href="#错误为什么仍然可见">错误为什么仍然可见</a>
+    <a data-toc-link href="#取消不是错误替代器">取消不是错误替代器</a>
+    <a data-toc-link href="#可视化的逐步状态">可视化的逐步状态</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#结果与取消几乎同时发生">结果与取消几乎同时发生</a>
+    <a class="sub" data-toc-link href="#多个同代操作竞争">多个同代操作竞争</a>
+    <a class="sub" data-toc-link href="#dispose-被重复调用">Dispose 被重复调用</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a data-toc-link href="#代价与权衡">代价与权衡</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：一张取餐号牌">
+      <span>01</span>
+      <strong>生活化模型：一张取餐号牌</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：为什么“对象还存在”不够">
+      <span>02</span>
+      <strong>为什么“对象还存在”不够</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：用显式状态表达生命周期">
+      <span>03</span>
+      <strong>用显式状态表达生命周期</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Generation Token：为每一代身份编号">
+      <span>04</span>
+      <strong>Generation Token：为每一代身份编号</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：异步回调晚到的完整事实链">
+      <span>05</span>
+      <strong>异步回调晚到的完整事实链</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小 C# 示例">
+      <span>06</span>
+      <strong>最小 C# 示例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：取消不是错误替代器">
+      <span>07</span>
+      <strong>取消不是错误替代器</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：可视化的逐步状态">
+      <span>08</span>
+      <strong>可视化的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：正常路径">
+      <span>09</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界路径">
+      <span>10</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：失败路径">
+      <span>11</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：代价与权衡">
+      <span>12</span>
+      <strong>代价与权衡</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>生活化模型：一张取餐号牌</h3>
+        <p>把一个对象想成餐厅里的一张取餐号牌。</p>
+
+        <pre><code class="language-text">尚未发出
+    ↓
+已经发出，正在备餐
+    ↓
+餐品完成
+    ↓
+顾客取走，号牌作废</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>为什么“对象还存在”不够</h3>
+        <p>同步代码通常按顺序发生：</p>
+
+        <pre><code class="language-text">创建 → 使用 → 销毁</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>用显式状态表达生命周期</h3>
+        <p>生命周期状态机把允许发生的变化写清楚。</p>
+
+        <pre><code class="language-text">Created
+   ↓ Start
+Active
+   ↓ BeginStop
+Stopping
+   ↓ CompleteStop
+Disposed
+
+Active ── Fault ──&gt; Faulted
+Stopping ─ Fault ─&gt; Faulted</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>Generation Token：为每一代身份编号</h3>
+        <p>Generation Token 可以理解成号牌背后的批次号。</p>
+
+        <pre><code class="language-text">generation 增加。
+异步操作捕获启动时的 generation。
+回调到达时与当前 generation 比较。
+只有相等时，结果才有资格修改当前状态。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>异步回调晚到的完整事实链</h3>
+        <p>“发出取消请求”不等于“回调绝不会再来”。取消通常是协作式协议，操作是否以及何时响应，取决于被调用方。</p>
+
+        <pre><code class="language-text">对象进入 Active
+    ↓
+启动异步操作，记录 generation 与取消令牌
+    ↓
+对象开始停止
+    ↓
+发出取消请求，并改变 generation
+    ↓
+异步操作可能立即取消，也可能已经完成或暂时无法响应取消
+    ↓
+回调最终到达
+    ↓
+先识别完成、取消或失败
+    ↓
+再验证 generation 与状态
+    ↓
+只有归属有效的成功结果可以写入
+    ↓
+取消与失败仍以明确结果对外可见</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>最小 C# 示例</h3>
+        <p>下面是一个教学用的异步资源拥有者。它展示状态、generation、取消以及错误可见性，不提供重试或默认值替代。</p>
+
+        <pre><code class="language-csharp">public enum OwnerState
+{
+    Created,
+    Active,
+    Stopping,
+    Disposed,
+    Faulted
+}
+
+public enum LoadStatus
+{
+    Applied,
+    Cancelled,
+    Superseded,
+    Faulted
+}
+
+public sealed record LoadOutcome(
+    LoadStatus Status,
+    Exception? Error = null);
+
+public sealed class AsyncOwner&lt;T&gt; : IAsyncDisposable
+{
+    private long _generation;
+    private CancellationTokenSource? _lifetimeCts;
+
+    public OwnerState State { get; private set; } = OwnerState.Created;
+    public T? Value { get; private set; }
+
+    public void Start()
+    {
+        if (State != OwnerState.Created)
+            throw new InvalidOperationException($&quot;Cannot start from {State}.&quot;);
+
+        _generation = checked(_generation + 1);
+        _lifetimeCts = new CancellationTokenSource();
+        State = OwnerState.Active;
+    }
+
+    public async Task&lt;LoadOutcome&gt; LoadAsync(
+        Func&lt;CancellationToken, Task&lt;T&gt;&gt; load)
+    {
+        if (State != OwnerState.Active || _lifetimeCts is null)
+            throw new InvalidOperationException($&quot;Cannot load from {State}.&quot;);
+
+        long operationGeneration = _generation;
+        CancellationToken token = _lifetimeCts.Token;
+
+        try
+        {
+            T loaded = await load(token);
+
+            if (operationGeneration != _generation || State != OwnerState.Active)
+                return new LoadOutcome(LoadStatus.Superseded);
+
+            Value = loaded;
+            return new LoadOutcome(LoadStatus.Applied);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            return new LoadOutcome(LoadStatus.Cancelled);
+        }
+        catch (Exception error)
+        {
+            // 原始异常随结果返回，调用方仍然能观察和记录失败。
+            if (operationGeneration == _generation)
+                State = OwnerState.Faulted;
+
+            return new LoadOutcome(LoadStatus.Faulted, error);
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        if (State == OwnerState.Disposed)
+            return ValueTask.CompletedTask;
+
+        State = OwnerState.Stopping;
+
+        // 先让当前代失效，再请求后台操作协作式取消。
+        _generation = checked(_generation + 1);
+        _lifetimeCts?.Cancel();
+        _lifetimeCts?.Dispose();
+        _lifetimeCts = null;
+
+        Value = default;
+        State = OwnerState.Disposed;
+        return ValueTask.CompletedTask;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>取消不是错误替代器</h3>
+        <p>取消与失败是不同事实：</p>
+
+        <pre><code class="language-text">取消：调用方不再需要这项工作，且操作接受了取消请求。
+失败：操作尝试完成，但发生错误。
+过期：操作可能成功，但结果不再属于当前生命周期。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>可视化的逐步状态</h3>
+        <p>可以用时间轴观察竞态：</p>
+
+        <pre><code class="language-text">时间 ─────────────────────────────────────────&gt;
+
+对象代次      G1            G2
+对象状态      Active  Stop  Active
+操作 A        ├──────────────● 晚到
+操作 B                       ├────●
+取消请求              ↑
+结果归属      A 捕获 G1      B 捕获 G2
+提交判断              G1 != G2   G2 == G2</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+        <p>正常路径也应经过归属验证，而不是只有发生异常时才检查。</p>
+
+        <pre><code class="language-text">对象进入 Active。
+异步操作捕获当前 generation。
+操作成功完成。
+generation 与状态仍匹配。
+结果写入并返回 Applied。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>取消请求与异步完成之间没有天然的全局先后保证。</p>
+
+        <pre><code class="language-text">若成功结果先被确认且归属仍有效，则可以提交。
+若取消已被接受并抛出对应取消异常，则报告 Cancelled。
+若代次已改变，即使操作成功也报告 Superseded。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>这里没有“失败后默认成功”的路径。</p>
+
+        <pre><code class="language-text">状态转换非法：抛出或返回明确状态错误。
+异步操作失败：返回 Faulted，并保留原始异常。
+取消未被下游响应：回调仍需经过 generation 检查。
+旧操作晚到：返回 Superseded，不写入当前对象。
+清理自身失败：应单独暴露清理错误，不能因对象已标记结束就吞掉。
+generation 溢出：checked 运算暴露异常，而不是悄悄回绕。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>代价与权衡</h3>
+        <p>显式生命周期会增加：</p>
+
+        <pre><code class="language-text">状态枚举与转换代码。
+每次异步操作的 token 捕获和比较。
+取消令牌的创建与释放。
+结果类型和错误传播。
+并发访问时的同步成本。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">状态描述对象现在能做什么。
+generation 描述结果属于哪一代。
+取消请求停止不再需要的工作，但不保证回调不会晚到。
+晚到结果必须先验证归属，再决定能否写入。
+取消、过期与失败是三种不同事实。
+原始错误必须保持可见，不能转换成默认成功或空值。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计</p>
+<h2 id="生活化模型-一张取餐号牌">生活化模型：一张取餐号牌</h2>
+<p>把一个对象想成餐厅里的一张取餐号牌。</p>
+<p>号牌会经历：</p>
+<pre><code class="language-text">尚未发出
+    ↓
+已经发出，正在备餐
+    ↓
+餐品完成
+    ↓
+顾客取走，号牌作废</code></pre>
+<p>如果号牌 <code>A</code> 已经作废，后来又发出了外观相同的号牌，新号牌也不等于旧号牌。</p>
+<p>旧厨单晚到时，不能因为“桌面上现在也有一张 A”就把旧餐交给新顾客。除了名字，还需要知道：</p>
+<pre><code class="language-text">这是不是同一次生命周期？</code></pre>
+<p>这就是对象生命周期与异步竞态的核心。</p>
+<h2 id="为什么-对象还存在-不够">为什么“对象还存在”不够</h2>
+<p>同步代码通常按顺序发生：</p>
+<pre><code class="language-text">创建 → 使用 → 销毁</code></pre>
+<p>异步代码会把“请求发出”和“结果回来”分开：</p>
+<pre><code class="language-text">创建对象
+启动异步加载
+销毁对象
+重新创建一个同用途对象
+旧异步加载完成</code></pre>
+<p>回调执行时，对象引用可能仍然非空，甚至界面上已经出现一个“同名新对象”，但旧结果依然不属于它。</p>
+<p>因此不能只判断：</p>
+<pre><code class="language-text">对象是否非空？</code></pre>
+<p>还应判断：</p>
+<pre><code class="language-text">对象处于什么状态？
+回调属于哪一代生命周期？
+本次操作是否已经取消？
+结果对应的前置条件是否仍成立？</code></pre>
+<h2 id="用显式状态表达生命周期">用显式状态表达生命周期</h2>
+<p>生命周期状态机把允许发生的变化写清楚。</p>
+<p>一个教学模型可以是：</p>
+<pre><code class="language-text">Created
+   ↓ Start
+Active
+   ↓ BeginStop
+Stopping
+   ↓ CompleteStop
+Disposed
+
+Active ── Fault ──&gt; Faulted
+Stopping ─ Fault ─&gt; Faulted</code></pre>
+<p>状态名称只是<strong>教学示例</strong>。生产状态必须来自对象真实职责，不能为了“看起来完整”随意增加默认分支。</p>
+<h3 id="状态机提供什么">状态机提供什么</h3>
+<p>状态机能明确：</p>
+<pre><code class="language-text">哪些操作在当前状态合法。
+一次状态变化由谁触发。
+失败发生在哪个阶段。
+清理是否已经开始或完成。
+晚到回调为什么不能再写入。</code></pre>
+<p>它也让非法调用暴露出来。例如对 <code>Disposed</code> 对象再次 <code>Start</code>，应该报告状态错误，而不是静默当作成功。</p>
+<h3 id="状态机不能单独解决什么">状态机不能单独解决什么</h3>
+<p>如果一个对象结束后，又复用了同一个实例或同一个业务标识，那么：</p>
+<pre><code class="language-text">旧回调看到的当前状态可能也是 Active。</code></pre>
+<p>此时仅检查状态仍然不够，还需要区分生命周期代次。</p>
+<h2 id="generation-token-为每一代身份编号">Generation Token：为每一代身份编号</h2>
+<p>Generation Token 可以理解成号牌背后的批次号。</p>
+<p>每次开始新的生命周期或会替代旧结果的操作时：</p>
+<pre><code class="language-text">generation 增加。
+异步操作捕获启动时的 generation。
+回调到达时与当前 generation 比较。
+只有相等时，结果才有资格修改当前状态。</code></pre>
+<p>流程如下：</p>
+<pre><code class="language-text">当前 generation = G
+        ↓
+启动异步操作，捕获 G
+        ↓
+对象重置或开始新一代，generation 改变
+        ↓
+旧回调携带 G 返回
+        ↓
+G != 当前 generation
+        ↓
+判定为过期结果，不写入当前对象</code></pre>
+<p>这里的 <code>G</code> 是符号，不是固定生产值。</p>
+<h3 id="token-解决的是归属-不是取消">Token 解决的是归属，不是取消</h3>
+<p>Generation Token 能阻止旧结果污染新状态，但它不会自动停止后台工作。</p>
+<p>旧操作可能仍然消耗：</p>
+<pre><code class="language-text">网络带宽。
+文件读取。
+计算时间。
+内存。
+下游服务容量。</code></pre>
+<p>因此通常还要把“结果是否有资格提交”和“工作是否应该停止”分开设计：</p>
+<pre><code class="language-text">generation：验证结果归属。
+CancellationToken：请求协作式取消。</code></pre>
+<p>两者不是互相替代。</p>
+<h2 id="异步回调晚到的完整事实链">异步回调晚到的完整事实链</h2>
+<pre><code class="language-text">对象进入 Active
+    ↓
+启动异步操作，记录 generation 与取消令牌
+    ↓
+对象开始停止
+    ↓
+发出取消请求，并改变 generation
+    ↓
+异步操作可能立即取消，也可能已经完成或暂时无法响应取消
+    ↓
+回调最终到达
+    ↓
+先识别完成、取消或失败
+    ↓
+再验证 generation 与状态
+    ↓
+只有归属有效的成功结果可以写入
+    ↓
+取消与失败仍以明确结果对外可见</code></pre>
+<p>“发出取消请求”不等于“回调绝不会再来”。取消通常是协作式协议，操作是否以及何时响应，取决于被调用方。</p>
+<h2 id="最小-c-示例">最小 C# 示例</h2>
+<p>下面是一个教学用的异步资源拥有者。它展示状态、generation、取消以及错误可见性，不提供重试或默认值替代。</p>
+<pre><code class="language-csharp">public enum OwnerState
+{
+    Created,
+    Active,
+    Stopping,
+    Disposed,
+    Faulted
+}
+
+public enum LoadStatus
+{
+    Applied,
+    Cancelled,
+    Superseded,
+    Faulted
+}
+
+public sealed record LoadOutcome(
+    LoadStatus Status,
+    Exception? Error = null);
+
+public sealed class AsyncOwner&lt;T&gt; : IAsyncDisposable
+{
+    private long _generation;
+    private CancellationTokenSource? _lifetimeCts;
+
+    public OwnerState State { get; private set; } = OwnerState.Created;
+    public T? Value { get; private set; }
+
+    public void Start()
+    {
+        if (State != OwnerState.Created)
+            throw new InvalidOperationException($&quot;Cannot start from {State}.&quot;);
+
+        _generation = checked(_generation + 1);
+        _lifetimeCts = new CancellationTokenSource();
+        State = OwnerState.Active;
+    }
+
+    public async Task&lt;LoadOutcome&gt; LoadAsync(
+        Func&lt;CancellationToken, Task&lt;T&gt;&gt; load)
+    {
+        if (State != OwnerState.Active || _lifetimeCts is null)
+            throw new InvalidOperationException($&quot;Cannot load from {State}.&quot;);
+
+        long operationGeneration = _generation;
+        CancellationToken token = _lifetimeCts.Token;
+
+        try
+        {
+            T loaded = await load(token);
+
+            if (operationGeneration != _generation || State != OwnerState.Active)
+                return new LoadOutcome(LoadStatus.Superseded);
+
+            Value = loaded;
+            return new LoadOutcome(LoadStatus.Applied);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            return new LoadOutcome(LoadStatus.Cancelled);
+        }
+        catch (Exception error)
+        {
+            // 原始异常随结果返回，调用方仍然能观察和记录失败。
+            if (operationGeneration == _generation)
+                State = OwnerState.Faulted;
+
+            return new LoadOutcome(LoadStatus.Faulted, error);
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        if (State == OwnerState.Disposed)
+            return ValueTask.CompletedTask;
+
+        State = OwnerState.Stopping;
+
+        // 先让当前代失效，再请求后台操作协作式取消。
+        _generation = checked(_generation + 1);
+        _lifetimeCts?.Cancel();
+        _lifetimeCts?.Dispose();
+        _lifetimeCts = null;
+
+        Value = default;
+        State = OwnerState.Disposed;
+        return ValueTask.CompletedTask;
+    }
+}</code></pre>
+<p>这个示例中的 <code>default</code> 只用于清除已释放对象持有的引用，不会被当作加载成功结果返回。</p>
+<h3 id="错误为什么仍然可见">错误为什么仍然可见</h3>
+<p>示例明确区分：</p>
+<pre><code class="language-text">Applied：结果成功写入当前代。
+Cancelled：当前生命周期请求了取消。
+Superseded：结果成功返回，但已不属于当前代。
+Faulted：操作失败，并携带原始 Exception。</code></pre>
+<p>没有把异常转换为“成功 + 空值”，也没有在失败后自动使用旧数据。</p>
+<p>调用方必须检查 <code>LoadOutcome</code>。如果调用方选择记录或展示失败，那是上层明确策略；底层不应默默吞掉它。</p>
+<h2 id="取消不是错误替代器">取消不是错误替代器</h2>
+<p>取消与失败是不同事实：</p>
+<pre><code class="language-text">取消：调用方不再需要这项工作，且操作接受了取消请求。
+失败：操作尝试完成，但发生错误。
+过期：操作可能成功，但结果不再属于当前生命周期。</code></pre>
+<p>不能把任意异常都改写为取消，也不能把过期结果伪装成失败。</p>
+<p>同样，捕获 <code>OperationCanceledException</code> 时应确认它对应本次请求的取消条件。否则可能把下游自己的超时或取消原因错误归类。</p>
+<h2 id="可视化的逐步状态">可视化的逐步状态</h2>
+<p>可以用时间轴观察竞态：</p>
+<pre><code class="language-text">时间 ─────────────────────────────────────────&gt;
+
+对象代次      G1            G2
+对象状态      Active  Stop  Active
+操作 A        ├──────────────● 晚到
+操作 B                       ├────●
+取消请求              ↑
+结果归属      A 捕获 G1      B 捕获 G2
+提交判断              G1 != G2   G2 == G2</code></pre>
+<p>其中 <code>G1</code>、<code>G2</code> 是<strong>教学符号</strong>。</p>
+<p>交互演示可允许控制：</p>
+<pre><code class="language-text">操作 A 的完成时刻。
+对象停止和重启的时刻。
+操作是否响应取消。
+操作最终成功、取消或失败。</code></pre>
+<p>状态面板应同时显示：</p>
+<pre><code class="language-text">当前对象状态。
+当前 generation。
+每个操作捕获的 generation。
+取消是否已请求。
+原始错误是否存在。
+结果是否被应用，以及拒绝应用的原因。</code></pre>
+<h2 id="正常路径">正常路径</h2>
+<pre><code class="language-text">对象进入 Active。
+异步操作捕获当前 generation。
+操作成功完成。
+generation 与状态仍匹配。
+结果写入并返回 Applied。</code></pre>
+<p>正常路径也应经过归属验证，而不是只有发生异常时才检查。</p>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="结果与取消几乎同时发生">结果与取消几乎同时发生</h3>
+<p>取消请求与异步完成之间没有天然的全局先后保证。</p>
+<p>系统应根据可观察状态给出一种明确结果：</p>
+<pre><code class="language-text">若成功结果先被确认且归属仍有效，则可以提交。
+若取消已被接受并抛出对应取消异常，则报告 Cancelled。
+若代次已改变，即使操作成功也报告 Superseded。</code></pre>
+<p>具体同步原语必须保证状态检查和结果提交之间不会再次被并发修改。</p>
+<h3 id="多个同代操作竞争">多个同代操作竞争</h3>
+<p>Generation 只区分生命周期，不一定区分同一代里的多个请求。</p>
+<p>如果“后发请求覆盖先发请求”是规则，还需要操作级 token 或请求序号。是否允许覆盖属于行为设计，不能由 generation 自动推导。</p>
+<h3 id="dispose-被重复调用">Dispose 被重复调用</h3>
+<p>释放操作通常需要幂等地保护自身资源，但“重复释放返回完成”不代表其他非法状态转换也应该静默成功。</p>
+<h2 id="失败路径">失败路径</h2>
+<pre><code class="language-text">状态转换非法：抛出或返回明确状态错误。
+异步操作失败：返回 Faulted，并保留原始异常。
+取消未被下游响应：回调仍需经过 generation 检查。
+旧操作晚到：返回 Superseded，不写入当前对象。
+清理自身失败：应单独暴露清理错误，不能因对象已标记结束就吞掉。
+generation 溢出：checked 运算暴露异常，而不是悄悄回绕。</code></pre>
+<p>这里没有“失败后默认成功”的路径。</p>
+<h2 id="代价与权衡">代价与权衡</h2>
+<p>显式生命周期会增加：</p>
+<pre><code class="language-text">状态枚举与转换代码。
+每次异步操作的 token 捕获和比较。
+取消令牌的创建与释放。
+结果类型和错误传播。
+并发访问时的同步成本。</code></pre>
+<p>它换来的是：</p>
+<pre><code class="language-text">晚到回调不会悄悄污染新状态。
+非法调用更容易定位。
+取消、过期和失败可以分别观察。
+清理边界更明确。</code></pre>
+<p>若有 <code>N</code> 个在途操作，需要至少保存与这些操作相关的状态，空间成本通常与在途操作数量有关。generation 比较本身是常数时间，但真正成本往往来自被取消的后台工作与并发协调。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">状态描述对象现在能做什么。
+generation 描述结果属于哪一代。
+取消请求停止不再需要的工作，但不保证回调不会晚到。
+晚到结果必须先验证归属，再决定能否写入。
+取消、过期与失败是三种不同事实。
+原始错误必须保持可见，不能转换成默认成功或空值。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/"><small>← PREVIOUS</small>对象池</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BC%93%E5%AD%98%E5%BB%BA%E7%AB%8B%E5%A4%B1%E6%95%88%E7%89%88%E6%9C%AC%E4%B8%8E%E9%87%8D%E5%BB%BA/"><small>NEXT →</small>缓存：建立、失效、版本与重建</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

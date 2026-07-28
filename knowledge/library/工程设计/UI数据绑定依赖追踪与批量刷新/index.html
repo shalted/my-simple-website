@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="虚拟列表解决的是：">
+  <title>UI 数据绑定：依赖追踪与批量刷新 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>UI 数据绑定：依赖追踪与批量刷新</h1>
+      <p class="hero-copy">虚拟列表解决的是：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
+    <a data-toc-link href="#先用账单看板理解问题">先用账单看板理解问题</a>
+    <a data-toc-link href="#数据绑定不是简单赋值">数据绑定不是简单赋值</a>
+    <a data-toc-link href="#依赖图">依赖图</a>
+    <a data-toc-link href="#两类依赖追踪">两类依赖追踪</a>
+    <a class="sub" data-toc-link href="#显式声明依赖">显式声明依赖</a>
+    <a class="sub" data-toc-link href="#求值时动态收集依赖">求值时动态收集依赖</a>
+    <a data-toc-link href="#条件依赖为什么麻烦">条件依赖为什么麻烦</a>
+    <a data-toc-link href="#从变化到刷新的逐步状态">从变化到刷新的逐步状态</a>
+    <a data-toc-link href="#批量刷新怎样工作">批量刷新怎样工作</a>
+    <a class="sub" data-toc-link href="#第一步-数据源提交变化">第一步：数据源提交变化</a>
+    <a class="sub" data-toc-link href="#第二步-传播失效">第二步：传播失效</a>
+    <a class="sub" data-toc-link href="#第三步-等待刷新边界">第三步：等待刷新边界</a>
+    <a class="sub" data-toc-link href="#第四步-按依赖顺序求值">第四步：按依赖顺序求值</a>
+    <a class="sub" data-toc-link href="#第五步-应用结果">第五步：应用结果</a>
+    <a data-toc-link href="#最小-c-模型">最小 C# 模型</a>
+    <a data-toc-link href="#与虚拟列表怎样结合">与虚拟列表怎样结合</a>
+    <a class="sub" data-toc-link href="#可见与不可见项">可见与不可见项</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a class="sub" data-toc-link href="#一个字段影响一个绑定">一个字段影响一个绑定</a>
+    <a class="sub" data-toc-link href="#多字段影响同一绑定">多字段影响同一绑定</a>
+    <a class="sub" data-toc-link href="#虚拟列表槽位复用">虚拟列表槽位复用</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#刷新期间再次发生变化">刷新期间再次发生变化</a>
+    <a class="sub" data-toc-link href="#绑定目标已经销毁">绑定目标已经销毁</a>
+    <a class="sub" data-toc-link href="#值没有改变">值没有改变</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#依赖图形成环">依赖图形成环</a>
+    <a class="sub" data-toc-link href="#求值异常">求值异常</a>
+    <a class="sub" data-toc-link href="#apply-异常">Apply 异常</a>
+    <a class="sub" data-toc-link href="#数据通知丢失">数据通知丢失</a>
+    <a data-toc-link href="#性能代价">性能代价</a>
+    <a data-toc-link href="#观测指标">观测指标</a>
+    <a data-toc-link href="#通用机制与实现选择">通用机制与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体系统确定">必须由具体系统确定</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+      <span>01</span>
+      <strong>这篇文章深化什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用账单看板理解问题">
+      <span>02</span>
+      <strong>先用账单看板理解问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：数据绑定不是简单赋值">
+      <span>03</span>
+      <strong>数据绑定不是简单赋值</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：依赖图">
+      <span>04</span>
+      <strong>依赖图</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：两类依赖追踪">
+      <span>05</span>
+      <strong>两类依赖追踪</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：条件依赖为什么麻烦">
+      <span>06</span>
+      <strong>条件依赖为什么麻烦</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从变化到刷新的逐步状态">
+      <span>07</span>
+      <strong>从变化到刷新的逐步状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：批量刷新怎样工作">
+      <span>08</span>
+      <strong>批量刷新怎样工作</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 模型">
+      <span>09</span>
+      <strong>最小 C# 模型</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：与虚拟列表怎样结合">
+      <span>10</span>
+      <strong>与虚拟列表怎样结合</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：正常路径">
+      <span>11</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界路径">
+      <span>12</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：失败路径">
+      <span>13</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：性能代价">
+      <span>14</span>
+      <strong>性能代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：观测指标">
+      <span>15</span>
+      <strong>观测指标</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
+      <span>16</span>
+      <strong>通用机制与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
+      <span>17</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>这篇文章深化什么</h3>
+        <p>虚拟列表解决的是：</p>
+
+        <pre><code class="language-text">数据很多时，只创建和更新当前可见的少量 UI 项。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>先用账单看板理解问题</h3>
+        <p>想象墙上有一块家庭账单看板：</p>
+
+        <pre><code class="language-text">商品数量
+商品单价
+商品小计
+全部商品总价
+折扣
+应付金额</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>数据绑定不是简单赋值</h3>
+        <p>最简单的绑定像这样：</p>
+
+        <pre><code class="language-text">nameText.text = item.Name</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>依赖图</h3>
+        <p>把数据和绑定画成图：</p>
+
+        <pre><code class="language-text">Quantity ──┐
+           ├─&gt; ItemSubtotal ──┐
+UnitPrice ─┘                  │
+                              ├─&gt; Total ──┐
+OtherSubtotals ───────────────┘           ├─&gt; PayableText
+Discount ─────────────────────────────────┘</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>两类依赖追踪</h3>
+        <p>注册绑定时直接声明字段：</p>
+
+        <pre><code class="language-text">Bind(
+    target = PayableText,
+    dependencies = [Total, Discount],
+    evaluate = total - discount)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>条件依赖为什么麻烦</h3>
+        <p>考虑：</p>
+
+        <pre><code class="language-text">displayName =
+    useNickname
+        ? nickname
+        : fullName</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>从变化到刷新的逐步状态</h3>
+        <p>一次批量刷新可以分成这些状态：</p>
+
+        <pre><code class="language-text">Clean
+  当前结果与数据一致。
+
+Dirty
+  依赖已经变化，结果需要重算。
+
+Queued
+  已进入本轮刷新队列。
+
+Evaluating
+  正在读取依赖并计算新值。
+
+Applying
+  正在把结果写入目标 UI。
+
+Clean
+  写入成功，绑定恢复一致。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>批量刷新怎样工作</h3>
+        <p>一轮逻辑可能修改多个字段：</p>
+
+        <pre><code class="language-text">Quantity changed
+UnitPrice changed
+Discount changed</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>最小 C# 模型</h3>
+        <p>下面的示例展示去重队列和失败可见性，不绑定具体 UI 框架：</p>
+
+        <pre><code class="language-csharp">public enum RefreshStatus
+{
+    Clean,
+    Queued,
+    Evaluating,
+    Applying,
+    EvaluationFailed,
+    ApplyFailed
+}
+
+public sealed class BindingNode
+{
+    public string Id { get; }
+    public RefreshStatus Status { get; private set; }
+    public Exception? LastError { get; private set; }
+
+    private readonly Func&lt;object&gt; evaluate;
+    private readonly Action&lt;object&gt; apply;
+
+    public BindingNode(
+        string id,
+        Func&lt;object&gt; evaluate,
+        Action&lt;object&gt; apply)
+    {
+        Id = id;
+        this.evaluate = evaluate;
+        this.apply = apply;
+    }
+
+    public void MarkQueued()
+    {
+        Status = RefreshStatus.Queued;
+    }
+
+    public bool TryRefresh(out Exception? error)
+    {
+        LastError = null;
+        error = null;
+
+        object value;
+
+        try
+        {
+            Status = RefreshStatus.Evaluating;
+            value = evaluate();
+        }
+        catch (Exception exception)
+        {
+            Status = RefreshStatus.EvaluationFailed;
+            LastError = exception;
+            error = exception;
+            return false;
+        }
+
+        try
+        {
+            Status = RefreshStatus.Applying;
+            apply(value);
+            Status = RefreshStatus.Clean;
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Status = RefreshStatus.ApplyFailed;
+            LastError = exception;
+            error = exception;
+            return false;
+        }
+    }
+}
+
+public sealed class RefreshBatch
+{
+    private readonly HashSet&lt;BindingNode&gt; dirty = new();
+
+    public void Enqueue(BindingNode binding)
+    {
+        if (dirty.Add(binding))
+        {
+            // 同一批次只让同一个绑定入队一次。
+            binding.MarkQueued();
+        }
+    }
+
+    public IReadOnlyList&lt;(string Id, Exception Error)&gt; Flush()
+    {
+        var failures = new List&lt;(string, Exception)&gt;();
+
+        foreach (BindingNode binding in dirty)
+        {
+            if (!binding.TryRefresh(out Exception? error))
+            {
+                // 失败被收集并交给调用方，不转换成默认成功。
+                failures.Add((binding.Id, error!));
+            }
+        }
+
+        dirty.Clear();
+        return failures;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>与虚拟列表怎样结合</h3>
+        <p>虚拟列表会反复复用可见项：</p>
+
+        <pre><code class="language-text">槽位 3 原来显示数据 18
+滚动后改为显示数据 43</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+
+
+        <pre><code class="language-text">Name 变化
+NameText 进入脏集合
+刷新边界到达
+求值并写入成功
+NameText -&gt; Clean</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>绑定 A 求值时触发了数据变化，使绑定 B 变脏。</p>
+
+        <pre><code class="language-text">B 加入当前批次剩余队列
+还是进入下一批次</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>应输出完整或最小环路：</p>
+
+        <pre><code class="language-text">A 显示依赖 B
+B 显示依赖 A</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>性能代价</h3>
+        <p>依赖追踪会增加：</p>
+
+        <pre><code class="language-text">反向依赖索引内存
+订阅与解绑成本
+变化传播成本
+拓扑排序或优先队列成本
+诊断元数据</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>观测指标</h3>
+        <p>一轮刷新至少应能观察：</p>
+
+        <pre><code class="language-text">BatchId
+SourceChangeCount
+DirtyBindingCount
+DeduplicatedEnqueueCount
+EvaluatedCount
+AppliedCount
+FailedCount
+CycleCount
+StaleGenerationCount
+BatchDuration</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>通用机制与实现选择</h3>
+
+
+        <pre><code class="language-text">绑定结果依赖一个或多个数据源字段。
+字段变化会让下游结果失效。
+脏集合可以合并同一批次内的重复刷新请求。
+有向依赖需要按上游到下游的顺序刷新。
+目标复用时必须隔离旧绑定代次。
+失败后的绑定不能声称与数据一致。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>虚拟列表回答：</p>
+
+        <pre><code class="language-text">哪些视图现在需要存在？</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计 / UI 架构</p>
+<h2 id="这篇文章深化什么">这篇文章深化什么</h2>
+<p>虚拟列表解决的是：</p>
+<pre><code class="language-text">数据很多时，只创建和更新当前可见的少量 UI 项。</code></pre>
+<p>但“只保留可见项”之后，还有另一个问题：</p>
+<pre><code class="language-text">数据发生变化时，究竟哪些 UI 需要重算？
+同一轮连续变化时，怎样避免反复刷新？
+派生字段之间有依赖时，刷新顺序怎样确定？</code></pre>
+<p>这篇文章是在虚拟列表基础上，继续深入：</p>
+<pre><code class="language-text">数据绑定
+依赖追踪
+脏标记合并
+批量刷新
+刷新失败的可见性</code></pre>
+<p>它不替代虚拟化。两者职责不同：</p>
+<pre><code class="language-text">虚拟列表减少“同时存在多少视图”。
+依赖追踪减少“数据变化后刷新哪些绑定”。
+批量刷新减少“同一轮变化重复刷新多少次”。</code></pre>
+<h2 id="先用账单看板理解问题">先用账单看板理解问题</h2>
+<p>想象墙上有一块家庭账单看板：</p>
+<pre><code class="language-text">商品数量
+商品单价
+商品小计
+全部商品总价
+折扣
+应付金额</code></pre>
+<p>如果某件商品数量从 1 连续改成 2、3、4：</p>
+<pre><code class="language-text">数量显示需要更新
+该商品小计需要更新
+总价需要更新
+应付金额需要更新</code></pre>
+<p>但商品名称、图片、说明没有变化，不应一起重绘。</p>
+<p>如果每次按键都立刻让所有字段刷新：</p>
+<pre><code class="language-text">数量刷新三次
+小计刷新三次
+总价刷新三次
+应付金额刷新三次</code></pre>
+<p>而如果把同一轮修改先收集起来：</p>
+<pre><code class="language-text">数量最终为 4
+相关绑定各刷新一次</code></pre>
+<p>这就是依赖追踪和批量刷新的生活化模型：</p>
+<pre><code class="language-text">先知道谁依赖谁。
+变化时只标脏。
+在明确的刷新边界统一重算。</code></pre>
+<h2 id="数据绑定不是简单赋值">数据绑定不是简单赋值</h2>
+<p>最简单的绑定像这样：</p>
+<pre><code class="language-text">nameText.text = item.Name</code></pre>
+<p>真正的绑定系统还要回答：</p>
+<pre><code class="language-text">数据源是谁？
+读取了数据源的哪个字段？
+结果写到哪个 UI 属性？
+字段变化后由谁通知？
+一个绑定依赖多个字段时怎样追踪？
+绑定执行失败时怎样报告？</code></pre>
+<p>可以把一条绑定表示为：</p>
+<pre><code class="language-text">Binding =
+    Source dependencies
+    + Evaluate
+    + Apply
+    + Lifetime</code></pre>
+<p>例如：</p>
+<pre><code class="language-text">应付金额文本
+  依赖：总价、折扣
+  计算：总价 - 折扣
+  写入：amountText.text
+  生命周期：当前页面实例</code></pre>
+<h2 id="依赖图">依赖图</h2>
+<p>把数据和绑定画成图：</p>
+<pre><code class="language-text">Quantity ──┐
+           ├─&gt; ItemSubtotal ──┐
+UnitPrice ─┘                  │
+                              ├─&gt; Total ──┐
+OtherSubtotals ───────────────┘           ├─&gt; PayableText
+Discount ─────────────────────────────────┘</code></pre>
+<p>节点可以是：</p>
+<pre><code class="language-text">原始字段
+派生字段
+绑定表达式
+UI 属性</code></pre>
+<p>边表示：</p>
+<pre><code class="language-text">目标计算依赖源值。</code></pre>
+<p>当 <code>Quantity</code> 变化时，失效传播路径是：</p>
+<pre><code class="language-text">Quantity
+-&gt; ItemSubtotal
+-&gt; Total
+-&gt; PayableText</code></pre>
+<p>依赖图的价值不是让所有更新自动发生，而是让系统能确定：</p>
+<pre><code class="language-text">哪些结果已经过期
+哪些结果不受影响
+刷新前后必须满足什么顺序</code></pre>
+<h2 id="两类依赖追踪">两类依赖追踪</h2>
+<h3 id="显式声明依赖">显式声明依赖</h3>
+<p>注册绑定时直接声明字段：</p>
+<pre><code class="language-text">Bind(
+    target = PayableText,
+    dependencies = [Total, Discount],
+    evaluate = total - discount)</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">关系稳定
+容易静态检查
+容易生成依赖图
+调试时能说明为什么刷新</code></pre>
+<p>代价：</p>
+<pre><code class="language-text">声明与实际读取必须保持一致
+重构字段时需要同步维护</code></pre>
+<h3 id="求值时动态收集依赖">求值时动态收集依赖</h3>
+<p>绑定求值期间，数据访问器记录读过的字段：</p>
+<pre><code class="language-text">BeginCollect(binding)
+value = model.Total - model.Discount
+dependencies = EndCollect(binding)</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">依赖能跟随实际读取分支变化
+编写绑定时重复声明较少</code></pre>
+<p>代价：</p>
+<pre><code class="language-text">需要拦截属性读取
+首次求值前依赖未知
+条件分支可能让依赖集合变化
+调试和性能模型更复杂</code></pre>
+<p>显式声明和动态收集都是实现选择，不是数据绑定的固定要求。</p>
+<h2 id="条件依赖为什么麻烦">条件依赖为什么麻烦</h2>
+<p>考虑：</p>
+<pre><code class="language-text">displayName =
+    useNickname
+        ? nickname
+        : fullName</code></pre>
+<p>当 <code>useNickname = true</code> 时，实际依赖：</p>
+<pre><code class="language-text">useNickname
+nickname</code></pre>
+<p>当它变成 <code>false</code> 后，依赖应切换为：</p>
+<pre><code class="language-text">useNickname
+fullName</code></pre>
+<p>如果系统只在第一次执行时收集依赖：</p>
+<pre><code class="language-text">后来 fullName 变化可能不会触发刷新。</code></pre>
+<p>可选模型包括：</p>
+<pre><code class="language-text">声明所有潜在依赖
+每次求值重新收集实际依赖
+由生成代码分析条件表达式</code></pre>
+<p>选择哪一种取决于绑定表达能力和运行成本。不能在不更新依赖集合的情况下，假设第一次收集永远正确。</p>
+<h2 id="从变化到刷新的逐步状态">从变化到刷新的逐步状态</h2>
+<p>一次批量刷新可以分成这些状态：</p>
+<pre><code class="language-text">Clean
+  当前结果与数据一致。
+
+Dirty
+  依赖已经变化，结果需要重算。
+
+Queued
+  已进入本轮刷新队列。
+
+Evaluating
+  正在读取依赖并计算新值。
+
+Applying
+  正在把结果写入目标 UI。
+
+Clean
+  写入成功，绑定恢复一致。</code></pre>
+<p>失败状态必须独立存在：</p>
+<pre><code class="language-text">EvaluationFailed
+ApplyFailed
+DependencyCycle
+DisposedTarget</code></pre>
+<p>不能把失败后的绑定直接标回 <code>Clean</code>，否则系统会错误声称 UI 与数据一致。</p>
+<h2 id="批量刷新怎样工作">批量刷新怎样工作</h2>
+<h3 id="第一步-数据源提交变化">第一步：数据源提交变化</h3>
+<p>一轮逻辑可能修改多个字段：</p>
+<pre><code class="language-text">Quantity changed
+UnitPrice changed
+Discount changed</code></pre>
+<p>数据源发布的是结构化变化：</p>
+<pre><code class="language-text">SourceId
+FieldId
+OldVersion
+NewVersion
+ChangeBatchId</code></pre>
+<p>具体字段标识和版本类型是实现选择，但变化来源必须可追踪。</p>
+<h3 id="第二步-传播失效">第二步：传播失效</h3>
+<p>系统查询反向依赖索引：</p>
+<pre><code class="language-text">Field -&gt; Bindings that depend on it</code></pre>
+<p>把相关绑定加入脏集合。</p>
+<p>集合应去重：</p>
+<pre><code class="language-text">同一个绑定被三个字段同时影响，
+本轮仍只需要排队一次。</code></pre>
+<h3 id="第三步-等待刷新边界">第三步：等待刷新边界</h3>
+<p>刷新边界可以是：</p>
+<pre><code class="language-text">数据事务提交
+当前事件处理完成
+UI 调度器的固定阶段
+明确调用 Flush</code></pre>
+<p>使用哪个边界是运行时协议选择。不能依赖“过一会儿自然会刷”的模糊时机。</p>
+<h3 id="第四步-按依赖顺序求值">第四步：按依赖顺序求值</h3>
+<p>如果派生绑定互相依赖：</p>
+<pre><code class="language-text">Subtotal -&gt; Total -&gt; Payable</code></pre>
+<p>应先更新上游，再更新下游。</p>
+<p>可以对脏子图做拓扑排序。若检测到环：</p>
+<pre><code class="language-text">A depends on B
+B depends on A</code></pre>
+<p>系统应报告 <code>DependencyCycle</code>，包括环上的绑定标识；不能任意挑一个顺序并声称刷新成功。</p>
+<h3 id="第五步-应用结果">第五步：应用结果</h3>
+<p>只有求值成功，才进入 Apply。</p>
+<p>Apply 成功后记录：</p>
+<pre><code class="language-text">绑定读取的数据版本
+写入目标版本
+本轮批次标识
+耗时</code></pre>
+<p>如果 Apply 失败：</p>
+<pre><code class="language-text">保留失败状态
+记录原始异常或错误
+不把绑定标记为 Clean</code></pre>
+<h2 id="最小-c-模型">最小 C# 模型</h2>
+<p>下面的示例展示去重队列和失败可见性，不绑定具体 UI 框架：</p>
+<pre><code class="language-csharp">public enum RefreshStatus
+{
+    Clean,
+    Queued,
+    Evaluating,
+    Applying,
+    EvaluationFailed,
+    ApplyFailed
+}
+
+public sealed class BindingNode
+{
+    public string Id { get; }
+    public RefreshStatus Status { get; private set; }
+    public Exception? LastError { get; private set; }
+
+    private readonly Func&lt;object&gt; evaluate;
+    private readonly Action&lt;object&gt; apply;
+
+    public BindingNode(
+        string id,
+        Func&lt;object&gt; evaluate,
+        Action&lt;object&gt; apply)
+    {
+        Id = id;
+        this.evaluate = evaluate;
+        this.apply = apply;
+    }
+
+    public void MarkQueued()
+    {
+        Status = RefreshStatus.Queued;
+    }
+
+    public bool TryRefresh(out Exception? error)
+    {
+        LastError = null;
+        error = null;
+
+        object value;
+
+        try
+        {
+            Status = RefreshStatus.Evaluating;
+            value = evaluate();
+        }
+        catch (Exception exception)
+        {
+            Status = RefreshStatus.EvaluationFailed;
+            LastError = exception;
+            error = exception;
+            return false;
+        }
+
+        try
+        {
+            Status = RefreshStatus.Applying;
+            apply(value);
+            Status = RefreshStatus.Clean;
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Status = RefreshStatus.ApplyFailed;
+            LastError = exception;
+            error = exception;
+            return false;
+        }
+    }
+}
+
+public sealed class RefreshBatch
+{
+    private readonly HashSet&lt;BindingNode&gt; dirty = new();
+
+    public void Enqueue(BindingNode binding)
+    {
+        if (dirty.Add(binding))
+        {
+            // 同一批次只让同一个绑定入队一次。
+            binding.MarkQueued();
+        }
+    }
+
+    public IReadOnlyList&lt;(string Id, Exception Error)&gt; Flush()
+    {
+        var failures = new List&lt;(string, Exception)&gt;();
+
+        foreach (BindingNode binding in dirty)
+        {
+            if (!binding.TryRefresh(out Exception? error))
+            {
+                // 失败被收集并交给调用方，不转换成默认成功。
+                failures.Add((binding.Id, error!));
+            }
+        }
+
+        dirty.Clear();
+        return failures;
+    }
+}</code></pre>
+<p>这段代码为了突出失败协议，省略了拓扑排序。<code>HashSet</code> 的遍历顺序不能作为依赖顺序；真实存在绑定间依赖时，必须先建立并验证有向无环图。</p>
+<h2 id="与虚拟列表怎样结合">与虚拟列表怎样结合</h2>
+<p>虚拟列表会反复复用可见项：</p>
+<pre><code class="language-text">槽位 3 原来显示数据 18
+滚动后改为显示数据 43</code></pre>
+<p>绑定生命周期必须跟随“槽位当前绑定的数据身份”。</p>
+<p>一次复用应经过：</p>
+<pre><code class="language-text">解绑旧数据 18 的依赖订阅
+增加槽位绑定代次
+绑定新数据 43
+立即建立新依赖
+使用新数据版本求值</code></pre>
+<p>如果旧数据 18 的异步变化稍后到达：</p>
+<pre><code class="language-text">回调携带旧绑定代次
+系统识别它不再属于当前槽位
+报告为过期结果或忽略写入</code></pre>
+<p>“不让过期结果写入”不等于静默吞错。调试模式或观测数据应能看到过期结果数量、来源与绑定代次。</p>
+<h3 id="可见与不可见项">可见与不可见项</h3>
+<p>不可见数据变化时，常见选择有：</p>
+<pre><code class="language-text">只更新数据版本，等再次可见时求值
+维护与视图无关的派生缓存
+让特定后台绑定继续运行</code></pre>
+<p>具体策略取决于派生结果是否只服务 UI。不能默认所有不可见项都需要创建视图刷新。</p>
+<h2 id="正常路径">正常路径</h2>
+<h3 id="一个字段影响一个绑定">一个字段影响一个绑定</h3>
+<pre><code class="language-text">Name 变化
+NameText 进入脏集合
+刷新边界到达
+求值并写入成功
+NameText -&gt; Clean</code></pre>
+<h3 id="多字段影响同一绑定">多字段影响同一绑定</h3>
+<pre><code class="language-text">Total 变化
+Discount 变化
+PayableText 被命中两次
+脏集合只保留一个 PayableText
+最终使用同一批次提交后的数据求值一次</code></pre>
+<h3 id="虚拟列表槽位复用">虚拟列表槽位复用</h3>
+<pre><code class="language-text">旧绑定解除
+绑定代次增加
+新数据依赖注册
+新数据求值成功
+旧回调不能写入当前槽位</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="刷新期间再次发生变化">刷新期间再次发生变化</h3>
+<p>绑定 A 求值时触发了数据变化，使绑定 B 变脏。</p>
+<p>系统必须定义：</p>
+<pre><code class="language-text">B 加入当前批次剩余队列
+还是进入下一批次</code></pre>
+<p>无论选哪种，都应有：</p>
+<pre><code class="language-text">批次标识
+最大传播保护
+可观察的再次入队记录</code></pre>
+<p>否则自触发绑定可能形成无限刷新。</p>
+<h3 id="绑定目标已经销毁">绑定目标已经销毁</h3>
+<p>数据仍在，但页面或列表槽位已经释放：</p>
+<pre><code class="language-text">Apply 不应写入无效目标。</code></pre>
+<p>这是生命周期错误或过期调度，应报告目标身份和绑定代次，而不是把写入跳过后标记为成功。</p>
+<h3 id="值没有改变">值没有改变</h3>
+<p>源字段通知了变化，但重新求值结果与已显示值相同。</p>
+<p>系统可以在明确的相等性规则下跳过 Apply：</p>
+<pre><code class="language-text">精确相等
+值对象自定义相等
+特定领域比较器</code></pre>
+<p>相等性规则是实现选择。浮点容差等行为值不能未经依据直接写入。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="依赖图形成环">依赖图形成环</h3>
+<pre><code class="language-text">A 显示依赖 B
+B 显示依赖 A</code></pre>
+<p>应输出完整或最小环路：</p>
+<pre><code class="language-text">A -&gt; B -&gt; A</code></pre>
+<p>不能只记录“排序失败”，也不能任意使用旧值打破环。</p>
+<h3 id="求值异常">求值异常</h3>
+<p>例如绑定表达式访问了已经失效的数据：</p>
+<pre><code class="language-text">状态 -&gt; EvaluationFailed
+保留原始异常
+记录绑定 ID、数据源版本、批次
+不进入 Apply</code></pre>
+<p>不得返回空字符串或零值冒充正常结果。</p>
+<h3 id="apply-异常">Apply 异常</h3>
+<p>求值成功但目标拒绝写入：</p>
+<pre><code class="language-text">状态 -&gt; ApplyFailed
+保留求出的值摘要与原始异常
+绑定不标记为 Clean
+批次结果包含该失败</code></pre>
+<h3 id="数据通知丢失">数据通知丢失</h3>
+<p>如果数据已变但没有发出字段通知，依赖系统不会自动知道。</p>
+<p>可通过版本校验发现：</p>
+<pre><code class="language-text">绑定最后读取版本 != 当前数据版本</code></pre>
+<p>版本校验的频率是成本选择，但发现不一致后应报告通知链断裂，不能悄悄修正并隐藏来源。</p>
+<h2 id="性能代价">性能代价</h2>
+<p>依赖追踪会增加：</p>
+<pre><code class="language-text">反向依赖索引内存
+订阅与解绑成本
+变化传播成本
+拓扑排序或优先队列成本
+诊断元数据</code></pre>
+<p>批量刷新减少重复工作，但会引入延迟：</p>
+<pre><code class="language-text">数据变化与 UI 可见更新之间存在批次窗口。</code></pre>
+<p>窗口多长、是否允许跨帧、单批次预算多少，都需要由交互要求与测量结果决定。</p>
+<h2 id="观测指标">观测指标</h2>
+<p>一轮刷新至少应能观察：</p>
+<pre><code class="language-text">BatchId
+SourceChangeCount
+DirtyBindingCount
+DeduplicatedEnqueueCount
+EvaluatedCount
+AppliedCount
+FailedCount
+CycleCount
+StaleGenerationCount
+BatchDuration</code></pre>
+<p>单个失败记录至少包含：</p>
+<pre><code class="language-text">绑定标识
+目标标识
+数据源标识与版本
+状态阶段
+原始错误
+依赖链
+批次标识</code></pre>
+<h2 id="通用机制与实现选择">通用机制与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">绑定结果依赖一个或多个数据源字段。
+字段变化会让下游结果失效。
+脏集合可以合并同一批次内的重复刷新请求。
+有向依赖需要按上游到下游的顺序刷新。
+目标复用时必须隔离旧绑定代次。
+失败后的绑定不能声称与数据一致。</code></pre>
+<h3 id="必须由具体系统确定">必须由具体系统确定</h3>
+<pre><code class="language-text">显式依赖还是动态收集
+刷新边界
+批次调度与预算
+相等性比较
+可见项与不可见项策略
+节点实例和数据订阅的生命周期
+循环依赖的内容修复规则
+错误上报与阻断级别</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>虚拟列表回答：</p>
+<pre><code class="language-text">哪些视图现在需要存在？</code></pre>
+<p>依赖追踪回答：</p>
+<pre><code class="language-text">数据变化后，哪些现有视图结果已经过期？</code></pre>
+<p>批量刷新回答：</p>
+<pre><code class="language-text">怎样把同一轮失效合并，并按正确顺序更新？</code></pre>
+<p>可靠的数据绑定链需要保证：</p>
+<pre><code class="language-text">依赖关系可解释
+刷新批次有边界
+重复请求可合并
+虚拟列表复用不串数据
+循环依赖和写入失败保持可见
+只有真正完成求值与应用后才标记为 Clean</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><small>← PREVIOUS</small>Effect 与 Buff 生命周期：从一次申请到彻底清理</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E9%A1%B5%E9%9D%A2%E6%A0%88%E4%B8%8E%E9%9D%A2%E6%9D%BF%E6%B1%A0/"><small>NEXT →</small>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

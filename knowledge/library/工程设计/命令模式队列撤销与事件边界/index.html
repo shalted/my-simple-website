@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象一张办理单：">
+  <title>命令模式：队列、撤销与事件边界 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>命令模式：队列、撤销与事件边界</h1>
+      <p class="hero-copy">想象一张办理单：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先用生活模型理解命令">先用生活模型理解命令</a>
+    <a data-toc-link href="#为什么需要命令模式">为什么需要命令模式</a>
+    <a data-toc-link href="#命令由哪些部分组成">命令由哪些部分组成</a>
+    <a data-toc-link href="#命令与事件不是一回事">命令与事件不是一回事</a>
+    <a data-toc-link href="#命令队列怎样运行">命令队列怎样运行</a>
+    <a class="sub" data-toc-link href="#逐步状态">逐步状态</a>
+    <a class="sub" data-toc-link href="#为什么提交时不要假装成功">为什么提交时不要假装成功</a>
+    <a data-toc-link href="#最小-c-示例">最小 C# 示例</a>
+    <a data-toc-link href="#撤销不是-再调用一次反向方法">撤销不是“再调用一次反向方法”</a>
+    <a class="sub" data-toc-link href="#撤销栈的逐步状态">撤销栈的逐步状态</a>
+    <a class="sub" data-toc-link href="#重做">重做</a>
+    <a data-toc-link href="#队列中的失败路径">队列中的失败路径</a>
+    <a class="sub" data-toc-link href="#常见失败来源">常见失败来源</a>
+    <a data-toc-link href="#命令与事件的完整边界">命令与事件的完整边界</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#何时不适合使用命令模式">何时不适合使用命令模式</a>
+    <a data-toc-link href="#小结">小结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解命令">
+      <span>01</span>
+      <strong>先用生活模型理解命令</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：为什么需要命令模式">
+      <span>02</span>
+      <strong>为什么需要命令模式</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：命令由哪些部分组成">
+      <span>03</span>
+      <strong>命令由哪些部分组成</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：命令与事件不是一回事">
+      <span>04</span>
+      <strong>命令与事件不是一回事</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：命令队列怎样运行">
+      <span>05</span>
+      <strong>命令队列怎样运行</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小 C# 示例">
+      <span>06</span>
+      <strong>最小 C# 示例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：撤销不是“再调用一次反向方法”">
+      <span>07</span>
+      <strong>撤销不是“再调用一次反向方法”</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：队列中的失败路径">
+      <span>08</span>
+      <strong>队列中的失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：命令与事件的完整边界">
+      <span>09</span>
+      <strong>命令与事件的完整边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：复杂度与代价">
+      <span>10</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：何时不适合使用命令模式">
+      <span>11</span>
+      <strong>何时不适合使用命令模式</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：小结">
+      <span>12</span>
+      <strong>小结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先用生活模型理解命令</h3>
+        <p>想象一张办理单：</p>
+
+        <pre><code class="language-text">申请人写下“把物品从 A 柜移动到 B 柜”。
+窗口接收办理单。
+工作人员稍后执行。
+办理结果可能成功，也可能明确失败。
+若规则允许，还可以按记录把操作撤销。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>为什么需要命令模式</h3>
+        <p>直接调用方法并没有错：</p>
+        <ul><li>请求产生时间与执行时间分离；</li><li>请求需要进入队列并按规则处理；</li><li>执行前需要统一校验；</li><li>需要记录成功操作以支持撤销；</li><li>需要重放同一类确定性操作；</li><li>调用方不应直接依赖具体执行对象。</li></ul>
+        <pre><code class="language-csharp">document.Insert(&quot;示例文字&quot;);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>命令由哪些部分组成</h3>
+        <p>一个最小命令模型通常包含：</p>
+
+        <pre><code class="language-text">调用方：提出请求。
+命令：保存执行所需参数。
+执行器：执行命令。
+接收者：真正持有并修改状态的对象。
+结果：明确表示成功或失败。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>命令与事件不是一回事</h3>
+        <p>命令和事件都可能被封装成消息，但语义完全不同：</p>
+
+        <pre><code class="language-text">发布“请求移动”事件，
+然后期待某个不确定的监听者负责真正移动。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>命令队列怎样运行</h3>
+        <p>队列把“提交请求”和“执行请求”分开。</p>
+
+        <pre><code class="language-text">创建命令
+    ↓
+Queued：进入待执行队列
+    ↓
+Executing：执行器取出并校验
+    ├─ Succeeded：状态修改完成，可按规则进入撤销栈
+    └─ Failed：保留失败信息，不进入成功历史</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>最小 C# 示例</h3>
+        <p>下面的示例展示队列、执行结果和撤销记录。字符串和容量均为教学示例数据。</p>
+        <ul><li>执行校验失败会返回明确的 <code>CommandResult.Failure</code>。</li><li>不可撤销状态会抛出异常。</li><li>只有成功执行的命令进入历史。</li></ul>
+        <pre><code class="language-csharp">public readonly record struct CommandResult(bool Succeeded, string Message)
+{
+    public static CommandResult Success(string message) =&gt; new(true, message);
+    public static CommandResult Failure(string message) =&gt; new(false, message);
+}
+
+public interface ICommand
+{
+    CommandResult Execute();
+    void Undo();
+}
+
+public sealed class TextBuffer
+{
+    private readonly List&lt;string&gt; _parts = new();
+
+    public int Count =&gt; _parts.Count;
+
+    public void Add(string text)
+    {
+        _parts.Add(text);
+    }
+
+    public string RemoveLast()
+    {
+        if (_parts.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可移除的文本。&quot;);
+        }
+
+        int lastIndex = _parts.Count - 1;
+        string removed = _parts[lastIndex];
+        _parts.RemoveAt(lastIndex);
+        return removed;
+    }
+
+    public string PeekLast()
+    {
+        if (_parts.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可检查的文本。&quot;);
+        }
+
+        return _parts[^1];
+    }
+
+    public override string ToString()
+    {
+        return string.Concat(_parts);
+    }
+}
+
+public sealed class AppendTextCommand : ICommand
+{
+    private readonly TextBuffer _buffer;
+    private readonly string _text;
+    private bool _executed;
+
+    public AppendTextCommand(TextBuffer buffer, string text)
+    {
+        _buffer = buffer;
+        _text = text;
+    }
+
+    public CommandResult Execute()
+    {
+        if (_executed)
+        {
+            return CommandResult.Failure(&quot;同一个命令实例不能重复执行。&quot;);
+        }
+
+        if (string.IsNullOrEmpty(_text))
+        {
+            return CommandResult.Failure(&quot;待追加文本不能为空。&quot;);
+        }
+
+        _buffer.Add(_text);
+        _executed = true;
+        return CommandResult.Success(&quot;追加完成。&quot;);
+    }
+
+    public void Undo()
+    {
+        if (!_executed)
+        {
+            throw new InvalidOperationException(&quot;未成功执行的命令不能撤销。&quot;);
+        }
+
+        // 先做只读校验，失败时不再改变缓冲区。
+        if (_buffer.PeekLast() != _text)
+        {
+            throw new InvalidOperationException(&quot;缓冲区已变化，无法安全撤销。&quot;);
+        }
+
+        _buffer.RemoveLast();
+        _executed = false;
+    }
+}
+
+public sealed class CommandQueue
+{
+    private readonly Queue&lt;ICommand&gt; _pending = new();
+    private readonly Stack&lt;ICommand&gt; _history = new();
+
+    public void Enqueue(ICommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        _pending.Enqueue(command);
+    }
+
+    public CommandResult ExecuteNext()
+    {
+        if (_pending.Count == 0)
+        {
+            return CommandResult.Failure(&quot;队列中没有待执行命令。&quot;);
+        }
+
+        ICommand command = _pending.Dequeue();
+        CommandResult result = command.Execute();
+
+        // 只有明确成功的命令才进入撤销历史。
+        if (result.Succeeded)
+        {
+            _history.Push(command);
+        }
+
+        return result;
+    }
+
+    public void UndoLast()
+    {
+        if (_history.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可撤销的成功命令。&quot;);
+        }
+
+        ICommand command = _history.Pop();
+        command.Undo();
+    }
+}
+
+var buffer = new TextBuffer();
+var queue = new CommandQueue();
+
+queue.Enqueue(new AppendTextCommand(buffer, &quot;甲&quot;));
+queue.Enqueue(new AppendTextCommand(buffer, &quot;乙&quot;));
+// “甲”“乙”仅是教学示例文本。
+
+Console.WriteLine(queue.ExecuteNext());
+Console.WriteLine(queue.ExecuteNext());
+Console.WriteLine(buffer); // 教学示例输出：甲乙
+
+queue.UndoLast();
+Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>撤销不是“再调用一次反向方法”</h3>
+        <p>撤销要求恢复命令执行前的可识别状态。</p>
+
+        <pre><code class="language-text">插入文本 -&gt; 记录插入位置和内容
+改变数值 -&gt; 记录修改前的数值
+移动元素 -&gt; 记录原位置</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>队列中的失败路径</h3>
+        <p>命令队列必须明确失败如何影响后续命令。</p>
+        <ul><li>命令参数在执行时已经失效；</li><li>接收者状态与创建命令时不同；</li><li>同一命令实例被重复执行；</li><li>撤销所依赖的历史状态已被其他操作改变；</li><li>队列被多线程同时访问但没有同步约束；</li><li>命令在执行一半时抛出异常。</li></ul>
+        <pre><code class="language-text">停止：当前命令失败后暂停队列。
+继续：记录失败，然后处理下一条。
+整批原子执行：任一失败则整批不生效。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>命令与事件的完整边界</h3>
+        <p>教学流程可以写成：</p>
+
+        <pre><code class="language-text">1. 调用方创建 ChangeNameCommand。
+2. 执行器校验并执行命令。
+3. 接收者状态完成修改。
+4. 命令返回成功结果。
+5. 发布 NameChangedEvent，描述旧值与新值。
+6. 监听者更新各自派生状态。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
+        <h3>复杂度与代价</h3>
+        <p>使用普通队列和栈时：</p>
+        <ul><li>命令对象和快照占用内存；</li><li>历史长度需要明确管理；</li><li>异步命令使完成顺序更复杂；</li><li>撤销要求状态变化可逆且可验证；</li><li>重放要求输入和外部依赖具有可解释的一致性。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+        <h3>何时不适合使用命令模式</h3>
+        <p>模式应服务于状态和时间边界，而不是增加文件数量。</p>
+        <ul><li>操作只是局部、立即且没有排队或撤销需求；</li><li>封装后没有减少调用方与执行细节的耦合；</li><li>外部副作用无法可靠逆转，却被强行包装为可撤销；</li><li>请求结果必须同步返回，但系统又把它无意义地绕进队列；</li><li>操作语义本来是“事实通知”，却被写成命令。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>小结</h3>
+        <p>设计命令系统时，先回答四个问题：</p>
+        <ul><li>谁是唯一负责执行请求的人？</li><li>请求何时算成功，失败怎样保持可见？</li><li>哪些状态必须保存，才能可靠撤销？</li><li>成功后发布什么事实事件，监听者是否影响原操作结果？</li></ul>
+        <pre><code class="language-text">命令是请求，事件是事实。
+入队不等于执行成功。
+只有明确成功的命令才应进入撤销历史。
+撤销必须保存并验证执行前状态。
+失败策略、队列顺序和重做分支都必须显式定义。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计</p>
+<h2 id="先用生活模型理解命令">先用生活模型理解命令</h2>
+<p>想象一张办理单：</p>
+<pre><code class="language-text">申请人写下“把物品从 A 柜移动到 B 柜”。
+窗口接收办理单。
+工作人员稍后执行。
+办理结果可能成功，也可能明确失败。
+若规则允许，还可以按记录把操作撤销。</code></pre>
+<p>办理单不是事情已经发生的通知，而是一个<strong>希望系统执行的请求</strong>。</p>
+<p>这就是命令的核心：</p>
+<pre><code class="language-text">命令描述意图。
+执行者决定能否执行。
+执行结果必须明确。</code></pre>
+<p>把请求封装成对象后，它可以被排队、记录、重放、撤销或交给不同执行时机处理。</p>
+<h2 id="为什么需要命令模式">为什么需要命令模式</h2>
+<p>直接调用方法并没有错：</p>
+<pre><code class="language-csharp">document.Insert(&quot;示例文字&quot;);</code></pre>
+<p>当调用方只需立即完成一次简单操作时，直接调用通常最清楚。</p>
+<p>当系统需要下面一种或多种能力时，命令对象才开始有价值：</p>
+<ul>
+<li>请求产生时间与执行时间分离；</li>
+<li>请求需要进入队列并按规则处理；</li>
+<li>执行前需要统一校验；</li>
+<li>需要记录成功操作以支持撤销；</li>
+<li>需要重放同一类确定性操作；</li>
+<li>调用方不应直接依赖具体执行对象。</li>
+</ul>
+<p>命令模式的代价是多出对象、接口和状态管理，因此不应只为了“套模式”而使用。</p>
+<h2 id="命令由哪些部分组成">命令由哪些部分组成</h2>
+<p>一个最小命令模型通常包含：</p>
+<pre><code class="language-text">调用方：提出请求。
+命令：保存执行所需参数。
+执行器：执行命令。
+接收者：真正持有并修改状态的对象。
+结果：明确表示成功或失败。</code></pre>
+<p>有时执行器和接收者会合并；有时命令对象自己持有 <code>Execute</code>。两种结构都可以，关键是职责边界清楚。</p>
+<h2 id="命令与事件不是一回事">命令与事件不是一回事</h2>
+<p>命令和事件都可能被封装成消息，但语义完全不同：</p>
+<table><thead><tr>
+<th>对比项</th>
+<th>命令</th>
+<th>事件</th>
+</tr></thead><tbody>
+<tr>
+<td>表达内容</td>
+<td>希望执行的动作</td>
+<td>已经发生的事实</td>
+</tr>
+<tr>
+<td>时间语义</td>
+<td>将要做</td>
+<td>已做完</td>
+</tr>
+<tr>
+<td>处理者数量</td>
+<td>通常有一个明确责任方</td>
+<td>可以有零个、一个或多个监听者</td>
+</tr>
+<tr>
+<td>能否拒绝</td>
+<td>可以校验并失败</td>
+<td>事实不能被监听者“拒绝为未发生”</td>
+</tr>
+<tr>
+<td>返回结果</td>
+<td>常需要明确结果</td>
+<td>通常不依赖监听者返回值控制原操作</td>
+</tr>
+<tr>
+<td>命名习惯</td>
+<td><code>MoveItem</code>、<code>InsertText</code></td>
+<td><code>ItemMoved</code>、<code>TextInserted</code></td>
+</tr>
+</tbody></table>
+<p>错误的边界是：</p>
+<pre><code class="language-text">发布“请求移动”事件，
+然后期待某个不确定的监听者负责真正移动。</code></pre>
+<p>这样调用方不知道是否有人处理，也不知道处理是否成功。</p>
+<p>更清楚的顺序是：</p>
+<pre><code class="language-text">提交 MoveItemCommand
+    ↓
+明确执行成功
+    ↓
+发布 ItemMovedEvent</code></pre>
+<p>命令负责改变状态，事件负责传播已经发生的事实。</p>
+<h2 id="命令队列怎样运行">命令队列怎样运行</h2>
+<p>队列把“提交请求”和“执行请求”分开。</p>
+<h3 id="逐步状态">逐步状态</h3>
+<p>下面是一个教学流程：</p>
+<pre><code class="language-text">创建命令
+    ↓
+Queued：进入待执行队列
+    ↓
+Executing：执行器取出并校验
+    ├─ Succeeded：状态修改完成，可按规则进入撤销栈
+    └─ Failed：保留失败信息，不进入成功历史</code></pre>
+<p>队列通常使用先进先出结构，但这不是命令模式强制规定。若系统采用优先级、截止时间或分组顺序，必须把排序规则显式写入队列契约。</p>
+<h3 id="为什么提交时不要假装成功">为什么提交时不要假装成功</h3>
+<p>进入队列只表示：</p>
+<pre><code class="language-text">请求已被接收，等待执行。</code></pre>
+<p>它不等于：</p>
+<pre><code class="language-text">状态已经改变。</code></pre>
+<p>如果接口把“已排队”返回成“执行成功”，后续代码可能读取到尚未更新的状态，也可能掩盖之后发生的校验失败。</p>
+<p>因此应区分：</p>
+<pre><code class="language-text">EnqueueResult：是否成功进入队列。
+ExecutionResult：实际执行是否成功。</code></pre>
+<h2 id="最小-c-示例">最小 C# 示例</h2>
+<p>下面的示例展示队列、执行结果和撤销记录。字符串和容量均为教学示例数据。</p>
+<pre><code class="language-csharp">public readonly record struct CommandResult(bool Succeeded, string Message)
+{
+    public static CommandResult Success(string message) =&gt; new(true, message);
+    public static CommandResult Failure(string message) =&gt; new(false, message);
+}
+
+public interface ICommand
+{
+    CommandResult Execute();
+    void Undo();
+}
+
+public sealed class TextBuffer
+{
+    private readonly List&lt;string&gt; _parts = new();
+
+    public int Count =&gt; _parts.Count;
+
+    public void Add(string text)
+    {
+        _parts.Add(text);
+    }
+
+    public string RemoveLast()
+    {
+        if (_parts.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可移除的文本。&quot;);
+        }
+
+        int lastIndex = _parts.Count - 1;
+        string removed = _parts[lastIndex];
+        _parts.RemoveAt(lastIndex);
+        return removed;
+    }
+
+    public string PeekLast()
+    {
+        if (_parts.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可检查的文本。&quot;);
+        }
+
+        return _parts[^1];
+    }
+
+    public override string ToString()
+    {
+        return string.Concat(_parts);
+    }
+}
+
+public sealed class AppendTextCommand : ICommand
+{
+    private readonly TextBuffer _buffer;
+    private readonly string _text;
+    private bool _executed;
+
+    public AppendTextCommand(TextBuffer buffer, string text)
+    {
+        _buffer = buffer;
+        _text = text;
+    }
+
+    public CommandResult Execute()
+    {
+        if (_executed)
+        {
+            return CommandResult.Failure(&quot;同一个命令实例不能重复执行。&quot;);
+        }
+
+        if (string.IsNullOrEmpty(_text))
+        {
+            return CommandResult.Failure(&quot;待追加文本不能为空。&quot;);
+        }
+
+        _buffer.Add(_text);
+        _executed = true;
+        return CommandResult.Success(&quot;追加完成。&quot;);
+    }
+
+    public void Undo()
+    {
+        if (!_executed)
+        {
+            throw new InvalidOperationException(&quot;未成功执行的命令不能撤销。&quot;);
+        }
+
+        // 先做只读校验，失败时不再改变缓冲区。
+        if (_buffer.PeekLast() != _text)
+        {
+            throw new InvalidOperationException(&quot;缓冲区已变化，无法安全撤销。&quot;);
+        }
+
+        _buffer.RemoveLast();
+        _executed = false;
+    }
+}
+
+public sealed class CommandQueue
+{
+    private readonly Queue&lt;ICommand&gt; _pending = new();
+    private readonly Stack&lt;ICommand&gt; _history = new();
+
+    public void Enqueue(ICommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        _pending.Enqueue(command);
+    }
+
+    public CommandResult ExecuteNext()
+    {
+        if (_pending.Count == 0)
+        {
+            return CommandResult.Failure(&quot;队列中没有待执行命令。&quot;);
+        }
+
+        ICommand command = _pending.Dequeue();
+        CommandResult result = command.Execute();
+
+        // 只有明确成功的命令才进入撤销历史。
+        if (result.Succeeded)
+        {
+            _history.Push(command);
+        }
+
+        return result;
+    }
+
+    public void UndoLast()
+    {
+        if (_history.Count == 0)
+        {
+            throw new InvalidOperationException(&quot;没有可撤销的成功命令。&quot;);
+        }
+
+        ICommand command = _history.Pop();
+        command.Undo();
+    }
+}
+
+var buffer = new TextBuffer();
+var queue = new CommandQueue();
+
+queue.Enqueue(new AppendTextCommand(buffer, &quot;甲&quot;));
+queue.Enqueue(new AppendTextCommand(buffer, &quot;乙&quot;));
+// “甲”“乙”仅是教学示例文本。
+
+Console.WriteLine(queue.ExecuteNext());
+Console.WriteLine(queue.ExecuteNext());
+Console.WriteLine(buffer); // 教学示例输出：甲乙
+
+queue.UndoLast();
+Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
+<p>这个示例故意让失败保持可见：</p>
+<ul>
+<li>执行校验失败会返回明确的 <code>CommandResult.Failure</code>。</li>
+<li>不可撤销状态会抛出异常。</li>
+<li>只有成功执行的命令进入历史。</li>
+</ul>
+<p>它没有把失败替换成“什么也没发生但仍算成功”。</p>
+<h2 id="撤销不是-再调用一次反向方法">撤销不是“再调用一次反向方法”</h2>
+<p>撤销要求恢复命令执行前的可识别状态。</p>
+<p>简单命令可能只需保存少量数据：</p>
+<pre><code class="language-text">插入文本 -&gt; 记录插入位置和内容
+改变数值 -&gt; 记录修改前的数值
+移动元素 -&gt; 记录原位置</code></pre>
+<p>复杂命令可能影响多个对象。此时需要先明确原子边界：</p>
+<pre><code class="language-text">全部修改成功，命令才算成功；
+任何一步失败，都不能留下无法解释的半完成状态。</code></pre>
+<p>具体怎样保证原子性，取决于状态存储方式。可能使用预校验、不可变快照、事务或补偿操作，但不能在没有契约的情况下假设某种方式天然安全。</p>
+<h3 id="撤销栈的逐步状态">撤销栈的逐步状态</h3>
+<p>教学示例：</p>
+<pre><code class="language-text">执行 A 成功 -&gt; 历史 [A]
+执行 B 成功 -&gt; 历史 [A, B]
+执行 C 失败 -&gt; 历史仍为 [A, B]
+撤销一次     -&gt; 弹出 B，历史 [A]</code></pre>
+<p>失败命令不应进入成功历史，否则“撤销失败操作”没有明确含义。</p>
+<h3 id="重做">重做</h3>
+<p>若支持重做，通常还需要一个重做栈：</p>
+<pre><code class="language-text">撤销成功 -&gt; 命令进入重做栈
+执行新的普通命令 -&gt; 清空旧重做分支</code></pre>
+<p>“执行新命令后是否保留重做分支”属于产品语义，不是命令模式自动决定的规则。</p>
+<h2 id="队列中的失败路径">队列中的失败路径</h2>
+<p>命令队列必须明确失败如何影响后续命令。</p>
+<p>可能的策略包括：</p>
+<pre><code class="language-text">停止：当前命令失败后暂停队列。
+继续：记录失败，然后处理下一条。
+整批原子执行：任一失败则整批不生效。</code></pre>
+<p>这些策略会改变外部可见行为，不能由队列随意默认。</p>
+<p>本文的最小示例一次只执行一个命令，并把结果交还调用方决定下一步，因此没有隐藏失败，也没有擅自继续整批操作。</p>
+<h3 id="常见失败来源">常见失败来源</h3>
+<ul>
+<li>命令参数在执行时已经失效；</li>
+<li>接收者状态与创建命令时不同；</li>
+<li>同一命令实例被重复执行；</li>
+<li>撤销所依赖的历史状态已被其他操作改变；</li>
+<li>队列被多线程同时访问但没有同步约束；</li>
+<li>命令在执行一半时抛出异常。</li>
+</ul>
+<p>如果命令可能部分修改后失败，必须从源头设计一致性边界。仅仅捕获异常并返回成功会掩盖损坏状态。</p>
+<h2 id="命令与事件的完整边界">命令与事件的完整边界</h2>
+<p>教学流程可以写成：</p>
+<pre><code class="language-text">1. 调用方创建 ChangeNameCommand。
+2. 执行器校验并执行命令。
+3. 接收者状态完成修改。
+4. 命令返回成功结果。
+5. 发布 NameChangedEvent，描述旧值与新值。
+6. 监听者更新各自派生状态。</code></pre>
+<p>若第 3 步失败，就没有“名称已改变”这个事实，不应发布成功事件。</p>
+<p>事件监听者后续失败，并不会让第 3 步在时间上变成“从未发生”。是否需要事务式联动，必须在更高层明确设计，不能靠把事件改名成命令解决。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<p>使用普通队列和栈时：</p>
+<table><thead><tr>
+<th>操作</th>
+<th>常见时间复杂度</th>
+<th>主要代价</th>
+</tr></thead><tbody>
+<tr>
+<td>命令入队</td>
+<td><code>O(1)</code></td>
+<td>保存命令对象</td>
+</tr>
+<tr>
+<td>取出下一命令</td>
+<td><code>O(1)</code></td>
+<td>实际执行成本另计</td>
+</tr>
+<tr>
+<td>成功命令入历史栈</td>
+<td><code>O(1)</code></td>
+<td>保存撤销所需状态</td>
+</tr>
+<tr>
+<td>撤销最近命令</td>
+<td><code>O(1)</code> 加撤销逻辑成本</td>
+<td>恢复状态</td>
+</tr>
+<tr>
+<td>查看全部历史</td>
+<td><code>O(n)</code></td>
+<td><code>n</code> 为历史命令数</td>
+</tr>
+</tbody></table>
+<p>主要工程代价通常不是队列本身，而是：</p>
+<ul>
+<li>命令对象和快照占用内存；</li>
+<li>历史长度需要明确管理；</li>
+<li>异步命令使完成顺序更复杂；</li>
+<li>撤销要求状态变化可逆且可验证；</li>
+<li>重放要求输入和外部依赖具有可解释的一致性。</li>
+</ul>
+<h2 id="何时不适合使用命令模式">何时不适合使用命令模式</h2>
+<ul>
+<li>操作只是局部、立即且没有排队或撤销需求；</li>
+<li>封装后没有减少调用方与执行细节的耦合；</li>
+<li>外部副作用无法可靠逆转，却被强行包装为可撤销；</li>
+<li>请求结果必须同步返回，但系统又把它无意义地绕进队列；</li>
+<li>操作语义本来是“事实通知”，却被写成命令。</li>
+</ul>
+<p>模式应服务于状态和时间边界，而不是增加文件数量。</p>
+<h2 id="小结">小结</h2>
+<pre><code class="language-text">命令是请求，事件是事实。
+入队不等于执行成功。
+只有明确成功的命令才应进入撤销历史。
+撤销必须保存并验证执行前状态。
+失败策略、队列顺序和重做分支都必须显式定义。</code></pre>
+<p>设计命令系统时，先回答四个问题：</p>
+<ol>
+<li>谁是唯一负责执行请求的人？</li>
+<li>请求何时算成功，失败怎样保持可见？</li>
+<li>哪些状态必须保存，才能可靠撤销？</li>
+<li>成功后发布什么事实事件，监听者是否影响原操作结果？</li>
+</ol>
+<p>边界清楚后，队列、栈和接口只是承载这些规则的数据结构。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%B3%9B%E5%9E%8B%E6%B6%88%E9%87%8D/"><small>← PREVIOUS</small>门面模式与泛型消重</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%B8%AD%E5%90%8E%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E6%8A%95%E5%B0%84%E7%89%A9/"><small>NEXT →</small>命中后的运动与投射物</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="网络预测关注：">
+  <title>网络抖动缓冲、快照插值与可观测性 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
+      <h1>网络抖动缓冲、快照插值与可观测性</h1>
+      <p class="hero-copy">网络预测关注：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
+    <a data-toc-link href="#生活化模型-用广播节目理解抖动缓冲">生活化模型：用广播节目理解抖动缓冲</a>
+    <a data-toc-link href="#三条时间线">三条时间线</a>
+    <a class="sub" data-toc-link href="#服务器时间">服务器时间</a>
+    <a class="sub" data-toc-link href="#客户端本地时间">客户端本地时间</a>
+    <a class="sub" data-toc-link href="#渲染时间">渲染时间</a>
+    <a data-toc-link href="#快照应该携带什么">快照应该携带什么</a>
+    <a data-toc-link href="#缓冲区的关键状态">缓冲区的关键状态</a>
+    <a data-toc-link href="#从收包到显示的逐步流程">从收包到显示的逐步流程</a>
+    <a class="sub" data-toc-link href="#第一步-接收并验证快照">第一步：接收并验证快照</a>
+    <a class="sub" data-toc-link href="#第二步-记录到达时间">第二步：记录到达时间</a>
+    <a class="sub" data-toc-link href="#第三步-按服务器时间插入">第三步：按服务器时间插入</a>
+    <a class="sub" data-toc-link href="#第四步-更新时钟映射">第四步：更新时钟映射</a>
+    <a class="sub" data-toc-link href="#第五步-计算目标渲染时间">第五步：计算目标渲染时间</a>
+    <a class="sub" data-toc-link href="#第六步-验证插值区间">第六步：验证插值区间</a>
+    <a class="sub" data-toc-link href="#第七步-计算插值">第七步：计算插值</a>
+    <a class="sub" data-toc-link href="#第八步-输出带质量的结果">第八步：输出带质量的结果</a>
+    <a data-toc-link href="#最小-c-插值结果">最小 C# 插值结果</a>
+    <a data-toc-link href="#缓冲区查询伪代码">缓冲区查询伪代码</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#乱序到达">乱序到达</a>
+    <a class="sub" data-toc-link href="#重复快照">重复快照</a>
+    <a class="sub" data-toc-link href="#实体重生">实体重生</a>
+    <a class="sub" data-toc-link href="#传送">传送</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#缓冲欠载-underrun">缓冲欠载 Underrun</a>
+    <a class="sub" data-toc-link href="#缓冲过深">缓冲过深</a>
+    <a class="sub" data-toc-link href="#快照间隔异常">快照间隔异常</a>
+    <a class="sub" data-toc-link href="#时钟跳变">时钟跳变</a>
+    <a class="sub" data-toc-link href="#无效数值">无效数值</a>
+    <a data-toc-link href="#插值与预测怎样协作">插值与预测怎样协作</a>
+    <a class="sub" data-toc-link href="#远端对象">远端对象</a>
+    <a class="sub" data-toc-link href="#本地受控对象">本地受控对象</a>
+    <a class="sub" data-toc-link href="#同一场景的时间一致性">同一场景的时间一致性</a>
+    <a data-toc-link href="#插值延迟怎样确定">插值延迟怎样确定</a>
+    <a data-toc-link href="#可观测性">可观测性</a>
+    <a class="sub" data-toc-link href="#包到达指标">包到达指标</a>
+    <a class="sub" data-toc-link href="#缓冲指标">缓冲指标</a>
+    <a class="sub" data-toc-link href="#采样指标">采样指标</a>
+    <a class="sub" data-toc-link href="#时钟指标">时钟指标</a>
+    <a data-toc-link href="#代价">代价</a>
+    <a data-toc-link href="#通用机制与实现选择">通用机制与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体系统确定">必须由具体系统确定</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+      <span>01</span>
+      <strong>这篇文章深化什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：用广播节目理解抖动缓冲">
+      <span>02</span>
+      <strong>生活化模型：用广播节目理解抖动缓冲</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：三条时间线">
+      <span>03</span>
+      <strong>三条时间线</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：快照应该携带什么">
+      <span>04</span>
+      <strong>快照应该携带什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：缓冲区的关键状态">
+      <span>05</span>
+      <strong>缓冲区的关键状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：从收包到显示的逐步流程">
+      <span>06</span>
+      <strong>从收包到显示的逐步流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最小 C# 插值结果">
+      <span>07</span>
+      <strong>最小 C# 插值结果</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：缓冲区查询伪代码">
+      <span>08</span>
+      <strong>缓冲区查询伪代码</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：正常路径">
+      <span>09</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界路径">
+      <span>10</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：失败路径">
+      <span>11</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：插值与预测怎样协作">
+      <span>12</span>
+      <strong>插值与预测怎样协作</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：插值延迟怎样确定">
+      <span>13</span>
+      <strong>插值延迟怎样确定</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：可观测性">
+      <span>14</span>
+      <strong>可观测性</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价">
+      <span>15</span>
+      <strong>代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
+      <span>16</span>
+      <strong>通用机制与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
+      <span>17</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>这篇文章深化什么</h3>
+        <p>网络预测关注：</p>
+
+        <pre><code class="language-text">本地怎样在权威结果到达前先响应输入，
+以及权威状态到达后怎样校正预测。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>生活化模型：用广播节目理解抖动缓冲</h3>
+        <p>想象直播节目每隔固定节奏发送一小段音频。</p>
+
+        <pre><code class="language-text">片段 101
+片段 102
+片段 103
+片段 104</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>三条时间线</h3>
+        <p>网络同步至少涉及：</p>
+
+        <pre><code class="language-text">服务器时间
+客户端本地时间
+渲染时间</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>快照应该携带什么</h3>
+        <p>最小快照身份通常包括：</p>
+
+        <pre><code class="language-text">EntityId
+ServerTick 或 ServerTime
+Sequence
+State</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>缓冲区的关键状态</h3>
+        <p>每个实体或同步通道的缓冲区可以记录：</p>
+
+        <pre><code class="language-text">按服务器时间排序的快照
+最新收到的服务器时间
+最新连续确认区间
+估算的服务器当前时间
+目标渲染时间
+当前插值左快照
+当前插值右快照
+缓冲质量状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>从收包到显示的逐步流程</h3>
+        <p>验证：</p>
+
+        <pre><code class="language-text">实体身份有效
+Tick 或时间戳格式有效
+状态字段满足协议
+版本与当前同步协议一致</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>最小 C# 插值结果</h3>
+        <p>这段示例只在确认区间有效时返回位置。</p>
+
+        <pre><code class="language-csharp">public enum SnapshotSampleStatus
+{
+    Ready,
+    Priming,
+    Underrun,
+    Gap,
+    InvalidInterval
+}
+
+public readonly record struct Snapshot(
+    long ServerTick,
+    double ServerTime,
+    Vector3 Position,
+    int LifetimeGeneration);
+
+public readonly record struct SnapshotSample(
+    SnapshotSampleStatus Status,
+    Vector3? Position,
+    long? LeftTick,
+    long? RightTick,
+    string? Error);
+
+public static SnapshotSample SamplePosition(
+    Snapshot left,
+    Snapshot right,
+    double renderServerTime)
+{
+    if (left.LifetimeGeneration != right.LifetimeGeneration)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.InvalidInterval,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;左右快照属于不同实体生命代次，禁止跨代插值。&quot;);
+    }
+
+    double duration = right.ServerTime - left.ServerTime;
+
+    if (duration &lt;= 0d)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.InvalidInterval,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;快照时间区间不是严格递增。&quot;);
+    }
+
+    if (renderServerTime &lt; left.ServerTime ||
+        renderServerTime &gt; right.ServerTime)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.Gap,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;渲染时间不在当前快照区间内。&quot;);
+    }
+
+    float factor = (float)(
+        (renderServerTime - left.ServerTime) / duration);
+
+    return new SnapshotSample(
+        SnapshotSampleStatus.Ready,
+        Vector3.Lerp(left.Position, right.Position, factor),
+        left.ServerTick,
+        right.ServerTick,
+        null);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>缓冲区查询伪代码</h3>
+        <p>所有非 <code>Ready</code> 结果都保留具体原因，不返回默认位置。</p>
+
+        <pre><code class="language-text">Sample(renderTime):
+    if clock mapping is uncertain:
+        return ClockUncertain
+
+    if buffer has not accumulated enough snapshots:
+        return Priming
+
+    left, right = FindBracketingSnapshots(renderTime)
+
+    if left is missing:
+        return Gap with earliest available time
+
+    if right is missing:
+        return Underrun with latest available time
+
+    if interval crosses discrete state boundary:
+        return InvalidInterval with boundary reason
+
+    return Interpolate(left, right, renderTime)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+        <p>服务器按序产生：</p>
+
+        <pre><code class="language-text">Tick 201
+Tick 202
+Tick 203</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>缓冲按服务器时间插入后仍是：</p>
+
+        <pre><code class="language-text">203 先到
+202 后到</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>目标渲染时间已经超过最新快照：</p>
+
+        <pre><code class="language-text">没有右快照可用于插值。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>插值与预测怎样协作</h3>
+        <p>常见数据流：</p>
+
+        <pre><code class="language-text">权威快照
+-&gt; 抖动缓冲
+-&gt; 目标渲染时间
+-&gt; 快照插值
+-&gt; 远端表现</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>插值延迟怎样确定</h3>
+        <p>延迟不是“越大越好”或“越小越好”。</p>
+
+        <pre><code class="language-text">快照发送间隔
+到达间隔分布
+抖动分位
+乱序概率
+丢包模式
+目标端到端延迟
+缓冲欠载率</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>可观测性</h3>
+        <p>一次问题诊断至少需要把这些事件关联到：</p>
+
+        <pre><code class="language-text">SnapshotReceivedCount
+DuplicateSnapshotCount
+ConflictingSnapshotCount
+OutOfOrderArrivalCount
+InvalidSnapshotCount
+ArrivalInterval
+EstimatedJitter</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>代价</h3>
+        <p>抖动缓冲与插值增加：</p>
+
+        <pre><code class="language-text">额外显示延迟
+每个实体的快照内存
+按时间排序与查找成本
+时钟同步复杂度
+离散状态边界处理
+观测数据量</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>通用机制与实现选择</h3>
+
+
+        <pre><code class="language-text">网络到达间隔可能与发送间隔不同。
+缓冲能用额外延迟吸收一部分到达抖动。
+插值需要目标时间前后的两份有效快照。
+快照必须按服务器时间而不是到达顺序排列。
+不同生命代次和离散运动边界不能直接连续插值。
+欠载时不存在完整插值区间。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>网络预测回答：</p>
+
+        <pre><code class="language-text">权威结果未到时，本地怎样先响应？</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：工程设计 / 网络同步</p>
+<h2 id="这篇文章深化什么">这篇文章深化什么</h2>
+<p>网络预测关注：</p>
+<pre><code class="language-text">本地怎样在权威结果到达前先响应输入，
+以及权威状态到达后怎样校正预测。</code></pre>
+<p>快照插值解决的是另一类问题：</p>
+<pre><code class="language-text">远端状态快照到达时间不均匀时，
+怎样在已经收到的权威快照之间平滑显示。</code></pre>
+<p>这篇文章是在网络预测主题基础上，继续深入：</p>
+<pre><code class="language-text">网络抖动
+快照缓冲
+时钟映射
+插值时间线
+乱序、丢包和缓冲欠载
+失败与质量状态的可观测性</code></pre>
+<p>预测和插值可以同时存在，但它们不能混为一谈：</p>
+<pre><code class="language-text">本地受控对象常需要输入预测与校正。
+远端对象常使用延迟一小段时间的快照插值。</code></pre>
+<p>具体对象采用哪种模型必须由同步协议明确。</p>
+<h2 id="生活化模型-用广播节目理解抖动缓冲">生活化模型：用广播节目理解抖动缓冲</h2>
+<p>想象直播节目每隔固定节奏发送一小段音频。</p>
+<p>发送端：</p>
+<pre><code class="language-text">片段 101
+片段 102
+片段 103
+片段 104</code></pre>
+<p>网络到达端可能变成：</p>
+<pre><code class="language-text">101 很快到
+103 先到
+102 稍后到
+104 延迟更久</code></pre>
+<p>如果播放器“收到一段就立刻播一段”：</p>
+<pre><code class="language-text">到达间隔会直接变成播放卡顿。</code></pre>
+<p>抖动缓冲的做法是：</p>
+<pre><code class="language-text">先积累一小段内容。
+播放时间故意落后发送时间。
+只要延迟波动没有耗尽缓冲，就能按稳定时间线播放。</code></pre>
+<p>快照插值也是同样思路：</p>
+<pre><code class="language-text">不是显示刚刚到达的最新包，
+而是显示一个略早的服务器时间点，
+用该时间点前后的两份快照插值得到状态。</code></pre>
+<p>代价是：</p>
+<pre><code class="language-text">更稳定，但增加显示延迟。</code></pre>
+<h2 id="三条时间线">三条时间线</h2>
+<p>网络同步至少涉及：</p>
+<pre><code class="language-text">服务器时间
+客户端本地时间
+渲染时间</code></pre>
+<h3 id="服务器时间">服务器时间</h3>
+<p>快照产生时的权威时间或 Tick：</p>
+<pre><code class="language-text">snapshot.serverTick
+snapshot.serverTime</code></pre>
+<h3 id="客户端本地时间">客户端本地时间</h3>
+<p>数据包到达客户端时的单调时钟：</p>
+<pre><code class="language-text">arrivalLocalTime</code></pre>
+<h3 id="渲染时间">渲染时间</h3>
+<p>客户端当前想显示的服务器时间：</p>
+<pre><code class="language-text">renderServerTime =
+    estimatedServerNow - interpolationDelay</code></pre>
+<p><code>interpolationDelay</code> 不是算法给出的固定常数。它必须根据发送间隔、抖动分布、延迟目标与体验要求确定。</p>
+<h2 id="快照应该携带什么">快照应该携带什么</h2>
+<p>最小快照身份通常包括：</p>
+<pre><code class="language-text">EntityId
+ServerTick 或 ServerTime
+Sequence
+State</code></pre>
+<p>状态可能包含：</p>
+<pre><code class="language-text">位置
+旋转
+速度
+动画或运动模式
+离散事件引用</code></pre>
+<p>连续状态与离散事件不能简单使用同一种插值规则：</p>
+<pre><code class="language-text">位置可以在两个样本之间插值。
+“已死亡”或“门已打开”通常不是插到一半。</code></pre>
+<p>离散状态的生效时点必须由协议定义。</p>
+<h2 id="缓冲区的关键状态">缓冲区的关键状态</h2>
+<p>每个实体或同步通道的缓冲区可以记录：</p>
+<pre><code class="language-text">按服务器时间排序的快照
+最新收到的服务器时间
+最新连续确认区间
+估算的服务器当前时间
+目标渲染时间
+当前插值左快照
+当前插值右快照
+缓冲质量状态</code></pre>
+<p>缓冲质量状态不能只用“有没有数据”表示：</p>
+<pre><code class="language-text">Priming
+  正在积累足够样本，还不能插值。
+
+Ready
+  目标时间被两份快照包围，可以插值。
+
+Underrun
+  目标时间已经超过最新可用快照。
+
+Gap
+  时间区间内存在缺失或不连续。
+
+ClockUncertain
+  服务器时间映射不可信。
+
+InvalidSnapshot
+  收到无法验证的状态。</code></pre>
+<p>这些状态让渲染层和监控系统知道“现在结果的质量是什么”。</p>
+<h2 id="从收包到显示的逐步流程">从收包到显示的逐步流程</h2>
+<h3 id="第一步-接收并验证快照">第一步：接收并验证快照</h3>
+<p>验证：</p>
+<pre><code class="language-text">实体身份有效
+Tick 或时间戳格式有效
+状态字段满足协议
+版本与当前同步协议一致</code></pre>
+<p>失败时：</p>
+<pre><code class="language-text">记录 InvalidSnapshot
+保留包身份和原始解析错误
+不把无效状态插入缓冲</code></pre>
+<p>不能把无效坐标替换成零向量后继续。</p>
+<h3 id="第二步-记录到达时间">第二步：记录到达时间</h3>
+<p>使用单调本地时钟记录：</p>
+<pre><code class="language-text">arrivalLocalTime</code></pre>
+<p>系统墙钟可能被校时或人工修改，不适合作为经过时间的唯一依据。</p>
+<h3 id="第三步-按服务器时间插入">第三步：按服务器时间插入</h3>
+<p>网络可能乱序：</p>
+<pre><code class="language-text">Tick 103 先到
+Tick 102 后到</code></pre>
+<p>缓冲区按服务器时间排序，而不是按到达顺序播放。</p>
+<p>如果重复收到相同身份快照：</p>
+<pre><code class="language-text">内容相同 -&gt; 记录重复包
+内容不同 -&gt; 报告协议冲突</code></pre>
+<p>不能任意使用“最后到达者覆盖”而隐藏同一 Tick 内容不一致。</p>
+<h3 id="第四步-更新时钟映射">第四步：更新时钟映射</h3>
+<p>客户端需要估算：</p>
+<pre><code class="language-text">当前本地单调时间对应哪个服务器时间。</code></pre>
+<p>单个包的：</p>
+<pre><code class="language-text">arrivalLocalTime - snapshotServerTime</code></pre>
+<p>包含网络延迟，不能直接当成精确时钟偏移。</p>
+<p>常见估计会结合：</p>
+<pre><code class="language-text">往返时间采样
+服务器时间同步消息
+偏移平滑
+异常样本识别</code></pre>
+<p>具体估计器、窗口和异常阈值是协议选择，必须通过网络测量验证。</p>
+<h3 id="第五步-计算目标渲染时间">第五步：计算目标渲染时间</h3>
+<pre><code class="language-text">renderTime =
+    estimatedServerNow - interpolationDelay</code></pre>
+<p>然后在缓冲中寻找：</p>
+<pre><code class="language-text">left.serverTime &lt;= renderTime &lt;= right.serverTime</code></pre>
+<h3 id="第六步-验证插值区间">第六步：验证插值区间</h3>
+<p>即使左右快照存在，也要检查：</p>
+<pre><code class="language-text">是否属于同一实体生命代次
+是否跨越传送或重生
+状态模式是否允许连续插值
+时间顺序是否合法</code></pre>
+<p>传送前位置与传送后位置之间做线性插值，可能让角色穿过整张区域。这类离散边界需要协议标记。</p>
+<h3 id="第七步-计算插值">第七步：计算插值</h3>
+<p>对于允许线性插值的位置：</p>
+<pre><code class="language-text">t =
+    (renderTime - left.serverTime)
+    / (right.serverTime - left.serverTime)
+
+position = Lerp(left.position, right.position, t)</code></pre>
+<p>当左右时间相等时，分母为零，不能继续计算。重复 Tick 应在插入或区间选择阶段处理。</p>
+<p>旋转常使用适合旋转空间的插值。使用线性、球面插值还是受运动模型约束的插值，是实现选择。</p>
+<h3 id="第八步-输出带质量的结果">第八步：输出带质量的结果</h3>
+<p>渲染采样结果不应只返回一个位置：</p>
+<pre><code class="language-text">SampleStatus
+RenderedServerTime
+LeftSnapshotId
+RightSnapshotId
+InterpolationFactor
+State
+Error</code></pre>
+<p>这样调用方不会把“没有可用样本”误认为原点或静止。</p>
+<h2 id="最小-c-插值结果">最小 C# 插值结果</h2>
+<pre><code class="language-csharp">public enum SnapshotSampleStatus
+{
+    Ready,
+    Priming,
+    Underrun,
+    Gap,
+    InvalidInterval
+}
+
+public readonly record struct Snapshot(
+    long ServerTick,
+    double ServerTime,
+    Vector3 Position,
+    int LifetimeGeneration);
+
+public readonly record struct SnapshotSample(
+    SnapshotSampleStatus Status,
+    Vector3? Position,
+    long? LeftTick,
+    long? RightTick,
+    string? Error);
+
+public static SnapshotSample SamplePosition(
+    Snapshot left,
+    Snapshot right,
+    double renderServerTime)
+{
+    if (left.LifetimeGeneration != right.LifetimeGeneration)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.InvalidInterval,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;左右快照属于不同实体生命代次，禁止跨代插值。&quot;);
+    }
+
+    double duration = right.ServerTime - left.ServerTime;
+
+    if (duration &lt;= 0d)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.InvalidInterval,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;快照时间区间不是严格递增。&quot;);
+    }
+
+    if (renderServerTime &lt; left.ServerTime ||
+        renderServerTime &gt; right.ServerTime)
+    {
+        return new SnapshotSample(
+            SnapshotSampleStatus.Gap,
+            null,
+            left.ServerTick,
+            right.ServerTick,
+            &quot;渲染时间不在当前快照区间内。&quot;);
+    }
+
+    float factor = (float)(
+        (renderServerTime - left.ServerTime) / duration);
+
+    return new SnapshotSample(
+        SnapshotSampleStatus.Ready,
+        Vector3.Lerp(left.Position, right.Position, factor),
+        left.ServerTick,
+        right.ServerTick,
+        null);
+}</code></pre>
+<p>这段示例只在确认区间有效时返回位置。</p>
+<p>它没有在 <code>Underrun</code> 时：</p>
+<pre><code class="language-text">冻结最后位置
+外推速度
+跳到最新快照</code></pre>
+<p>这些都属于可感知的降级或补偿策略，必须由同步协议明确确认后才能实现。</p>
+<h2 id="缓冲区查询伪代码">缓冲区查询伪代码</h2>
+<pre><code class="language-text">Sample(renderTime):
+    if clock mapping is uncertain:
+        return ClockUncertain
+
+    if buffer has not accumulated enough snapshots:
+        return Priming
+
+    left, right = FindBracketingSnapshots(renderTime)
+
+    if left is missing:
+        return Gap with earliest available time
+
+    if right is missing:
+        return Underrun with latest available time
+
+    if interval crosses discrete state boundary:
+        return InvalidInterval with boundary reason
+
+    return Interpolate(left, right, renderTime)</code></pre>
+<p>所有非 <code>Ready</code> 结果都保留具体原因，不返回默认位置。</p>
+<h2 id="正常路径">正常路径</h2>
+<p>服务器按序产生：</p>
+<pre><code class="language-text">Tick 201
+Tick 202
+Tick 203</code></pre>
+<p>网络虽然有轻微到达波动，但缓冲中已有：</p>
+<pre><code class="language-text">201, 202, 203</code></pre>
+<p>目标渲染时间落在 202 与 203 之间：</p>
+<pre><code class="language-text">找到左右快照
+验证同一生命代次
+计算插值因子
+输出 Ready</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="乱序到达">乱序到达</h3>
+<pre><code class="language-text">203 先到
+202 后到</code></pre>
+<p>缓冲按服务器时间插入后仍是：</p>
+<pre><code class="language-text">202, 203</code></pre>
+<p>观测数据应增加 <code>OutOfOrderArrivalCount</code>，让网络质量变化可见。</p>
+<h3 id="重复快照">重复快照</h3>
+<p>相同 Tick、相同内容：</p>
+<pre><code class="language-text">可识别为重复传输
+不需要重复插入
+记录重复计数</code></pre>
+<p>相同 Tick、不同内容：</p>
+<pre><code class="language-text">这是协议一致性错误
+记录两份内容身份
+不任意覆盖</code></pre>
+<h3 id="实体重生">实体重生</h3>
+<p>同一个 <code>EntityId</code> 被重新使用：</p>
+<pre><code class="language-text">LifetimeGeneration 发生变化</code></pre>
+<p>旧代次快照不能与新代次快照插值。缓冲应按生命代次隔离或清晰切段。</p>
+<h3 id="传送">传送</h3>
+<p>传送快照应携带离散边界：</p>
+<pre><code class="language-text">TeleportId
+或 MovementDiscontinuity</code></pre>
+<p>边界如何显示由表现协议决定，但不能把跨边界线性插值当成正常移动。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="缓冲欠载-underrun">缓冲欠载 Underrun</h3>
+<p>目标渲染时间已经超过最新快照：</p>
+<pre><code class="language-text">没有右快照可用于插值。</code></pre>
+<p>必须报告：</p>
+<pre><code class="language-text">目标渲染时间
+最新服务器时间
+缺少的时间跨度
+最近到达间隔
+当前插值延迟</code></pre>
+<p>冻结、外推或跳帧都不是无条件正确的处理，不能在基础采样器中静默选择。</p>
+<h3 id="缓冲过深">缓冲过深</h3>
+<p>快照积累过多，实际显示时间显著落后目标延迟：</p>
+<pre><code class="language-text">可能是时钟估算漂移
+消费速度不正确
+延迟调节器异常</code></pre>
+<p>系统应暴露：</p>
+<pre><code class="language-text">BufferDepthTime
+OldestSnapshotAge
+RenderDelayError</code></pre>
+<p>不能为了追赶而无记录地丢弃一段时间线。</p>
+<h3 id="快照间隔异常">快照间隔异常</h3>
+<p>左右快照时间差远大于发送周期：</p>
+<pre><code class="language-text">可能发生丢包或服务器停顿。</code></pre>
+<p>是否仍允许跨大间隔插值，需要协议阈值与运动语义依据。没有依据时应返回 <code>Gap</code> 或显式质量状态，而不是假装连续。</p>
+<h3 id="时钟跳变">时钟跳变</h3>
+<p>估算的服务器时间突然大幅变化：</p>
+<pre><code class="language-text">renderTime 可能向前跳或倒退。</code></pre>
+<p>应记录：</p>
+<pre><code class="language-text">旧偏移
+新偏移
+触发样本
+估计器状态
+受影响的渲染时间</code></pre>
+<p>平滑修正还是立即重建时间线属于明确的时钟协议选择。</p>
+<h3 id="无效数值">无效数值</h3>
+<p>快照位置出现非有限数值：</p>
+<pre><code class="language-text">NaN
+Infinity</code></pre>
+<p>应拒绝该快照并报告字段与包身份。替换为零会把网络或序列化错误变成看似合法的位置。</p>
+<h2 id="插值与预测怎样协作">插值与预测怎样协作</h2>
+<h3 id="远端对象">远端对象</h3>
+<p>常见数据流：</p>
+<pre><code class="language-text">权威快照
+-&gt; 抖动缓冲
+-&gt; 目标渲染时间
+-&gt; 快照插值
+-&gt; 远端表现</code></pre>
+<h3 id="本地受控对象">本地受控对象</h3>
+<p>常见数据流：</p>
+<pre><code class="language-text">本地输入
+-&gt; 本地预测
+-&gt; 权威确认
+-&gt; 重演或校正</code></pre>
+<p>本地对象也可能需要对其他状态做插值，但不能把远端插值缓冲直接套在本地输入响应上，否则会额外增加操控延迟。</p>
+<h3 id="同一场景的时间一致性">同一场景的时间一致性</h3>
+<p>如果本地对象显示预测未来，而远端对象显示延迟历史：</p>
+<pre><code class="language-text">它们处在不同显示时间线上。</code></pre>
+<p>命中判定、视觉特效和相对距离展示必须明确使用：</p>
+<pre><code class="language-text">权威时间
+预测时间
+还是渲染时间</code></pre>
+<p>不能把不同时间线的坐标直接当作同一时刻事实。</p>
+<h2 id="插值延迟怎样确定">插值延迟怎样确定</h2>
+<p>延迟不是“越大越好”或“越小越好”。</p>
+<p>需要测量：</p>
+<pre><code class="language-text">快照发送间隔
+到达间隔分布
+抖动分位
+乱序概率
+丢包模式
+目标端到端延迟
+缓冲欠载率</code></pre>
+<p>固定延迟与自适应延迟都是实现选择。</p>
+<p>自适应延迟如果存在，至少应明确：</p>
+<pre><code class="language-text">观测窗口
+增大与减小条件
+变化速率
+上下界来源
+时间线调整方式</code></pre>
+<p>这些都是行为影响值，必须来自测量和体验约束，不能凭经验写入固定常数。</p>
+<h2 id="可观测性">可观测性</h2>
+<h3 id="包到达指标">包到达指标</h3>
+<pre><code class="language-text">SnapshotReceivedCount
+DuplicateSnapshotCount
+ConflictingSnapshotCount
+OutOfOrderArrivalCount
+InvalidSnapshotCount
+ArrivalInterval
+EstimatedJitter</code></pre>
+<h3 id="缓冲指标">缓冲指标</h3>
+<pre><code class="language-text">BufferedSnapshotCount
+BufferDepthTime
+InterpolationDelay
+OldestSnapshotAge
+LatestSnapshotAge
+GapCount
+UnderrunCount
+PrimingDuration</code></pre>
+<h3 id="采样指标">采样指标</h3>
+<pre><code class="language-text">ReadySampleCount
+SampleStatus
+RenderServerTime
+LeftTick
+RightTick
+InterpolationFactor
+LifetimeGeneration</code></pre>
+<h3 id="时钟指标">时钟指标</h3>
+<pre><code class="language-text">EstimatedServerOffset
+OffsetUncertainty
+RoundTripTime
+ClockAdjustmentCount
+RenderTimeRegressionCount</code></pre>
+<p>一次问题诊断至少需要把这些事件关联到：</p>
+<pre><code class="language-text">连接身份
+实体身份
+同步通道
+服务器 Tick
+本地到达时间
+采样时刻</code></pre>
+<h2 id="代价">代价</h2>
+<p>抖动缓冲与插值增加：</p>
+<pre><code class="language-text">额外显示延迟
+每个实体的快照内存
+按时间排序与查找成本
+时钟同步复杂度
+离散状态边界处理
+观测数据量</code></pre>
+<p>它换来的是：</p>
+<pre><code class="language-text">隔离一部分网络到达抖动
+让远端运动基于两个已知权威状态
+更清晰地区分网络质量与渲染质量</code></pre>
+<h2 id="通用机制与实现选择">通用机制与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">网络到达间隔可能与发送间隔不同。
+缓冲能用额外延迟吸收一部分到达抖动。
+插值需要目标时间前后的两份有效快照。
+快照必须按服务器时间而不是到达顺序排列。
+不同生命代次和离散运动边界不能直接连续插值。
+欠载时不存在完整插值区间。</code></pre>
+<h3 id="必须由具体系统确定">必须由具体系统确定</h3>
+<pre><code class="language-text">快照发送频率
+插值延迟
+时钟估计器
+缓冲容量与回收
+丢包和大间隔判定
+旋转与高阶运动插值
+欠载后的明确行为
+传送与离散状态协议
+本地预测与远端插值的时间线关系</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>网络预测回答：</p>
+<pre><code class="language-text">权威结果未到时，本地怎样先响应？</code></pre>
+<p>快照插值回答：</p>
+<pre><code class="language-text">已经到达的权威快照不均匀时，
+怎样在稍晚的稳定时间线上显示远端状态？</code></pre>
+<p>一个可靠的抖动缓冲系统需要：</p>
+<pre><code class="language-text">区分服务器、本地与渲染时间
+按服务器时间排序快照
+用两份合法快照包围目标时间
+把乱序、重复、缺口和欠载作为明确状态
+不为失败返回默认位置
+不在未确认时静默冻结、外推或跳到最新状态
+让每次采样都能追溯到快照和时间证据</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E6%95%B0%E6%8D%AE%E9%A9%B1%E5%8A%A8Timeline-%E4%BB%8E%E7%BC%96%E8%BE%91%E5%99%A8%E5%88%B0%E5%AE%9E%E4%BD%93%E6%B6%88%E8%B4%B9/"><small>← PREVIOUS</small>数据驱动 Timeline：从编辑器到实体消费</a>
+          <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E9%A2%84%E6%B5%8B%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A0%A1%E6%AD%A3/"><small>NEXT →</small>网络预测与服务器校正：先响应，再用权威结果收敛</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>
