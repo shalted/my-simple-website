@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象在人群中去车站：">
+  <title>Steering、RVO、ORCA 与速度空间 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
+      <h1>Steering、RVO、ORCA 与速度空间</h1>
+      <p class="hero-copy">想象在人群中去车站：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#从-想去哪-到-下一刻怎么动">从“想去哪”到“下一刻怎么动”</a>
+    <a data-toc-link href="#steering-先产生期望运动">Steering：先产生期望运动</a>
+    <a data-toc-link href="#arrive-接近目标时减速">Arrive：接近目标时减速</a>
+    <a data-toc-link href="#从位置空间切换到速度空间">从位置空间切换到速度空间</a>
+    <a data-toc-link href="#vo-速度障碍">VO：速度障碍</a>
+    <a data-toc-link href="#为什么只用-vo-可能来回摆动">为什么只用 VO 可能来回摆动</a>
+    <a data-toc-link href="#rvo-双方共同承担避让">RVO：双方共同承担避让</a>
+    <a data-toc-link href="#orca-把避障写成半平面约束">ORCA：把避障写成半平面约束</a>
+    <a data-toc-link href="#orca-一帧中的逐步流程">ORCA 一帧中的逐步流程</a>
+    <a class="sub" data-toc-link href="#第一步-生成期望速度">第一步：生成期望速度</a>
+    <a class="sub" data-toc-link href="#第二步-查询邻居">第二步：查询邻居</a>
+    <a class="sub" data-toc-link href="#第三步-构造每个邻居的速度约束">第三步：构造每个邻居的速度约束</a>
+    <a class="sub" data-toc-link href="#第四步-求可行速度">第四步：求可行速度</a>
+    <a class="sub" data-toc-link href="#第五步-交给运动执行层">第五步：交给运动执行层</a>
+    <a data-toc-link href="#速度空间中的一个直观例子">速度空间中的一个直观例子</a>
+    <a data-toc-link href="#最小-c-数据流示例">最小 C# 数据流示例</a>
+    <a data-toc-link href="#正常路径">正常路径</a>
+    <a class="sub" data-toc-link href="#没有邻居约束">没有邻居约束</a>
+    <a class="sub" data-toc-link href="#一个迎面邻居">一个迎面邻居</a>
+    <a class="sub" data-toc-link href="#多个邻居但仍有可行域">多个邻居但仍有可行域</a>
+    <a data-toc-link href="#边界路径">边界路径</a>
+    <a class="sub" data-toc-link href="#初始已经重叠">初始已经重叠</a>
+    <a class="sub" data-toc-link href="#完全对称的迎面或窄口场景">完全对称的迎面或窄口场景</a>
+    <a class="sub" data-toc-link href="#静态障碍与动态代理同时存在">静态障碍与动态代理同时存在</a>
+    <a class="sub" data-toc-link href="#加速度受限">加速度受限</a>
+    <a data-toc-link href="#失败路径">失败路径</a>
+    <a class="sub" data-toc-link href="#约束交集为空">约束交集为空</a>
+    <a class="sub" data-toc-link href="#邻居快照不同步">邻居快照不同步</a>
+    <a class="sub" data-toc-link href="#半径与真实占用不一致">半径与真实占用不一致</a>
+    <a class="sub" data-toc-link href="#只做局部避障-没有全局路线">只做局部避障，没有全局路线</a>
+    <a data-toc-link href="#性能代价">性能代价</a>
+    <a data-toc-link href="#与全局寻路和移动控制的接口">与全局寻路和移动控制的接口</a>
+    <a data-toc-link href="#调试速度空间应该看什么">调试速度空间应该看什么</a>
+    <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 19</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：从“想去哪”到“下一刻怎么动”">
+      <span>01</span>
+      <strong>从“想去哪”到“下一刻怎么动”</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Steering：先产生期望运动">
+      <span>02</span>
+      <strong>Steering：先产生期望运动</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Arrive：接近目标时减速">
+      <span>03</span>
+      <strong>Arrive：接近目标时减速</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：从位置空间切换到速度空间">
+      <span>04</span>
+      <strong>从位置空间切换到速度空间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：VO：速度障碍">
+      <span>05</span>
+      <strong>VO：速度障碍</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么只用 VO 可能来回摆动">
+      <span>06</span>
+      <strong>为什么只用 VO 可能来回摆动</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：RVO：双方共同承担避让">
+      <span>07</span>
+      <strong>RVO：双方共同承担避让</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：ORCA：把避障写成半平面约束">
+      <span>08</span>
+      <strong>ORCA：把避障写成半平面约束</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：ORCA 一帧中的逐步流程">
+      <span>09</span>
+      <strong>ORCA 一帧中的逐步流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：速度空间中的一个直观例子">
+      <span>10</span>
+      <strong>速度空间中的一个直观例子</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最小 C# 数据流示例">
+      <span>11</span>
+      <strong>最小 C# 数据流示例</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：正常路径">
+      <span>12</span>
+      <strong>正常路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：边界路径">
+      <span>13</span>
+      <strong>边界路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败路径">
+      <span>14</span>
+      <strong>失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：性能代价">
+      <span>15</span>
+      <strong>性能代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：与全局寻路和移动控制的接口">
+      <span>16</span>
+      <strong>与全局寻路和移动控制的接口</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：调试速度空间应该看什么">
+      <span>17</span>
+      <strong>调试速度空间应该看什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：通用算法与实现选择">
+      <span>18</span>
+      <strong>通用算法与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="18" aria-label="查看第 19 步：最后总结">
+      <span>19</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>从“想去哪”到“下一刻怎么动”</h3>
+        <p>想象在人群中去车站：</p>
+
+        <pre><code class="language-text">全局路线告诉你：沿这条街走，再从路口右转。
+你自己想保持的速度：朝车站方向正常步行。
+附近行人靠近时：临时侧身、减速或绕开。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>Steering：先产生期望运动</h3>
+        <p>Steering 是一类局部运动意图生成方法，而不是单一固定算法。</p>
+
+        <pre><code class="language-text">desiredVelocity =
+    Normalize(targetPosition - position) * maxSpeed</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>Arrive：接近目标时减速</h3>
+        <p>只有 Seek 时，角色可能冲过目标再折返。Arrive 的直觉是：</p>
+
+        <pre><code class="language-text">远处正常前进。
+进入减速区域后逐渐降低期望速度。
+到达可接受范围后停止。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>从位置空间切换到速度空间</h3>
+        <p>普通碰撞检测常问：</p>
+
+        <pre><code class="language-text">两个物体现在是否重叠？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>VO：速度障碍</h3>
+        <p>VO 是 Velocity Obstacle。</p>
+
+        <pre><code class="language-text">横轴：速度 x 分量
+纵轴：速度 y 分量</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>为什么只用 VO 可能来回摆动</h3>
+        <p>如果 A 把 B 的当前速度当成固定不变：</p>
+
+        <pre><code class="language-text">A 发现继续直走会撞，于是向左避。
+B 同时也重新计算，并向自己的左侧避。
+下一次双方又根据新速度修正。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>RVO：双方共同承担避让</h3>
+        <p>RVO 是 Reciprocal Velocity Obstacle。</p>
+
+        <pre><code class="language-text">不要假设只有自己会避让。
+预测双方都会对潜在碰撞做出一部分修正。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>ORCA：把避障写成半平面约束</h3>
+        <p>ORCA 是 Optimal Reciprocal Collision Avoidance。</p>
+
+        <pre><code class="language-text">对每个邻居，计算避免碰撞所需的最小速度修正。
+双方按责任模型分担修正。
+由此生成一个允许速度的半平面约束。
+在所有约束交集中，寻找最接近期望速度的速度。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>ORCA 一帧中的逐步流程</h3>
+        <p>全局路径或 Steering 提供：</p>
+
+        <pre><code class="language-text">preferredVelocity</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>速度空间中的一个直观例子</h3>
+        <p>当前期望速度指向正右方：</p>
+
+        <pre><code class="language-text">preferredVelocity = (right, fast)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最小 C# 数据流示例</h3>
+        <p>下面展示职责边界，不实现完整 ORCA 几何求解：</p>
+
+        <pre><code class="language-csharp">public readonly struct AgentSnapshot
+{
+    public readonly Vector2 Position;
+    public readonly Vector2 Velocity;
+    public readonly float Radius;
+
+    public AgentSnapshot(
+        Vector2 position,
+        Vector2 velocity,
+        float radius)
+    {
+        Position = position;
+        Velocity = velocity;
+        Radius = radius;
+    }
+}
+
+public readonly struct VelocityConstraint
+{
+    public readonly Vector2 Point;
+    public readonly Vector2 Normal;
+
+    public VelocityConstraint(Vector2 point, Vector2 normal)
+    {
+        Point = point;
+        Normal = normal;
+    }
+
+    public bool Allows(Vector2 velocity)
+    {
+        // 候选速度必须位于约束法线指向的允许半平面。
+        return Vector2.Dot(velocity - Point, Normal) &gt;= 0f;
+    }
+}
+
+public static Vector2 ChooseLocalVelocity(
+    AgentSnapshot self,
+    IReadOnlyList&lt;AgentSnapshot&gt; neighbors,
+    Vector2 preferredVelocity,
+    float maxSpeed,
+    float timeHorizon)
+{
+    var constraints = new List&lt;VelocityConstraint&gt;();
+
+    foreach (AgentSnapshot neighbor in neighbors)
+    {
+        // 真实实现应在这里根据相对位置、相对速度、
+        // 合并半径和时间窗构造一条 ORCA 约束。
+        constraints.Add(
+            BuildOrcaConstraint(self, neighbor, timeHorizon));
+    }
+
+    // 求解器应在最大速度圆和全部半平面的交集中，
+    // 寻找最接近期望速度的可行速度。
+    return SolveClosestFeasibleVelocity(
+        preferredVelocity,
+        maxSpeed,
+        constraints);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>正常路径</h3>
+
+
+        <pre><code class="language-text">preferredVelocity 在最大速度范围内
+直接输出 preferredVelocity</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>边界路径</h3>
+        <p>标准“预测未来碰撞”不足以解释已经发生的穿透。</p>
+
+        <pre><code class="language-text">更短时尺度的分离约束
+或独立的重叠修复与物理接触处理</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>失败路径</h3>
+        <p>拥挤、狭窄或参数不一致时，可能不存在同时满足所有约束的速度。</p>
+
+        <pre><code class="language-text">哪些约束冲突
+是否连静止速度也不可行
+最大违反量
+当前邻居和障碍快照</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>性能代价</h3>
+        <p>每个代理的主要开销通常来自：</p>
+
+        <pre><code class="language-text">邻居查询
+为邻居构造约束
+求解约束下的最近速度
+更新运动状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>与全局寻路和移动控制的接口</h3>
+        <p>一个清晰的数据流可以是：</p>
+
+        <pre><code class="language-text">目标
+  ↓
+全局路径或导航走廊
+  ↓
+Steering 生成 preferredVelocity
+  ↓
+RVO / ORCA 修正为 collisionAvoidanceVelocity
+  ↓
+运动控制器施加加速度、转向和地面约束
+  ↓
+得到真实 velocity 与 position</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+        <h3>调试速度空间应该看什么</h3>
+        <p>只在位置空间画角色圆圈通常不够。建议同时观察：</p>
+
+        <pre><code class="language-text">当前速度
+期望速度
+最终选择速度
+邻居范围
+每个邻居的相对位置与相对速度
+每条 ORCA 约束线及允许侧
+最大速度圆
+最终可行域
+时间窗和状态快照时点</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
+        <h3>通用算法与实现选择</h3>
+
+
+        <pre><code class="language-text">Steering 生成局部期望速度或加速度。
+VO 用相对运动描述会在未来时间窗内碰撞的危险速度。
+RVO 引入双方共同避让的互惠假设。
+ORCA 将邻居避碰要求转化为速度空间半平面约束。
+ORCA 在可行速度中寻找接近期望速度的结果。
+局部避障不能替代全局路径规划。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="18" hidden>
+        <div class="deck-step-meta">STEP 19 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>从 Steering 到 ORCA，可以看成逐层加约束：</p>
+
+        <pre><code class="language-text">Steering：
+  我想用什么速度接近目标？
+
+VO：
+  哪些速度会导致未来碰撞？
+
+RVO：
+  如果双方都会避让，危险速度应该怎样理解？
+
+ORCA：
+  把每个邻居的避碰要求变成半平面，
+  再从公共可行域中选择最接近期望的速度。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：游戏 AI 与逻辑建模 / 移动与局部避障</p>
+<h2 id="从-想去哪-到-下一刻怎么动">从“想去哪”到“下一刻怎么动”</h2>
+<p>想象在人群中去车站：</p>
+<pre><code class="language-text">全局路线告诉你：沿这条街走，再从路口右转。
+你自己想保持的速度：朝车站方向正常步行。
+附近行人靠近时：临时侧身、减速或绕开。</code></pre>
+<p>这里至少有三个层次：</p>
+<pre><code class="language-text">全局路径：提供长期方向或路径走廊。
+Steering：根据目标生成期望速度。
+RVO / ORCA：根据邻居约束修正速度，减少未来碰撞。</code></pre>
+<p>局部避障通常不负责回答“最终目的地在哪里”，而是回答：</p>
+<pre><code class="language-text">在接下来一小段时间里，哪个速度既安全，又尽量接近期望速度？</code></pre>
+<p>速度是向量：</p>
+<pre><code class="language-text">velocity = direction * speed</code></pre>
+<p>所以选择新速度，同时选择了移动方向和移动快慢。</p>
+<h2 id="steering-先产生期望运动">Steering：先产生期望运动</h2>
+<p>Steering 是一类局部运动意图生成方法，而不是单一固定算法。</p>
+<p>最基础的 Seek 可以写成：</p>
+<pre><code class="language-text">desiredVelocity =
+    Normalize(targetPosition - position) * maxSpeed</code></pre>
+<p>如果直接把当前速度瞬间替换为期望速度，运动可能突变。常见做法是限制加速度：</p>
+<pre><code class="language-text">steering =
+    ClampMagnitude(desiredVelocity - currentVelocity,
+                   maxAcceleration)</code></pre>
+<p>然后积分：</p>
+<pre><code class="language-text">newVelocity = currentVelocity + steering * deltaTime
+newPosition = position + newVelocity * deltaTime</code></pre>
+<p>这里可验证的通用关系是：</p>
+<pre><code class="language-text">期望速度描述想怎样移动。
+加速度约束描述速度能多快变化。
+位置由速度随时间推进。</code></pre>
+<p>而以下都是具体实现选择：</p>
+<pre><code class="language-text">最大速度
+最大加速度
+到达半径
+减速曲线
+转向响应
+固定时间步还是可变时间步</code></pre>
+<p>这些值必须来自运动设计、物理约束或可验证配置，不能从算法名称推导。</p>
+<h2 id="arrive-接近目标时减速">Arrive：接近目标时减速</h2>
+<p>只有 Seek 时，角色可能冲过目标再折返。Arrive 的直觉是：</p>
+<pre><code class="language-text">远处正常前进。
+进入减速区域后逐渐降低期望速度。
+到达可接受范围后停止。</code></pre>
+<p>一种抽象表达：</p>
+<pre><code class="language-text">distance = Length(targetPosition - position)
+targetSpeed = SpeedCurve(distance)
+desiredVelocity =
+    Normalize(targetPosition - position) * targetSpeed</code></pre>
+<p><code>SpeedCurve</code> 的形状、停止范围和是否允许过冲不是通用固定值，而是运动模型选择。</p>
+<h2 id="从位置空间切换到速度空间">从位置空间切换到速度空间</h2>
+<p>普通碰撞检测常问：</p>
+<pre><code class="language-text">两个物体现在是否重叠？</code></pre>
+<p>速度障碍问的是：</p>
+<pre><code class="language-text">如果双方保持某个速度，未来时间窗内是否会碰撞？</code></pre>
+<p>假设两个圆形代理 A、B：</p>
+<pre><code class="language-text">位置：pA, pB
+半径：rA, rB
+速度：vA, vB</code></pre>
+<p>把 B 看成相对静止，可以使用相对量：</p>
+<pre><code class="language-text">relativePosition = pB - pA
+relativeVelocity = vA - vB
+combinedRadius = rA + rB</code></pre>
+<p>问题变成：</p>
+<pre><code class="language-text">从相对位置出发，按相对速度前进，
+是否会在时间窗内进入 combinedRadius 的圆？</code></pre>
+<p>这一步把“双物体移动碰撞”转化为“相对速度是否落入危险集合”。</p>
+<h2 id="vo-速度障碍">VO：速度障碍</h2>
+<p>VO 是 Velocity Obstacle。</p>
+<p>在二维速度平面中，每一个点都代表一个候选速度：</p>
+<pre><code class="language-text">横轴：速度 x 分量
+纵轴：速度 y 分量</code></pre>
+<p>对于邻居 B，可以构造一个危险区域：</p>
+<pre><code class="language-text">候选速度落在 VO 内：
+  按当前预测模型会在时间窗内碰撞。
+
+候选速度落在 VO 外：
+  在该时间窗和模型下不会与 B 碰撞。</code></pre>
+<p>无限时间范围的圆形 VO 直观上像从相对位置张开的锥形区域。有限时间窗会对区域进行截断，使“很久以后才可能发生的碰撞”不必立即主导当前速度。</p>
+<p>时间窗越长：</p>
+<pre><code class="language-text">更早为远期冲突做准备
+但约束通常更保守</code></pre>
+<p>时间窗越短：</p>
+<pre><code class="language-text">更关注眼前
+但可能较晚才开始避让</code></pre>
+<p>时间窗的具体数值是行为与性能选择，不是 VO 理论给出的万能常数。</p>
+<h2 id="为什么只用-vo-可能来回摆动">为什么只用 VO 可能来回摆动</h2>
+<p>如果 A 把 B 的当前速度当成固定不变：</p>
+<pre><code class="language-text">A 发现继续直走会撞，于是向左避。
+B 同时也重新计算，并向自己的左侧避。
+下一次双方又根据新速度修正。</code></pre>
+<p>双方可能反复猜测对方的下一步，出现：</p>
+<pre><code class="language-text">左右摆动
+过度避让
+速度不稳定</code></pre>
+<p>这不是每次都会发生，但说明局部避障不仅要判断危险速度，还要定义多代理之间如何分担修正责任。</p>
+<h2 id="rvo-双方共同承担避让">RVO：双方共同承担避让</h2>
+<p>RVO 是 Reciprocal Velocity Obstacle。</p>
+<p>核心直觉：</p>
+<pre><code class="language-text">不要假设只有自己会避让。
+预测双方都会对潜在碰撞做出一部分修正。</code></pre>
+<p>两人迎面而来：</p>
+<pre><code class="language-text">A ---&gt;       &lt;--- B</code></pre>
+<p>期望不是让 A 完全承担横向偏移，而是：</p>
+<pre><code class="language-text">A 修正一部分
+B 修正一部分</code></pre>
+<p>“互惠”能减少单方过度反应，但经典 RVO 仍可能面临振荡、对称僵局和复杂邻居组合问题。</p>
+<p>双方平均分担只是常见对称模型。非对称责任、不同优先权或不合作代理都需要额外建模，不能假设 RVO 自动理解这些规则。</p>
+<h2 id="orca-把避障写成半平面约束">ORCA：把避障写成半平面约束</h2>
+<p>ORCA 是 Optimal Reciprocal Collision Avoidance。</p>
+<p>它的关键思路可以概括为：</p>
+<pre><code class="language-text">对每个邻居，计算避免碰撞所需的最小速度修正。
+双方按责任模型分担修正。
+由此生成一个允许速度的半平面约束。
+在所有约束交集中，寻找最接近期望速度的速度。</code></pre>
+<p>对一个邻居，速度平面被一条线分成两侧：</p>
+<pre><code class="language-text">允许侧：满足该邻居的避碰要求。
+禁止侧：仍可能造成时间窗内碰撞。</code></pre>
+<p>多个邻居产生多个半平面：</p>
+<pre><code class="language-text">约束 1  ∩  约束 2  ∩  约束 3  ...</code></pre>
+<p>再叠加最大速度圆：</p>
+<pre><code class="language-text">Length(candidateVelocity) &lt;= maxSpeed</code></pre>
+<p>求解目标：</p>
+<pre><code class="language-text">在可行域内，找到距离 preferredVelocity 最近的速度。</code></pre>
+<p>这是一种约束优化视角。</p>
+<h2 id="orca-一帧中的逐步流程">ORCA 一帧中的逐步流程</h2>
+<h3 id="第一步-生成期望速度">第一步：生成期望速度</h3>
+<p>全局路径或 Steering 提供：</p>
+<pre><code class="language-text">preferredVelocity</code></pre>
+<p>它表达“没有局部冲突时最想采用的速度”。</p>
+<h3 id="第二步-查询邻居">第二步：查询邻居</h3>
+<p>空间查询得到一定范围内的动态邻居：</p>
+<pre><code class="language-text">neighborA
+neighborB
+neighborC</code></pre>
+<p>邻居搜索半径、最大邻居数和空间索引结构都是性能与行为选择。</p>
+<h3 id="第三步-构造每个邻居的速度约束">第三步：构造每个邻居的速度约束</h3>
+<p>对每个邻居：</p>
+<pre><code class="language-text">计算相对位置
+计算相对速度
+计算合并半径
+建立有限时间窗内的速度障碍
+找到把当前相对速度推出危险区域的最小修正 u
+按责任模型分配修正
+生成 ORCA 线与允许半平面</code></pre>
+<h3 id="第四步-求可行速度">第四步：求可行速度</h3>
+<p>在所有半平面的交集和最大速度约束内求解：</p>
+<pre><code class="language-text">arg min
+    Length(candidateVelocity - preferredVelocity)</code></pre>
+<p>如果期望速度本身满足所有约束，就直接保留它。</p>
+<h3 id="第五步-交给运动执行层">第五步：交给运动执行层</h3>
+<p>ORCA 输出的是建议速度。实际角色可能还受：</p>
+<pre><code class="language-text">加速度上限
+转向速度
+动画根运动
+地形约束
+物理接触</code></pre>
+<p>因此“ORCA 速度可行”不等于角色能在一个时间步内瞬间达到该速度。运动模型与避障模型差异越大，预测误差越明显。</p>
+<h2 id="速度空间中的一个直观例子">速度空间中的一个直观例子</h2>
+<p>当前期望速度指向正右方：</p>
+<pre><code class="language-text">preferredVelocity = (right, fast)</code></pre>
+<p>前方邻居产生一条约束线，正右方落在禁止侧：</p>
+<pre><code class="language-text">                允许区域
+                    /
+                   /  constraint
+       preferred X/
+                 /
+                / 禁止区域</code></pre>
+<p>求解器把期望速度投影或调整到最近的可行位置：</p>
+<pre><code class="language-text">newVelocity = 约束边界附近的安全速度</code></pre>
+<p>可能表现为：</p>
+<pre><code class="language-text">稍微向侧面偏移
+降低速度
+或两者同时发生</code></pre>
+<p>具体选择由所有约束与“最接近期望速度”的目标共同决定。</p>
+<h2 id="最小-c-数据流示例">最小 C# 数据流示例</h2>
+<p>下面展示职责边界，不实现完整 ORCA 几何求解：</p>
+<pre><code class="language-csharp">public readonly struct AgentSnapshot
+{
+    public readonly Vector2 Position;
+    public readonly Vector2 Velocity;
+    public readonly float Radius;
+
+    public AgentSnapshot(
+        Vector2 position,
+        Vector2 velocity,
+        float radius)
+    {
+        Position = position;
+        Velocity = velocity;
+        Radius = radius;
+    }
+}
+
+public readonly struct VelocityConstraint
+{
+    public readonly Vector2 Point;
+    public readonly Vector2 Normal;
+
+    public VelocityConstraint(Vector2 point, Vector2 normal)
+    {
+        Point = point;
+        Normal = normal;
+    }
+
+    public bool Allows(Vector2 velocity)
+    {
+        // 候选速度必须位于约束法线指向的允许半平面。
+        return Vector2.Dot(velocity - Point, Normal) &gt;= 0f;
+    }
+}
+
+public static Vector2 ChooseLocalVelocity(
+    AgentSnapshot self,
+    IReadOnlyList&lt;AgentSnapshot&gt; neighbors,
+    Vector2 preferredVelocity,
+    float maxSpeed,
+    float timeHorizon)
+{
+    var constraints = new List&lt;VelocityConstraint&gt;();
+
+    foreach (AgentSnapshot neighbor in neighbors)
+    {
+        // 真实实现应在这里根据相对位置、相对速度、
+        // 合并半径和时间窗构造一条 ORCA 约束。
+        constraints.Add(
+            BuildOrcaConstraint(self, neighbor, timeHorizon));
+    }
+
+    // 求解器应在最大速度圆和全部半平面的交集中，
+    // 寻找最接近期望速度的可行速度。
+    return SolveClosestFeasibleVelocity(
+        preferredVelocity,
+        maxSpeed,
+        constraints);
+}</code></pre>
+<p>这段示例没有猜测：</p>
+<pre><code class="language-text">邻居距离
+时间窗大小
+代理半径
+最大速度
+责任分配比例</code></pre>
+<p>它们必须由调用方提供可验证配置。<code>BuildOrcaConstraint</code> 和 <code>SolveClosestFeasibleVelocity</code> 也不能用随意采样冒充完整 ORCA 实现。</p>
+<h2 id="正常路径">正常路径</h2>
+<h3 id="没有邻居约束">没有邻居约束</h3>
+<pre><code class="language-text">preferredVelocity 在最大速度范围内
+直接输出 preferredVelocity</code></pre>
+<h3 id="一个迎面邻居">一个迎面邻居</h3>
+<pre><code class="language-text">直行速度进入危险区域
+生成一个半平面约束
+选择边界附近最接近期望速度的速度
+双方共同侧向修正</code></pre>
+<h3 id="多个邻居但仍有可行域">多个邻居但仍有可行域</h3>
+<pre><code class="language-text">所有半平面仍有交集
+求解器在交集内找到合法速度
+速度可能比单邻居时偏转或减速更多</code></pre>
+<h2 id="边界路径">边界路径</h2>
+<h3 id="初始已经重叠">初始已经重叠</h3>
+<p>标准“预测未来碰撞”不足以解释已经发生的穿透。</p>
+<p>算法通常需要：</p>
+<pre><code class="language-text">更短时尺度的分离约束
+或独立的重叠修复与物理接触处理</code></pre>
+<p>具体恢复策略不是 ORCA 名称自动规定的，尤其不能悄悄把代理瞬移到猜测位置。</p>
+<h3 id="完全对称的迎面或窄口场景">完全对称的迎面或窄口场景</h3>
+<p>如果双方：</p>
+<pre><code class="language-text">形状相同
+速度相同
+目标对称
+规则相同</code></pre>
+<p>局部选择可能长期对称，出现：</p>
+<pre><code class="language-text">左右摇摆
+同时停下
+在窄口互不相让</code></pre>
+<p>可通过高层通行规则、稳定侧偏偏好、优先权或通道调度打破对称。但这些都是额外行为规则，需要明确设计依据。</p>
+<h3 id="静态障碍与动态代理同时存在">静态障碍与动态代理同时存在</h3>
+<p>墙壁不会与代理“共同承担一半避让”。静态障碍约束需要独立处理，责任模型不能直接照搬双方对称分担。</p>
+<h3 id="加速度受限">加速度受限</h3>
+<p>求解出的速度在几何上安全，但执行层无法立即达到：</p>
+<pre><code class="language-text">实际轨迹可能仍然进入碰撞区域。</code></pre>
+<p>需要让求解器考虑可达速度集合，或让时间窗、运动控制和代理模型保持一致。采用何种方法取决于实际运动系统。</p>
+<h2 id="失败路径">失败路径</h2>
+<h3 id="约束交集为空">约束交集为空</h3>
+<p>拥挤、狭窄或参数不一致时，可能不存在同时满足所有约束的速度。</p>
+<p>此时必须暴露：</p>
+<pre><code class="language-text">哪些约束冲突
+是否连静止速度也不可行
+最大违反量
+当前邻居和障碍快照</code></pre>
+<p>“随便返回零速度”“忽略最后一条约束”或“继续使用期望速度”都是降级策略，不是 ORCA 的无条件正确答案。采用任何一种都需要明确的产品行为和错误可见性。</p>
+<h3 id="邻居快照不同步">邻居快照不同步</h3>
+<p>如果 A 使用本帧的 B 状态，而 B 使用上一帧的 A 状态：</p>
+<pre><code class="language-text">双方对彼此运动的预测不一致</code></pre>
+<p>结果可能抖动或偏离互惠假设。更新顺序、快照时点和双缓冲策略属于运行时设计。</p>
+<h3 id="半径与真实占用不一致">半径与真实占用不一致</h3>
+<p>代理半径小于真实碰撞体：</p>
+<pre><code class="language-text">速度空间认为安全，视觉或物理上仍会相撞。</code></pre>
+<p>代理半径过大：</p>
+<pre><code class="language-text">可行域被过度压缩，通道可能被误判为无法通过。</code></pre>
+<p>半径必须来自明确的移动占用模型。</p>
+<h3 id="只做局部避障-没有全局路线">只做局部避障，没有全局路线</h3>
+<p>局部速度选择只看附近冲突时，可能：</p>
+<pre><code class="language-text">绕到死路
+在 U 形障碍内徘徊
+为了眼前通行偏离长期目标</code></pre>
+<p>这是局部方法的适用边界，不是继续增加邻居数量就一定能解决的问题。</p>
+<h2 id="性能代价">性能代价</h2>
+<p>每个代理的主要开销通常来自：</p>
+<pre><code class="language-text">邻居查询
+为邻居构造约束
+求解约束下的最近速度
+更新运动状态</code></pre>
+<p>如果每个代理都检查所有其他代理，邻居阶段会快速增长。常见空间加速结构包括：</p>
+<pre><code class="language-text">均匀网格
+空间哈希
+k-d tree
+BVH 或其他邻域索引</code></pre>
+<p>选择哪种结构取决于：</p>
+<pre><code class="language-text">代理数量
+分布密度
+移动频率
+查询半径
+更新成本</code></pre>
+<p>不能只凭某种结构“常见”就认定它适合所有场景。</p>
+<h2 id="与全局寻路和移动控制的接口">与全局寻路和移动控制的接口</h2>
+<p>一个清晰的数据流可以是：</p>
+<pre><code class="language-text">目标
+  ↓
+全局路径或导航走廊
+  ↓
+Steering 生成 preferredVelocity
+  ↓
+RVO / ORCA 修正为 collisionAvoidanceVelocity
+  ↓
+运动控制器施加加速度、转向和地面约束
+  ↓
+得到真实 velocity 与 position</code></pre>
+<p>下一帧避障必须读取真实执行结果，而不是假设角色已经完美采用了上一帧建议速度。</p>
+<h2 id="调试速度空间应该看什么">调试速度空间应该看什么</h2>
+<p>只在位置空间画角色圆圈通常不够。建议同时观察：</p>
+<pre><code class="language-text">当前速度
+期望速度
+最终选择速度
+邻居范围
+每个邻居的相对位置与相对速度
+每条 ORCA 约束线及允许侧
+最大速度圆
+最终可行域
+时间窗和状态快照时点</code></pre>
+<p>一次选择的诊断记录可以表示为：</p>
+<pre><code class="language-text">preferredVelocity：可视化为箭头
+constraintCount：约束数量
+selectedVelocity：最终箭头
+feasible：是否存在完整可行解
+activeConstraints：真正限制最终结果的约束</code></pre>
+<p>这样才能区分：</p>
+<pre><code class="language-text">全局路径给错方向
+Steering 期望速度不合理
+邻居查询漏掉对象
+ORCA 约束构造错误
+求解器错误
+运动控制器没有跟上建议速度</code></pre>
+<h2 id="通用算法与实现选择">通用算法与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">Steering 生成局部期望速度或加速度。
+VO 用相对运动描述会在未来时间窗内碰撞的危险速度。
+RVO 引入双方共同避让的互惠假设。
+ORCA 将邻居避碰要求转化为速度空间半平面约束。
+ORCA 在可行速度中寻找接近期望速度的结果。
+局部避障不能替代全局路径规划。</code></pre>
+<h3 id="必须由具体实现确定">必须由具体实现确定</h3>
+<pre><code class="language-text">代理半径与形状
+最大速度与加速度
+时间窗
+邻居距离与最大邻居数
+责任分配和优先权
+静态障碍处理
+约束无解时的明确策略
+快照与更新顺序
+求解精度与计算预算
+运动控制器怎样跟随建议速度</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>从 Steering 到 ORCA，可以看成逐层加约束：</p>
+<pre><code class="language-text">Steering：
+  我想用什么速度接近目标？
+
+VO：
+  哪些速度会导致未来碰撞？
+
+RVO：
+  如果双方都会避让，危险速度应该怎样理解？
+
+ORCA：
+  把每个邻居的避碰要求变成半平面，
+  再从公共可行域中选择最接近期望的速度。</code></pre>
+<p>可靠实现的关键不是只得到一根“看起来会绕开”的箭头，而是让以下模型彼此一致：</p>
+<pre><code class="language-text">全局路线
+代理占用范围
+速度与加速度能力
+邻居状态快照
+预测时间窗
+约束求解
+真实运动执行</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/HTN%E4%B8%8EMCTS%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B/"><small>← PREVIOUS</small>HTN 与 MCTS 决策模型</a>
+          <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/"><small>NEXT →</small>后续学习计划</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

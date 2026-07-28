@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象两个生活场景。">
+  <title>HTN 与 MCTS 决策模型 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
+      <h1>HTN 与 MCTS 决策模型</h1>
+      <p class="hero-copy">想象两个生活场景。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#两种完全不同的-想下一步">两种完全不同的“想下一步”</a>
+    <a data-toc-link href="#htn-分层任务网络">HTN：分层任务网络</a>
+    <a class="sub" data-toc-link href="#复合任务">复合任务</a>
+    <a class="sub" data-toc-link href="#方法">方法</a>
+    <a class="sub" data-toc-link href="#原子任务">原子任务</a>
+    <a data-toc-link href="#htn-怎样逐步生成计划">HTN 怎样逐步生成计划</a>
+    <a class="sub" data-toc-link href="#第一步-选择适用方法">第一步：选择适用方法</a>
+    <a class="sub" data-toc-link href="#第二步-验证原子任务">第二步：验证原子任务</a>
+    <a class="sub" data-toc-link href="#第三步-得到可执行计划">第三步：得到可执行计划</a>
+    <a data-toc-link href="#htn-的最小伪代码">HTN 的最小伪代码</a>
+    <a data-toc-link href="#htn-的关键状态">HTN 的关键状态</a>
+    <a data-toc-link href="#htn-的正常-边界与失败路径">HTN 的正常、边界与失败路径</a>
+    <a class="sub" data-toc-link href="#正常路径-第一个方法可完整分解">正常路径：第一个方法可完整分解</a>
+    <a class="sub" data-toc-link href="#边界路径-方法前半段可行-后半段失败">边界路径：方法前半段可行，后半段失败</a>
+    <a class="sub" data-toc-link href="#边界路径-执行时状态变化">边界路径：执行时状态变化</a>
+    <a class="sub" data-toc-link href="#失败路径-没有任何适用方法">失败路径：没有任何适用方法</a>
+    <a data-toc-link href="#mcts-蒙特卡洛树搜索">MCTS：蒙特卡洛树搜索</a>
+    <a data-toc-link href="#mcts-怎样逐步搜索">MCTS 怎样逐步搜索</a>
+    <a class="sub" data-toc-link href="#第一轮">第一轮</a>
+    <a class="sub" data-toc-link href="#后续轮次">后续轮次</a>
+    <a class="sub" data-toc-link href="#达到预算后">达到预算后</a>
+    <a data-toc-link href="#mcts-最小伪代码">MCTS 最小伪代码</a>
+    <a data-toc-link href="#mcts-的关键状态">MCTS 的关键状态</a>
+    <a data-toc-link href="#mcts-的正常-边界与失败路径">MCTS 的正常、边界与失败路径</a>
+    <a class="sub" data-toc-link href="#正常路径-预算内形成统计差异">正常路径：预算内形成统计差异</a>
+    <a class="sub" data-toc-link href="#边界路径-根节点只有一个合法动作">边界路径：根节点只有一个合法动作</a>
+    <a class="sub" data-toc-link href="#边界路径-模拟在深度限制处结束">边界路径：模拟在深度限制处结束</a>
+    <a class="sub" data-toc-link href="#边界路径-不确定或随机转移">边界路径：不确定或随机转移</a>
+    <a class="sub" data-toc-link href="#失败路径-奖励尺度不一致">失败路径：奖励尺度不一致</a>
+    <a class="sub" data-toc-link href="#失败路径-模拟器与真实规则不一致">失败路径：模拟器与真实规则不一致</a>
+    <a data-toc-link href="#htn-与-mcts-的核心差异">HTN 与 MCTS 的核心差异</a>
+    <a data-toc-link href="#能否组合使用">能否组合使用</a>
+    <a data-toc-link href="#代价与适用边界">代价与适用边界</a>
+    <a class="sub" data-toc-link href="#htn-适合">HTN 适合</a>
+    <a class="sub" data-toc-link href="#mcts-适合">MCTS 适合</a>
+    <a class="sub" data-toc-link href="#不适合硬套的情况">不适合硬套的情况</a>
+    <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：两种完全不同的“想下一步”">
+      <span>01</span>
+      <strong>两种完全不同的“想下一步”</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：HTN：分层任务网络">
+      <span>02</span>
+      <strong>HTN：分层任务网络</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：HTN 怎样逐步生成计划">
+      <span>03</span>
+      <strong>HTN 怎样逐步生成计划</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：HTN 的最小伪代码">
+      <span>04</span>
+      <strong>HTN 的最小伪代码</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：HTN 的关键状态">
+      <span>05</span>
+      <strong>HTN 的关键状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：HTN 的正常、边界与失败路径">
+      <span>06</span>
+      <strong>HTN 的正常、边界与失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：MCTS：蒙特卡洛树搜索">
+      <span>07</span>
+      <strong>MCTS：蒙特卡洛树搜索</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：MCTS 怎样逐步搜索">
+      <span>08</span>
+      <strong>MCTS 怎样逐步搜索</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：MCTS 最小伪代码">
+      <span>09</span>
+      <strong>MCTS 最小伪代码</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：MCTS 的关键状态">
+      <span>10</span>
+      <strong>MCTS 的关键状态</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：MCTS 的正常、边界与失败路径">
+      <span>11</span>
+      <strong>MCTS 的正常、边界与失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：HTN 与 MCTS 的核心差异">
+      <span>12</span>
+      <strong>HTN 与 MCTS 的核心差异</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：能否组合使用">
+      <span>13</span>
+      <strong>能否组合使用</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：代价与适用边界">
+      <span>14</span>
+      <strong>代价与适用边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：通用算法与实现选择">
+      <span>15</span>
+      <strong>通用算法与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：最后总结">
+      <span>16</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>两种完全不同的“想下一步”</h3>
+        <p>想象两个生活场景。</p>
+
+        <pre><code class="language-text">目标：完成晚餐
+
+如果食材齐全：
+  处理食材 -&gt; 烹饪 -&gt; 装盘
+
+如果食材不全：
+  列清单 -&gt; 购买食材 -&gt; 处理食材 -&gt; 烹饪 -&gt; 装盘</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>HTN：分层任务网络</h3>
+        <p>HTN 是 Hierarchical Task Network，核心对象通常包括：</p>
+
+        <pre><code class="language-text">复合任务 Compound Task
+方法 Method
+原子任务 Primitive Task
+世界状态 World State</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>HTN 怎样逐步生成计划</h3>
+        <p>初始状态：</p>
+
+        <pre><code class="language-text">有主食 = true
+有配菜 = false
+商店开放 = true</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>HTN 的最小伪代码</h3>
+        <p>这段伪代码表达的是顺序任务的深度优先分解。是否：</p>
+
+        <pre><code class="language-text">Plan(task, state):
+    if task is Primitive:
+        if PreconditionsMet(task, state):
+            nextState = ApplyEffects(task, state)
+            return [task], nextState
+
+        return Failure
+
+    for method in ApplicableMethods(task, state):
+        plan = []
+        simulatedState = Copy(state)
+
+        for subtask in method.subtasks:
+            partialPlan, simulatedState =
+                Plan(subtask, simulatedState)
+
+            if partialPlan failed:
+                break and try next method
+
+            append partialPlan to plan
+
+        if every subtask succeeded:
+            return plan, simulatedState
+
+    return Failure</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>HTN 的关键状态</h3>
+        <p>调试 HTN 时至少要区分：</p>
+
+        <pre><code class="language-text">真实世界状态：执行系统当前确认的事实。
+模拟世界状态：规划过程中应用预测效果后的副本。
+待分解任务栈：还没有完成规划的任务。
+候选方法：当前复合任务可尝试的分解方式。
+已生成计划：已经确定的原子任务序列。
+执行游标：运行时执行到计划的哪一步。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>HTN 的正常、边界与失败路径</h3>
+        <p>如果规划器支持回溯，应撤销该方法在模拟状态上的效果，再尝试其他方法。</p>
+
+        <pre><code class="language-text">方法条件成立
+所有原子任务前置条件成立
+得到完整计划
+执行时世界状态与预测一致</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>MCTS：蒙特卡洛树搜索</h3>
+        <p>MCTS 是 Monte Carlo Tree Search。它通常反复执行四个阶段：</p>
+
+        <pre><code class="language-text">Selection：沿当前搜索树选择一个节点。
+Expansion：为未完全展开的节点加入新分支。
+Simulation：从新节点继续模拟一段过程。
+Backpropagation：把模拟结果沿路径回传。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>MCTS 怎样逐步搜索</h3>
+        <p>假设当前有三个可选动作：</p>
+
+        <pre><code class="language-text">A：稳妥推进
+B：快速尝试
+C：保守等待</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>MCTS 最小伪代码</h3>
+        <p>需要特别注意“从谁的视角回传价值”。在双方对抗问题中：</p>
+
+        <pre><code class="language-text">Search(rootState, budget):
+    root = CreateNode(rootState)
+
+    repeat until budget exhausted:
+        node = root
+        state = Copy(rootState)
+
+        while node is fully expanded and not terminal:
+            node = SelectChild(node)
+            state = Apply(node.action, state)
+
+        if state is not terminal and node has untried actions:
+            action = ChooseUntriedAction(node)
+            state = Apply(action, state)
+            node = AddChild(node, action, state)
+
+        reward = Simulate(state)
+
+        while node exists:
+            node.visitCount += 1
+            node.totalValue += reward from node&#39;s perspective
+            node = node.parent
+
+    return ChooseFinalAction(root)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>MCTS 的关键状态</h3>
+        <p>一次搜索至少涉及：</p>
+
+        <pre><code class="language-text">根状态快照
+搜索树节点统计
+未尝试动作集合
+模拟状态
+随机数状态或种子
+剩余时间、迭代次数或其他预算
+奖励值及其视角</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>MCTS 的正常、边界与失败路径</h3>
+        <p>如果最终规则是“访问次数最多”，则选择 A。</p>
+
+        <pre><code class="language-text">A：访问 120 次，平均价值 0.58
+B：访问 35 次，平均价值 0.41
+C：访问 15 次，平均价值 0.22</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+        <h3>HTN 与 MCTS 的核心差异</h3>
+        <p>| 维度 | HTN | MCTS | |---|---|---| | 主要输入 | 任务、方法、世界状态 | 状态、合法动作、转移与奖励模型 | | 核心过程 | 分解任务 | 采样搜索 | | 领域知识 | 显式写在方法和任务层级中 | 可写在选择、模拟和估值策略中 | | 主要输出 | 可执行任务序列或网络 | 当前状态下建议的动作 | | 可解释性 | 通常较强，可说明用了哪个方法 | 需要查看访问次数、价值和模拟统计 | | 计算形态 | 受分解方法与回溯影响 | 可随预算渐进改善估计 | | 典型风险 | 方法覆盖不全、状态预测失真 | 模拟器偏差、奖励偏差、预算不足 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>能否组合使用</h3>
+        <p>HTN 与 MCTS 并不互斥。</p>
+
+        <pre><code class="language-text">HTN 负责把长期任务拆成结构化候选方案。
+MCTS 负责在某个高分支局部决策中选择当前动作。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>代价与适用边界</h3>
+        <p>HTN 的代价：</p>
+
+        <pre><code class="language-text">领域步骤结构明确
+设计者能提供可靠的任务分解知识
+希望计划具有较强可解释性
+动作前置条件和效果可以建模</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>通用算法与实现选择</h3>
+
+
+        <pre><code class="language-text">HTN 通过方法把复合任务递归分解为原子任务。
+方法具有适用条件，原子任务具有可执行条件与效果模型。
+MCTS 反复执行选择、扩展、模拟和回传。
+MCTS 使用访问与价值统计在探索和利用之间取得平衡。
+两种模型的结论都依赖输入状态与领域模型的正确性。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>HTN 的问题是：</p>
+
+        <pre><code class="language-text">按照我们掌握的领域步骤，这个任务应该怎样拆解？</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：游戏 AI 与逻辑建模 / 规划与搜索</p>
+<h2 id="两种完全不同的-想下一步">两种完全不同的“想下一步”</h2>
+<p>想象两个生活场景。</p>
+<p>第一个场景是准备一顿晚餐：</p>
+<pre><code class="language-text">目标：完成晚餐
+
+如果食材齐全：
+  处理食材 -&gt; 烹饪 -&gt; 装盘
+
+如果食材不全：
+  列清单 -&gt; 购买食材 -&gt; 处理食材 -&gt; 烹饪 -&gt; 装盘</code></pre>
+<p>这类问题有熟悉的步骤结构。我们知道“大任务通常怎样拆成小任务”，只需根据当前条件选择合适的拆法。这接近 HTN。</p>
+<p>第二个场景是在复杂棋局中选择落子：</p>
+<pre><code class="language-text">可选动作很多
+对手会回应
+越往后分支越多
+无法完整搜索到终局</code></pre>
+<p>这时可以把计算预算集中到看起来更有希望的分支，通过多次模拟估计动作价值。这接近 MCTS。</p>
+<p>一句话区分：</p>
+<pre><code class="language-text">HTN 用领域知识把任务逐层分解成可执行步骤。
+MCTS 用反复采样在巨大决策树中估计更好的动作。</code></pre>
+<h2 id="htn-分层任务网络">HTN：分层任务网络</h2>
+<p>HTN 是 Hierarchical Task Network，核心对象通常包括：</p>
+<pre><code class="language-text">复合任务 Compound Task
+方法 Method
+原子任务 Primitive Task
+世界状态 World State</code></pre>
+<h3 id="复合任务">复合任务</h3>
+<p>复合任务描述“想完成什么”，但本身还不能直接执行：</p>
+<pre><code class="language-text">准备晚餐
+到达目的地
+恢复队伍状态
+取得某件物品</code></pre>
+<h3 id="方法">方法</h3>
+<p>方法描述在特定前提下，复合任务可以怎样分解：</p>
+<pre><code class="language-text">准备晚餐
+  方法 A：食材齐全
+    处理食材 -&gt; 烹饪 -&gt; 装盘
+
+  方法 B：食材不足且商店可用
+    购买食材 -&gt; 处理食材 -&gt; 烹饪 -&gt; 装盘</code></pre>
+<p>一个方法通常包含：</p>
+<pre><code class="language-text">适用条件
+子任务列表
+子任务顺序或偏序约束</code></pre>
+<h3 id="原子任务">原子任务</h3>
+<p>原子任务是规划器不再继续分解的步骤：</p>
+<pre><code class="language-text">移动到商店
+购买指定食材
+启动烹饪</code></pre>
+<p>原子任务通常要声明：</p>
+<pre><code class="language-text">前置条件：执行前必须成立。
+效果：执行后世界状态怎样变化。
+代价：用于比较方案时的成本信息。</code></pre>
+<p>具体系统是否让原子任务直接绑定运行时动作，是实现选择。规划和执行也可以分离。</p>
+<h2 id="htn-怎样逐步生成计划">HTN 怎样逐步生成计划</h2>
+<p>初始状态：</p>
+<pre><code class="language-text">有主食 = true
+有配菜 = false
+商店开放 = true</code></pre>
+<p>初始任务：</p>
+<pre><code class="language-text">准备晚餐</code></pre>
+<h3 id="第一步-选择适用方法">第一步：选择适用方法</h3>
+<p>检查“食材齐全”方法：</p>
+<pre><code class="language-text">有主食 &amp;&amp; 有配菜
+结果：false</code></pre>
+<p>检查“食材不足且可购买”方法：</p>
+<pre><code class="language-text">缺少食材 &amp;&amp; 商店开放
+结果：true</code></pre>
+<p>于是分解为：</p>
+<pre><code class="language-text">购买配菜 -&gt; 处理食材 -&gt; 烹饪 -&gt; 装盘</code></pre>
+<h3 id="第二步-验证原子任务">第二步：验证原子任务</h3>
+<p>规划器按顺序模拟每个原子任务：</p>
+<pre><code class="language-text">购买配菜
+  前置条件：商店开放
+  效果：有配菜 = true
+
+处理食材
+  前置条件：食材齐全
+  效果：食材已处理 = true</code></pre>
+<p>这里的“模拟”只修改规划器内部的预测状态，不应提前改变真实世界。</p>
+<h3 id="第三步-得到可执行计划">第三步：得到可执行计划</h3>
+<pre><code class="language-text">购买配菜
+处理食材
+烹饪
+装盘</code></pre>
+<p>运行时再逐步执行原子任务，并观察真实状态是否仍满足前置条件。</p>
+<h2 id="htn-的最小伪代码">HTN 的最小伪代码</h2>
+<pre><code class="language-text">Plan(task, state):
+    if task is Primitive:
+        if PreconditionsMet(task, state):
+            nextState = ApplyEffects(task, state)
+            return [task], nextState
+
+        return Failure
+
+    for method in ApplicableMethods(task, state):
+        plan = []
+        simulatedState = Copy(state)
+
+        for subtask in method.subtasks:
+            partialPlan, simulatedState =
+                Plan(subtask, simulatedState)
+
+            if partialPlan failed:
+                break and try next method
+
+            append partialPlan to plan
+
+        if every subtask succeeded:
+            return plan, simulatedState
+
+    return Failure</code></pre>
+<p>这段伪代码表达的是顺序任务的深度优先分解。是否：</p>
+<pre><code class="language-text">回溯到其他方法
+寻找成本最低计划
+支持偏序任务
+缓存中间结果
+限制搜索深度</code></pre>
+<p>都属于具体规划器的能力与策略，不能从“HTN”三个字自动推出。</p>
+<h2 id="htn-的关键状态">HTN 的关键状态</h2>
+<p>调试 HTN 时至少要区分：</p>
+<pre><code class="language-text">真实世界状态：执行系统当前确认的事实。
+模拟世界状态：规划过程中应用预测效果后的副本。
+待分解任务栈：还没有完成规划的任务。
+候选方法：当前复合任务可尝试的分解方式。
+已生成计划：已经确定的原子任务序列。
+执行游标：运行时执行到计划的哪一步。</code></pre>
+<p>把模拟状态直接写回真实状态，会让“计划成功”看起来像“动作已经完成”，这是严重的状态边界错误。</p>
+<h2 id="htn-的正常-边界与失败路径">HTN 的正常、边界与失败路径</h2>
+<h3 id="正常路径-第一个方法可完整分解">正常路径：第一个方法可完整分解</h3>
+<pre><code class="language-text">方法条件成立
+所有原子任务前置条件成立
+得到完整计划
+执行时世界状态与预测一致</code></pre>
+<h3 id="边界路径-方法前半段可行-后半段失败">边界路径：方法前半段可行，后半段失败</h3>
+<pre><code class="language-text">购买食材成功进入模拟计划
+但后续任务发现设备不可用</code></pre>
+<p>如果规划器支持回溯，应撤销该方法在模拟状态上的效果，再尝试其他方法。</p>
+<p>是否支持回溯是实现能力；如果不支持，应明确报告“选择的方法无法完成”，而不是返回残缺计划冒充成功。</p>
+<h3 id="边界路径-执行时状态变化">边界路径：执行时状态变化</h3>
+<p>规划阶段商店开放，走到一半商店关闭：</p>
+<pre><code class="language-text">当前原子任务前置条件失效</code></pre>
+<p>合法策略可能包括：</p>
+<pre><code class="language-text">从当前真实状态重新规划
+把失败交给上层决策
+执行预先定义的补偿任务</code></pre>
+<p>采用哪一种是执行协议选择。补偿或回退行为不能凭空添加，必须有明确规则。</p>
+<h3 id="失败路径-没有任何适用方法">失败路径：没有任何适用方法</h3>
+<p>规划器应保留可诊断信息：</p>
+<pre><code class="language-text">哪个复合任务无法分解
+检查过哪些方法
+每个方法缺少什么前提
+当时的世界状态版本</code></pre>
+<p>返回空计划可能同时表示“什么都不必做”和“规划失败”，因此需要明确区分。</p>
+<h2 id="mcts-蒙特卡洛树搜索">MCTS：蒙特卡洛树搜索</h2>
+<p>MCTS 是 Monte Carlo Tree Search。它通常反复执行四个阶段：</p>
+<pre><code class="language-text">Selection：沿当前搜索树选择一个节点。
+Expansion：为未完全展开的节点加入新分支。
+Simulation：从新节点继续模拟一段过程。
+Backpropagation：把模拟结果沿路径回传。</code></pre>
+<p>每个搜索节点通常记录：</p>
+<pre><code class="language-text">状态或状态引用
+从父节点到这里采取的动作
+访问次数
+累计价值
+子节点
+尚未展开的动作</code></pre>
+<p>MCTS 返回的是计算预算下的估计结果，不保证找到全局最优动作。</p>
+<h2 id="mcts-怎样逐步搜索">MCTS 怎样逐步搜索</h2>
+<p>假设当前有三个可选动作：</p>
+<pre><code class="language-text">A：稳妥推进
+B：快速尝试
+C：保守等待</code></pre>
+<h3 id="第一轮">第一轮</h3>
+<p>根节点还没有展开：</p>
+<pre><code class="language-text">Expansion：选择 A，创建子节点。
+Simulation：从 A 后随机或按轻量策略模拟。
+Backpropagation：将结果回传给 A 和根节点。</code></pre>
+<p>如果模拟收益为正：</p>
+<pre><code class="language-text">A.visitCount += 1
+A.totalValue += reward
+root.visitCount += 1</code></pre>
+<h3 id="后续轮次">后续轮次</h3>
+<p>搜索树逐渐拥有 A、B、C 三个子节点。Selection 要平衡：</p>
+<pre><code class="language-text">利用：多访问当前平均收益高的分支。
+探索：给访问较少的分支更多机会。</code></pre>
+<p>常见选择公式之一是 UCT：</p>
+<pre><code class="language-text">score =
+    averageValue
+    + explorationConstant
+      * sqrt(ln(parentVisits) / childVisits)</code></pre>
+<p>公式结构是常见算法知识；探索常数取多少、奖励怎样归一化、零访问节点怎样处理，都是实现与问题建模选择。</p>
+<h3 id="达到预算后">达到预算后</h3>
+<p>根节点选择最终动作时，常见做法包括：</p>
+<pre><code class="language-text">选择访问次数最多的子节点
+或选择平均价值最高的子节点</code></pre>
+<p>两者不总是等价。最终选择规则必须明确，而不能只说“使用 MCTS”。</p>
+<h2 id="mcts-最小伪代码">MCTS 最小伪代码</h2>
+<pre><code class="language-text">Search(rootState, budget):
+    root = CreateNode(rootState)
+
+    repeat until budget exhausted:
+        node = root
+        state = Copy(rootState)
+
+        while node is fully expanded and not terminal:
+            node = SelectChild(node)
+            state = Apply(node.action, state)
+
+        if state is not terminal and node has untried actions:
+            action = ChooseUntriedAction(node)
+            state = Apply(action, state)
+            node = AddChild(node, action, state)
+
+        reward = Simulate(state)
+
+        while node exists:
+            node.visitCount += 1
+            node.totalValue += reward from node&#39;s perspective
+            node = node.parent
+
+    return ChooseFinalAction(root)</code></pre>
+<p>需要特别注意“从谁的视角回传价值”。在双方对抗问题中：</p>
+<pre><code class="language-text">轮到另一方行动时，价值视角可能需要翻转或重新解释。</code></pre>
+<p>具体处理取决于奖励定义和节点视角。</p>
+<h2 id="mcts-的关键状态">MCTS 的关键状态</h2>
+<p>一次搜索至少涉及：</p>
+<pre><code class="language-text">根状态快照
+搜索树节点统计
+未尝试动作集合
+模拟状态
+随机数状态或种子
+剩余时间、迭代次数或其他预算
+奖励值及其视角</code></pre>
+<p>为了复现问题，调试记录应包含：</p>
+<pre><code class="language-text">根状态标识
+随机种子
+预算
+每个根动作的访问次数和平均价值
+最终选择规则</code></pre>
+<h2 id="mcts-的正常-边界与失败路径">MCTS 的正常、边界与失败路径</h2>
+<h3 id="正常路径-预算内形成统计差异">正常路径：预算内形成统计差异</h3>
+<pre><code class="language-text">A：访问 120 次，平均价值 0.58
+B：访问 35 次，平均价值 0.41
+C：访问 15 次，平均价值 0.22</code></pre>
+<p>如果最终规则是“访问次数最多”，则选择 A。</p>
+<p>这些数字只是说明统计形态的示例，不是任何系统应硬编码的阈值。</p>
+<h3 id="边界路径-根节点只有一个合法动作">边界路径：根节点只有一个合法动作</h3>
+<p>仍可以直接返回唯一动作，不必进行无意义搜索。是否仍运行模拟来估计后续风险，是调用方需求。</p>
+<h3 id="边界路径-模拟在深度限制处结束">边界路径：模拟在深度限制处结束</h3>
+<p>真实终局太远时，Simulation 可能在预算或深度上限处停止，转而使用估值函数。</p>
+<p>深度上限与估值函数属于具体实现选择。估值偏差会直接影响搜索结果。</p>
+<h3 id="边界路径-不确定或随机转移">边界路径：不确定或随机转移</h3>
+<p>如果同一动作可能产生不同结果，模拟器必须按问题模型采样这些转移。若状态转移概率未知，MCTS 不会自动创造可信概率。</p>
+<h3 id="失败路径-奖励尺度不一致">失败路径：奖励尺度不一致</h3>
+<p>如果某些模拟返回：</p>
+<pre><code class="language-text">胜负值：-1 到 1</code></pre>
+<p>另一些却返回：</p>
+<pre><code class="language-text">资源分：0 到 10000</code></pre>
+<p>搜索统计会被尺度主导。奖励的含义、范围与视角必须统一。</p>
+<h3 id="失败路径-模拟器与真实规则不一致">失败路径：模拟器与真实规则不一致</h3>
+<p>MCTS 的结论依赖模拟器。如果模拟阶段漏掉关键约束，即使迭代很多次，也只会更确信一个建立在错误模型上的答案。</p>
+<h2 id="htn-与-mcts-的核心差异">HTN 与 MCTS 的核心差异</h2>
+<table><thead><tr>
+<th>维度</th>
+<th>HTN</th>
+<th>MCTS</th>
+</tr></thead><tbody>
+<tr>
+<td>主要输入</td>
+<td>任务、方法、世界状态</td>
+<td>状态、合法动作、转移与奖励模型</td>
+</tr>
+<tr>
+<td>核心过程</td>
+<td>分解任务</td>
+<td>采样搜索</td>
+</tr>
+<tr>
+<td>领域知识</td>
+<td>显式写在方法和任务层级中</td>
+<td>可写在选择、模拟和估值策略中</td>
+</tr>
+<tr>
+<td>主要输出</td>
+<td>可执行任务序列或网络</td>
+<td>当前状态下建议的动作</td>
+</tr>
+<tr>
+<td>可解释性</td>
+<td>通常较强，可说明用了哪个方法</td>
+<td>需要查看访问次数、价值和模拟统计</td>
+</tr>
+<tr>
+<td>计算形态</td>
+<td>受分解方法与回溯影响</td>
+<td>可随预算渐进改善估计</td>
+</tr>
+<tr>
+<td>典型风险</td>
+<td>方法覆盖不全、状态预测失真</td>
+<td>模拟器偏差、奖励偏差、预算不足</td>
+</tr>
+</tbody></table>
+<h2 id="能否组合使用">能否组合使用</h2>
+<p>HTN 与 MCTS 并不互斥。</p>
+<p>一种组合方式是：</p>
+<pre><code class="language-text">HTN 负责把长期任务拆成结构化候选方案。
+MCTS 负责在某个高分支局部决策中选择当前动作。</code></pre>
+<p>另一种方式是：</p>
+<pre><code class="language-text">HTN 方法生成合法的高层动作。
+MCTS 只在这些高层动作之间搜索。</code></pre>
+<p>组合会减少某些搜索分支，但也会引入新的边界：</p>
+<pre><code class="language-text">HTN 如果漏掉方法，MCTS 永远看不到对应方案。
+MCTS 的统计价值怎样反馈给 HTN，需要统一代价语义。
+重新规划时，旧搜索树能否复用需要验证状态一致性。</code></pre>
+<p>具体组合架构属于实现选择，不是通用算法必然要求。</p>
+<h2 id="代价与适用边界">代价与适用边界</h2>
+<h3 id="htn-适合">HTN 适合</h3>
+<pre><code class="language-text">领域步骤结构明确
+设计者能提供可靠的任务分解知识
+希望计划具有较强可解释性
+动作前置条件和效果可以建模</code></pre>
+<p>HTN 的代价：</p>
+<pre><code class="language-text">维护方法库需要持续领域建模
+未覆盖的情形可能直接无法规划
+回溯与成本优化会增加搜索复杂度
+执行世界与模拟世界不一致时需要重新规划协议</code></pre>
+<h3 id="mcts-适合">MCTS 适合</h3>
+<pre><code class="language-text">合法动作与状态转移可以模拟
+分支很多，完整搜索不可行
+允许用预算换取逐渐改善的估计
+结果可通过重复模拟评价</code></pre>
+<p>MCTS 的代价：</p>
+<pre><code class="language-text">需要大量模拟
+结果受随机性、奖励与模拟策略影响
+实时预算很小时统计可能不稳定
+连续动作空间通常还需要专门的动作生成策略</code></pre>
+<h3 id="不适合硬套的情况">不适合硬套的情况</h3>
+<p>HTN 不擅长凭空发现领域方法之外的新分解结构。</p>
+<p>MCTS 不擅长：</p>
+<pre><code class="language-text">没有可信模拟器的问题
+一次错误探索代价不可接受且不能离线模拟的问题
+奖励极其稀疏、很难在预算内观察到的问题</code></pre>
+<h2 id="通用算法与实现选择">通用算法与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">HTN 通过方法把复合任务递归分解为原子任务。
+方法具有适用条件，原子任务具有可执行条件与效果模型。
+MCTS 反复执行选择、扩展、模拟和回传。
+MCTS 使用访问与价值统计在探索和利用之间取得平衡。
+两种模型的结论都依赖输入状态与领域模型的正确性。</code></pre>
+<h3 id="必须由具体实现确定">必须由具体实现确定</h3>
+<pre><code class="language-text">HTN 是否回溯、是否优化代价、是否支持偏序
+HTN 计划失效后的重规划协议
+MCTS 的预算单位与大小
+MCTS 的探索常数、模拟策略和奖励尺度
+最终动作按访问次数还是平均价值选择
+随机种子与并行搜索方式
+两种模型组合时的状态和价值接口</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>HTN 的问题是：</p>
+<pre><code class="language-text">按照我们掌握的领域步骤，这个任务应该怎样拆解？</code></pre>
+<p>MCTS 的问题是：</p>
+<pre><code class="language-text">在有限计算预算内，哪些动作经过更多模拟后更值得选择？</code></pre>
+<p>判断使用哪一种，不应只看系统是否“智能”，而应确认：</p>
+<pre><code class="language-text">是否存在可靠的层级任务知识
+是否能够可信地模拟动作结果
+需要完整计划还是当前动作
+更看重可解释结构还是预算内搜索
+失败时能否说明是无方法、无动作、模型错误还是预算不足</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/"><small>← PREVIOUS</small>状态机、行为树、效用 AI 与 GOAP 对比</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/Steering-RVO-ORCA%E9%80%9F%E5%BA%A6%E7%A9%BA%E9%97%B4/"><small>NEXT →</small>Steering、RVO、ORCA 与速度空间</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

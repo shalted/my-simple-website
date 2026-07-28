@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。">
+  <title>NavMesh：多边形寻路与动态障碍 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>NavMesh：多边形寻路与动态障碍</h1>
+      <p class="hero-copy">规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#navmesh-解决什么问题">NavMesh 解决什么问题</a>
+    <a data-toc-link href="#完整事实链">完整事实链</a>
+    <a data-toc-link href="#烘焙数据是什么">烘焙数据是什么</a>
+    <a class="sub" data-toc-link href="#为什么常用凸多边形">为什么常用凸多边形</a>
+    <a data-toc-link href="#多边形图搜索">多边形图搜索</a>
+    <a class="sub" data-toc-link href="#教学示例-逐步展开">教学示例：逐步展开</a>
+    <a class="sub" data-toc-link href="#最小伪代码">最小伪代码</a>
+    <a data-toc-link href="#多边形走廊不是最终折线路径">多边形走廊不是最终折线路径</a>
+    <a data-toc-link href="#门户与漏斗算法">门户与漏斗算法</a>
+    <a class="sub" data-toc-link href="#可交互的逐步状态">可交互的逐步状态</a>
+    <a class="sub" data-toc-link href="#漏斗算法的边界">漏斗算法的边界</a>
+    <a data-toc-link href="#动态障碍">动态障碍</a>
+    <a class="sub" data-toc-link href="#局部避让">局部避让</a>
+    <a class="sub" data-toc-link href="#修改导航拓扑">修改导航拓扑</a>
+    <a class="sub" data-toc-link href="#何时重新寻路">何时重新寻路</a>
+    <a data-toc-link href="#不可达点">不可达点</a>
+    <a class="sub" data-toc-link href="#最近可达点不是天然正确答案">最近可达点不是天然正确答案</a>
+    <a data-toc-link href="#合法出生点">合法出生点</a>
+    <a class="sub" data-toc-link href="#教学示例-出生点状态面板">教学示例：出生点状态面板</a>
+    <a data-toc-link href="#正常-边界与失败情况">正常、边界与失败情况</a>
+    <a class="sub" data-toc-link href="#正常情况">正常情况</a>
+    <a class="sub" data-toc-link href="#边界情况">边界情况</a>
+    <a class="sub" data-toc-link href="#失败情况">失败情况</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+      <aside class="article-callout">
+        <strong>配套交互实验</strong>
+        <span>逐步查看 Open、Closed、Parent 和代价如何变化。</span>
+        <p><a href="/#lab">打开 A* 寻路实验 →</a></p>
+      </aside>
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：NavMesh 解决什么问题">
+      <span>01</span>
+      <strong>NavMesh 解决什么问题</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：完整事实链">
+      <span>02</span>
+      <strong>完整事实链</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：烘焙数据是什么">
+      <span>03</span>
+      <strong>烘焙数据是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：多边形图搜索">
+      <span>04</span>
+      <strong>多边形图搜索</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：多边形走廊不是最终折线路径">
+      <span>05</span>
+      <strong>多边形走廊不是最终折线路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：门户与漏斗算法">
+      <span>06</span>
+      <strong>门户与漏斗算法</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：动态障碍">
+      <span>07</span>
+      <strong>动态障碍</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：不可达点">
+      <span>08</span>
+      <strong>不可达点</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：合法出生点">
+      <span>09</span>
+      <strong>合法出生点</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常、边界与失败情况">
+      <span>10</span>
+      <strong>正常、边界与失败情况</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：复杂度与代价">
+      <span>11</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>NavMesh 解决什么问题</h3>
+        <p>规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p>
+
+        <pre><code class="language-text">角色下一帧一定站在哪里？</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>完整事实链</h3>
+        <p>一条典型的 NavMesh 路径请求可以拆成以下链条：</p>
+
+        <pre><code class="language-text">场景几何与导航规则
+    ↓
+烘焙或生成可行走多边形
+    ↓
+建立多边形之间的邻接关系
+    ↓
+把起点与终点映射到 NavMesh
+    ↓
+在多边形图上搜索
+    ↓
+得到多边形走廊
+    ↓
+从走廊门户中提取拐点
+    ↓
+角色沿拐点移动
+    ↓
+环境变化时验证、局部避让或重新寻路</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>烘焙数据是什么</h3>
+        <p>烘焙是把场景与导航规则转换为导航数据的过程。输入通常可能包括：</p>
+
+        <pre><code class="language-text">可参与导航计算的几何。
+不可行走的区域。
+坡度、高度差、净空等通行约束。
+角色尺寸或对应的导航代理规格。
+区域成本与特殊连接。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>多边形图搜索</h3>
+        <p>NavMesh 可以抽象成图：</p>
+
+        <pre><code class="language-text">节点：可行走多边形。
+边：两个多边形之间可以通行的共享边或连接。
+成本：距离、区域代价或它们的组合。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>多边形走廊不是最终折线路径</h3>
+        <p>图搜索回溯得到的是：</p>
+
+        <pre><code class="language-text">A → B → D → F</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>门户与漏斗算法</h3>
+        <p>把走廊中的共享边依次展开，可以形成左右边界：</p>
+
+        <pre><code class="language-text">起点
+  \  左边界
+   \ | portal 1 |
+    \| portal 2 |
+     | portal 3 | → 终点
+        右边界</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>动态障碍</h3>
+        <p>动态障碍会带来两个层次的问题：</p>
+
+        <pre><code class="language-text">短暂阻挡：路径拓扑仍然可用，只是当前有人或物挡路。
+结构改变：某条通道长期封闭，原来的多边形连接已经不再可通行。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>不可达点</h3>
+        <p>“终点在 NavMesh 上”不等于“终点可达”。</p>
+
+        <pre><code class="language-text">终点无法映射到导航区域。
+起点无法映射到导航区域。
+两点都在 NavMesh 上，但属于不连通的区域。
+存在拓扑路径，但连接受代理能力或通行规则限制。
+搜索因资源限制中止，尚不能证明不存在路径。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>合法出生点</h3>
+        <p>合法出生点比“点落在某个多边形里”要求更多。</p>
+
+        <pre><code class="language-text">1. 候选点是否能映射到允许的导航区域。
+2. 候选点周围是否有足够净空容纳代理。
+3. 是否与允许活动的导航分区连通。
+4. 是否落在禁止出生的区域或语义范围内。
+5. 当前是否与动态占用物发生冲突。
+6. 从出生点到最低限度的安全目标是否存在有效路径。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>正常、边界与失败情况</h3>
+        <p>边界输入需要稳定的几何容差与确定性规则，但容差的具体值属于实现参数。</p>
+
+        <pre><code class="language-text">起终点都能映射到同一连通区域。
+图搜索得到多边形走廊。
+门户序列有效。
+漏斗算法生成有限的拐点。
+移动过程中走廊保持可通行。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>复杂度与代价</h3>
+        <p>设多边形图有 <code>V</code> 个节点、<code>E</code> 条邻接边。</p>
+
+        <pre><code class="language-text">O((V + E) log V)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">NavMesh 是可行走空间的多边形表示，不是完整移动系统。
+搜索阶段在多边形图上得到走廊。
+门户与漏斗算法把走廊变成更直接的拐点路径。
+动态障碍要区分短暂局部阻挡与导航拓扑改变。
+“在 NavMesh 上”不等于“从起点可达”。
+合法出生点必须同时验证导航、净空、连通、语义和运行时占用。
+失败原因属于算法输出的一部分，不能用静默替代点掩盖。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：算法</p>
+<h2 id="navmesh-解决什么问题">NavMesh 解决什么问题</h2>
+<p>规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p>
+<p>它回答的不是：</p>
+<pre><code class="language-text">角色下一帧一定站在哪里？</code></pre>
+<p>而是：</p>
+<pre><code class="language-text">从起点所在的可行走区域，能否经过一串相邻多边形到达终点所在区域？
+如果能，怎样从这条多边形走廊中提取一条可移动的路径？</code></pre>
+<p>因此要区分三件事：</p>
+<pre><code class="language-text">NavMesh：描述哪里可以走。
+路径搜索：选择经过哪些多边形。
+移动与避障：让角色沿路径前进，并处理短时间尺度上的变化。</code></pre>
+<p>NavMesh 不等于完整移动系统。转向、加速度、角色半径、局部避让和碰撞响应通常还需要其他模块参与。</p>
+<h2 id="完整事实链">完整事实链</h2>
+<p>一条典型的 NavMesh 路径请求可以拆成以下链条：</p>
+<pre><code class="language-text">场景几何与导航规则
+    ↓
+烘焙或生成可行走多边形
+    ↓
+建立多边形之间的邻接关系
+    ↓
+把起点与终点映射到 NavMesh
+    ↓
+在多边形图上搜索
+    ↓
+得到多边形走廊
+    ↓
+从走廊门户中提取拐点
+    ↓
+角色沿拐点移动
+    ↓
+环境变化时验证、局部避让或重新寻路</code></pre>
+<p>这条链上任何一步失败，都不应该被“返回一条看起来合理的直线”掩盖。</p>
+<h2 id="烘焙数据是什么">烘焙数据是什么</h2>
+<p>烘焙是把场景与导航规则转换为导航数据的过程。输入通常可能包括：</p>
+<pre><code class="language-text">可参与导航计算的几何。
+不可行走的区域。
+坡度、高度差、净空等通行约束。
+角色尺寸或对应的导航代理规格。
+区域成本与特殊连接。</code></pre>
+<p>输出通常包含：</p>
+<pre><code class="language-text">可行走凸多边形。
+多边形顶点与边。
+相邻多边形关系。
+区域类型或通行成本。
+跨越普通邻接无法表达的特殊连接。</code></pre>
+<p>不同引擎对烘焙参数、数据分块和增量更新的实现不同。通用事实是：搜索依赖已生成的导航表示；具体参数含义必须以所用系统的文档和数据为准。</p>
+<h3 id="为什么常用凸多边形">为什么常用凸多边形</h3>
+<p>凸多边形有一个重要性质：</p>
+<pre><code class="language-text">多边形内部任意两点之间的线段仍在多边形内部。</code></pre>
+<p>这使得在一个多边形内部连接入口和出口相对简单。凹区域可以被拆成多个凸多边形，再通过邻接边连接起来。</p>
+<h2 id="多边形图搜索">多边形图搜索</h2>
+<p>NavMesh 可以抽象成图：</p>
+<pre><code class="language-text">节点：可行走多边形。
+边：两个多边形之间可以通行的共享边或连接。
+成本：距离、区域代价或它们的组合。</code></pre>
+<p>路径搜索常使用 Dijkstra 或 A 星，但搜索对象是多边形图，而不是每一个世界坐标。</p>
+<h3 id="教学示例-逐步展开">教学示例：逐步展开</h3>
+<p>以下字母和成本都是<strong>教学示例</strong>：</p>
+<pre><code class="language-text">起点在 A，终点在 F
+
+A -- B -- D -- F
+ \   |
+  C--E</code></pre>
+<p>可视化时可以逐帧展示：</p>
+<table><thead><tr>
+<th>步骤</th>
+<th>Open 集</th>
+<th>已确定节点</th>
+<th>当前动作</th>
+</tr></thead><tbody>
+<tr>
+<td>0</td>
+<td>A</td>
+<td>无</td>
+<td>起点映射到 A</td>
+</tr>
+<tr>
+<td>1</td>
+<td>B、C</td>
+<td>A</td>
+<td>展开 A</td>
+</tr>
+<tr>
+<td>2</td>
+<td>C、D、E</td>
+<td>A、B</td>
+<td>选择当前估计成本最低者</td>
+</tr>
+<tr>
+<td>3</td>
+<td>D、E</td>
+<td>A、B、C</td>
+<td>更新邻居成本与 Parent</td>
+</tr>
+<tr>
+<td>4</td>
+<td>E、F</td>
+<td>A、B、C、D</td>
+<td>F 首次进入候选集</td>
+</tr>
+<tr>
+<td>5</td>
+<td>…</td>
+<td>…</td>
+<td>满足搜索终止条件后回溯</td>
+</tr>
+</tbody></table>
+<p>交互演示不应只显示最后路径，还应允许查看：</p>
+<pre><code class="language-text">每个多边形的 G、H、F。
+它由哪个 Parent 到达。
+共享边是否可通行。
+区域成本如何改变搜索顺序。
+起点或终点映射失败发生在哪一步。</code></pre>
+<h3 id="最小伪代码">最小伪代码</h3>
+<pre><code class="language-text">function FindPolygonCorridor(startPosition, endPosition):
+    startPoly = LocateNavigablePolygon(startPosition)
+    endPoly = LocateNavigablePolygon(endPosition)
+
+    if startPoly is missing:
+        return Failure(&quot;起点不在可接受的导航区域&quot;)
+
+    if endPoly is missing:
+        return Failure(&quot;终点不在可接受的导航区域&quot;)
+
+    openSet.push(startPoly)
+    cost[startPoly] = 0
+
+    while openSet is not empty:
+        current = openSet.popLowestEstimatedCost()
+
+        if current == endPoly:
+            return Success(RebuildByParent(current))
+
+        for each passable neighbor of current:
+            nextCost = cost[current] + TraversalCost(current, neighbor)
+
+            if neighbor is unseen or nextCost &lt; cost[neighbor]:
+                cost[neighbor] = nextCost
+                parent[neighbor] = current
+                openSet.update(neighbor, nextCost + Heuristic(neighbor, endPoly))
+
+    return Failure(&quot;起点与终点所在导航区域不连通&quot;)</code></pre>
+<p>这里没有规定 <code>LocateNavigablePolygon</code> 的搜索半径，也没有规定 <code>TraversalCost</code> 的具体权重；这些属于系统规则，不能凭通用算法猜测。</p>
+<h2 id="多边形走廊不是最终折线路径">多边形走廊不是最终折线路径</h2>
+<p>图搜索回溯得到的是：</p>
+<pre><code class="language-text">A → B → D → F</code></pre>
+<p>它表达“经过哪些区域”，称为多边形走廊。</p>
+<p>相邻多边形的共享边可以看作一个门户。若直接连接每个多边形中心，路径常会左右摆动，而且中心点并不一定是最自然的通行位置。</p>
+<p>因此还要从门户序列中提取拐点。</p>
+<h2 id="门户与漏斗算法">门户与漏斗算法</h2>
+<p>把走廊中的共享边依次展开，可以形成左右边界：</p>
+<pre><code class="language-text">起点
+  \  左边界
+   \ | portal 1 |
+    \| portal 2 |
+     | portal 3 | → 终点
+        右边界</code></pre>
+<p>漏斗算法的核心直觉是：</p>
+<pre><code class="language-text">从当前漏斗顶点观察后续门户。
+不断收紧可见的左右边界。
+如果一侧越过另一侧，说明直线已经不能继续穿过走廊。
+把相应边界点确定为拐点，再从该点重新展开漏斗。</code></pre>
+<h3 id="可交互的逐步状态">可交互的逐步状态</h3>
+<p>一个好的逐步演示至少应显示：</p>
+<pre><code class="language-text">当前漏斗顶点 Apex。
+当前左边界 Left。
+当前右边界 Right。
+正在处理的门户。
+本次更新是“收紧边界”还是“产生拐点”。
+最终拐点与原始多边形中心连线的差异。</code></pre>
+<p>还应允许暂停在边界交叉的那一步，因为“为什么此时必须产生拐点”是理解漏斗算法的关键。</p>
+<h3 id="漏斗算法的边界">漏斗算法的边界</h3>
+<p>漏斗算法优化的是给定走廊内部的路径。它不会主动换到另一条多边形走廊。</p>
+<p>如果图搜索阶段选择的走廊代价模型不合适，单靠漏斗算法不能修正全局路线选择。</p>
+<p>同时，路径点需要考虑角色的有效通行空间。是否已经在烘焙数据中按代理尺寸收缩边界，取决于具体导航系统，不能假定所有实现都相同。</p>
+<h2 id="动态障碍">动态障碍</h2>
+<p>动态障碍会带来两个层次的问题：</p>
+<pre><code class="language-text">短暂阻挡：路径拓扑仍然可用，只是当前有人或物挡路。
+结构改变：某条通道长期封闭，原来的多边形连接已经不再可通行。</code></pre>
+<p>它们不应使用同一种处理方式。</p>
+<h3 id="局部避让">局部避让</h3>
+<p>对于短暂、可绕开的移动障碍，常见思路是保留全局走廊，在移动阶段做局部避让。</p>
+<p>优点：</p>
+<pre><code class="language-text">不必因每个短暂交会都重建导航数据。
+响应频率可以高于全局寻路。</code></pre>
+<p>限制：</p>
+<pre><code class="language-text">局部避让可能陷入对峙或局部最优。
+它不能证明目标仍然全局可达。
+狭窄通道被完全堵死时，继续局部绕行可能没有解。</code></pre>
+<h3 id="修改导航拓扑">修改导航拓扑</h3>
+<p>对于真正改变通行性的障碍，可以让对应区域不可通行、更新局部导航数据，或改变相关连接状态，然后重新验证路径。</p>
+<p>不同系统可能采用切割、分块重建、动态表面或连接开关等机制。它们是具体实现选择，不应混写成统一的 NavMesh 行为。</p>
+<h3 id="何时重新寻路">何时重新寻路</h3>
+<p>重新寻路的触发条件必须来自明确规则。通用上可以观察的事实包括：</p>
+<pre><code class="language-text">当前走廊中的后续连接失效。
+角色长期无法向下一个路径点取得进展。
+目标移动到原终点投影之外。
+导航数据版本改变，旧路径需要重新验证。</code></pre>
+<p>至于“多久算长期”“目标移动多远才重算”都是行为参数，不能从算法名称推导出来。</p>
+<h2 id="不可达点">不可达点</h2>
+<p>“终点在 NavMesh 上”不等于“终点可达”。</p>
+<p>至少要区分：</p>
+<pre><code class="language-text">终点无法映射到导航区域。
+起点无法映射到导航区域。
+两点都在 NavMesh 上，但属于不连通的区域。
+存在拓扑路径，但连接受代理能力或通行规则限制。
+搜索因资源限制中止，尚不能证明不存在路径。</code></pre>
+<p>失败结果应该保留这个差别，方便调用方决定是提示失败、选择其他目标，还是等待导航数据更新。</p>
+<h3 id="最近可达点不是天然正确答案">最近可达点不是天然正确答案</h3>
+<p>把非法终点替换成“最近 NavMesh 点”是一种产品或行为决策，不是 NavMesh 算法必然规则。</p>
+<p>它可能导致角色走向墙的另一侧、悬崖边或与用户意图不同的位置。若系统需要这种替代行为，必须明确：</p>
+<pre><code class="language-text">允许搜索的范围。
+距离与区域成本的定义。
+是否要求与起点连通。
+找不到时怎样暴露原始失败。</code></pre>
+<h2 id="合法出生点">合法出生点</h2>
+<p>合法出生点比“点落在某个多边形里”要求更多。</p>
+<p>一个可验证流程可以拆成：</p>
+<pre><code class="language-text">1. 候选点是否能映射到允许的导航区域。
+2. 候选点周围是否有足够净空容纳代理。
+3. 是否与允许活动的导航分区连通。
+4. 是否落在禁止出生的区域或语义范围内。
+5. 当前是否与动态占用物发生冲突。
+6. 从出生点到最低限度的安全目标是否存在有效路径。</code></pre>
+<p>这些条件分别来自导航、碰撞、玩法语义和运行时占用，不能只用一次“采样到 NavMesh”代替全部验证。</p>
+<h3 id="教学示例-出生点状态面板">教学示例：出生点状态面板</h3>
+<p>以下字段只是<strong>教学示例</strong>，用于展示验证链，不代表固定规则：</p>
+<pre><code class="language-text">候选点：P3
+导航投影：成功
+区域类型：允许
+连通分区：与目标一致
+净空检测：通过
+动态占用：失败
+最终结果：拒绝，并保留“动态占用冲突”原因</code></pre>
+<p>交互演示可以逐项开关条件，观察同一个候选点为什么从“合法”变为“非法”。</p>
+<h2 id="正常-边界与失败情况">正常、边界与失败情况</h2>
+<h3 id="正常情况">正常情况</h3>
+<pre><code class="language-text">起终点都能映射到同一连通区域。
+图搜索得到多边形走廊。
+门户序列有效。
+漏斗算法生成有限的拐点。
+移动过程中走廊保持可通行。</code></pre>
+<h3 id="边界情况">边界情况</h3>
+<pre><code class="language-text">起点恰好在多边形边界或多个多边形交界处。
+起点与终点位于同一个凸多边形。
+门户宽度接近代理所需净空。
+走廊包含几何上退化或非常短的门户。
+目标持续移动。
+多个区域成本相同，存在多条等价路线。</code></pre>
+<p>边界输入需要稳定的几何容差与确定性规则，但容差的具体值属于实现参数。</p>
+<h3 id="失败情况">失败情况</h3>
+<pre><code class="language-text">烘焙数据缺失或版本不匹配。
+起点或终点无法定位。
+导航图不连通。
+特殊连接不允许当前代理使用。
+动态障碍使后续走廊失效。
+路径点仍存在，但角色因碰撞或控制约束无法通过。</code></pre>
+<p>失败应携带阶段和原因，而不应统一变成空路径后让调用方猜测。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<p>设多边形图有 <code>V</code> 个节点、<code>E</code> 条邻接边。</p>
+<p>使用二叉堆优先队列时，图搜索常见复杂度可写为：</p>
+<pre><code class="language-text">O((V + E) log V)</code></pre>
+<p>实际成本还取决于：</p>
+<pre><code class="language-text">启发函数质量。
+区域成本计算。
+起终点定位的数据结构。
+导航图的切分粒度。
+动态更新造成的重建范围。
+同时存在的路径请求数量。</code></pre>
+<p>漏斗算法对走廊中的门户数量 <code>P</code> 通常是线性处理：</p>
+<pre><code class="language-text">O(P)</code></pre>
+<p>更细的多边形可能让局部表达更准确，但会增加图规模、内存和搜索节点数；更粗的多边形减少节点，却可能难以表达狭窄或复杂区域。这是数据质量与运行成本之间的权衡。</p>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">NavMesh 是可行走空间的多边形表示，不是完整移动系统。
+搜索阶段在多边形图上得到走廊。
+门户与漏斗算法把走廊变成更直接的拐点路径。
+动态障碍要区分短暂局部阻挡与导航拓扑改变。
+“在 NavMesh 上”不等于“从起点可达”。
+合法出生点必须同时验证导航、净空、连通、语义和运行时占用。
+失败原因属于算法输出的一部分，不能用静默替代点掩盖。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/GJK%E5%87%B8%E5%BD%A2%E7%8A%B6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>← PREVIOUS</small>GJK：凸形状碰撞检测理解笔记</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E6%97%B6%E9%97%B4%E6%8E%A7%E5%88%B6%E5%B0%8F%E6%A8%A1%E5%BC%8F-%E5%86%B7%E5%8D%B4%E8%AE%A1%E6%97%B6%E5%99%A8%E5%BB%B6%E8%BF%9F%E4%B8%8ETick/"><small>NEXT →</small>时间控制小模式：冷却、计时器、延迟与 Tick</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

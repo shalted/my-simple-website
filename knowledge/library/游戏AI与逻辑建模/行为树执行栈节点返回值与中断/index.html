@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象一家小店开门后的值班流程：">
+  <title>行为树执行栈、节点返回值与中断 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
+      <h1>行为树执行栈、节点返回值与中断</h1>
+      <p class="hero-copy">想象一家小店开门后的值班流程：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先把行为树想成值班流程">先把行为树想成值班流程</a>
+    <a data-toc-link href="#三种基本返回值">三种基本返回值</a>
+    <a class="sub" data-toc-link href="#返回值不等于异常">返回值不等于异常</a>
+    <a data-toc-link href="#组合节点怎样传播结果">组合节点怎样传播结果</a>
+    <a class="sub" data-toc-link href="#sequence-顺序完成">Sequence：顺序完成</a>
+    <a class="sub" data-toc-link href="#selector-找到一个可行方案">Selector：找到一个可行方案</a>
+    <a class="sub" data-toc-link href="#decorator-改写或限制一个子节点">Decorator：改写或限制一个子节点</a>
+    <a data-toc-link href="#运行中的执行路径">运行中的执行路径</a>
+    <a class="sub" data-toc-link href="#执行帧里通常有什么">执行帧里通常有什么</a>
+    <a data-toc-link href="#memory-与-reactive-两种推进方式">Memory 与 Reactive 两种推进方式</a>
+    <a class="sub" data-toc-link href="#memory-记住运行位置">Memory：记住运行位置</a>
+    <a class="sub" data-toc-link href="#reactive-从高优先级处重新求值">Reactive：从高优先级处重新求值</a>
+    <a data-toc-link href="#一次完整执行怎样推进">一次完整执行怎样推进</a>
+    <a class="sub" data-toc-link href="#第一次-tick">第一次 Tick</a>
+    <a class="sub" data-toc-link href="#第二次-tick">第二次 Tick</a>
+    <a class="sub" data-toc-link href="#第三次-tick-高优先级条件变化">第三次 Tick：高优先级条件变化</a>
+    <a data-toc-link href="#中断到底是什么">中断到底是什么</a>
+    <a class="sub" data-toc-link href="#自身中断与低优先级中断">自身中断与低优先级中断</a>
+    <a data-toc-link href="#中断时的清理顺序">中断时的清理顺序</a>
+    <a data-toc-link href="#最小-c-执行骨架">最小 C# 执行骨架</a>
+    <a data-toc-link href="#正常路径-边界路径与失败路径">正常路径、边界路径与失败路径</a>
+    <a class="sub" data-toc-link href="#正常路径-动作自然完成">正常路径：动作自然完成</a>
+    <a class="sub" data-toc-link href="#正常路径-候选方案回退">正常路径：候选方案回退</a>
+    <a class="sub" data-toc-link href="#边界路径-条件在动作运行中失效">边界路径：条件在动作运行中失效</a>
+    <a class="sub" data-toc-link href="#边界路径-同一-tick-连续完成多个节点">边界路径：同一 Tick 连续完成多个节点</a>
+    <a class="sub" data-toc-link href="#失败路径-中断后旧回调仍写状态">失败路径：中断后旧回调仍写状态</a>
+    <a class="sub" data-toc-link href="#失败路径-共享节点保存角色状态">失败路径：共享节点保存角色状态</a>
+    <a data-toc-link href="#代价与适用边界">代价与适用边界</a>
+    <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
+    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+    <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
+    <a data-toc-link href="#调试时应该记录什么">调试时应该记录什么</a>
+    <a data-toc-link href="#最后总结">最后总结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把行为树想成值班流程">
+      <span>01</span>
+      <strong>先把行为树想成值班流程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：三种基本返回值">
+      <span>02</span>
+      <strong>三种基本返回值</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：组合节点怎样传播结果">
+      <span>03</span>
+      <strong>组合节点怎样传播结果</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：运行中的执行路径">
+      <span>04</span>
+      <strong>运行中的执行路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Memory 与 Reactive 两种推进方式">
+      <span>05</span>
+      <strong>Memory 与 Reactive 两种推进方式</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：一次完整执行怎样推进">
+      <span>06</span>
+      <strong>一次完整执行怎样推进</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：中断到底是什么">
+      <span>07</span>
+      <strong>中断到底是什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：中断时的清理顺序">
+      <span>08</span>
+      <strong>中断时的清理顺序</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 执行骨架">
+      <span>09</span>
+      <strong>最小 C# 执行骨架</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常路径、边界路径与失败路径">
+      <span>10</span>
+      <strong>正常路径、边界路径与失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：代价与适用边界">
+      <span>11</span>
+      <strong>代价与适用边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：通用算法与实现选择">
+      <span>12</span>
+      <strong>通用算法与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：调试时应该记录什么">
+      <span>13</span>
+      <strong>调试时应该记录什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最后总结">
+      <span>14</span>
+      <strong>最后总结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先把行为树想成值班流程</h3>
+        <p>想象一家小店开门后的值班流程：</p>
+
+        <pre><code class="language-text">如果有顾客：
+  先确认需求
+  再准备商品
+  最后完成交付
+
+否则：
+  整理货架</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>三种基本返回值</h3>
+        <p>行为树节点最常见的返回值是：</p>
+
+        <pre><code class="language-text">Success：本节点本次目标已经完成。
+Failure：本节点本次目标无法完成。
+Running：本节点还没有结束，后续需要继续执行。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>组合节点怎样传播结果</h3>
+        <p>Sequence 类似逻辑“并且”：</p>
+
+        <pre><code class="language-text">检查门是否可用
+走到门前
+打开门</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>运行中的执行路径</h3>
+        <p>当一个叶节点返回 <code>Running</code> 时，树不能把它当成已经结束。系统至少要知道：</p>
+
+        <pre><code class="language-text">哪个节点正在运行
+它的父节点是谁
+父节点下次应从哪个孩子继续
+节点内部保存了什么执行状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>Memory 与 Reactive 两种推进方式</h3>
+        <p>Sequence 和 Selector 常见两种语义。</p>
+
+        <pre><code class="language-text">第一次：
+  条件 A -&gt; Success
+  动作 B -&gt; Running
+
+下一次：
+  直接继续动作 B</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>一次完整执行怎样推进</h3>
+        <p>考虑这棵树：</p>
+
+        <pre><code class="language-text">Selector
+├─ Sequence：紧急避险
+│  ├─ 条件：危险临近
+│  └─ 动作：移动到安全点
+└─ Sequence：日常巡查
+   ├─ 条件：存在巡查点
+   └─ 动作：移动到巡查点</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>中断到底是什么</h3>
+        <p>中断不是把节点状态直接改成 <code>Failure</code>。</p>
+
+        <pre><code class="language-text">正在运行的节点因为外部决策变化，被要求提前结束。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>中断时的清理顺序</h3>
+        <p>假设活动路径为：</p>
+
+        <pre><code class="language-text">Root
+└─ Patrol Sequence
+   └─ MoveToPoint</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>最小 C# 执行骨架</h3>
+        <p>下面只展示返回值、运行索引与中止传播，不绑定具体引擎：</p>
+
+        <pre><code class="language-csharp">public enum NodeStatus
+{
+    Success,
+    Failure,
+    Running
+}
+
+public abstract class BehaviorNode
+{
+    public abstract NodeStatus Tick();
+
+    public virtual void Abort()
+    {
+        // 默认节点没有待撤销工作；异步动作应覆写此方法。
+    }
+}
+
+public sealed class SequenceNode : BehaviorNode
+{
+    private readonly IReadOnlyList&lt;BehaviorNode&gt; children;
+    private int runningIndex;
+
+    public SequenceNode(IReadOnlyList&lt;BehaviorNode&gt; children)
+    {
+        this.children = children;
+    }
+
+    public override NodeStatus Tick()
+    {
+        while (runningIndex &lt; children.Count)
+        {
+            NodeStatus status = children[runningIndex].Tick();
+
+            if (status == NodeStatus.Running)
+            {
+                return NodeStatus.Running;
+            }
+
+            if (status == NodeStatus.Failure)
+            {
+                runningIndex = 0;
+                return NodeStatus.Failure;
+            }
+
+            runningIndex++;
+        }
+
+        runningIndex = 0;
+        return NodeStatus.Success;
+    }
+
+    public override void Abort()
+    {
+        if (runningIndex &lt; children.Count)
+        {
+            // 先撤销当前仍在运行的子节点。
+            children[runningIndex].Abort();
+        }
+
+        runningIndex = 0;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>正常路径、边界路径与失败路径</h3>
+        <p>检查点：</p>
+
+        <pre><code class="language-text">MoveTo -&gt; Running
+MoveTo -&gt; Running
+MoveTo -&gt; Success
+父 Sequence 继续下一个孩子</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>代价与适用边界</h3>
+        <p>行为树的优势：</p>
+
+        <pre><code class="language-text">层级结构适合表达优先级与组合逻辑
+叶节点可复用
+运行路径可视化后容易观察当前决策
+Sequence 和 Selector 能组织大量小行为</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+        <h3>通用算法与实现选择</h3>
+
+
+        <pre><code class="language-text">节点返回 Success、Failure 或 Running。
+组合节点按自身规则解释并传播子节点结果。
+运行中的节点需要跨 Tick 保存执行状态。
+活动分支切换时，旧运行节点必须结束并清理。
+Sequence 与 Selector 分别表达顺序完成与候选选择。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>调试时应该记录什么</h3>
+        <p>只打印“当前节点名称”通常不够。更有用的执行记录包括：</p>
+
+        <pre><code class="language-text">Tick 序号或时间
+进入和退出的节点
+节点返回值
+活动路径
+触发中断的条件
+旧分支与新分支
+异步请求的所有者或代次
+关键黑板值的变更来源</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>最后总结</h3>
+        <p>理解行为树不能只看树长什么样，还要跟踪执行过程：</p>
+
+        <pre><code class="language-text">返回值决定父节点下一步怎么走。
+Running 让执行状态跨 Tick 延续。
+活动路径相当于当前调用栈。
+Reactive 重检可能让高优先级分支重新获得控制权。
+中断必须沿旧活动路径完成撤销和清理。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：游戏 AI 与逻辑建模 / 决策执行</p>
+<h2 id="先把行为树想成值班流程">先把行为树想成值班流程</h2>
+<p>想象一家小店开门后的值班流程：</p>
+<pre><code class="language-text">如果有顾客：
+  先确认需求
+  再准备商品
+  最后完成交付
+
+否则：
+  整理货架</code></pre>
+<p>这里同时存在三类问题：</p>
+<pre><code class="language-text">决策：现在应该接待顾客，还是整理货架？
+执行：准备商品可能要持续一段时间。
+打断：整理到一半突然来了顾客，要不要立刻切换？</code></pre>
+<p>行为树不是单纯的条件树。它是一套反复求值的层级执行模型：</p>
+<pre><code class="language-text">父节点决定怎样解释子节点的结果。
+叶节点执行条件检查或具体动作。
+树在后续 Tick 中继续推进尚未完成的工作。
+高优先级条件变化时，可能中止正在运行的低优先级分支。</code></pre>
+<p>理解行为树时，最关键的三个概念是：</p>
+<pre><code class="language-text">节点返回值
+运行中的执行路径
+中断与清理</code></pre>
+<h2 id="三种基本返回值">三种基本返回值</h2>
+<p>行为树节点最常见的返回值是：</p>
+<pre><code class="language-text">Success：本节点本次目标已经完成。
+Failure：本节点本次目标无法完成。
+Running：本节点还没有结束，后续需要继续执行。</code></pre>
+<p>它们描述的是“节点执行状态”，不是角色的情绪，也不是整个 AI 的永久状态。</p>
+<p>例如“走到门口”：</p>
+<pre><code class="language-text">已经到门口       -&gt; Success
+路径不可达       -&gt; Failure
+仍在路上         -&gt; Running</code></pre>
+<p>同一个节点在不同 Tick 中可以依次返回：</p>
+<pre><code class="language-text">Running -&gt; Running -&gt; Running -&gt; Success</code></pre>
+<p>也可能是：</p>
+<pre><code class="language-text">Running -&gt; Failure</code></pre>
+<p>例如角色走到一半，门被锁上，路径重新计算后判定不可达。</p>
+<h3 id="返回值不等于异常">返回值不等于异常</h3>
+<p><code>Failure</code> 通常是可预期的决策结果：</p>
+<pre><code class="language-text">目标不在范围内
+资源不足
+条件不成立
+路径不可达</code></pre>
+<p>程序异常则表示实现本身出现了未按模型处理的问题：</p>
+<pre><code class="language-text">依赖对象已经销毁
+数组越界
+节点配置缺失
+内部状态违反不变量</code></pre>
+<p>是否把异常转换成 <code>Failure</code> 不是行为树算法的固定要求，而是具体系统的错误策略。默认吞掉异常会掩盖原始故障，因此应让错误保持可观察，或按明确的错误协议处理。</p>
+<h2 id="组合节点怎样传播结果">组合节点怎样传播结果</h2>
+<h3 id="sequence-顺序完成">Sequence：顺序完成</h3>
+<p>Sequence 类似逻辑“并且”：</p>
+<pre><code class="language-text">检查门是否可用
+走到门前
+打开门</code></pre>
+<p>典型规则：</p>
+<pre><code class="language-text">子节点 Success -&gt; 继续下一个子节点
+子节点 Failure -&gt; Sequence 立即 Failure
+子节点 Running -&gt; Sequence 立即 Running
+全部子节点 Success -&gt; Sequence Success</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-text">for child in children:
+    result = Tick(child)
+
+    if result == Failure:
+        return Failure
+
+    if result == Running:
+        return Running
+
+return Success</code></pre>
+<h3 id="selector-找到一个可行方案">Selector：找到一个可行方案</h3>
+<p>Selector 类似逻辑“或者”：</p>
+<pre><code class="language-text">尝试从正门进入
+否则尝试从侧门进入
+否则等待</code></pre>
+<p>典型规则：</p>
+<pre><code class="language-text">子节点 Failure -&gt; 尝试下一个子节点
+子节点 Success -&gt; Selector 立即 Success
+子节点 Running -&gt; Selector 立即 Running
+全部子节点 Failure -&gt; Selector Failure</code></pre>
+<p>伪代码：</p>
+<pre><code class="language-text">for child in children:
+    result = Tick(child)
+
+    if result == Success:
+        return Success
+
+    if result == Running:
+        return Running
+
+return Failure</code></pre>
+<h3 id="decorator-改写或限制一个子节点">Decorator：改写或限制一个子节点</h3>
+<p>装饰节点包裹一个子节点，常见用途包括：</p>
+<pre><code class="language-text">取反：Success 与 Failure 互换，但 Running 保持 Running。
+重复：满足次数或终止条件前反复执行。
+超时：超过时间预算后终止子节点。
+冷却：在一段时间内阻止再次进入。</code></pre>
+<p>“装饰节点存在”是行为树的通用结构；具体有哪些装饰器、超时多久、重复几次，都是实现与内容配置选择。</p>
+<h2 id="运行中的执行路径">运行中的执行路径</h2>
+<p>当一个叶节点返回 <code>Running</code> 时，树不能把它当成已经结束。系统至少要知道：</p>
+<pre><code class="language-text">哪个节点正在运行
+它的父节点是谁
+父节点下次应从哪个孩子继续
+节点内部保存了什么执行状态</code></pre>
+<p>可以把当前运行路径想成调用栈：</p>
+<pre><code class="language-text">Root Selector
+└─ Combat Sequence
+   ├─ HasTarget 条件：Success
+   └─ MoveToTarget 动作：Running</code></pre>
+<p>此时概念上的活动栈是：</p>
+<pre><code class="language-text">Root Selector
+Combat Sequence
+MoveToTarget</code></pre>
+<p>其中 <code>HasTarget</code> 已完成本轮求值，不一定需要保留活动帧。</p>
+<h3 id="执行帧里通常有什么">执行帧里通常有什么</h3>
+<p>一个组合节点的运行帧常保存：</p>
+<pre><code class="language-text">当前子节点索引
+节点是否已经进入
+局部执行数据
+上一次返回状态</code></pre>
+<p>叶节点可能保存：</p>
+<pre><code class="language-text">异步请求句柄
+当前路径或目标快照
+已经播放到的阶段
+开始时间</code></pre>
+<p>哪些数据属于节点实例、黑板或外部系统，是实现选择；但运行状态必须有明确所有者，否则多个角色共享同一树资源时容易互相污染。</p>
+<h2 id="memory-与-reactive-两种推进方式">Memory 与 Reactive 两种推进方式</h2>
+<p>Sequence 和 Selector 常见两种语义。</p>
+<h3 id="memory-记住运行位置">Memory：记住运行位置</h3>
+<p>如果 Sequence 的第二个孩子正在运行，下次从第二个孩子继续：</p>
+<pre><code class="language-text">第一次：
+  条件 A -&gt; Success
+  动作 B -&gt; Running
+
+下一次：
+  直接继续动作 B</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">重复检查少
+执行过程稳定
+适合不会频繁失效的前置流程</code></pre>
+<p>风险：</p>
+<pre><code class="language-text">先前成立的条件后来失效，树可能不会立即发现。</code></pre>
+<h3 id="reactive-从高优先级处重新求值">Reactive：从高优先级处重新求值</h3>
+<p>每次从第一个孩子重新检查：</p>
+<pre><code class="language-text">第一次：
+  条件 A -&gt; Success
+  动作 B -&gt; Running
+
+下一次：
+  重新检查条件 A
+  再决定是否继续动作 B</code></pre>
+<p>优点：</p>
+<pre><code class="language-text">能及时响应条件变化
+适合安全条件和高优先级决策</code></pre>
+<p>代价：</p>
+<pre><code class="language-text">检查开销更高
+条件抖动可能造成频繁切换
+必须定义旧动作如何退出</code></pre>
+<p>Memory 与 Reactive 不是所有行为树库统一规定的唯一语义。使用哪一种必须从节点定义、编辑器标识或框架文档中确认。</p>
+<h2 id="一次完整执行怎样推进">一次完整执行怎样推进</h2>
+<p>考虑这棵树：</p>
+<pre><code class="language-text">Selector
+├─ Sequence：紧急避险
+│  ├─ 条件：危险临近
+│  └─ 动作：移动到安全点
+└─ Sequence：日常巡查
+   ├─ 条件：存在巡查点
+   └─ 动作：移动到巡查点</code></pre>
+<h3 id="第一次-tick">第一次 Tick</h3>
+<p>当前没有危险，但有巡查点：</p>
+<pre><code class="language-text">紧急避险 Sequence
+  危险临近 -&gt; Failure
+  Sequence -&gt; Failure
+
+日常巡查 Sequence
+  存在巡查点 -&gt; Success
+  移动到巡查点 -&gt; Running
+  Sequence -&gt; Running
+
+Root Selector -&gt; Running</code></pre>
+<p>活动路径：</p>
+<pre><code class="language-text">Root Selector -&gt; 日常巡查 Sequence -&gt; 移动到巡查点</code></pre>
+<h3 id="第二次-tick">第二次 Tick</h3>
+<p>如果采用带高优先级重检的 Reactive Selector：</p>
+<pre><code class="language-text">重新检查危险临近
+仍为 Failure
+继续移动到巡查点</code></pre>
+<h3 id="第三次-tick-高优先级条件变化">第三次 Tick：高优先级条件变化</h3>
+<p>危险临近变成 <code>Success</code>：</p>
+<pre><code class="language-text">旧分支“移动到巡查点”被中断并退出
+进入紧急避险分支
+移动到安全点 -&gt; Running</code></pre>
+<p>关键不是“选择器改选了第一个分支”，而是中间必须完成：</p>
+<pre><code class="language-text">识别旧活动路径与新活动路径的分叉点
+从旧路径叶子向上执行中止或退出
+释放旧动作持有的资源
+再进入新路径</code></pre>
+<p>否则旧的移动请求、动画请求或异步回调仍可能继续生效。</p>
+<h2 id="中断到底是什么">中断到底是什么</h2>
+<p>中断不是把节点状态直接改成 <code>Failure</code>。</p>
+<p>更准确的模型是：</p>
+<pre><code class="language-text">正在运行的节点因为外部决策变化，被要求提前结束。</code></pre>
+<p>节点应有独立的生命周期通知，例如：</p>
+<pre><code class="language-text">OnEnter：第一次进入。
+OnTick：推进工作并返回状态。
+OnExit：自然结束后的统一退出。
+OnAbort：被中断时撤销未完成工作。</code></pre>
+<p>具体 API 名称是实现选择，但“提前结束必须清理”是通用工程要求。</p>
+<h3 id="自身中断与低优先级中断">自身中断与低优先级中断</h3>
+<p>一些行为树系统会把条件观察范围分为：</p>
+<pre><code class="language-text">Self：当前分支自己的条件失效时，中断当前分支。
+LowerPriority：更高优先级分支重新变得可行时，中断低优先级分支。
+Both：同时具备以上两种行为。
+None：不主动观察，中途不因条件变化切换。</code></pre>
+<p>这些名称和精确定义不是所有实现都相同，必须以具体框架为准。</p>
+<p>生活化理解：</p>
+<pre><code class="language-text">Self：
+  正在“有预约时准备餐桌”，预约被取消，于是停止准备。
+
+LowerPriority：
+  正在“没有顾客时整理货架”，顾客到来，于是停止整理去接待。</code></pre>
+<h2 id="中断时的清理顺序">中断时的清理顺序</h2>
+<p>假设活动路径为：</p>
+<pre><code class="language-text">Root
+└─ Patrol Sequence
+   └─ MoveToPoint</code></pre>
+<p>新路径切换到：</p>
+<pre><code class="language-text">Root
+└─ Escape Sequence
+   └─ MoveToSafePoint</code></pre>
+<p>共同祖先是 <code>Root</code>。旧分支通常从叶到根退出：</p>
+<pre><code class="language-text">Abort MoveToPoint
+Exit Patrol Sequence
+Enter Escape Sequence
+Enter MoveToSafePoint</code></pre>
+<p>叶到根清理能先撤销最具体的工作，再关闭上层作用域。</p>
+<p>需要清理的内容可能包括：</p>
+<pre><code class="language-text">取消寻路请求
+撤销移动意图
+停止只属于该动作的计时器
+注销事件订阅
+使异步回调失效
+释放节点独占的资源</code></pre>
+<p>是否立即停止动画、是否允许过渡动作完成，是表现与玩法规则选择，不能由“发生了中断”自动推导。</p>
+<h2 id="最小-c-执行骨架">最小 C# 执行骨架</h2>
+<p>下面只展示返回值、运行索引与中止传播，不绑定具体引擎：</p>
+<pre><code class="language-csharp">public enum NodeStatus
+{
+    Success,
+    Failure,
+    Running
+}
+
+public abstract class BehaviorNode
+{
+    public abstract NodeStatus Tick();
+
+    public virtual void Abort()
+    {
+        // 默认节点没有待撤销工作；异步动作应覆写此方法。
+    }
+}
+
+public sealed class SequenceNode : BehaviorNode
+{
+    private readonly IReadOnlyList&lt;BehaviorNode&gt; children;
+    private int runningIndex;
+
+    public SequenceNode(IReadOnlyList&lt;BehaviorNode&gt; children)
+    {
+        this.children = children;
+    }
+
+    public override NodeStatus Tick()
+    {
+        while (runningIndex &lt; children.Count)
+        {
+            NodeStatus status = children[runningIndex].Tick();
+
+            if (status == NodeStatus.Running)
+            {
+                return NodeStatus.Running;
+            }
+
+            if (status == NodeStatus.Failure)
+            {
+                runningIndex = 0;
+                return NodeStatus.Failure;
+            }
+
+            runningIndex++;
+        }
+
+        runningIndex = 0;
+        return NodeStatus.Success;
+    }
+
+    public override void Abort()
+    {
+        if (runningIndex &lt; children.Count)
+        {
+            // 先撤销当前仍在运行的子节点。
+            children[runningIndex].Abort();
+        }
+
+        runningIndex = 0;
+    }
+}</code></pre>
+<p>这段代码确定表达了：</p>
+<pre><code class="language-text">Sequence 的标准结果传播
+Memory Sequence 的当前子节点索引
+中断向活动子节点传播
+结束后重置运行位置</code></pre>
+<p>它没有规定：</p>
+<pre><code class="language-text">节点是否可被多个角色共享
+Tick 频率
+异常处理
+Reactive 重检
+异步请求取消协议</code></pre>
+<p>这些都需要由实际运行时明确设计。</p>
+<h2 id="正常路径-边界路径与失败路径">正常路径、边界路径与失败路径</h2>
+<h3 id="正常路径-动作自然完成">正常路径：动作自然完成</h3>
+<pre><code class="language-text">MoveTo -&gt; Running
+MoveTo -&gt; Running
+MoveTo -&gt; Success
+父 Sequence 继续下一个孩子</code></pre>
+<p>检查点：</p>
+<pre><code class="language-text">动作只进入一次
+Running 期间状态持续存在
+成功后资源被正常释放
+父节点只推进一次</code></pre>
+<h3 id="正常路径-候选方案回退">正常路径：候选方案回退</h3>
+<pre><code class="language-text">正门条件 -&gt; Failure
+侧门条件 -&gt; Success
+侧门移动 -&gt; Running</code></pre>
+<p>这属于 Selector 的正常选择过程，不是系统错误。</p>
+<h3 id="边界路径-条件在动作运行中失效">边界路径：条件在动作运行中失效</h3>
+<pre><code class="language-text">有目标 -&gt; Success
+追踪目标 -&gt; Running
+目标消失</code></pre>
+<p>可能的合法策略包括：</p>
+<pre><code class="language-text">Reactive 重检并中断追踪
+让动作自己检测目标失效并返回 Failure
+将目标快照固定到动作结束</code></pre>
+<p>选择哪种语义取决于行为定义，不能只看树形结构猜测。</p>
+<h3 id="边界路径-同一-tick-连续完成多个节点">边界路径：同一 Tick 连续完成多个节点</h3>
+<p>如果多个条件和瞬时动作都立即 <code>Success</code>，一次 Tick 可能穿过多个节点。</p>
+<p>需要明确：</p>
+<pre><code class="language-text">是否允许单 Tick 无限制推进
+是否设置节点步数预算
+重复装饰器会不会形成死循环</code></pre>
+<p>步数预算是运行时防护选择，不是行为树理论固定常数。</p>
+<h3 id="失败路径-中断后旧回调仍写状态">失败路径：中断后旧回调仍写状态</h3>
+<pre><code class="language-text">动作 A 发起异步请求
+动作 A 被中断
+动作 B 开始
+动作 A 的旧回调晚到并覆盖动作 B 的结果</code></pre>
+<p>可验证的解决思路是建立所有权或版本校验：</p>
+<pre><code class="language-text">中断时取消请求
+或者让回调携带执行代次，只接受当前代次</code></pre>
+<p>具体采用取消令牌、请求 ID 还是节点版本号，是实现选择。</p>
+<h3 id="失败路径-共享节点保存角色状态">失败路径：共享节点保存角色状态</h3>
+<p>如果多个角色共享同一个树资源，而节点对象内部直接保存 <code>runningIndex</code>：</p>
+<pre><code class="language-text">角色 A 的执行位置可能污染角色 B。</code></pre>
+<p>解决方式可以是：</p>
+<pre><code class="language-text">每个角色实例化独立节点树
+或把运行帧放入每个角色独立的执行上下文</code></pre>
+<p>两者都是合法架构，必须明确资源与运行态的边界。</p>
+<h2 id="代价与适用边界">代价与适用边界</h2>
+<p>行为树的优势：</p>
+<pre><code class="language-text">层级结构适合表达优先级与组合逻辑
+叶节点可复用
+运行路径可视化后容易观察当前决策
+Sequence 和 Selector 能组织大量小行为</code></pre>
+<p>主要代价：</p>
+<pre><code class="language-text">Reactive 重检会增加条件求值成本
+中断与异步清理容易形成隐藏复杂度
+黑板键过多时会产生隐式依赖
+树很深时，逻辑意图可能被节点细节淹没</code></pre>
+<p>行为树适合：</p>
+<pre><code class="language-text">分支优先级相对明确
+动作具有持续执行过程
+需要组合可复用条件与行为
+需要观察“当前正在执行哪条路径”</code></pre>
+<p>不应强行用行为树解决：</p>
+<pre><code class="language-text">需要跨很多步骤搜索方案的规划问题
+需要在大量方案之间连续优化评分的问题
+严格的事务流程或协议状态机
+大量单位的极简同质逻辑且 Tick 成本非常敏感</code></pre>
+<p>这些场景可能更适合 HTN、GOAP、效用系统、状态机或批处理数据模型。</p>
+<h2 id="通用算法与实现选择">通用算法与实现选择</h2>
+<h3 id="可验证的通用机制">可验证的通用机制</h3>
+<pre><code class="language-text">节点返回 Success、Failure 或 Running。
+组合节点按自身规则解释并传播子节点结果。
+运行中的节点需要跨 Tick 保存执行状态。
+活动分支切换时，旧运行节点必须结束并清理。
+Sequence 与 Selector 分别表达顺序完成与候选选择。</code></pre>
+<h3 id="必须由具体实现确定">必须由具体实现确定</h3>
+<pre><code class="language-text">Tick 频率与每 Tick 步数预算
+Memory 或 Reactive 语义
+中断观察范围
+异常怎样暴露
+黑板数据的类型和生命周期
+异步请求取消协议
+节点实例是否共享
+并行节点的成功与失败阈值</code></pre>
+<h2 id="调试时应该记录什么">调试时应该记录什么</h2>
+<p>只打印“当前节点名称”通常不够。更有用的执行记录包括：</p>
+<pre><code class="language-text">Tick 序号或时间
+进入和退出的节点
+节点返回值
+活动路径
+触发中断的条件
+旧分支与新分支
+异步请求的所有者或代次
+关键黑板值的变更来源</code></pre>
+<p>最小事件流可以写成：</p>
+<pre><code class="language-text">Tick 41  Enter Patrol/MoveTo
+Tick 41  MoveTo -&gt; Running
+Tick 42  DangerNearby: false -&gt; true
+Tick 42  Abort Patrol/MoveTo
+Tick 42  Enter Escape/MoveToSafePoint
+Tick 42  MoveToSafePoint -&gt; Running</code></pre>
+<p>这样才能区分：</p>
+<pre><code class="language-text">节点自己失败
+父节点改选分支
+高优先级条件触发中断
+旧异步结果污染当前状态</code></pre>
+<h2 id="最后总结">最后总结</h2>
+<p>理解行为树不能只看树长什么样，还要跟踪执行过程：</p>
+<pre><code class="language-text">返回值决定父节点下一步怎么走。
+Running 让执行状态跨 Tick 延续。
+活动路径相当于当前调用栈。
+Reactive 重检可能让高优先级分支重新获得控制权。
+中断必须沿旧活动路径完成撤销和清理。</code></pre>
+<p>真正决定行为树是否可靠的，不只是节点数量，而是：</p>
+<pre><code class="language-text">返回值语义是否一致
+运行状态归属是否清楚
+中断协议是否完整
+异步结果是否仍受当前执行代次约束</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E5%B1%80%E9%83%A8%E9%81%BF%E9%9A%9C-RVO%E4%B8%8EORCA%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>← PREVIOUS</small>局部避障：RVO 与 ORCA 理解笔记</a>
+          <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/"><small>NEXT →</small>状态机、行为树、效用 AI 与 GOAP 对比</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

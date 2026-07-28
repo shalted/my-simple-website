@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象一座展馆：">
+  <title>图遍历与最短路：BFS、DFS、Dijkstra · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>图遍历与最短路：BFS、DFS、Dijkstra</h1>
+      <p class="hero-copy">想象一座展馆：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#先用生活模型理解图">先用生活模型理解图</a>
+    <a data-toc-link href="#图怎样存进内存">图怎样存进内存</a>
+    <a data-toc-link href="#bfs-像水波一样一层层扩散">BFS：像水波一样一层层扩散</a>
+    <a class="sub" data-toc-link href="#为什么需要-bfs">为什么需要 BFS</a>
+    <a class="sub" data-toc-link href="#逐步过程">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例">C# 最小示例</a>
+    <a data-toc-link href="#dfs-先沿一条路深入到底">DFS：先沿一条路深入到底</a>
+    <a class="sub" data-toc-link href="#为什么需要-dfs">为什么需要 DFS</a>
+    <a class="sub" data-toc-link href="#逐步过程-2">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例-2">C# 最小示例</a>
+    <a data-toc-link href="#dijkstra-按当前最便宜的累计代价扩展">Dijkstra：按当前最便宜的累计代价扩展</a>
+    <a class="sub" data-toc-link href="#为什么需要-dijkstra">为什么需要 Dijkstra</a>
+    <a class="sub" data-toc-link href="#松弛操作">松弛操作</a>
+    <a class="sub" data-toc-link href="#逐步过程-3">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例-3">C# 最小示例</a>
+    <a data-toc-link href="#三种算法怎样选择">三种算法怎样选择</a>
+    <a data-toc-link href="#边界与失败情况">边界与失败情况</a>
+    <a class="sub" data-toc-link href="#图中存在环">图中存在环</a>
+    <a class="sub" data-toc-link href="#起点或邻居缺失">起点或邻居缺失</a>
+    <a class="sub" data-toc-link href="#图不连通">图不连通</a>
+    <a class="sub" data-toc-link href="#负权边">负权边</a>
+    <a class="sub" data-toc-link href="#距离溢出">距离溢出</a>
+    <a class="sub" data-toc-link href="#邻居顺序">邻居顺序</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#小结">小结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解图">
+      <span>01</span>
+      <strong>先用生活模型理解图</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：图怎样存进内存">
+      <span>02</span>
+      <strong>图怎样存进内存</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：BFS：像水波一样一层层扩散">
+      <span>03</span>
+      <strong>BFS：像水波一样一层层扩散</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：DFS：先沿一条路深入到底">
+      <span>04</span>
+      <strong>DFS：先沿一条路深入到底</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Dijkstra：按当前最便宜的累计代价扩展">
+      <span>05</span>
+      <strong>Dijkstra：按当前最便宜的累计代价扩展</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：三种算法怎样选择">
+      <span>06</span>
+      <strong>三种算法怎样选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：边界与失败情况">
+      <span>07</span>
+      <strong>边界与失败情况</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：复杂度与代价">
+      <span>08</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：小结">
+      <span>09</span>
+      <strong>小结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先用生活模型理解图</h3>
+        <p>想象一座展馆：</p>
+        <ul><li>房间是<strong>节点</strong>。</li><li>房间之间的通道是<strong>边</strong>。</li><li>穿过通道所需的时间是<strong>边权重</strong>。</li></ul>
+        <pre><code class="language-text">BFS：先看离入口通道数最少的房间。
+DFS：沿一条路线不断深入，走不通再退回。
+Dijkstra：考虑每条通道的代价，寻找累计代价最小的路线。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>图怎样存进内存</h3>
+        <p>常见表示方法有邻接表和邻接矩阵。</p>
+
+        <pre><code class="language-text">A -&gt; B, C
+B -&gt; A, D
+C -&gt; A
+D -&gt; B</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>BFS：像水波一样一层层扩散</h3>
+        <p>BFS 是 Breadth-First Search，即广度优先搜索。</p>
+        <ul><li>按层遍历；</li><li>查找无权图最少边数路径；</li><li>计算节点与起点相隔几层；</li><li>判断某个可达目标是否存在。</li></ul>
+        <pre><code class="language-text">A -&gt; B, C
+B -&gt; D
+C -&gt; E
+D -&gt; F
+E -&gt; F</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>DFS：先沿一条路深入到底</h3>
+        <p>DFS 是 Depth-First Search，即深度优先搜索。</p>
+        <ul><li>判断可达性；</li><li>枚举一条完整分支；</li><li>检测环；</li><li>拓扑排序；</li><li>寻找连通分量；</li><li>需要回溯的搜索。</li></ul>
+        <pre><code class="language-text">A
+└─ B
+   └─ D
+      └─ F
+返回 A
+└─ C
+   └─ E</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>Dijkstra：按当前最便宜的累计代价扩展</h3>
+        <p>BFS 把每条边都视为相同代价。如果通道耗时不同，仅比较经过几条边就不够了。</p>
+
+        <pre><code class="language-text">distance[x]：目前已知从起点到 x 的最小累计代价。
+priority queue：按当前累计代价取出最小候选节点。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+        <h3>三种算法怎样选择</h3>
+        <p>| 问题 | 合适算法 | 原因 | |---|---|---| | 只需遍历所有可达节点 | BFS 或 DFS | 两者都能覆盖可达区域 | | 无权图最少边数路径 | BFS | 按层扩展 | | 沿分支深入、回溯或检测结构 | DFS | 栈保存当前深入路径 | | 非负权图最小累计代价 | Dijkstra | 按当前最小距离扩展 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
+        <h3>边界与失败情况</h3>
+        <p>没有 <code>visited</code> 或等价状态时，BFS 和 DFS 可能不断重复访问环中的节点。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
+        <h3>复杂度与代价</h3>
+        <p>邻接表表示下：</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>小结</h3>
+        <p>真正决定算法的不是名字，而是问题约束：边是否等价、权重能否为负、是否需要最短、输入规模有多大。先写清这些条件，再选数据结构，算法过程就会自然清晰。</p>
+
+        <pre><code class="language-text">BFS 用队列按层扩散，适合无权最短边数。
+DFS 用栈沿分支深入，适合结构探索和回溯。
+Dijkstra 用优先队列扩展当前累计代价最小的节点，
+适合非负权图的最短路。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：算法</p>
+<h2 id="先用生活模型理解图">先用生活模型理解图</h2>
+<p>想象一座展馆：</p>
+<ul>
+<li>房间是<strong>节点</strong>。</li>
+<li>房间之间的通道是<strong>边</strong>。</li>
+<li>穿过通道所需的时间是<strong>边权重</strong>。</li>
+</ul>
+<p>从入口开始参观时，常见目标有三种：</p>
+<pre><code class="language-text">BFS：先看离入口通道数最少的房间。
+DFS：沿一条路线不断深入，走不通再退回。
+Dijkstra：考虑每条通道的代价，寻找累计代价最小的路线。</code></pre>
+<p>图算法不只用于地图。只要数据之间存在“谁与谁相连”，就可以先把问题映射成图，再选择遍历或最短路算法。</p>
+<h2 id="图怎样存进内存">图怎样存进内存</h2>
+<p>常见表示方法有邻接表和邻接矩阵。</p>
+<p>邻接表为每个节点保存相邻节点：</p>
+<pre><code class="language-text">A -&gt; B, C
+B -&gt; A, D
+C -&gt; A
+D -&gt; B</code></pre>
+<p>若节点数为 <code>V</code>、边数为 <code>E</code>，邻接表的空间通常是 <code>O(V + E)</code>，适合边相对稀疏的图。</p>
+<p>邻接矩阵使用二维表：</p>
+<pre><code class="language-text">matrix[a, b] = 是否相连或边权重</code></pre>
+<p>它需要 <code>O(V²)</code> 空间，但判断任意两个节点是否直接相连通常是 <code>O(1)</code>。</p>
+<p>下面的示例使用邻接表。</p>
+<h2 id="bfs-像水波一样一层层扩散">BFS：像水波一样一层层扩散</h2>
+<p>BFS 是 Breadth-First Search，即广度优先搜索。</p>
+<p>它使用<strong>队列</strong>保存待访问节点。队列先进先出，因此先发现的近层节点会先被处理。</p>
+<h3 id="为什么需要-bfs">为什么需要 BFS</h3>
+<p>在每条边代价相同的无权图中，BFS 第一次到达某节点时，走过的边数最少。因此它适合：</p>
+<ul>
+<li>按层遍历；</li>
+<li>查找无权图最少边数路径；</li>
+<li>计算节点与起点相隔几层；</li>
+<li>判断某个可达目标是否存在。</li>
+</ul>
+<h3 id="逐步过程">逐步过程</h3>
+<p>以下节点和连接均为教学示例：</p>
+<pre><code class="language-text">A -&gt; B, C
+B -&gt; D
+C -&gt; E
+D -&gt; F
+E -&gt; F</code></pre>
+<p>从 <code>A</code> 开始：</p>
+<table><thead><tr>
+<th>步骤</th>
+<th>取出</th>
+<th>新发现</th>
+<th>队列</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>A</td>
+<td>B、C</td>
+<td>B、C</td>
+</tr>
+<tr>
+<td>2</td>
+<td>B</td>
+<td>D</td>
+<td>C、D</td>
+</tr>
+<tr>
+<td>3</td>
+<td>C</td>
+<td>E</td>
+<td>D、E</td>
+</tr>
+<tr>
+<td>4</td>
+<td>D</td>
+<td>F</td>
+<td>E、F</td>
+</tr>
+<tr>
+<td>5</td>
+<td>E</td>
+<td>无，F 已发现</td>
+<td>F</td>
+</tr>
+<tr>
+<td>6</td>
+<td>F</td>
+<td>无</td>
+<td>空</td>
+</tr>
+</tbody></table>
+<p>遍历顺序是：</p>
+<pre><code class="language-text">A, B, C, D, E, F</code></pre>
+<p><code>visited</code> 必须在节点<strong>入队时</strong>标记，而不是等到出队才标记。否则同一个节点可能被多个前驱重复加入队列。</p>
+<h3 id="c-最小示例">C# 最小示例</h3>
+<pre><code class="language-csharp">static List&lt;string&gt; BreadthFirst(
+    Dictionary&lt;string, List&lt;string&gt;&gt; graph,
+    string start)
+{
+    var order = new List&lt;string&gt;();
+    var visited = new HashSet&lt;string&gt; { start };
+    var queue = new Queue&lt;string&gt;();
+    queue.Enqueue(start);
+
+    while (queue.Count &gt; 0)
+    {
+        string current = queue.Dequeue();
+        order.Add(current);
+
+        foreach (string next in graph[current])
+        {
+            // 入队时标记，确保每个节点最多入队一次。
+            if (visited.Add(next))
+            {
+                queue.Enqueue(next);
+            }
+        }
+    }
+
+    return order;
+}
+
+var graph = new Dictionary&lt;string, List&lt;string&gt;&gt;
+{
+    [&quot;A&quot;] = new() { &quot;B&quot;, &quot;C&quot; },
+    [&quot;B&quot;] = new() { &quot;D&quot; },
+    [&quot;C&quot;] = new() { &quot;E&quot; },
+    [&quot;D&quot;] = new() { &quot;F&quot; },
+    [&quot;E&quot;] = new() { &quot;F&quot; },
+    [&quot;F&quot;] = new()
+}; // 全部节点与连接均为教学示例
+
+Console.WriteLine(string.Join(&quot;, &quot;, BreadthFirst(graph, &quot;A&quot;)));</code></pre>
+<h2 id="dfs-先沿一条路深入到底">DFS：先沿一条路深入到底</h2>
+<p>DFS 是 Depth-First Search，即深度优先搜索。</p>
+<p>它使用<strong>栈</strong>，或借助递归调用栈。每次选择一个尚未访问的邻居继续深入；当前路线没有新节点时，再退回上一个分叉点。</p>
+<h3 id="为什么需要-dfs">为什么需要 DFS</h3>
+<p>DFS 适合关注“深入关系”的问题，例如：</p>
+<ul>
+<li>判断可达性；</li>
+<li>枚举一条完整分支；</li>
+<li>检测环；</li>
+<li>拓扑排序；</li>
+<li>寻找连通分量；</li>
+<li>需要回溯的搜索。</li>
+</ul>
+<p>DFS 能找到路径，但在普通无权图中不保证第一次找到的是最短路径。</p>
+<h3 id="逐步过程-2">逐步过程</h3>
+<p>仍使用上面的教学示例图，并按邻接表顺序选择节点：</p>
+<pre><code class="language-text">A
+└─ B
+   └─ D
+      └─ F
+返回 A
+└─ C
+   └─ E</code></pre>
+<p>可能得到：</p>
+<pre><code class="language-text">A, B, D, F, C, E</code></pre>
+<p>具体顺序取决于邻居的排列方式；改变邻接表顺序，合法的 DFS 顺序也可能改变。</p>
+<h3 id="c-最小示例-2">C# 最小示例</h3>
+<pre><code class="language-csharp">static List&lt;string&gt; DepthFirst(
+    Dictionary&lt;string, List&lt;string&gt;&gt; graph,
+    string start)
+{
+    var order = new List&lt;string&gt;();
+    var visited = new HashSet&lt;string&gt;();
+    var stack = new Stack&lt;string&gt;();
+    stack.Push(start);
+
+    while (stack.Count &gt; 0)
+    {
+        string current = stack.Pop();
+        if (!visited.Add(current))
+        {
+            continue;
+        }
+
+        order.Add(current);
+
+        // 逆序压栈，让邻接表中靠前的节点先被弹出访问。
+        for (int i = graph[current].Count - 1; i &gt;= 0; i--)
+        {
+            string next = graph[current][i];
+            if (!visited.Contains(next))
+            {
+                stack.Push(next);
+            }
+        }
+    }
+
+    return order;
+}</code></pre>
+<p>递归写法更接近定义，但图很深时，递归层数可能超过调用栈可承受范围。显式栈可以把这部分状态放到托管集合中，并让深度限制更容易控制。</p>
+<h2 id="dijkstra-按当前最便宜的累计代价扩展">Dijkstra：按当前最便宜的累计代价扩展</h2>
+<p>BFS 把每条边都视为相同代价。如果通道耗时不同，仅比较经过几条边就不够了。</p>
+<p>Dijkstra 算法维护：</p>
+<pre><code class="language-text">distance[x]：目前已知从起点到 x 的最小累计代价。
+priority queue：按当前累计代价取出最小候选节点。</code></pre>
+<h3 id="为什么需要-dijkstra">为什么需要 Dijkstra</h3>
+<p>当图的边权重<strong>非负</strong>时，Dijkstra 可以求一个起点到其他可达节点的最短距离，也可以通过记录前驱重建路径。</p>
+<p>它的关键不是“选看起来离终点最近的节点”，而是：</p>
+<pre><code class="language-text">每次选当前已知累计代价最小的候选节点。</code></pre>
+<h3 id="松弛操作">松弛操作</h3>
+<p>假设当前已知：</p>
+<pre><code class="language-text">起点到 A 的代价 = 4
+A 到 B 的边权重 = 3
+起点到 B 的旧代价 = 10</code></pre>
+<p>以上数值均为教学示例。</p>
+<p>经过 <code>A</code> 到达 <code>B</code> 的新代价：</p>
+<pre><code class="language-text">4 + 3 = 7</code></pre>
+<p>因为 <code>7 &lt; 10</code>，所以更新：</p>
+<pre><code class="language-text">distance[B] = 7
+previous[B] = A</code></pre>
+<p>这个“发现更短路线就更新”的动作叫松弛。</p>
+<h3 id="逐步过程-3">逐步过程</h3>
+<p>教学示例图：</p>
+<pre><code class="language-text">S -&gt; A，权重 4
+S -&gt; B，权重 1
+B -&gt; A，权重 2
+A -&gt; T，权重 1
+B -&gt; T，权重 5</code></pre>
+<table><thead><tr>
+<th>步骤</th>
+<th>取出节点</th>
+<th>已确定候选代价</th>
+<th>发生的更新</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>S</td>
+<td>0</td>
+<td>A=4，B=1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>B</td>
+<td>1</td>
+<td>A=3，T=6</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A</td>
+<td>3</td>
+<td>T=4</td>
+</tr>
+<tr>
+<td>4</td>
+<td>T</td>
+<td>4</td>
+<td>无</td>
+</tr>
+</tbody></table>
+<p>最终教学示例最短路径：</p>
+<pre><code class="language-text">S -&gt; B -&gt; A -&gt; T
+总代价 = 4</code></pre>
+<h3 id="c-最小示例-3">C# 最小示例</h3>
+<pre><code class="language-csharp">public readonly record struct Edge(string To, int Cost);
+
+static Dictionary&lt;string, int&gt; Dijkstra(
+    Dictionary&lt;string, List&lt;Edge&gt;&gt; graph,
+    string start)
+{
+    var distance = graph.Keys.ToDictionary(
+        node =&gt; node,
+        _ =&gt; int.MaxValue);
+
+    var queue = new PriorityQueue&lt;string, int&gt;();
+    distance[start] = 0;
+    queue.Enqueue(start, 0);
+
+    while (queue.TryDequeue(out string? current, out int queuedDistance))
+    {
+        // 同一节点可能以旧距离留在队列中，跳过过期条目。
+        if (queuedDistance != distance[current])
+        {
+            continue;
+        }
+
+        foreach (Edge edge in graph[current])
+        {
+            if (edge.Cost &lt; 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(graph),
+                    &quot;Dijkstra 不接受负权边。&quot;);
+            }
+
+            int candidate = checked(queuedDistance + edge.Cost);
+            if (candidate &lt; distance[edge.To])
+            {
+                distance[edge.To] = candidate;
+                queue.Enqueue(edge.To, candidate);
+            }
+        }
+    }
+
+    return distance;
+}
+
+var weightedGraph = new Dictionary&lt;string, List&lt;Edge&gt;&gt;
+{
+    [&quot;S&quot;] = new() { new(&quot;A&quot;, 4), new(&quot;B&quot;, 1) },
+    [&quot;A&quot;] = new() { new(&quot;T&quot;, 1) },
+    [&quot;B&quot;] = new() { new(&quot;A&quot;, 2), new(&quot;T&quot;, 5) },
+    [&quot;T&quot;] = new()
+}; // 节点、边和权重均为教学示例
+
+Dictionary&lt;string, int&gt; result = Dijkstra(weightedGraph, &quot;S&quot;);
+Console.WriteLine(result[&quot;T&quot;]); // 教学示例输出 4</code></pre>
+<p>示例使用 <code>checked</code> 暴露整数加法溢出，而不是让溢出结果参与距离比较。</p>
+<h2 id="三种算法怎样选择">三种算法怎样选择</h2>
+<table><thead><tr>
+<th>问题</th>
+<th>合适算法</th>
+<th>原因</th>
+</tr></thead><tbody>
+<tr>
+<td>只需遍历所有可达节点</td>
+<td>BFS 或 DFS</td>
+<td>两者都能覆盖可达区域</td>
+</tr>
+<tr>
+<td>无权图最少边数路径</td>
+<td>BFS</td>
+<td>按层扩展</td>
+</tr>
+<tr>
+<td>沿分支深入、回溯或检测结构</td>
+<td>DFS</td>
+<td>栈保存当前深入路径</td>
+</tr>
+<tr>
+<td>非负权图最小累计代价</td>
+<td>Dijkstra</td>
+<td>按当前最小距离扩展</td>
+</tr>
+</tbody></table>
+<p>不要仅凭“这是地图”选择算法。先确认边是否有权重、权重是否可能为负、要最短路径还是只要可达。</p>
+<h2 id="边界与失败情况">边界与失败情况</h2>
+<h3 id="图中存在环">图中存在环</h3>
+<p>没有 <code>visited</code> 或等价状态时，BFS 和 DFS 可能不断重复访问环中的节点。</p>
+<h3 id="起点或邻居缺失">起点或邻居缺失</h3>
+<p>示例假设图中包含起点，而且每个被引用的邻居也有邻接表项。实际使用时，应由输入契约保证，或在算法入口显式验证并暴露错误。</p>
+<h3 id="图不连通">图不连通</h3>
+<p>从一个起点执行，只会访问该起点所在的连通区域。若要遍历整张不连通图，需要从每个尚未访问的节点再次启动遍历。</p>
+<h3 id="负权边">负权边</h3>
+<p>Dijkstra 的确定性依据依赖非负权重。出现负权边时，已经取出的“最小距离”仍可能在之后被降低，算法前提被破坏。此时应选择支持相应权重条件的算法，而不是继续使用 Dijkstra。</p>
+<h3 id="距离溢出">距离溢出</h3>
+<p>累计代价使用固定宽度整数时可能溢出。数值类型、允许范围和溢出处理必须与输入契约一致。</p>
+<h3 id="邻居顺序">邻居顺序</h3>
+<p>BFS 和 DFS 的访问顺序会受到邻接表顺序影响。如果顺序属于结果契约，就应在建图时或遍历前明确排序；排序会带来额外成本。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<p>邻接表表示下：</p>
+<table><thead><tr>
+<th>算法</th>
+<th>时间复杂度</th>
+<th>额外空间</th>
+<th>主要数据结构</th>
+</tr></thead><tbody>
+<tr>
+<td>BFS</td>
+<td><code>O(V + E)</code></td>
+<td><code>O(V)</code></td>
+<td>队列、访问集合</td>
+</tr>
+<tr>
+<td>DFS</td>
+<td><code>O(V + E)</code></td>
+<td><code>O(V)</code></td>
+<td>栈、访问集合</td>
+</tr>
+<tr>
+<td>Dijkstra（二叉堆）</td>
+<td><code>O((V + E) log V)</code></td>
+<td><code>O(V + E)</code></td>
+<td>优先队列、距离表</td>
+</tr>
+</tbody></table>
+<p>其中 <code>V</code> 是节点数，<code>E</code> 是边数。Dijkstra 的实现可能把同一节点的多个距离条目放入优先队列，因此队列大小还会受成功松弛次数影响。</p>
+<h2 id="小结">小结</h2>
+<pre><code class="language-text">BFS 用队列按层扩散，适合无权最短边数。
+DFS 用栈沿分支深入，适合结构探索和回溯。
+Dijkstra 用优先队列扩展当前累计代价最小的节点，
+适合非负权图的最短路。</code></pre>
+<p>真正决定算法的不是名字，而是问题约束：边是否等价、权重能否为负、是否需要最短、输入规模有多大。先写清这些条件，再选数据结构，算法过程就会自然清晰。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95%E5%B7%A5%E5%85%B7%E7%AE%B1-%E4%BA%8C%E5%88%86TopK%E5%B9%B6%E6%9F%A5%E9%9B%86%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/"><small>← PREVIOUS</small>算法工具箱：二分、Top K、并查集与动态规划</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%89%A9%E7%90%86%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%9F%BA%E7%A1%80-BroadPhase-AABB-OBB-BVH-SAT/"><small>NEXT →</small>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

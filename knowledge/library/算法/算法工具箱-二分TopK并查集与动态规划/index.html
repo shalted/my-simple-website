@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="想象整理一座资料室：">
+  <title>算法工具箱：二分、Top K、并查集与动态规划 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>算法工具箱：二分、Top K、并查集与动态规划</h1>
+      <p class="hero-copy">想象整理一座资料室：</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#四种工具分别解决什么">四种工具分别解决什么</a>
+    <a data-toc-link href="#二分查找-每次排除一半范围">二分查找：每次排除一半范围</a>
+    <a class="sub" data-toc-link href="#为什么需要二分查找">为什么需要二分查找</a>
+    <a class="sub" data-toc-link href="#逐步过程">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例">C# 最小示例</a>
+    <a class="sub" data-toc-link href="#边界与失败情况">边界与失败情况</a>
+    <a data-toc-link href="#top-k-只维护当前最重要的-k-个候选">Top K：只维护当前最重要的 K 个候选</a>
+    <a class="sub" data-toc-link href="#为什么需要-top-k">为什么需要 Top K</a>
+    <a class="sub" data-toc-link href="#逐步过程-2">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例-2">C# 最小示例</a>
+    <a class="sub" data-toc-link href="#边界与失败情况-2">边界与失败情况</a>
+    <a data-toc-link href="#并查集-维护不断合并的分组">并查集：维护不断合并的分组</a>
+    <a class="sub" data-toc-link href="#为什么需要并查集">为什么需要并查集</a>
+    <a class="sub" data-toc-link href="#树形表示">树形表示</a>
+    <a class="sub" data-toc-link href="#路径压缩与按大小合并">路径压缩与按大小合并</a>
+    <a class="sub" data-toc-link href="#c-最小示例-3">C# 最小示例</a>
+    <a class="sub" data-toc-link href="#边界与失败情况-3">边界与失败情况</a>
+    <a data-toc-link href="#动态规划-保存重复子问题的答案">动态规划：保存重复子问题的答案</a>
+    <a class="sub" data-toc-link href="#为什么需要动态规划">为什么需要动态规划</a>
+    <a class="sub" data-toc-link href="#五个设计步骤">五个设计步骤</a>
+    <a class="sub" data-toc-link href="#逐步过程-3">逐步过程</a>
+    <a class="sub" data-toc-link href="#c-最小示例-4">C# 最小示例</a>
+    <a class="sub" data-toc-link href="#记忆化搜索与递推">记忆化搜索与递推</a>
+    <a class="sub" data-toc-link href="#边界与失败情况-4">边界与失败情况</a>
+    <a data-toc-link href="#四种工具的复杂度">四种工具的复杂度</a>
+    <a data-toc-link href="#小结">小结</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：四种工具分别解决什么">
+      <span>01</span>
+      <strong>四种工具分别解决什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：二分查找：每次排除一半范围">
+      <span>02</span>
+      <strong>二分查找：每次排除一半范围</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Top K：只维护当前最重要的 K 个候选">
+      <span>03</span>
+      <strong>Top K：只维护当前最重要的 K 个候选</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：并查集：维护不断合并的分组">
+      <span>04</span>
+      <strong>并查集：维护不断合并的分组</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：动态规划：保存重复子问题的答案">
+      <span>05</span>
+      <strong>动态规划：保存重复子问题的答案</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：四种工具的复杂度">
+      <span>06</span>
+      <strong>四种工具的复杂度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：小结">
+      <span>07</span>
+      <strong>小结</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>四种工具分别解决什么</h3>
+        <p>想象整理一座资料室：</p>
+        <ul><li><strong>二分查找</strong>：书架已经按编号排序，每次查看中间位置，排除一半范围。</li><li><strong>Top K</strong>：传送带持续送来物品，只保留当前最值得关注的 <code>K</code> 件。</li><li><strong>并查集</strong>：不断把小组连接起来，并快速判断两个人是否已在同一组。</li><li><strong>动态规划</strong>：把复杂任务拆成重复子任务，保存已经算过的答案再组合。</li></ul>
+        <pre><code class="language-text">有序范围定位 -&gt; 二分查找
+海量候选保留少量极值 -&gt; Top K
+动态合并与连通判断 -&gt; 并查集
+重叠子问题与最优子结构 -&gt; 动态规划</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>二分查找：每次排除一半范围</h3>
+        <p>顺序查找从头逐个比较，最坏要检查 <code>n</code> 个元素。</p>
+        <ul><li>输入未按比较规则排序时，结果不可信。</li><li>有重复值时，普通二分只保证找到某一个匹配项，不保证第一个或最后一个。</li><li><code>left &lt;= right</code>、边界移动和中点计算容易出现差一错误。</li><li>空数组会直接结束循环并返回未找到。</li><li>若排序使用一种比较规则、查找使用另一种规则，二分前提同样被破坏。</li></ul>
+        <pre><code class="language-text">目标更小 -&gt; 只保留左半边
+目标更大 -&gt; 只保留右半边
+目标相等 -&gt; 找到</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>Top K：只维护当前最重要的 K 个候选</h3>
+        <p>若只需要最大的 <code>K</code> 个元素，把全部 <code>n</code> 个元素排序需要 <code>O(n log n)</code>。</p>
+        <ul><li><code>K = 0</code> 时结果为空，这是示例函数明确支持的输入。</li><li><code>K</code> 大于元素数量时，会返回全部元素。</li><li>“最大”必须有稳定的比较规则；复合对象常需要显式比较键。</li><li>相同值是否允许重复，属于结果契约。上例保留输入中的重复项。</li><li>堆输出不是最终排名；需要有序结果时还要排序，增加 <code>O(K log K)</code> 成本。</li><li>数据全部已在内存且 <code>K</code> 接近 <code>n</code> 时，完整排序可能更简单。</li></ul>
+        <pre><code class="language-text">堆顶 = 当前 Top K 中最小的元素
+新元素不大于堆顶 -&gt; 不进入 Top K
+新元素大于堆顶 -&gt; 移除堆顶，再加入新元素</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>并查集：维护不断合并的分组</h3>
+        <p>并查集也叫 Disjoint Set Union，简称 DSU。</p>
+        <ul><li>上例使用连续整数索引，越界会暴露为异常；其他标识需要先建立映射。</li><li>并查集擅长“合并”，不擅长删除连接或把集合拆开。</li><li>它能判断是否同组，但不会直接给出两个节点之间的具体路径。</li><li>路径压缩会改变内部父子结构，因此不能把父数组误当成原始连接关系。</li><li>若操作包含动态删除，应重新审视问题模型，而不是给并查集添加未经证明的修补逻辑。</li></ul>
+        <pre><code class="language-text">x 和 y 是否已经连通？
+把 x 所在组与 y 所在组合并。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>动态规划：保存重复子问题的答案</h3>
+        <p>有些问题可以拆成更小问题，但不同分支会反复计算相同子问题。</p>
+        <ul><li><strong>重叠子问题</strong>：不同路径反复需要同一状态的答案。</li><li><strong>最优子结构或可组合结构</strong>：大问题答案可以由小问题答案推导。</li><li>状态定义含糊时，转移公式即使能运行也可能回答了另一个问题。</li><li>初始状态遗漏会让后续所有结果偏移。</li><li>状态间存在循环依赖时，简单递推顺序不成立。</li><li>不是所有递归都适合动态规划；若子问题不重叠，缓存可能只增加空间。</li><li>计数或代价可能溢出，需要依据输入范围选择数值类型和溢出策略。</li><li>局部最优选择不等于动态规划。能否由子问题组合出正确答案，需要证明，而不是凭直觉套公式。</li></ul>
+        <pre><code class="language-text">每次允许走 1 级或 2 级。
+到第 i 级的走法数 =
+到第 i - 1 级的走法数 +
+到第 i - 2 级的走法数。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+        <h3>四种工具的复杂度</h3>
+        <p>| 工具 | 典型时间复杂度 | 额外空间 | 关键前提 | |---|---:|---:|---| | 二分查找 | <code>O(log n)</code> | 迭代写法 <code>O(1)</code> | 数据按同一比较规则有序 | | 最小堆求最大 Top K | <code>O(n log K)</code> | <code>O(K)</code> | 只需保留 K 个极值 | | 并查集合并/查询 | 均摊 <code>O(α(n))</code> | <code>O(n)</code> | 主要操作是合并和连通判断 | | 一维动态规划示例 | <code>O(n)</code> | 可优化到 <code>O(1)</code> | 状态只依赖前两个状态 |</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>小结</h3>
+        <p>遇到新问题时，可以依次问：</p>
+        <ul><li>数据是否已经有序，或答案是否具有单调边界？</li><li>是否只关心少量最大或最小候选？</li><li>是否反复进行集合合并和连通查询？</li><li>大问题是否由重复的小问题组合而成？</li></ul>
+        <pre><code class="language-text">二分查找用有序性换取每次排除一半。
+Top K 用小容量堆避免对全部候选完整排序。
+并查集用代表节点维护不断合并的集合。
+动态规划用状态复用消除重复子问题。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：算法</p>
+<h2 id="四种工具分别解决什么">四种工具分别解决什么</h2>
+<p>想象整理一座资料室：</p>
+<ul>
+<li><strong>二分查找</strong>：书架已经按编号排序，每次查看中间位置，排除一半范围。</li>
+<li><strong>Top K</strong>：传送带持续送来物品，只保留当前最值得关注的 <code>K</code> 件。</li>
+<li><strong>并查集</strong>：不断把小组连接起来，并快速判断两个人是否已在同一组。</li>
+<li><strong>动态规划</strong>：把复杂任务拆成重复子任务，保存已经算过的答案再组合。</li>
+</ul>
+<p>它们并不是同一类算法，而是四种常见问题模型：</p>
+<pre><code class="language-text">有序范围定位 -&gt; 二分查找
+海量候选保留少量极值 -&gt; Top K
+动态合并与连通判断 -&gt; 并查集
+重叠子问题与最优子结构 -&gt; 动态规划</code></pre>
+<h2 id="二分查找-每次排除一半范围">二分查找：每次排除一半范围</h2>
+<h3 id="为什么需要二分查找">为什么需要二分查找</h3>
+<p>顺序查找从头逐个比较，最坏要检查 <code>n</code> 个元素。</p>
+<p>如果数据已经按与查询规则一致的顺序排列，就可以比较中间元素：</p>
+<pre><code class="language-text">目标更小 -&gt; 只保留左半边
+目标更大 -&gt; 只保留右半边
+目标相等 -&gt; 找到</code></pre>
+<p>每一步都把候选范围缩小约一半，所以时间复杂度是 <code>O(log n)</code>。</p>
+<h3 id="逐步过程">逐步过程</h3>
+<p>教学示例数组：</p>
+<pre><code class="language-text">[2, 5, 8, 12, 16, 23, 38]</code></pre>
+<p>查找教学示例目标 <code>16</code>：</p>
+<table><thead><tr>
+<th>步骤</th>
+<th>左边界</th>
+<th>右边界</th>
+<th>中间值</th>
+<th>处理</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>6</td>
+<td>12</td>
+<td>16 更大，左边界移到 4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>6</td>
+<td>23</td>
+<td>16 更小，右边界移到 4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+<td>4</td>
+<td>16</td>
+<td>找到索引 4</td>
+</tr>
+</tbody></table>
+<h3 id="c-最小示例">C# 最小示例</h3>
+<pre><code class="language-csharp">static int BinarySearch(int[] sortedValues, int target)
+{
+    int left = 0;
+    int right = sortedValues.Length - 1;
+
+    while (left &lt;= right)
+    {
+        // 这种写法避免直接计算 left + right 可能产生的溢出。
+        int middle = left + (right - left) / 2;
+        int value = sortedValues[middle];
+
+        if (value == target)
+        {
+            return middle;
+        }
+
+        if (value &lt; target)
+        {
+            left = middle + 1;
+        }
+        else
+        {
+            right = middle - 1;
+        }
+    }
+
+    return -1;
+}
+
+int[] values = { 2, 5, 8, 12, 16, 23, 38 }; // 教学示例数据
+Console.WriteLine(BinarySearch(values, 16));   // 16 是教学示例目标</code></pre>
+<h3 id="边界与失败情况">边界与失败情况</h3>
+<ul>
+<li>输入未按比较规则排序时，结果不可信。</li>
+<li>有重复值时，普通二分只保证找到某一个匹配项，不保证第一个或最后一个。</li>
+<li><code>left &lt;= right</code>、边界移动和中点计算容易出现差一错误。</li>
+<li>空数组会直接结束循环并返回未找到。</li>
+<li>若排序使用一种比较规则、查找使用另一种规则，二分前提同样被破坏。</li>
+</ul>
+<p>若需要第一个“大于等于目标”的位置，可以把“满足条件的位置”作为答案，并在找到后继续向左收缩。这是二分答案边界，而不是简单的相等查找。</p>
+<h2 id="top-k-只维护当前最重要的-k-个候选">Top K：只维护当前最重要的 K 个候选</h2>
+<h3 id="为什么需要-top-k">为什么需要 Top K</h3>
+<p>若只需要最大的 <code>K</code> 个元素，把全部 <code>n</code> 个元素排序需要 <code>O(n log n)</code>。</p>
+<p>当 <code>K</code> 远小于 <code>n</code> 时，可以维护一个容量为 <code>K</code> 的<strong>最小堆</strong>：</p>
+<pre><code class="language-text">堆顶 = 当前 Top K 中最小的元素
+新元素不大于堆顶 -&gt; 不进入 Top K
+新元素大于堆顶 -&gt; 移除堆顶，再加入新元素</code></pre>
+<p>这样每次更新堆的成本为 <code>O(log K)</code>，总时间为 <code>O(n log K)</code>，额外空间为 <code>O(K)</code>。</p>
+<h3 id="逐步过程-2">逐步过程</h3>
+<p>教学示例数据：</p>
+<pre><code class="language-text">7, 2, 9, 4, 12, 6
+K = 3</code></pre>
+<table><thead><tr>
+<th>读入</th>
+<th>当前保留的三个最大值</th>
+</tr></thead><tbody>
+<tr>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2、7</td>
+</tr>
+<tr>
+<td>9</td>
+<td>2、7、9</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4、7、9</td>
+</tr>
+<tr>
+<td>12</td>
+<td>7、9、12</td>
+</tr>
+<tr>
+<td>6</td>
+<td>7、9、12</td>
+</tr>
+</tbody></table>
+<p>表格为了阅读按升序展示；堆内部只保证堆顶最小，不保证整体有序。</p>
+<h3 id="c-最小示例-2">C# 最小示例</h3>
+<pre><code class="language-csharp">static int[] LargestK(IEnumerable&lt;int&gt; source, int k)
+{
+    if (k &lt; 0)
+    {
+        throw new ArgumentOutOfRangeException(nameof(k));
+    }
+
+    var minHeap = new PriorityQueue&lt;int, int&gt;();
+
+    foreach (int value in source)
+    {
+        if (minHeap.Count &lt; k)
+        {
+            minHeap.Enqueue(value, value);
+            continue;
+        }
+
+        if (k &gt; 0 &amp;&amp; minHeap.TryPeek(out _, out int smallest) &amp;&amp; value &gt; smallest)
+        {
+            minHeap.Dequeue();
+            minHeap.Enqueue(value, value);
+        }
+    }
+
+    var result = new List&lt;int&gt;(minHeap.Count);
+    while (minHeap.TryDequeue(out int value, out _))
+    {
+        result.Add(value);
+    }
+
+    return result.ToArray();
+}
+
+int[] source = { 7, 2, 9, 4, 12, 6 }; // 教学示例数据
+Console.WriteLine(string.Join(&quot;, &quot;, LargestK(source, 3))); // 3 是教学示例 K</code></pre>
+<h3 id="边界与失败情况-2">边界与失败情况</h3>
+<ul>
+<li><code>K = 0</code> 时结果为空，这是示例函数明确支持的输入。</li>
+<li><code>K</code> 大于元素数量时，会返回全部元素。</li>
+<li>“最大”必须有稳定的比较规则；复合对象常需要显式比较键。</li>
+<li>相同值是否允许重复，属于结果契约。上例保留输入中的重复项。</li>
+<li>堆输出不是最终排名；需要有序结果时还要排序，增加 <code>O(K log K)</code> 成本。</li>
+<li>数据全部已在内存且 <code>K</code> 接近 <code>n</code> 时，完整排序可能更简单。</li>
+</ul>
+<h2 id="并查集-维护不断合并的分组">并查集：维护不断合并的分组</h2>
+<p>并查集也叫 Disjoint Set Union，简称 DSU。</p>
+<h3 id="为什么需要并查集">为什么需要并查集</h3>
+<p>如果连接关系会不断加入，并且经常要问：</p>
+<pre><code class="language-text">x 和 y 是否已经连通？
+把 x 所在组与 y 所在组合并。</code></pre>
+<p>每次都重新遍历整张图会重复大量工作。并查集为每个集合维护一个代表节点，也叫根。</p>
+<p>核心操作：</p>
+<pre><code class="language-text">Find(x)：找到 x 所属集合的根。
+Union(a, b)：把两个集合合并。</code></pre>
+<h3 id="树形表示">树形表示</h3>
+<p>教学示例初始状态：</p>
+<pre><code class="language-text">0   1   2   3   4</code></pre>
+<p>执行：</p>
+<pre><code class="language-text">Union(0, 1)
+Union(1, 2)
+Union(3, 4)</code></pre>
+<p>形成两个集合：</p>
+<pre><code class="language-text">{0, 1, 2}
+{3, 4}</code></pre>
+<p>此时：</p>
+<pre><code class="language-text">Find(0) == Find(2)  -&gt; 连通
+Find(0) != Find(4)  -&gt; 不连通</code></pre>
+<h3 id="路径压缩与按大小合并">路径压缩与按大小合并</h3>
+<p>若父节点链很长，<code>Find</code> 会变慢。</p>
+<p>路径压缩在查找根后，让沿途节点直接指向根。按大小合并则把较小的树接到较大的树下，避免树快速变高。</p>
+<p>两种优化一起使用时，一系列操作的均摊时间接近常数，严格表示为 <code>O(α(n))</code>；<code>α</code> 是反阿克曼函数，在常见有限规模下增长极慢。</p>
+<h3 id="c-最小示例-3">C# 最小示例</h3>
+<pre><code class="language-csharp">public sealed class DisjointSet
+{
+    private readonly int[] _parent;
+    private readonly int[] _size;
+
+    public DisjointSet(int count)
+    {
+        if (count &lt; 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        _parent = new int[count];
+        _size = new int[count];
+
+        for (int i = 0; i &lt; count; i++)
+        {
+            _parent[i] = i;
+            _size[i] = 1;
+        }
+    }
+
+    public int Find(int value)
+    {
+        if (_parent[value] != value)
+        {
+            // 路径压缩：让当前节点直接连接到根。
+            _parent[value] = Find(_parent[value]);
+        }
+
+        return _parent[value];
+    }
+
+    public bool Union(int left, int right)
+    {
+        int leftRoot = Find(left);
+        int rightRoot = Find(right);
+
+        if (leftRoot == rightRoot)
+        {
+            return false;
+        }
+
+        // 始终把较小的树连接到较大的树。
+        if (_size[leftRoot] &lt; _size[rightRoot])
+        {
+            (leftRoot, rightRoot) = (rightRoot, leftRoot);
+        }
+
+        _parent[rightRoot] = leftRoot;
+        _size[leftRoot] += _size[rightRoot];
+        return true;
+    }
+
+    public bool Connected(int left, int right)
+    {
+        return Find(left) == Find(right);
+    }
+}
+
+var groups = new DisjointSet(5); // 5 是教学示例元素数量
+groups.Union(0, 1);
+groups.Union(1, 2);
+Console.WriteLine(groups.Connected(0, 2)); // 输出 True</code></pre>
+<h3 id="边界与失败情况-3">边界与失败情况</h3>
+<ul>
+<li>上例使用连续整数索引，越界会暴露为异常；其他标识需要先建立映射。</li>
+<li>并查集擅长“合并”，不擅长删除连接或把集合拆开。</li>
+<li>它能判断是否同组，但不会直接给出两个节点之间的具体路径。</li>
+<li>路径压缩会改变内部父子结构，因此不能把父数组误当成原始连接关系。</li>
+<li>若操作包含动态删除，应重新审视问题模型，而不是给并查集添加未经证明的修补逻辑。</li>
+</ul>
+<h2 id="动态规划-保存重复子问题的答案">动态规划：保存重复子问题的答案</h2>
+<h3 id="为什么需要动态规划">为什么需要动态规划</h3>
+<p>有些问题可以拆成更小问题，但不同分支会反复计算相同子问题。</p>
+<p>以教学示例阶梯为例：</p>
+<pre><code class="language-text">每次允许走 1 级或 2 级。
+到第 i 级的走法数 =
+到第 i - 1 级的走法数 +
+到第 i - 2 级的走法数。</code></pre>
+<p>直接递归会形成大量重复计算。动态规划把子问题答案保存下来，使每个状态只计算一次。</p>
+<p>适合动态规划的问题通常同时具有：</p>
+<ul>
+<li><strong>重叠子问题</strong>：不同路径反复需要同一状态的答案。</li>
+<li><strong>最优子结构或可组合结构</strong>：大问题答案可以由小问题答案推导。</li>
+</ul>
+<h3 id="五个设计步骤">五个设计步骤</h3>
+<pre><code class="language-text">1. 定义状态：dp[i] 表示什么？
+2. 写转移：当前状态怎样由更小状态得到？
+3. 定初值：最小状态的答案是什么？
+4. 定顺序：计算当前状态前，依赖是否已算出？
+5. 取结果：最终需要哪个状态？</code></pre>
+<h3 id="逐步过程-3">逐步过程</h3>
+<p>教学示例定义：</p>
+<pre><code class="language-text">dp[i] = 到达第 i 级的走法数
+dp[0] = 1
+dp[1] = 1
+dp[i] = dp[i - 1] + dp[i - 2]</code></pre>
+<p>计算教学示例 <code>4</code> 级：</p>
+<table><thead><tr>
+<th>i</th>
+<th>推导</th>
+<th>dp[i]</th>
+</tr></thead><tbody>
+<tr>
+<td>0</td>
+<td>初值</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>初值</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 + 1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2 + 1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3 + 2</td>
+<td>5</td>
+</tr>
+</tbody></table>
+<h3 id="c-最小示例-4">C# 最小示例</h3>
+<pre><code class="language-csharp">static long CountWays(int steps)
+{
+    if (steps &lt; 0)
+    {
+        throw new ArgumentOutOfRangeException(nameof(steps));
+    }
+
+    if (steps &lt;= 1)
+    {
+        return 1;
+    }
+
+    long twoStepsBack = 1;
+    long oneStepBack = 1;
+
+    for (int current = 2; current &lt;= steps; current++)
+    {
+        // checked 让示例在结果超出 long 范围时显式失败。
+        long ways = checked(oneStepBack + twoStepsBack);
+        twoStepsBack = oneStepBack;
+        oneStepBack = ways;
+    }
+
+    return oneStepBack;
+}
+
+Console.WriteLine(CountWays(4)); // 4 是教学示例级数，输出 5</code></pre>
+<p>这里没有保存整个 <code>dp</code> 数组，因为当前状态只依赖前两个状态。空间由 <code>O(n)</code> 优化为 <code>O(1)</code>。</p>
+<h3 id="记忆化搜索与递推">记忆化搜索与递推</h3>
+<p>动态规划常见两种写法：</p>
+<pre><code class="language-text">自顶向下：递归求解，使用缓存避免重复计算。
+自底向上：从初始状态开始，按依赖顺序递推。</code></pre>
+<p>自顶向下只计算实际访问到的状态，表达接近问题定义；但要承担递归调用和栈深度代价。</p>
+<p>自底向上没有递归深度问题，状态顺序通常更直观；但可能计算最终答案并不需要的状态。</p>
+<h3 id="边界与失败情况-4">边界与失败情况</h3>
+<ul>
+<li>状态定义含糊时，转移公式即使能运行也可能回答了另一个问题。</li>
+<li>初始状态遗漏会让后续所有结果偏移。</li>
+<li>状态间存在循环依赖时，简单递推顺序不成立。</li>
+<li>不是所有递归都适合动态规划；若子问题不重叠，缓存可能只增加空间。</li>
+<li>计数或代价可能溢出，需要依据输入范围选择数值类型和溢出策略。</li>
+<li>局部最优选择不等于动态规划。能否由子问题组合出正确答案，需要证明，而不是凭直觉套公式。</li>
+</ul>
+<h2 id="四种工具的复杂度">四种工具的复杂度</h2>
+<table><thead><tr>
+<th>工具</th>
+<th>典型时间复杂度</th>
+<th>额外空间</th>
+<th>关键前提</th>
+</tr></thead><tbody>
+<tr>
+<td>二分查找</td>
+<td><code>O(log n)</code></td>
+<td>迭代写法 <code>O(1)</code></td>
+<td>数据按同一比较规则有序</td>
+</tr>
+<tr>
+<td>最小堆求最大 Top K</td>
+<td><code>O(n log K)</code></td>
+<td><code>O(K)</code></td>
+<td>只需保留 K 个极值</td>
+</tr>
+<tr>
+<td>并查集合并/查询</td>
+<td>均摊 <code>O(α(n))</code></td>
+<td><code>O(n)</code></td>
+<td>主要操作是合并和连通判断</td>
+</tr>
+<tr>
+<td>一维动态规划示例</td>
+<td><code>O(n)</code></td>
+<td>可优化到 <code>O(1)</code></td>
+<td>状态只依赖前两个状态</td>
+</tr>
+</tbody></table>
+<p>复杂度只是选择的一部分。输入是否有序、是否流式到达、连接能否删除、状态转移是否成立，才是算法能否正确使用的前提。</p>
+<h2 id="小结">小结</h2>
+<pre><code class="language-text">二分查找用有序性换取每次排除一半。
+Top K 用小容量堆避免对全部候选完整排序。
+并查集用代表节点维护不断合并的集合。
+动态规划用状态复用消除重复子问题。</code></pre>
+<p>遇到新问题时，可以依次问：</p>
+<ol>
+<li>数据是否已经有序，或答案是否具有单调边界？</li>
+<li>是否只关心少量最大或最小候选？</li>
+<li>是否反复进行集合合并和连通查询？</li>
+<li>大问题是否由重复的小问题组合而成？</li>
+</ol>
+<p>问题结构与其中一个模型吻合时，再引入对应工具；不要先看到算法名称，再勉强把问题塞进去。</p>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/"><small>← PREVIOUS</small>启发式决策模型：怪物集群候选打分</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%9B%BE%E9%81%8D%E5%8E%86%E4%B8%8E%E6%9C%80%E7%9F%AD%E8%B7%AF-BFS-DFS-Dijkstra/"><small>NEXT →</small>图遍历与最短路：BFS、DFS、Dijkstra</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>

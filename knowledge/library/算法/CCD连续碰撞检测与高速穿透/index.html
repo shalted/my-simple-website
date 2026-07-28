@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="普通离散碰撞检测只检查若干离散时刻的形状关系。">
+  <title>CCD：连续碰撞检测与高速穿透 · XIANYUWO</title>
+  <link rel="stylesheet" href="/assets/interactive-lab.css">
+  <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/knowledge.css">
+  <script src="/assets/knowledge.js" defer></script>
+</head>
+<body>
+
+  <header class="knowledge-header">
+    <nav class="knowledge-nav knowledge-shell" aria-label="主导航">
+      <a class="knowledge-brand" href="/">
+        <span class="knowledge-brand-mark">X</span>
+        <span>XIANYUWO / DEV LAB</span>
+      </a>
+      <div class="knowledge-nav-links">
+        <a href="/#lab">交互实验</a>
+        <a href="/knowledge/library/">知识库</a>
+        <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="article-hero knowledge-shell">
+      <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
+      <h1>CCD：连续碰撞检测与高速穿透</h1>
+      <p class="hero-copy">普通离散碰撞检测只检查若干离散时刻的形状关系。</p>
+    </section>
+    <div class="article-layout knowledge-shell">
+      <nav class="toc" aria-label="文章目录">
+    <strong>CONTENTS</strong>
+    <a data-toc-link href="#高速物体为什么会穿透">高速物体为什么会穿透</a>
+    <a data-toc-link href="#离散检测的事实链">离散检测的事实链</a>
+    <a data-toc-link href="#ccd-的核心-扫掠运动区间">CCD 的核心：扫掠运动区间</a>
+    <a data-toc-link href="#toi-首次碰撞时间">TOI：首次碰撞时间</a>
+    <a data-toc-link href="#教学示例-一维点对区间扫掠">教学示例：一维点对区间扫掠</a>
+    <a class="sub" data-toc-link href="#逐步状态">逐步状态</a>
+    <a data-toc-link href="#扫掠-aabb-的进入与离开时间">扫掠 AABB 的进入与离开时间</a>
+    <a class="sub" data-toc-link href="#最小-c-示例">最小 C# 示例</a>
+    <a data-toc-link href="#形状扫掠">形状扫掠</a>
+    <a data-toc-link href="#保守推进的直觉">保守推进的直觉</a>
+    <a class="sub" data-toc-link href="#可交互的迭代状态">可交互的迭代状态</a>
+    <a data-toc-link href="#broad-phase-也要覆盖运动区间">Broad Phase 也要覆盖运动区间</a>
+    <a data-toc-link href="#找到-toi-之后发生什么">找到 TOI 之后发生什么</a>
+    <a data-toc-link href="#适用边界">适用边界</a>
+    <a data-toc-link href="#常见替代与补充方法">常见替代与补充方法</a>
+    <a class="sub" data-toc-link href="#减小时间步">减小时间步</a>
+    <a class="sub" data-toc-link href="#射线或形状查询">射线或形状查询</a>
+    <a class="sub" data-toc-link href="#限制位移">限制位移</a>
+    <a class="sub" data-toc-link href="#膨胀目标形状">膨胀目标形状</a>
+    <a data-toc-link href="#正常-边界与失败情况">正常、边界与失败情况</a>
+    <a class="sub" data-toc-link href="#正常情况">正常情况</a>
+    <a class="sub" data-toc-link href="#边界情况">边界情况</a>
+    <a class="sub" data-toc-link href="#失败情况">失败情况</a>
+    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+    <a data-toc-link href="#最重要的收获">最重要的收获</a>
+  </nav>
+      <article class="article-body" id="article-start">
+
+
+    <section class="dynamic-deck" data-dynamic-deck data-interactive-lab>
+      <header class="deck-header">
+        <div>
+          <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
+          <h2>把章节变成可单步观察的过程</h2>
+        </div>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
+      </header>
+      <div class="deck-stage">
+        <nav class="deck-nav" aria-label="动态讲解步骤">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：高速物体为什么会穿透">
+      <span>01</span>
+      <strong>高速物体为什么会穿透</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：离散检测的事实链">
+      <span>02</span>
+      <strong>离散检测的事实链</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：CCD 的核心：扫掠运动区间">
+      <span>03</span>
+      <strong>CCD 的核心：扫掠运动区间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：TOI：首次碰撞时间">
+      <span>04</span>
+      <strong>TOI：首次碰撞时间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：教学示例：一维点对区间扫掠">
+      <span>05</span>
+      <strong>教学示例：一维点对区间扫掠</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：扫掠 AABB 的进入与离开时间">
+      <span>06</span>
+      <strong>扫掠 AABB 的进入与离开时间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：形状扫掠">
+      <span>07</span>
+      <strong>形状扫掠</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：保守推进的直觉">
+      <span>08</span>
+      <strong>保守推进的直觉</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：Broad Phase 也要覆盖运动区间">
+      <span>09</span>
+      <strong>Broad Phase 也要覆盖运动区间</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：找到 TOI 之后发生什么">
+      <span>10</span>
+      <strong>找到 TOI 之后发生什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：适用边界">
+      <span>11</span>
+      <strong>适用边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：常见替代与补充方法">
+      <span>12</span>
+      <strong>常见替代与补充方法</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常、边界与失败情况">
+      <span>13</span>
+      <strong>正常、边界与失败情况</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：复杂度与代价">
+      <span>14</span>
+      <strong>复杂度与代价</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最重要的收获">
+      <span>15</span>
+      <strong>最重要的收获</strong>
+    </button></nav>
+        <div class="deck-slides">
+      <article class="deck-slide active" data-deck-slide="0">
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>高速物体为什么会穿透</h3>
+        <p>普通离散碰撞检测只检查若干离散时刻的形状关系。</p>
+
+        <pre><code class="language-text">t0                墙                t1
+[物体]             |                 [物体]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>离散检测的事实链</h3>
+        <p>离散检测的典型链条是：</p>
+
+        <pre><code class="language-text">取得当前时刻的形状
+    ↓
+Broad Phase 筛候选
+    ↓
+Narrow Phase 判断当前是否重叠
+    ↓
+若重叠，生成接触并求解</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>CCD 的核心：扫掠运动区间</h3>
+        <p>CCD 不只看起点形状和终点形状，而是考虑形状在时间区间内扫过的空间。</p>
+
+        <pre><code class="language-text">起始形状  ===== 扫掠区域 =====&gt;  结束形状</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>TOI：首次碰撞时间</h3>
+        <p>TOI 是 Time of Impact，即给定时间区间内的首次碰撞时刻。</p>
+
+        <pre><code class="language-text">t ∈ [0, 1]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>教学示例：一维点对区间扫掠</h3>
+        <p>先看最简单的一维问题。</p>
+
+        <pre><code class="language-text">[wallMin, wallMax]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+        <h3>扫掠 AABB 的进入与离开时间</h3>
+        <p>对轴对齐包围盒，可以在每个坐标轴上计算运动盒与静止盒投影区间的进入时间和离开时间。</p>
+
+        <pre><code class="language-text">x 轴得到 [xEntry, xExit]
+y 轴得到 [yEntry, yExit]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>形状扫掠</h3>
+        <p>不同形状的连续检测难度不同。</p>
+
+        <pre><code class="language-text">点或射线对平面、球、盒。
+球体扫掠其他形状。
+胶囊体扫掠场景几何。
+凸形状相对运动下的首次接触。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>保守推进的直觉</h3>
+        <p>保守推进不直接猜最终 TOI，而是反复执行：</p>
+
+        <pre><code class="language-text">1. 计算当前时刻两个形状的距离。
+2. 根据接近速度估算一个不会跨过首次接触的时间增量。
+3. 向前推进这个增量。
+4. 距离足够小则报告接触；否则继续。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>Broad Phase 也要覆盖运动区间</h3>
+        <p>即使 Narrow Phase 支持 TOI，如果 Broad Phase 只使用物体在起点的包围盒，也可能根本筛不到路径中间的障碍。</p>
+
+        <pre><code class="language-text">起点包围盒与终点包围盒的并集。
+能够包住扫掠轨迹的扩展包围体。
+根据速度扩张的代理范围。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>找到 TOI 之后发生什么</h3>
+        <p>检测到首次接触只是开始。</p>
+
+        <pre><code class="language-text">推进到最早 TOI
+    ↓
+建立接触约束
+    ↓
+求解速度或位置响应
+    ↓
+处理剩余时间
+    ↓
+剩余运动中可能再次发生碰撞</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>适用边界</h3>
+        <p>CCD 更值得用于：</p>
+
+        <pre><code class="language-text">单步位移相对自身尺寸或障碍厚度较大的物体。
+漏检会造成明显错误的关键物体。
+快速运动且碰撞形状适合系统连续检测能力的对象。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+        <h3>常见替代与补充方法</h3>
+        <p>更密集的离散采样能降低穿透概率，但会增加模拟成本，而且不构成对任意薄障碍的绝对保证。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>正常、边界与失败情况</h3>
+        <p>擦边是否算接触、初始重叠如何分类，都需要一致的容差和接触规则。</p>
+
+        <pre><code class="language-text">运动模型满足算法假设。
+Broad Phase 找到覆盖运动区间的候选。
+TOI 位于当前时间步内。
+推进到 TOI 后生成有效接触。
+剩余时间得到继续处理。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>复杂度与代价</h3>
+        <p>CCD 没有一个适用于所有形状的统一复杂度。</p>
+
+        <pre><code class="language-text">运动包围体带来的 Broad Phase 候选数量。
+每个候选对的形状扫掠或距离查询成本。
+迭代求 TOI 的次数。
+碰撞后处理剩余时间产生的额外子步。
+多个连续碰撞之间的求解成本。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>最重要的收获</h3>
+
+
+        <pre><code class="language-text">离散检测只看采样时刻，因此可能漏掉两帧之间的接触。
+CCD 检查运动区间，并尝试求首次碰撞时间 TOI。
+扫掠检测既需要 Narrow Phase 求接触，也需要 Broad Phase 覆盖整段运动。
+找到 TOI 不等于完成响应，还要处理接触和剩余时间。
+形状、旋转、初始重叠与迭代预算决定 CCD 的适用边界。
+CCD 应按运动尺度、漏检后果和性能预算选择，而不是无条件全开。
+不支持或未收敛必须作为失败暴露，不能伪装成没有碰撞。</code></pre>
+      </article></div>
+      </div>
+      <footer class="deck-controls">
+        <button type="button" data-deck-prev data-lab-control>← 上一步</button>
+        <button class="deck-play" type="button" data-deck-play data-lab-control aria-pressed="false">自动播放</button>
+        <button type="button" data-deck-next data-lab-control>下一步 →</button>
+        <div class="deck-progress" aria-hidden="true"><i data-deck-progress></i></div>
+        <div data-deck-runtime-dots hidden></div>
+      </footer>
+    </section>
+        <p>分类：算法</p>
+<h2 id="高速物体为什么会穿透">高速物体为什么会穿透</h2>
+<p>普通离散碰撞检测只检查若干离散时刻的形状关系。</p>
+<p>假设一个物体在当前帧位于墙左侧，下一帧已经到了墙右侧：</p>
+<pre><code class="language-text">t0                墙                t1
+[物体]             |                 [物体]</code></pre>
+<p>如果只检测 <code>t0</code> 和 <code>t1</code>：</p>
+<pre><code class="language-text">t0 没有重叠。
+t1 也没有重叠。</code></pre>
+<p>算法就可能看不到物体在两帧之间穿过墙的事实。这称为高速穿透或隧道效应。</p>
+<p>问题的根源不是“速度超过某个固定值”，而是：</p>
+<pre><code class="language-text">采样间隔内的位移，相对于参与碰撞的几何尺度过大。</code></pre>
+<p>因此同一个速度对厚墙可能安全，对薄墙却可能穿透；时间步改变后，结果也可能改变。</p>
+<h2 id="离散检测的事实链">离散检测的事实链</h2>
+<p>离散检测的典型链条是：</p>
+<pre><code class="language-text">取得当前时刻的形状
+    ↓
+Broad Phase 筛候选
+    ↓
+Narrow Phase 判断当前是否重叠
+    ↓
+若重叠，生成接触并求解</code></pre>
+<p>它擅长回答：</p>
+<pre><code class="language-text">此刻两个形状是否相交？</code></pre>
+<p>但高速运动需要回答：</p>
+<pre><code class="language-text">从上一状态运动到当前状态的整个时间区间里，是否曾经接触？
+最早接触发生在什么时候？</code></pre>
+<p>这正是连续碰撞检测关注的问题。</p>
+<h2 id="ccd-的核心-扫掠运动区间">CCD 的核心：扫掠运动区间</h2>
+<p>CCD 不只看起点形状和终点形状，而是考虑形状在时间区间内扫过的空间。</p>
+<pre><code class="language-text">起始形状  ===== 扫掠区域 =====&gt;  结束形状</code></pre>
+<p>对于简单形状，可以把问题表述成：</p>
+<pre><code class="language-text">运动形状沿位移向量扫过静止形状时，是否发生首次接触？</code></pre>
+<p>如果两个物体都在移动，可以使用相对运动：</p>
+<pre><code class="language-text">相对速度 = 物体 A 的速度 - 物体 B 的速度</code></pre>
+<p>然后把 B 视为静止，分析 A 相对 B 的运动。这个变换简化的是数学表达，不意味着实际系统只更新一个物体。</p>
+<h2 id="toi-首次碰撞时间">TOI：首次碰撞时间</h2>
+<p>TOI 是 Time of Impact，即给定时间区间内的首次碰撞时刻。</p>
+<p>常把一帧时间归一化为：</p>
+<pre><code class="language-text">t ∈ [0, 1]</code></pre>
+<p>其中：</p>
+<pre><code class="language-text">t = 0：本时间步开始。
+t = 1：本时间步结束。
+0 &lt; t &lt; 1：时间步内部。</code></pre>
+<p>如果求得：</p>
+<pre><code class="language-text">TOI = 0.35</code></pre>
+<p>这里的 <code>0.35</code> 是<strong>教学示例</strong>，表示首次接触发生在本时间步进度的 35%，不是固定引擎参数。</p>
+<p>系统可以先推进到 TOI，生成接触，再处理剩余时间。如何求解接触后的反弹、滑动或停止属于碰撞响应，不是 CCD 检测本身自动决定的。</p>
+<h2 id="教学示例-一维点对区间扫掠">教学示例：一维点对区间扫掠</h2>
+<p>先看最简单的一维问题。</p>
+<p>静止障碍占据区间：</p>
+<pre><code class="language-text">[wallMin, wallMax]</code></pre>
+<p>运动点的位置为：</p>
+<pre><code class="language-text">p(t) = start + velocity * t</code></pre>
+<p>求点进入区间的最早时间，就是解：</p>
+<pre><code class="language-text">wallMin ≤ start + velocity * t ≤ wallMax</code></pre>
+<h3 id="逐步状态">逐步状态</h3>
+<p>以下位置与速度都是<strong>教学示例</strong>：</p>
+<pre><code class="language-text">运动点起点：0
+本时间步位移：10
+墙区间：[4, 5]</code></pre>
+<p>可视化状态：</p>
+<table><thead><tr>
+<th>状态</th>
+<th>t</th>
+<th>点的位置</th>
+<th>结果</th>
+</tr></thead><tbody>
+<tr>
+<td>起点采样</td>
+<td>0</td>
+<td>0</td>
+<td>未重叠</td>
+</tr>
+<tr>
+<td>首次进入</td>
+<td>0.4</td>
+<td>4</td>
+<td>接触</td>
+</tr>
+<tr>
+<td>离开区间</td>
+<td>0.5</td>
+<td>5</td>
+<td>即将离开</td>
+</tr>
+<tr>
+<td>终点采样</td>
+<td>1</td>
+<td>10</td>
+<td>未重叠</td>
+</tr>
+</tbody></table>
+<p>只看两端会得到两次“未重叠”，而扫掠检测能找到 <code>t = 0.4</code> 的首次接触。</p>
+<p>交互演示可以允许拖动：</p>
+<pre><code class="language-text">起点。
+终点。
+墙的左右边界。
+时间滑块。</code></pre>
+<p>并同时显示：</p>
+<pre><code class="language-text">离散采样结果。
+扫掠区间。
+进入时间与离开时间。
+最终 TOI。</code></pre>
+<h2 id="扫掠-aabb-的进入与离开时间">扫掠 AABB 的进入与离开时间</h2>
+<p>对轴对齐包围盒，可以在每个坐标轴上计算运动盒与静止盒投影区间的进入时间和离开时间。</p>
+<p>二维情况下：</p>
+<pre><code class="language-text">x 轴得到 [xEntry, xExit]
+y 轴得到 [yEntry, yExit]</code></pre>
+<p>整体首次进入和最终离开为：</p>
+<pre><code class="language-text">entryTime = max(xEntry, yEntry)
+exitTime  = min(xExit, yExit)</code></pre>
+<p>若时间区间有有效重叠，才说明扫掠过程中发生接触。</p>
+<h3 id="最小-c-示例">最小 C# 示例</h3>
+<p>下面代码只演示“一维运动点进入静止区间”的核心计算，不是完整物理引擎：</p>
+<pre><code class="language-csharp">public static bool TryGetEntryTime(
+    float start,
+    float displacement,
+    float intervalMin,
+    float intervalMax,
+    out float toi)
+{
+    // 起点已经在区间内：本时间步开始时就处于接触/重叠状态。
+    if (start &gt;= intervalMin &amp;&amp; start &lt;= intervalMax)
+    {
+        toi = 0f;
+        return true;
+    }
+
+    // 没有相对位移时，不可能从区间外进入。
+    if (displacement == 0f)
+    {
+        toi = 0f;
+        return false;
+    }
+
+    float t0 = (intervalMin - start) / displacement;
+    float t1 = (intervalMax - start) / displacement;
+
+    float entry = MathF.Min(t0, t1);
+    float exit = MathF.Max(t0, t1);
+
+    bool overlapsStep = entry &lt;= 1f &amp;&amp; exit &gt;= 0f;
+    toi = entry;
+    return overlapsStep;
+}</code></pre>
+<p>完整实现还要明确：</p>
+<pre><code class="language-text">浮点容差。
+端点接触是否算碰撞。
+初始重叠如何处理。
+多个坐标轴的时间区间求交。
+碰撞法线如何确定。
+多个候选碰撞体如何选最早 TOI。</code></pre>
+<p>这些规则不能从这个最小示例直接外推。</p>
+<h2 id="形状扫掠">形状扫掠</h2>
+<p>不同形状的连续检测难度不同。</p>
+<p>常见问题包括：</p>
+<pre><code class="language-text">点或射线对平面、球、盒。
+球体扫掠其他形状。
+胶囊体扫掠场景几何。
+凸形状相对运动下的首次接触。</code></pre>
+<p>对于只做平移的简单形状，可能存在直接解析解。</p>
+<p>对于更一般的凸形状，可以基于形状距离、Minkowski 差、保守推进等方法迭代逼近 TOI。旋转会让问题进一步复杂，因为接触特征和扫掠区域都随时间变化。</p>
+<p>因此“开启 CCD”不等于所有形状、所有旋转和所有复合碰撞体都获得同样的连续保证。支持范围必须查具体系统的文档。</p>
+<h2 id="保守推进的直觉">保守推进的直觉</h2>
+<p>保守推进不直接猜最终 TOI，而是反复执行：</p>
+<pre><code class="language-text">1. 计算当前时刻两个形状的距离。
+2. 根据接近速度估算一个不会跨过首次接触的时间增量。
+3. 向前推进这个增量。
+4. 距离足够小则报告接触；否则继续。</code></pre>
+<p>“保守”意味着尽量避免一步跨过碰撞时刻。</p>
+<h3 id="可交互的迭代状态">可交互的迭代状态</h3>
+<p>演示面板可以显示：</p>
+<table><thead><tr>
+<th>迭代</th>
+<th>当前 t</th>
+<th>形状距离</th>
+<th>沿分离方向的接近速度</th>
+<th>下一时间增量</th>
+</tr></thead><tbody>
+<tr>
+<td>0</td>
+<td>起始</td>
+<td>当前距离</td>
+<td>当前估计</td>
+<td>计算结果</td>
+</tr>
+<tr>
+<td>1</td>
+<td>更新后</td>
+<td>新距离</td>
+<td>新估计</td>
+<td>计算结果</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p>表中不应预设通用固定阈值。收敛容差和最大迭代次数属于具体实现的精度与成本策略。</p>
+<p>还可以切换失败原因：</p>
+<pre><code class="language-text">相对运动正在分离。
+接近速度过小。
+达到迭代预算仍未收敛。
+运动或旋转模型超出算法假设。</code></pre>
+<h2 id="broad-phase-也要覆盖运动区间">Broad Phase 也要覆盖运动区间</h2>
+<p>即使 Narrow Phase 支持 TOI，如果 Broad Phase 只使用物体在起点的包围盒，也可能根本筛不到路径中间的障碍。</p>
+<p>连续检测的候选范围常需要覆盖整个运动区间，例如：</p>
+<pre><code class="language-text">起点包围盒与终点包围盒的并集。
+能够包住扫掠轨迹的扩展包围体。
+根据速度扩张的代理范围。</code></pre>
+<p>这种包围通常更宽，会产生更多候选对。因此 CCD 的成本不仅来自精确 TOI 计算，也来自 Broad Phase 候选增多。</p>
+<h2 id="找到-toi-之后发生什么">找到 TOI 之后发生什么</h2>
+<p>检测到首次接触只是开始。</p>
+<p>一个时间步可能变成：</p>
+<pre><code class="language-text">推进到最早 TOI
+    ↓
+建立接触约束
+    ↓
+求解速度或位置响应
+    ↓
+处理剩余时间
+    ↓
+剩余运动中可能再次发生碰撞</code></pre>
+<p>多个物体几乎同时接触时，处理顺序、求解器迭代和数值容差都会影响结果。</p>
+<p>CCD 不能单独保证：</p>
+<pre><code class="language-text">完全没有抖动。
+堆叠永远稳定。
+碰撞响应符合玩法预期。
+不会出现初始重叠。
+任意复杂运动都得到精确解析解。</code></pre>
+<p>它主要降低“在两个离散采样之间漏掉首次接触”的风险。</p>
+<h2 id="适用边界">适用边界</h2>
+<p>CCD 更值得用于：</p>
+<pre><code class="language-text">单步位移相对自身尺寸或障碍厚度较大的物体。
+漏检会造成明显错误的关键物体。
+快速运动且碰撞形状适合系统连续检测能力的对象。</code></pre>
+<p>离散检测可能已经足够：</p>
+<pre><code class="language-text">物体移动缓慢，单步位移远小于相关几何尺度。
+碰撞结果不要求时间步内的首次接触精度。
+对象数量很大，而全部启用连续检测的成本不可接受。</code></pre>
+<p>选择依据应是运动尺度、几何尺度、失败后果和性能预算，不应仅凭“某类对象通常很快”就统一开启。</p>
+<h2 id="常见替代与补充方法">常见替代与补充方法</h2>
+<h3 id="减小时间步">减小时间步</h3>
+<p>更密集的离散采样能降低穿透概率，但会增加模拟成本，而且不构成对任意薄障碍的绝对保证。</p>
+<h3 id="射线或形状查询">射线或形状查询</h3>
+<p>对于逻辑上只关心“沿这一段是否命中”的对象，可以对位移做射线或形状查询。</p>
+<p>但查询结果如何与物理状态、旋转、尺寸和多次碰撞结合，需要单独设计。射线也不能自动代表有体积物体的完整扫掠。</p>
+<h3 id="限制位移">限制位移</h3>
+<p>限制单步运动距离可以控制离散误差，但会改变运动行为。限制值是行为参数，必须来自明确设计，而不是由 CCD 概念自动给出。</p>
+<h3 id="膨胀目标形状">膨胀目标形状</h3>
+<p>点扫掠球体可转换为点相对“半径增加后的目标”进行检测，这是 Minkowski 和的常见直觉。</p>
+<p>它依赖具体形状关系，不能把任意复杂形状都简化成随意增加一个固定半径。</p>
+<h2 id="正常-边界与失败情况">正常、边界与失败情况</h2>
+<h3 id="正常情况">正常情况</h3>
+<pre><code class="language-text">运动模型满足算法假设。
+Broad Phase 找到覆盖运动区间的候选。
+TOI 位于当前时间步内。
+推进到 TOI 后生成有效接触。
+剩余时间得到继续处理。</code></pre>
+<h3 id="边界情况">边界情况</h3>
+<pre><code class="language-text">时间步开始时已经接触或重叠。
+轨迹刚好擦过形状边缘。
+相对速度为零。
+物体正在远离而不是接近。
+多个候选具有非常接近的 TOI。
+运动位移接近浮点精度可分辨范围。
+高速平移同时伴随明显旋转。</code></pre>
+<p>擦边是否算接触、初始重叠如何分类，都需要一致的容差和接触规则。</p>
+<h3 id="失败情况">失败情况</h3>
+<pre><code class="language-text">Broad Phase 没有覆盖扫掠区域，候选被漏掉。
+形状组合不受连续算法支持。
+迭代求 TOI 未在预算内收敛。
+只处理平移，却把高速旋转当作已被覆盖。
+找到 TOI 后没有正确处理剩余时间。
+碰撞响应再次把物体推到非法位置。</code></pre>
+<p>失败不应被伪装成“本帧没有碰撞”。调试信息至少应区分无碰撞、算法不支持和计算未收敛。</p>
+<h2 id="复杂度与代价">复杂度与代价</h2>
+<p>CCD 没有一个适用于所有形状的统一复杂度。</p>
+<p>成本可拆为：</p>
+<pre><code class="language-text">运动包围体带来的 Broad Phase 候选数量。
+每个候选对的形状扫掠或距离查询成本。
+迭代求 TOI 的次数。
+碰撞后处理剩余时间产生的额外子步。
+多个连续碰撞之间的求解成本。</code></pre>
+<p>若 Broad Phase 产生 <code>C</code> 个候选，每个候选平均进行 <code>I</code> 次迭代距离查询，单次形状距离查询成本记为 <code>D</code>，则仅用于理解成本构成的粗略表达是：</p>
+<pre><code class="language-text">O(C × I × D)</code></pre>
+<p>它不是所有 CCD 算法的严格统一复杂度。解析扫掠可能不需要迭代，而复杂凸形状的 <code>D</code> 也取决于形状表示和距离算法。</p>
+<p>常见权衡是：</p>
+<pre><code class="language-text">更保守的运动包围 → 更少漏候选，但更多误报。
+更小的收敛容差 → 更高时间精度，但可能需要更多迭代。
+更多子步 → 更完整地处理连续接触，但模拟成本上升。
+只对关键对象启用 → 控制成本，但必须明确哪些交互仍使用离散检测。</code></pre>
+<h2 id="最重要的收获">最重要的收获</h2>
+<pre><code class="language-text">离散检测只看采样时刻，因此可能漏掉两帧之间的接触。
+CCD 检查运动区间，并尝试求首次碰撞时间 TOI。
+扫掠检测既需要 Narrow Phase 求接触，也需要 Broad Phase 覆盖整段运动。
+找到 TOI 不等于完成响应，还要处理接触和剩余时间。
+形状、旋转、初始重叠与迭代预算决定 CCD 的适用边界。
+CCD 应按运动尺度、漏检后果和性能预算选择，而不是无条件全开。
+不支持或未收敛必须作为失败暴露，不能伪装成没有碰撞。</code></pre>
+        <nav class="article-pager" aria-label="上下篇">
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/A%E6%98%9F%E5%AF%BB%E8%B7%AF%E4%B8%AD%E7%9A%84G%E5%80%BC%E4%B8%8EParent%E5%9B%9E%E6%BA%AF/"><small>← PREVIOUS</small>A 星寻路中的 G 值与 Parent 回溯</a>
+          <a href="/knowledge/library/%E7%AE%97%E6%B3%95/GJK%E5%87%B8%E5%BD%A2%E7%8A%B6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/"><small>NEXT →</small>GJK：凸形状碰撞检测理解笔记</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="knowledge-footer">
+    <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
+  </footer>
+</body>
+</html>
