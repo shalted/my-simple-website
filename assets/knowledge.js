@@ -1,3 +1,20 @@
+const menuToggle = document.querySelector("[data-site-menu-toggle]");
+const siteMenu = document.querySelector("[data-site-menu]");
+if (menuToggle && siteMenu) {
+  const setMenuOpen = (open) => {
+    menuToggle.setAttribute("aria-expanded", String(open));
+    siteMenu.classList.toggle("is-open", open);
+  };
+  menuToggle.addEventListener("click", () => setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true"));
+  siteMenu.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLAnchorElement) setMenuOpen(false);
+  });
+}
+
+const articleToc = document.querySelector("[data-article-toc]");
+const compactNavigation = window.matchMedia("(max-width: 900px)");
+if (articleToc && compactNavigation.matches) articleToc.open = false;
+
 const tocLinks = [...document.querySelectorAll("[data-toc-link]")];
 if (tocLinks.length) {
   const observer = new IntersectionObserver((entries) => {
@@ -7,13 +24,31 @@ if (tocLinks.length) {
     });
   }, { rootMargin: "-18% 0px -68%", threshold: 0 });
   document.querySelectorAll(".article-body h2[id], .article-body h3[id]").forEach((heading) => observer.observe(heading));
+  tocLinks.forEach((link) => link.addEventListener("click", () => {
+    if (articleToc && compactNavigation.matches) articleToc.open = false;
+  }));
+}
+
+const progressTrack = document.querySelector("[data-reading-progress] i");
+const articleBody = document.querySelector(".article-body");
+if (progressTrack && articleBody) {
+  const updateReadingProgress = () => {
+    const bounds = articleBody.getBoundingClientRect();
+    const total = Math.max(1, articleBody.offsetHeight - window.innerHeight);
+    const completed = Math.min(total, Math.max(0, -bounds.top));
+    progressTrack.style.transform = `scaleX(${completed / total})`;
+  };
+  document.addEventListener("scroll", updateReadingProgress, { passive: true });
+  updateReadingProgress();
 }
 
 const searchInput = document.querySelector("#knowledge-search");
 const cards = [...document.querySelectorAll("[data-article-card]")];
+const groups = [...document.querySelectorAll("[data-article-group]")];
+const discoverySections = [...document.querySelectorAll("[data-library-discovery]")];
 const emptyState = document.querySelector("#search-empty");
 if (searchInput && cards.length) {
-  searchInput.addEventListener("input", () => {
+  const filterCards = () => {
     const query = searchInput.value.trim().toLocaleLowerCase("zh-CN");
     let visible = 0;
     cards.forEach((card) => {
@@ -21,8 +56,23 @@ if (searchInput && cards.length) {
       card.hidden = !match;
       if (match) visible += 1;
     });
+    groups.forEach((group) => {
+      const matches = [...group.querySelectorAll("[data-article-card]")].filter((card) => !card.hidden).length;
+      group.hidden = matches === 0;
+      if (query && matches > 0) group.open = true;
+    });
+    discoverySections.forEach((section) => { section.hidden = query.length > 0; });
     if (emptyState) emptyState.hidden = visible !== 0;
-  });
+  };
+  searchInput.addEventListener("input", filterCards);
+  const initialQuery = new URLSearchParams(window.location.search).get("q");
+  if (initialQuery) {
+    searchInput.value = initialQuery;
+    filterCards();
+    const allNotes = document.querySelector("#all-notes");
+    if (!(allNotes instanceof HTMLElement)) throw new Error("知识索引缺少全部笔记区域");
+    allNotes.scrollIntoView();
+  }
 }
 document.querySelectorAll("[data-dynamic-deck]").forEach((deck) => {
   const slides = [...deck.querySelectorAll("[data-deck-slide]")];

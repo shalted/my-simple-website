@@ -7,6 +7,7 @@
   <title>Steering、RVO、ORCA 与速度空间 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,61 +19,83 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模</a><span aria-current="page">Steering、RVO、ORCA 与速度空间</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a aria-current="page" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
       <h1>Steering、RVO、ORCA 与速度空间</h1>
       <p class="hero-copy">想象在人群中去车站：</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#从-想去哪-到-下一刻怎么动">从“想去哪”到“下一刻怎么动”</a>
-    <a data-toc-link href="#steering-先产生期望运动">Steering：先产生期望运动</a>
-    <a data-toc-link href="#arrive-接近目标时减速">Arrive：接近目标时减速</a>
-    <a data-toc-link href="#从位置空间切换到速度空间">从位置空间切换到速度空间</a>
-    <a data-toc-link href="#vo-速度障碍">VO：速度障碍</a>
-    <a data-toc-link href="#为什么只用-vo-可能来回摆动">为什么只用 VO 可能来回摆动</a>
-    <a data-toc-link href="#rvo-双方共同承担避让">RVO：双方共同承担避让</a>
-    <a data-toc-link href="#orca-把避障写成半平面约束">ORCA：把避障写成半平面约束</a>
-    <a data-toc-link href="#orca-一帧中的逐步流程">ORCA 一帧中的逐步流程</a>
-    <a class="sub" data-toc-link href="#第一步-生成期望速度">第一步：生成期望速度</a>
-    <a class="sub" data-toc-link href="#第二步-查询邻居">第二步：查询邻居</a>
-    <a class="sub" data-toc-link href="#第三步-构造每个邻居的速度约束">第三步：构造每个邻居的速度约束</a>
-    <a class="sub" data-toc-link href="#第四步-求可行速度">第四步：求可行速度</a>
-    <a class="sub" data-toc-link href="#第五步-交给运动执行层">第五步：交给运动执行层</a>
-    <a data-toc-link href="#速度空间中的一个直观例子">速度空间中的一个直观例子</a>
-    <a data-toc-link href="#最小-c-数据流示例">最小 C# 数据流示例</a>
-    <a data-toc-link href="#正常路径">正常路径</a>
-    <a class="sub" data-toc-link href="#没有邻居约束">没有邻居约束</a>
-    <a class="sub" data-toc-link href="#一个迎面邻居">一个迎面邻居</a>
-    <a class="sub" data-toc-link href="#多个邻居但仍有可行域">多个邻居但仍有可行域</a>
-    <a data-toc-link href="#边界路径">边界路径</a>
-    <a class="sub" data-toc-link href="#初始已经重叠">初始已经重叠</a>
-    <a class="sub" data-toc-link href="#完全对称的迎面或窄口场景">完全对称的迎面或窄口场景</a>
-    <a class="sub" data-toc-link href="#静态障碍与动态代理同时存在">静态障碍与动态代理同时存在</a>
-    <a class="sub" data-toc-link href="#加速度受限">加速度受限</a>
-    <a data-toc-link href="#失败路径">失败路径</a>
-    <a class="sub" data-toc-link href="#约束交集为空">约束交集为空</a>
-    <a class="sub" data-toc-link href="#邻居快照不同步">邻居快照不同步</a>
-    <a class="sub" data-toc-link href="#半径与真实占用不一致">半径与真实占用不一致</a>
-    <a class="sub" data-toc-link href="#只做局部避障-没有全局路线">只做局部避障，没有全局路线</a>
-    <a data-toc-link href="#性能代价">性能代价</a>
-    <a data-toc-link href="#与全局寻路和移动控制的接口">与全局寻路和移动控制的接口</a>
-    <a data-toc-link href="#调试速度空间应该看什么">调试速度空间应该看什么</a>
-    <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
-    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
-    <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
-    <a data-toc-link href="#最后总结">最后总结</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>37 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#从-想去哪-到-下一刻怎么动">从“想去哪”到“下一刻怎么动”</a>
+      <a data-toc-link href="#steering-先产生期望运动">Steering：先产生期望运动</a>
+      <a data-toc-link href="#arrive-接近目标时减速">Arrive：接近目标时减速</a>
+      <a data-toc-link href="#从位置空间切换到速度空间">从位置空间切换到速度空间</a>
+      <a data-toc-link href="#vo-速度障碍">VO：速度障碍</a>
+      <a data-toc-link href="#为什么只用-vo-可能来回摆动">为什么只用 VO 可能来回摆动</a>
+      <a data-toc-link href="#rvo-双方共同承担避让">RVO：双方共同承担避让</a>
+      <a data-toc-link href="#orca-把避障写成半平面约束">ORCA：把避障写成半平面约束</a>
+      <a data-toc-link href="#orca-一帧中的逐步流程">ORCA 一帧中的逐步流程</a>
+      <a class="sub" data-toc-link href="#第一步-生成期望速度">第一步：生成期望速度</a>
+      <a class="sub" data-toc-link href="#第二步-查询邻居">第二步：查询邻居</a>
+      <a class="sub" data-toc-link href="#第三步-构造每个邻居的速度约束">第三步：构造每个邻居的速度约束</a>
+      <a class="sub" data-toc-link href="#第四步-求可行速度">第四步：求可行速度</a>
+      <a class="sub" data-toc-link href="#第五步-交给运动执行层">第五步：交给运动执行层</a>
+      <a data-toc-link href="#速度空间中的一个直观例子">速度空间中的一个直观例子</a>
+      <a data-toc-link href="#最小-c-数据流示例">最小 C# 数据流示例</a>
+      <a data-toc-link href="#正常路径">正常路径</a>
+      <a class="sub" data-toc-link href="#没有邻居约束">没有邻居约束</a>
+      <a class="sub" data-toc-link href="#一个迎面邻居">一个迎面邻居</a>
+      <a class="sub" data-toc-link href="#多个邻居但仍有可行域">多个邻居但仍有可行域</a>
+      <a data-toc-link href="#边界路径">边界路径</a>
+      <a class="sub" data-toc-link href="#初始已经重叠">初始已经重叠</a>
+      <a class="sub" data-toc-link href="#完全对称的迎面或窄口场景">完全对称的迎面或窄口场景</a>
+      <a class="sub" data-toc-link href="#静态障碍与动态代理同时存在">静态障碍与动态代理同时存在</a>
+      <a class="sub" data-toc-link href="#加速度受限">加速度受限</a>
+      <a data-toc-link href="#失败路径">失败路径</a>
+      <a class="sub" data-toc-link href="#约束交集为空">约束交集为空</a>
+      <a class="sub" data-toc-link href="#邻居快照不同步">邻居快照不同步</a>
+      <a class="sub" data-toc-link href="#半径与真实占用不一致">半径与真实占用不一致</a>
+      <a class="sub" data-toc-link href="#只做局部避障-没有全局路线">只做局部避障，没有全局路线</a>
+      <a data-toc-link href="#性能代价">性能代价</a>
+      <a data-toc-link href="#与全局寻路和移动控制的接口">与全局寻路和移动控制的接口</a>
+      <a data-toc-link href="#调试速度空间应该看什么">调试速度空间应该看什么</a>
+      <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
+      <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+      <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
+      <a data-toc-link href="#最后总结">最后总结</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
 

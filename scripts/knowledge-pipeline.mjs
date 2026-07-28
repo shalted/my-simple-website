@@ -337,12 +337,23 @@ function siteHeader() {
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>`;
 }
 
@@ -369,7 +380,8 @@ function pageDocument({ title, description, body, interactive }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(description)}">
   <title>${escapeHtml(title)} · XIANYUWO</title>
-${interactiveAssets}  <link rel="stylesheet" href="/assets/knowledge.css">
+${interactiveAssets}  <link rel="stylesheet" href="/assets/site-tokens.css">
+  <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
 <body>
@@ -532,9 +544,48 @@ function interactiveCallout(document) {
 
 function renderToc(toc) {
   if (!toc.length) return "";
-  return `<nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    ${toc.map((item) => `<a${item.level === 3 ? ' class="sub"' : ""} data-toc-link href="#${escapeHtml(item.slug)}">${escapeHtml(item.label)}</a>`).join("\n    ")}
+  return `<details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>${String(toc.length).padStart(2, "0")} SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      ${toc.map((item) => `<a${item.level === 3 ? ' class="sub"' : ""} data-toc-link href="#${escapeHtml(item.slug)}">${escapeHtml(item.label)}</a>`).join("\n      ")}
+    </nav>
+  </details>`;
+}
+
+function categoryEntries(documents) {
+  const articles = documents.filter((document) => !document.isReadme);
+  const counts = new Map();
+  articles.forEach((document) => {
+    const count = counts.get(document.category);
+    counts.set(document.category, count === undefined ? 1 : count + 1);
+  });
+  return [...counts.entries()]
+    .sort(([left], [right]) => left.localeCompare(right, "zh-CN"))
+    .map(([name, count]) => {
+      const readme = documents.find((document) => document.isReadme && document.category === name);
+      const firstArticle = articles.find((document) => document.category === name);
+      if (!firstArticle) {
+        throw new Error(`分类缺少正文：${name}`);
+      }
+      return { name, count, url: readme ? readme.url : firstArticle.url };
+    });
+}
+
+function renderBreadcrumb(document, categories) {
+  const category = categories.find((entry) => entry.name === document.category);
+  if (!category) throw new Error(`无法为 ${document.relativeMarkdown} 找到分类入口。`);
+  const current = document.isReadme
+    ? `<span aria-current="page">${escapeHtml(document.category)}</span>`
+    : `<a href="${category.url}">${escapeHtml(document.category)}</a><span aria-current="page">${escapeHtml(document.title)}</span>`;
+  return `<nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a>${current}
+  </nav>`;
+}
+
+function renderCategoryStrip(categories, currentCategory = "") {
+  return `<nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div>${categories.map((category) => `<a${category.name === currentCategory ? ' aria-current="page"' : ""} href="${category.url}">${escapeHtml(category.name)}<small>${String(category.count).padStart(2, "0")}</small></a>`).join("")}</div>
   </nav>`;
 }
 
@@ -828,8 +879,9 @@ function renderHashSetLab() {
     </section>`;
 }
 
-function renderArticlePage(document, markdown, previous, next) {
+function renderArticlePage(document, markdown, previous, next, documents) {
   const rendered = renderMarkdown(markdown, document.relativeMarkdown, document.title);
+  const categories = categoryEntries(documents);
   const previousLink = previous
     ? `<a href="${previous.url}"><small>← PREVIOUS</small>${escapeHtml(previous.title)}</a>`
     : "<span></span>";
@@ -839,8 +891,12 @@ function renderArticlePage(document, markdown, previous, next) {
 
   const body = `
   <main>
+    <div class="article-context knowledge-shell">
+      ${renderBreadcrumb(document, categories)}
+      ${renderCategoryStrip(categories, document.category)}
+    </div>
     <section class="article-hero knowledge-shell">
-      <div class="eyebrow">${escapeHtml(document.category)} / KNOWLEDGE NOTE</div>
+      <div class="eyebrow">${escapeHtml(document.category)} / ${document.isReadme ? "CATEGORY" : "KNOWLEDGE NOTE"}</div>
       <h1>${escapeHtml(document.title)}</h1>
       <p class="hero-copy">${escapeHtml(document.summary)}</p>
     </section>
@@ -862,33 +918,28 @@ function renderArticlePage(document, markdown, previous, next) {
 
 function renderLibraryIndex(documents) {
   const articles = documents.filter((document) => !document.isReadme);
-  const counts = new Map();
-  articles.forEach((document) => counts.set(document.category, (counts.get(document.category) ?? 0) + 1));
-  const categories = [...counts.entries()].sort(([left], [right]) => left.localeCompare(right, "zh-CN"));
+  const categories = categoryEntries(documents);
 
-  const categoryCards = categories.map(([category, count]) => {
-    const readme = documents.find((document) => document.isReadme && document.category === category);
-    const firstArticle = articles.find((document) => document.category === category);
-    const href = readme?.url ?? firstArticle.url;
-    return `
-      <a class="category-card" href="${href}">
-        <small>${String(count).padStart(2, "0")} NOTES</small>
-        <h3>${escapeHtml(category)}</h3>
+  const categoryCards = categories.map((category) => `
+      <a class="category-card" href="${category.url}">
+        <small>${String(category.count).padStart(2, "0")} NOTES</small>
+        <h3>${escapeHtml(category.name)}</h3>
         <span class="card-arrow">进入专题 →</span>
-      </a>`;
-  }).join("");
+      </a>`).join("");
 
-  const articleCards = articles.map((document) => {
-    const search = `${document.title} ${document.category} ${document.summary}`.toLocaleLowerCase("zh-CN");
-    return `
-      <a class="article-card" data-article-card data-search="${escapeHtml(search)}" href="${document.url}">
-        <small>${escapeHtml(document.category)}</small>
-        <div>
-          <h3>${escapeHtml(document.title)}</h3>
-          <p>${escapeHtml(document.summary)}</p>
-        </div>
-        <span class="card-arrow">阅读笔记 →</span>
-      </a>`;
+  const articleGroups = categories.map((category) => {
+    const cards = articles.filter((document) => document.category === category.name).map((document) => {
+      const search = `${document.title} ${document.category} ${document.summary}`.toLocaleLowerCase("zh-CN");
+      return `
+        <a class="article-card" data-article-card data-search="${escapeHtml(search)}" href="${document.url}">
+          <div><h3>${escapeHtml(document.title)}</h3><p>${escapeHtml(document.summary)}</p></div>
+          <span class="card-arrow">阅读 →</span>
+        </a>`;
+    }).join("");
+    return `<details class="article-group" data-article-group>
+      <summary><span>${escapeHtml(category.name)}</span><small>${String(category.count).padStart(2, "0")} ARTICLES</small></summary>
+      <div class="article-list">${cards}</div>
+    </details>`;
   }).join("");
 
   const learningChapters = [
@@ -916,11 +967,14 @@ function renderLibraryIndex(documents) {
         <input id="knowledge-search" type="search" placeholder="搜索标题、分类或关键词…" autocomplete="off" aria-label="搜索知识库">
       </div>
     </section>
-    <section class="section knowledge-shell">
+    <div class="library-context knowledge-shell">
+      ${renderCategoryStrip(categories)}
+    </div>
+    <section class="section knowledge-shell" data-library-discovery>
       <div class="section-heading"><h2>学习章节</h2><span>6 CHAPTERS · UPDATED 2026-07-28</span></div>
       <div class="category-grid">${learningChapterCards}</div>
     </section>
-    <section class="section knowledge-shell">
+    <section class="section knowledge-shell" data-library-discovery>
       <div class="section-heading"><h2>交互专题</h2><span>17 LABS · LEARN BY DOING</span></div>
       <div class="feature-grid">
         <a class="feature-card" href="/knowledge/ability-flow/">
@@ -1010,13 +1064,13 @@ function renderLibraryIndex(documents) {
         </a>
       </div>
     </section>
-    <section class="section knowledge-shell">
+    <section class="section knowledge-shell" data-library-discovery>
       <div class="section-heading"><h2>专题地图</h2><span>${categories.length} CATEGORIES</span></div>
       <div class="category-grid">${categoryCards}</div>
     </section>
-    <section class="section knowledge-shell">
-      <div class="section-heading"><h2>全部笔记</h2><span>${articles.length} ARTICLES</span></div>
-      <div class="article-grid">${articleCards}</div>
+    <section class="section knowledge-shell" id="all-notes">
+      <div class="section-heading"><h2>全部笔记</h2><span>${articles.length} ARTICLES · 按分类展开</span></div>
+      <div class="article-groups">${articleGroups}</div>
       <p class="search-empty" id="search-empty" hidden>没有找到匹配的笔记，换一个关键词试试。</p>
     </section>
   </main>`;
@@ -1059,7 +1113,7 @@ async function buildKnowledge() {
     const outputFile = outputFileForMarkdown(record.relativeMarkdown);
     assertInside(outputRoot, outputFile);
     await fs.mkdir(path.dirname(outputFile), { recursive: true });
-    await fs.writeFile(outputFile, renderArticlePage(record, record.markdown, previous, next), "utf8");
+    await fs.writeFile(outputFile, renderArticlePage(record, record.markdown, previous, next, records), "utf8");
   }
 
   const assetFiles = contentFiles.filter((file) => path.extname(file).toLowerCase() === ".svg");

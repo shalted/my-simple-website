@@ -7,6 +7,7 @@
   <title>NavMesh：多边形寻路与动态障碍 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,49 +19,71 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法</a><span aria-current="page">NavMesh：多边形寻路与动态障碍</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a aria-current="page" href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>NavMesh：多边形寻路与动态障碍</h1>
       <p class="hero-copy">规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#navmesh-解决什么问题">NavMesh 解决什么问题</a>
-    <a data-toc-link href="#完整事实链">完整事实链</a>
-    <a data-toc-link href="#烘焙数据是什么">烘焙数据是什么</a>
-    <a class="sub" data-toc-link href="#为什么常用凸多边形">为什么常用凸多边形</a>
-    <a data-toc-link href="#多边形图搜索">多边形图搜索</a>
-    <a class="sub" data-toc-link href="#教学示例-逐步展开">教学示例：逐步展开</a>
-    <a class="sub" data-toc-link href="#最小伪代码">最小伪代码</a>
-    <a data-toc-link href="#多边形走廊不是最终折线路径">多边形走廊不是最终折线路径</a>
-    <a data-toc-link href="#门户与漏斗算法">门户与漏斗算法</a>
-    <a class="sub" data-toc-link href="#可交互的逐步状态">可交互的逐步状态</a>
-    <a class="sub" data-toc-link href="#漏斗算法的边界">漏斗算法的边界</a>
-    <a data-toc-link href="#动态障碍">动态障碍</a>
-    <a class="sub" data-toc-link href="#局部避让">局部避让</a>
-    <a class="sub" data-toc-link href="#修改导航拓扑">修改导航拓扑</a>
-    <a class="sub" data-toc-link href="#何时重新寻路">何时重新寻路</a>
-    <a data-toc-link href="#不可达点">不可达点</a>
-    <a class="sub" data-toc-link href="#最近可达点不是天然正确答案">最近可达点不是天然正确答案</a>
-    <a data-toc-link href="#合法出生点">合法出生点</a>
-    <a class="sub" data-toc-link href="#教学示例-出生点状态面板">教学示例：出生点状态面板</a>
-    <a data-toc-link href="#正常-边界与失败情况">正常、边界与失败情况</a>
-    <a class="sub" data-toc-link href="#正常情况">正常情况</a>
-    <a class="sub" data-toc-link href="#边界情况">边界情况</a>
-    <a class="sub" data-toc-link href="#失败情况">失败情况</a>
-    <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
-    <a data-toc-link href="#最重要的收获">最重要的收获</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>25 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#navmesh-解决什么问题">NavMesh 解决什么问题</a>
+      <a data-toc-link href="#完整事实链">完整事实链</a>
+      <a data-toc-link href="#烘焙数据是什么">烘焙数据是什么</a>
+      <a class="sub" data-toc-link href="#为什么常用凸多边形">为什么常用凸多边形</a>
+      <a data-toc-link href="#多边形图搜索">多边形图搜索</a>
+      <a class="sub" data-toc-link href="#教学示例-逐步展开">教学示例：逐步展开</a>
+      <a class="sub" data-toc-link href="#最小伪代码">最小伪代码</a>
+      <a data-toc-link href="#多边形走廊不是最终折线路径">多边形走廊不是最终折线路径</a>
+      <a data-toc-link href="#门户与漏斗算法">门户与漏斗算法</a>
+      <a class="sub" data-toc-link href="#可交互的逐步状态">可交互的逐步状态</a>
+      <a class="sub" data-toc-link href="#漏斗算法的边界">漏斗算法的边界</a>
+      <a data-toc-link href="#动态障碍">动态障碍</a>
+      <a class="sub" data-toc-link href="#局部避让">局部避让</a>
+      <a class="sub" data-toc-link href="#修改导航拓扑">修改导航拓扑</a>
+      <a class="sub" data-toc-link href="#何时重新寻路">何时重新寻路</a>
+      <a data-toc-link href="#不可达点">不可达点</a>
+      <a class="sub" data-toc-link href="#最近可达点不是天然正确答案">最近可达点不是天然正确答案</a>
+      <a data-toc-link href="#合法出生点">合法出生点</a>
+      <a class="sub" data-toc-link href="#教学示例-出生点状态面板">教学示例：出生点状态面板</a>
+      <a data-toc-link href="#正常-边界与失败情况">正常、边界与失败情况</a>
+      <a class="sub" data-toc-link href="#正常情况">正常情况</a>
+      <a class="sub" data-toc-link href="#边界情况">边界情况</a>
+      <a class="sub" data-toc-link href="#失败情况">失败情况</a>
+      <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
+      <a data-toc-link href="#最重要的收获">最重要的收获</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
       <aside class="article-callout">

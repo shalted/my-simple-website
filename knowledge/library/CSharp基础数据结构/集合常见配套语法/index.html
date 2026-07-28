@@ -7,6 +7,7 @@
   <title>集合常见配套语法 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,33 +19,55 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构</a><span aria-current="page">集合常见配套语法</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a aria-current="page" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>集合常见配套语法</h1>
       <p class="hero-copy">List&lt;T&gt;、Dictionary&lt;TKey, TValue&gt;、HashSet&lt;T&gt; 这些集合经常会和一些 C# 语法一起出现：</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#这些语法为什么重要">这些语法为什么重要</a>
-    <a data-toc-link href="#var">var</a>
-    <a data-toc-link href="#泛型-t">泛型 &lt;T&gt;</a>
-    <a data-toc-link href="#out">out</a>
-    <a data-toc-link href="#lambda">lambda =&gt;</a>
-    <a data-toc-link href="#foreach">foreach</a>
-    <a data-toc-link href="#foreach-里不要修改集合">foreach 里不要修改集合</a>
-    <a data-toc-link href="#组合例子">组合例子</a>
-    <a data-toc-link href="#最重要的收获">最重要的收获</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#这些语法为什么重要">这些语法为什么重要</a>
+      <a data-toc-link href="#var">var</a>
+      <a data-toc-link href="#泛型-t">泛型 &lt;T&gt;</a>
+      <a data-toc-link href="#out">out</a>
+      <a data-toc-link href="#lambda">lambda =&gt;</a>
+      <a data-toc-link href="#foreach">foreach</a>
+      <a data-toc-link href="#foreach-里不要修改集合">foreach 里不要修改集合</a>
+      <a data-toc-link href="#组合例子">组合例子</a>
+      <a data-toc-link href="#最重要的收获">最重要的收获</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
 

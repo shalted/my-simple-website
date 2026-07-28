@@ -7,6 +7,7 @@
   <title>数据驱动 Timeline：从编辑器到实体消费 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,41 +19,63 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计</a><span aria-current="page">数据驱动 Timeline：从编辑器到实体消费</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a aria-current="page" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>数据驱动 Timeline：从编辑器到实体消费</h1>
       <p class="hero-copy">一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#先建立完整心智模型">先建立完整心智模型</a>
-    <a data-toc-link href="#第一步-准备最小数据模型">第一步：准备最小数据模型</a>
-    <a data-toc-link href="#第二步-让编辑器只修改源数据">第二步：让编辑器只修改源数据</a>
-    <a data-toc-link href="#第三步-区分源字段与派生字段">第三步：区分源字段与派生字段</a>
-    <a data-toc-link href="#第四步-预览不是运行时真相">第四步：预览不是运行时真相</a>
-    <a data-toc-link href="#第五步-构建阶段设置两道校验门">第五步：构建阶段设置两道校验门</a>
-    <a data-toc-link href="#第六步-把配置编译成运行时快照">第六步：把配置编译成运行时快照</a>
-    <a data-toc-link href="#第七步-启动时建立只读索引">第七步：启动时建立只读索引</a>
-    <a data-toc-link href="#第八步-激活时创建播放实例">第八步：激活时创建播放实例</a>
-    <a class="sub" data-toc-link href="#一个生命周期核心-两种宿主适配">一个生命周期核心，两种宿主适配</a>
-    <a data-toc-link href="#第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</a>
-    <a data-toc-link href="#第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</a>
-    <a class="sub" data-toc-link href="#flow-作用域-task-还要经过-dispose">Flow 作用域 Task 还要经过 Dispose</a>
-    <a data-toc-link href="#第十一步-task-只发语义命令">第十一步：Task 只发语义命令</a>
-    <a data-toc-link href="#第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</a>
-    <a data-toc-link href="#把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</a>
-    <a data-toc-link href="#最终总结">最终总结</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#先建立完整心智模型">先建立完整心智模型</a>
+      <a data-toc-link href="#第一步-准备最小数据模型">第一步：准备最小数据模型</a>
+      <a data-toc-link href="#第二步-让编辑器只修改源数据">第二步：让编辑器只修改源数据</a>
+      <a data-toc-link href="#第三步-区分源字段与派生字段">第三步：区分源字段与派生字段</a>
+      <a data-toc-link href="#第四步-预览不是运行时真相">第四步：预览不是运行时真相</a>
+      <a data-toc-link href="#第五步-构建阶段设置两道校验门">第五步：构建阶段设置两道校验门</a>
+      <a data-toc-link href="#第六步-把配置编译成运行时快照">第六步：把配置编译成运行时快照</a>
+      <a data-toc-link href="#第七步-启动时建立只读索引">第七步：启动时建立只读索引</a>
+      <a data-toc-link href="#第八步-激活时创建播放实例">第八步：激活时创建播放实例</a>
+      <a class="sub" data-toc-link href="#一个生命周期核心-两种宿主适配">一个生命周期核心，两种宿主适配</a>
+      <a data-toc-link href="#第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</a>
+      <a data-toc-link href="#第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</a>
+      <a class="sub" data-toc-link href="#flow-作用域-task-还要经过-dispose">Flow 作用域 Task 还要经过 Dispose</a>
+      <a data-toc-link href="#第十一步-task-只发语义命令">第十一步：Task 只发语义命令</a>
+      <a data-toc-link href="#第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</a>
+      <a data-toc-link href="#把示例从第-0-帧完整跑一遍">把示例从第 0 帧完整跑一遍</a>
+      <a data-toc-link href="#最终总结">最终总结</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
 

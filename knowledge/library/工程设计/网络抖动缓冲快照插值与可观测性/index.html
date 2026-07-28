@@ -7,6 +7,7 @@
   <title>网络抖动缓冲、快照插值与可观测性 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,70 +19,92 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计</a><span aria-current="page">网络抖动缓冲、快照插值与可观测性</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a aria-current="page" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>网络抖动缓冲、快照插值与可观测性</h1>
       <p class="hero-copy">网络预测关注：</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
-    <a data-toc-link href="#生活化模型-用广播节目理解抖动缓冲">生活化模型：用广播节目理解抖动缓冲</a>
-    <a data-toc-link href="#三条时间线">三条时间线</a>
-    <a class="sub" data-toc-link href="#服务器时间">服务器时间</a>
-    <a class="sub" data-toc-link href="#客户端本地时间">客户端本地时间</a>
-    <a class="sub" data-toc-link href="#渲染时间">渲染时间</a>
-    <a data-toc-link href="#快照应该携带什么">快照应该携带什么</a>
-    <a data-toc-link href="#缓冲区的关键状态">缓冲区的关键状态</a>
-    <a data-toc-link href="#从收包到显示的逐步流程">从收包到显示的逐步流程</a>
-    <a class="sub" data-toc-link href="#第一步-接收并验证快照">第一步：接收并验证快照</a>
-    <a class="sub" data-toc-link href="#第二步-记录到达时间">第二步：记录到达时间</a>
-    <a class="sub" data-toc-link href="#第三步-按服务器时间插入">第三步：按服务器时间插入</a>
-    <a class="sub" data-toc-link href="#第四步-更新时钟映射">第四步：更新时钟映射</a>
-    <a class="sub" data-toc-link href="#第五步-计算目标渲染时间">第五步：计算目标渲染时间</a>
-    <a class="sub" data-toc-link href="#第六步-验证插值区间">第六步：验证插值区间</a>
-    <a class="sub" data-toc-link href="#第七步-计算插值">第七步：计算插值</a>
-    <a class="sub" data-toc-link href="#第八步-输出带质量的结果">第八步：输出带质量的结果</a>
-    <a data-toc-link href="#最小-c-插值结果">最小 C# 插值结果</a>
-    <a data-toc-link href="#缓冲区查询伪代码">缓冲区查询伪代码</a>
-    <a data-toc-link href="#正常路径">正常路径</a>
-    <a data-toc-link href="#边界路径">边界路径</a>
-    <a class="sub" data-toc-link href="#乱序到达">乱序到达</a>
-    <a class="sub" data-toc-link href="#重复快照">重复快照</a>
-    <a class="sub" data-toc-link href="#实体重生">实体重生</a>
-    <a class="sub" data-toc-link href="#传送">传送</a>
-    <a data-toc-link href="#失败路径">失败路径</a>
-    <a class="sub" data-toc-link href="#缓冲欠载-underrun">缓冲欠载 Underrun</a>
-    <a class="sub" data-toc-link href="#缓冲过深">缓冲过深</a>
-    <a class="sub" data-toc-link href="#快照间隔异常">快照间隔异常</a>
-    <a class="sub" data-toc-link href="#时钟跳变">时钟跳变</a>
-    <a class="sub" data-toc-link href="#无效数值">无效数值</a>
-    <a data-toc-link href="#插值与预测怎样协作">插值与预测怎样协作</a>
-    <a class="sub" data-toc-link href="#远端对象">远端对象</a>
-    <a class="sub" data-toc-link href="#本地受控对象">本地受控对象</a>
-    <a class="sub" data-toc-link href="#同一场景的时间一致性">同一场景的时间一致性</a>
-    <a data-toc-link href="#插值延迟怎样确定">插值延迟怎样确定</a>
-    <a data-toc-link href="#可观测性">可观测性</a>
-    <a class="sub" data-toc-link href="#包到达指标">包到达指标</a>
-    <a class="sub" data-toc-link href="#缓冲指标">缓冲指标</a>
-    <a class="sub" data-toc-link href="#采样指标">采样指标</a>
-    <a class="sub" data-toc-link href="#时钟指标">时钟指标</a>
-    <a data-toc-link href="#代价">代价</a>
-    <a data-toc-link href="#通用机制与实现选择">通用机制与实现选择</a>
-    <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
-    <a class="sub" data-toc-link href="#必须由具体系统确定">必须由具体系统确定</a>
-    <a data-toc-link href="#最后总结">最后总结</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>46 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
+      <a data-toc-link href="#生活化模型-用广播节目理解抖动缓冲">生活化模型：用广播节目理解抖动缓冲</a>
+      <a data-toc-link href="#三条时间线">三条时间线</a>
+      <a class="sub" data-toc-link href="#服务器时间">服务器时间</a>
+      <a class="sub" data-toc-link href="#客户端本地时间">客户端本地时间</a>
+      <a class="sub" data-toc-link href="#渲染时间">渲染时间</a>
+      <a data-toc-link href="#快照应该携带什么">快照应该携带什么</a>
+      <a data-toc-link href="#缓冲区的关键状态">缓冲区的关键状态</a>
+      <a data-toc-link href="#从收包到显示的逐步流程">从收包到显示的逐步流程</a>
+      <a class="sub" data-toc-link href="#第一步-接收并验证快照">第一步：接收并验证快照</a>
+      <a class="sub" data-toc-link href="#第二步-记录到达时间">第二步：记录到达时间</a>
+      <a class="sub" data-toc-link href="#第三步-按服务器时间插入">第三步：按服务器时间插入</a>
+      <a class="sub" data-toc-link href="#第四步-更新时钟映射">第四步：更新时钟映射</a>
+      <a class="sub" data-toc-link href="#第五步-计算目标渲染时间">第五步：计算目标渲染时间</a>
+      <a class="sub" data-toc-link href="#第六步-验证插值区间">第六步：验证插值区间</a>
+      <a class="sub" data-toc-link href="#第七步-计算插值">第七步：计算插值</a>
+      <a class="sub" data-toc-link href="#第八步-输出带质量的结果">第八步：输出带质量的结果</a>
+      <a data-toc-link href="#最小-c-插值结果">最小 C# 插值结果</a>
+      <a data-toc-link href="#缓冲区查询伪代码">缓冲区查询伪代码</a>
+      <a data-toc-link href="#正常路径">正常路径</a>
+      <a data-toc-link href="#边界路径">边界路径</a>
+      <a class="sub" data-toc-link href="#乱序到达">乱序到达</a>
+      <a class="sub" data-toc-link href="#重复快照">重复快照</a>
+      <a class="sub" data-toc-link href="#实体重生">实体重生</a>
+      <a class="sub" data-toc-link href="#传送">传送</a>
+      <a data-toc-link href="#失败路径">失败路径</a>
+      <a class="sub" data-toc-link href="#缓冲欠载-underrun">缓冲欠载 Underrun</a>
+      <a class="sub" data-toc-link href="#缓冲过深">缓冲过深</a>
+      <a class="sub" data-toc-link href="#快照间隔异常">快照间隔异常</a>
+      <a class="sub" data-toc-link href="#时钟跳变">时钟跳变</a>
+      <a class="sub" data-toc-link href="#无效数值">无效数值</a>
+      <a data-toc-link href="#插值与预测怎样协作">插值与预测怎样协作</a>
+      <a class="sub" data-toc-link href="#远端对象">远端对象</a>
+      <a class="sub" data-toc-link href="#本地受控对象">本地受控对象</a>
+      <a class="sub" data-toc-link href="#同一场景的时间一致性">同一场景的时间一致性</a>
+      <a data-toc-link href="#插值延迟怎样确定">插值延迟怎样确定</a>
+      <a data-toc-link href="#可观测性">可观测性</a>
+      <a class="sub" data-toc-link href="#包到达指标">包到达指标</a>
+      <a class="sub" data-toc-link href="#缓冲指标">缓冲指标</a>
+      <a class="sub" data-toc-link href="#采样指标">采样指标</a>
+      <a class="sub" data-toc-link href="#时钟指标">时钟指标</a>
+      <a data-toc-link href="#代价">代价</a>
+      <a data-toc-link href="#通用机制与实现选择">通用机制与实现选择</a>
+      <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
+      <a class="sub" data-toc-link href="#必须由具体系统确定">必须由具体系统确定</a>
+      <a data-toc-link href="#最后总结">最后总结</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
 

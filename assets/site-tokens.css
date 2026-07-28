@@ -1,0 +1,34 @@
+:root {
+  color-scheme: dark;
+
+  /* 全站基础层：暗色编辑型知识实验室。 */
+  --color-bg: #080c12;
+  --color-surface: #0d1520;
+  --color-surface-raised: #121d2a;
+  --color-surface-strong: #172536;
+  --color-text: #edf3fa;
+  --color-text-muted: #a7b4c4;
+  --color-text-dim: #7f8da0;
+  --color-border: #263445;
+  --color-border-strong: #3d5068;
+
+  /* 语义层：蓝色负责导航，青色负责交互，状态色互不混用。 */
+  --color-accent: #7cc8ff;
+  --color-interactive: #73d6c0;
+  --color-success: #7ed6a5;
+  --color-warning: #f2c36b;
+  --color-danger: #ff7e86;
+
+  /* 供渐变和半透明状态统一复用。 */
+  --color-text-rgb: 237, 243, 250;
+  --color-border-rgb: 38, 52, 69;
+  --color-accent-rgb: 124, 200, 255;
+  --color-interactive-rgb: 115, 214, 192;
+  --color-success-rgb: 126, 214, 165;
+  --color-warning-rgb: 242, 195, 107;
+  --color-danger-rgb: 255, 126, 134;
+
+  --font-display: "Noto Serif SC", "Songti SC", SimSun, serif;
+  --font-body: "Noto Sans SC", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+}

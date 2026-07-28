@@ -7,6 +7,7 @@
   <title>C++ 左值、右值、移动语义与任务队列 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
+  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
   <script src="/assets/knowledge.js" defer></script>
 </head>
@@ -18,52 +19,74 @@
         <span class="knowledge-brand-mark">X</span>
         <span>XIANYUWO / DEV LAB</span>
       </a>
-      <div class="knowledge-nav-links">
-        <a href="/#lab">交互实验</a>
+      <button class="knowledge-menu-toggle" type="button" data-site-menu-toggle aria-expanded="false" aria-controls="knowledge-primary-links">
+        <span>导航</span><i aria-hidden="true"></i>
+      </button>
+      <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
+        <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+        <a href="/#lab">交互专题</a>
+        <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
+          <label class="sr-only" for="site-search">搜索知识库</label>
+          <input id="site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+          <button type="submit" aria-label="提交搜索">搜索</button>
+        </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
       </div>
     </nav>
+    <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>
 
   <main>
+    <div class="article-context knowledge-shell">
+      <nav class="breadcrumbs" aria-label="面包屑">
+    <a href="/">首页</a><a href="/knowledge/library/">知识库</a><a href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础</a><span aria-current="page">C++ 左值、右值、移动语义与任务队列</span>
+  </nav>
+      <nav class="category-strip" aria-label="知识分类">
+    <span>分类</span>
+    <div><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/">工程设计<small>25</small></a><a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<small>02</small></a><a href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<small>01</small></a><a href="/knowledge/library/%E7%AE%97%E6%B3%95/">算法<small>11</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/">游戏逻辑常用模式<small>05</small></a><a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/">游戏AI与逻辑建模<small>05</small></a><a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">知识路线<small>01</small></a><a aria-current="page" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/">C++基础<small>03</small></a><a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">CSharp基础数据结构<small>06</small></a><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">CSharp语言基础<small>02</small></a></div>
+  </nav>
+    </div>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
       <h1>C++ 左值、右值、移动语义与任务队列</h1>
       <p class="hero-copy">想象仓库里有一个带固定货位的箱子：</p>
     </section>
     <div class="article-layout knowledge-shell">
-      <nav class="toc" aria-label="文章目录">
-    <strong>CONTENTS</strong>
-    <a data-toc-link href="#生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</a>
-    <a data-toc-link href="#表达式的值类别">表达式的值类别</a>
-    <a data-toc-link href="#std-move-到底做什么">std::move 到底做什么</a>
-    <a data-toc-link href="#最小资源类型">最小资源类型</a>
-    <a data-toc-link href="#复制-移动与异常保证">复制、移动与异常保证</a>
-    <a data-toc-link href="#完美转发与移动不是一回事">完美转发与移动不是一回事</a>
-    <a data-toc-link href="#从对象转交到生产者-消费者">从对象转交到生产者—消费者</a>
-    <a data-toc-link href="#线程-锁与条件变量的边界">线程、锁与条件变量的边界</a>
-    <a data-toc-link href="#为什么条件变量必须配合条件">为什么条件变量必须配合条件</a>
-    <a data-toc-link href="#最小任务队列">最小任务队列</a>
-    <a data-toc-link href="#一次任务的逐步状态">一次任务的逐步状态</a>
-    <a data-toc-link href="#正常路径">正常路径</a>
-    <a data-toc-link href="#边界路径">边界路径</a>
-    <a class="sub" data-toc-link href="#移动自身">移动自身</a>
-    <a class="sub" data-toc-link href="#const-对象">const 对象</a>
-    <a class="sub" data-toc-link href="#通知早于等待">通知早于等待</a>
-    <a class="sub" data-toc-link href="#多消费者被唤醒">多消费者被唤醒</a>
-    <a data-toc-link href="#失败路径">失败路径</a>
-    <a class="sub" data-toc-link href="#移动构造抛异常">移动构造抛异常</a>
-    <a class="sub" data-toc-link href="#任务执行抛异常">任务执行抛异常</a>
-    <a class="sub" data-toc-link href="#忘记关闭或连接线程">忘记关闭或连接线程</a>
-    <a class="sub" data-toc-link href="#在锁内执行任务">在锁内执行任务</a>
-    <a data-toc-link href="#代价">代价</a>
-    <a data-toc-link href="#标准-操作系统与实现选择">标准、操作系统与实现选择</a>
-    <a class="sub" data-toc-link href="#c-标准可验证的部分">C++ 标准可验证的部分</a>
-    <a class="sub" data-toc-link href="#操作系统通常负责的部分">操作系统通常负责的部分</a>
-    <a class="sub" data-toc-link href="#具体实现必须确定的部分">具体实现必须确定的部分</a>
-    <a data-toc-link href="#最后总结">最后总结</a>
-  </nav>
+      <details class="toc" data-article-toc open>
+    <summary><span>本页目录</span><strong>28 SECTIONS</strong></summary>
+    <nav aria-label="文章目录">
+      <a data-toc-link href="#生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</a>
+      <a data-toc-link href="#表达式的值类别">表达式的值类别</a>
+      <a data-toc-link href="#std-move-到底做什么">std::move 到底做什么</a>
+      <a data-toc-link href="#最小资源类型">最小资源类型</a>
+      <a data-toc-link href="#复制-移动与异常保证">复制、移动与异常保证</a>
+      <a data-toc-link href="#完美转发与移动不是一回事">完美转发与移动不是一回事</a>
+      <a data-toc-link href="#从对象转交到生产者-消费者">从对象转交到生产者—消费者</a>
+      <a data-toc-link href="#线程-锁与条件变量的边界">线程、锁与条件变量的边界</a>
+      <a data-toc-link href="#为什么条件变量必须配合条件">为什么条件变量必须配合条件</a>
+      <a data-toc-link href="#最小任务队列">最小任务队列</a>
+      <a data-toc-link href="#一次任务的逐步状态">一次任务的逐步状态</a>
+      <a data-toc-link href="#正常路径">正常路径</a>
+      <a data-toc-link href="#边界路径">边界路径</a>
+      <a class="sub" data-toc-link href="#移动自身">移动自身</a>
+      <a class="sub" data-toc-link href="#const-对象">const 对象</a>
+      <a class="sub" data-toc-link href="#通知早于等待">通知早于等待</a>
+      <a class="sub" data-toc-link href="#多消费者被唤醒">多消费者被唤醒</a>
+      <a data-toc-link href="#失败路径">失败路径</a>
+      <a class="sub" data-toc-link href="#移动构造抛异常">移动构造抛异常</a>
+      <a class="sub" data-toc-link href="#任务执行抛异常">任务执行抛异常</a>
+      <a class="sub" data-toc-link href="#忘记关闭或连接线程">忘记关闭或连接线程</a>
+      <a class="sub" data-toc-link href="#在锁内执行任务">在锁内执行任务</a>
+      <a data-toc-link href="#代价">代价</a>
+      <a data-toc-link href="#标准-操作系统与实现选择">标准、操作系统与实现选择</a>
+      <a class="sub" data-toc-link href="#c-标准可验证的部分">C++ 标准可验证的部分</a>
+      <a class="sub" data-toc-link href="#操作系统通常负责的部分">操作系统通常负责的部分</a>
+      <a class="sub" data-toc-link href="#具体实现必须确定的部分">具体实现必须确定的部分</a>
+      <a data-toc-link href="#最后总结">最后总结</a>
+    </nav>
+  </details>
       <article class="article-body" id="article-start">
 
 

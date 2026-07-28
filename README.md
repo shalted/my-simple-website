@@ -31,6 +31,12 @@ npm run knowledge:all -- --source $knowledgeSource
 npm run knowledge:build
 ```
 
+检查所有静态页面的站内文件、传统锚点和交互场景链接：
+
+```powershell
+npm run check:links
+```
+
 ## 自动部署
 
 `main` 分支推送到 GitHub 后，Cloudflare 会自动发布仓库中的静态网站。提交前应先运行知识构建，并检查生成页面、站内链接与交互行为。

@@ -22,6 +22,79 @@
     if (!Array.isArray(value) || value.length === 0) fail("steps 必须是非空数组");
   }
 
+  /**
+   * 交互专题由独立页面组成，这里只统一站点级导航与层级，不介入专题自身逻辑。
+   */
+  function enhanceSiteShell() {
+    const header = document.querySelector(".site-header");
+    if (!(header instanceof HTMLElement)) return;
+
+    const isHome = window.location.pathname === "/";
+    document.documentElement.classList.add(isHome ? "xianyu-home" : "xianyu-lab");
+
+    const articleLink = [...header.querySelectorAll("a")].find((link) => /完整文章|阅读文章/.test(link.textContent));
+
+    header.classList.add("unified-site-header");
+    header.innerHTML = `
+      <nav class="site-shell-nav" aria-label="主导航">
+        <a class="site-shell-brand" href="/"><span>X</span><strong>XIANYUWO / DEV LAB</strong></a>
+        <button class="site-shell-menu-toggle" type="button" data-lab-site-menu-toggle aria-expanded="false" aria-controls="lab-site-menu"><span>导航</span><i aria-hidden="true"></i></button>
+        <div class="site-shell-links" id="lab-site-menu" data-lab-site-menu>
+          <a href="/">首页</a>
+          <a href="/knowledge/library/">知识库</a>
+          <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
+          <a href="/#lab">交互专题</a>
+          <form class="site-shell-search" action="/knowledge/library/" role="search">
+            <label for="lab-site-search">搜索知识库</label>
+            <input id="lab-site-search" name="q" type="search" placeholder="搜索" autocomplete="off">
+            <button type="submit" aria-label="提交搜索">搜索</button>
+          </form>
+          <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
+      </nav>`;
+
+    if (articleLink instanceof HTMLAnchorElement) {
+      const articleHref = articleLink.getAttribute("href");
+      if (!articleHref) fail("配套文章链接缺少 href");
+      const contextLink = document.createElement("a");
+      contextLink.className = "site-context-link";
+      contextLink.href = articleHref;
+      contextLink.textContent = "配套文章";
+      const search = header.querySelector(".site-shell-search");
+      if (!(search instanceof HTMLFormElement)) fail("统一导航缺少搜索表单");
+      search.before(contextLink);
+    }
+
+    const toggle = header.querySelector("[data-lab-site-menu-toggle]");
+    const menu = header.querySelector("[data-lab-site-menu]");
+    if (!(toggle instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) {
+      fail("统一导航缺少菜单控件");
+    }
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      menu.classList.toggle("is-open", open);
+    });
+    menu.addEventListener("click", (event) => {
+      if (!(event.target instanceof HTMLAnchorElement)) return;
+      toggle.setAttribute("aria-expanded", "false");
+      menu.classList.remove("is-open");
+    });
+
+    if (isHome) return;
+
+    const main = document.querySelector("main");
+    if (!(main instanceof HTMLElement)) fail("交互专题缺少 main 元素");
+    const pageTitle = document.title.split("·")[0].trim();
+    const context = document.createElement("div");
+    context.className = "lab-site-context";
+    context.innerHTML = `<nav aria-label="面包屑"><a href="/">首页</a><a href="/#lab">交互专题</a><span aria-current="page"></span></nav>`;
+    const currentPage = context.querySelector("[aria-current='page']");
+    if (!(currentPage instanceof HTMLSpanElement)) fail("交互专题面包屑缺少当前页");
+    currentPage.textContent = pageTitle;
+    main.before(context);
+  }
+
   function createStepPlayer(config) {
     if (!config || typeof config !== "object") fail("createStepPlayer 需要配置对象");
 
@@ -410,5 +483,6 @@
     });
   }
 
+  enhanceSiteShell();
   global.XianyuInteractiveLab = Object.freeze({ createStepPlayer, createProcessPlayer });
 })(window);
