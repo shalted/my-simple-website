@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="这份路线不再逐条罗列零散概念，而是把现有内容合并成五条能持续生长的知识主线。每条主线都包含基础、可观察过程和工程应用。">
-  <title>知识专题路线 · XIANYUWO</title>
+  <meta name="description" content="更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。">
+  <title>后续学习计划 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
   <link rel="stylesheet" href="/assets/knowledge.css">
@@ -29,18 +29,19 @@
   <main>
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">知识路线 / KNOWLEDGE NOTE</div>
-      <h1>知识专题路线</h1>
-      <p class="hero-copy">这份路线不再逐条罗列零散概念，而是把现有内容合并成五条能持续生长的知识主线。每条主线都包含基础、可观察过程和工程应用。</p>
+      <h1>后续学习计划</h1>
+      <p class="hero-copy">更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <nav class="toc" aria-label="文章目录">
     <strong>CONTENTS</strong>
-    <a data-toc-link href="#01-状态-集合与基础结构">01 状态、集合与基础结构</a>
-    <a data-toc-link href="#02-算法-随机与空间计算">02 算法、随机与空间计算</a>
-    <a data-toc-link href="#03-游戏-ai-导航与群体行为">03 游戏 AI、导航与群体行为</a>
-    <a data-toc-link href="#04-游戏运行时系统">04 游戏运行时系统</a>
-    <a data-toc-link href="#05-工程架构与底层能力">05 工程架构与底层能力</a>
-    <a data-toc-link href="#推荐阅读顺序">推荐阅读顺序</a>
+    <a data-toc-link href="#chapter-01-基础结构与状态建模">CHAPTER 01 · 基础结构与状态建模</a>
+    <a data-toc-link href="#chapter-02-算法-空间与碰撞">CHAPTER 02 · 算法、空间与碰撞</a>
+    <a data-toc-link href="#chapter-03-游戏-ai-导航与群体行为">CHAPTER 03 · 游戏 AI、导航与群体行为</a>
+    <a data-toc-link href="#chapter-04-游戏运行时与战斗系统">CHAPTER 04 · 游戏运行时与战斗系统</a>
+    <a data-toc-link href="#chapter-05-ui-配置与网络闭环">CHAPTER 05 · UI、配置与网络闭环</a>
+    <a data-toc-link href="#chapter-06-工程架构与底层能力">CHAPTER 06 · 工程架构与底层能力</a>
+    <a data-toc-link href="#推荐推进顺序">推荐推进顺序</a>
   </nav>
       <article class="article-body" id="article-start">
 
@@ -51,75 +52,86 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 06</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：01 状态、集合与基础结构">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：CHAPTER 01 · 基础结构与状态建模">
       <span>01</span>
-      <strong>01 状态、集合与基础结构</strong>
+      <strong>CHAPTER 01 · 基础结构与状态建模</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：02 算法、随机与空间计算">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：CHAPTER 02 · 算法、空间与碰撞">
       <span>02</span>
-      <strong>02 算法、随机与空间计算</strong>
+      <strong>CHAPTER 02 · 算法、空间与碰撞</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：03 游戏 AI、导航与群体行为">
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：CHAPTER 03 · 游戏 AI、导航与群体行为">
       <span>03</span>
-      <strong>03 游戏 AI、导航与群体行为</strong>
+      <strong>CHAPTER 03 · 游戏 AI、导航与群体行为</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：04 游戏运行时系统">
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：CHAPTER 04 · 游戏运行时与战斗系统">
       <span>04</span>
-      <strong>04 游戏运行时系统</strong>
+      <strong>CHAPTER 04 · 游戏运行时与战斗系统</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：05 工程架构与底层能力">
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：CHAPTER 05 · UI、配置与网络闭环">
       <span>05</span>
-      <strong>05 工程架构与底层能力</strong>
+      <strong>CHAPTER 05 · UI、配置与网络闭环</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：推荐阅读顺序">
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：CHAPTER 06 · 工程架构与底层能力">
       <span>06</span>
-      <strong>推荐阅读顺序</strong>
+      <strong>CHAPTER 06 · 工程架构与底层能力</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：推荐推进顺序">
+      <span>07</span>
+      <strong>推荐推进顺序</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / FLOW / RULES</div>
-        <h3>01 状态、集合与基础结构</h3>
-        <p>目标：先掌握代码如何保存状态、组织数据，再理解上层系统为什么选择特定结构。</p>
-        <ul><li>状态表达：Flags / BitMask、普通 enum、状态机之间的边界。</li><li>集合选择：List、Dictionary、HashSet、Queue、Stack 的访问和更新特征。</li><li>优先级结构：二叉堆如何维护当前最值，而不是完整排序。</li><li>组合规则：可叠加标签、互斥结果和复杂 Buff 数据应该如何拆分。</li></ul>
+        <h3>CHAPTER 01 · 基础结构与状态建模</h3>
+        <p>状态：已覆盖，后续以复习和语法补充为主。</p>
+        <ul><li>List、Dictionary、HashSet、Queue、Stack 的使用边界。</li><li>集合排序、查找、筛选和常见配套语法。</li><li>Flags / BitMask 的组合、判断、移除和互斥建模。</li><li>二叉堆、优先队列以及提示队列从 FIFO 到优先堆的演进。</li><li><code>struct</code> 与 <code>class</code> 的值语义和引用语义。</li><li><code>interface</code>、泛型方法与职责边界。</li><li><code>delegate</code>、<code>Action</code>、<code>Func</code>、<code>event</code> 的关系。</li><li>属性、<code>readonly</code>、<code>const</code>、<code>static</code>、nullable 与空值判断。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / FLOW / RULES</div>
-        <h3>02 算法、随机与空间计算</h3>
-        <p>目标：把“遍历、选择、搜索、碰撞”拆成可度量的候选集变化。</p>
-        <ul><li>搜索与排序：BFS / DFS、Dijkstra、二分查找、Top K、并查集。</li><li>随机策略：普通随机、加权随机、Seed、稳定随机、保底和洗牌袋。</li><li>空间查询：九宫格、空间 Hash、四叉树，以及粗筛到精筛。</li><li>碰撞检测：Broad Phase / Narrow Phase、AABB、OBB、SAT、GJK、CCD。</li></ul>
+        <h3>CHAPTER 02 · 算法、空间与碰撞</h3>
+        <p>状态：继续补强。</p>
+        <ul><li>A* 的 G、H、F、Open / Closed 集合与 Parent 回溯。</li><li>普通随机、加权随机、稳定随机、保底和洗牌袋。</li><li>九宫格、空间 Hash、四叉树与“粗筛 → 精筛”。</li><li>Broad Phase / Narrow Phase、AABB、OBB、BVH、SAT、GJK。</li><li>圆形、扇形、盒形目标筛选与命中原因追踪。</li><li>BFS / DFS：遍历顺序、访问集合和适用问题。</li><li>Dijkstra：从无启发式最短路理解 A* 的来源。</li><li>二分查找、Top K、并查集和动态规划入门。</li><li>CCD：连续碰撞检测如何处理高速物体穿透。</li><li>NavMesh 多边形寻路、动态障碍和合法出生点。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="2" hidden>
         <div class="deck-step-meta">STEP 03 / FLOW / RULES</div>
-        <h3>03 游戏 AI、导航与群体行为</h3>
-        <p>目标：区分路径、移动、决策和群体协调四个层次，避免把所有问题都塞进一个 AI 算法。</p>
-        <ul><li>导航层：NavMesh、A*、动态障碍、不可达点和出生点合法性。</li><li>移动层：Steering、RVO、ORCA，以及全局寻路与局部避障的分工。</li><li>决策层：状态机、行为树、效用 AI、GOAP、HTN、MCTS。</li><li>群体层：攻击令牌、槽位分配、非攻击意图、稳定随机和空间索引。</li></ul>
+        <h3>CHAPTER 03 · 游戏 AI、导航与群体行为</h3>
+        <p>状态：继续补强。</p>
+        <ul><li>状态机、行为树、效用 AI 与 GOAP 的适用边界。</li><li>RVO / ORCA 的局部避障模型。</li><li>集群 AI 的槽位分配、候选评分、攻击令牌和非攻击意图。</li><li>全局寻路、局部移动和群体协调的基本分工。</li><li>NavMesh 烘焙数据与 A* 在多边形图上的搜索过程。</li><li>动态障碍、不可达点和出生点合法性检测。</li><li>行为树执行栈、节点返回值和中断。</li><li>HTN 与 MCTS：它们分别适合怎样的决策问题。</li><li>Steering、RVO、ORCA 的速度空间对比实验。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="3" hidden>
         <div class="deck-step-meta">STEP 04 / FLOW / RULES</div>
-        <h3>04 游戏运行时系统</h3>
-        <p>目标：观察对象从创建到释放、事件从产生到消费、规则从配置到反馈的完整闭环。</p>
-        <ul><li>时间控制：冷却、延迟、Tick、暂停与时间缩放。</li><li>生命周期：对象池、资源引用、Created → Active → Releasing → Released。</li><li>状态同步：Dirty Flag、缓存建立、失效、版本与重建。</li><li>消息流：事件发布订阅、延迟事件、一次性监听和事件风暴。</li><li>战斗系统：判定盒、伤害流程、Buff 生命周期、属性与表现联动。</li></ul>
+        <h3>CHAPTER 04 · 游戏运行时与战斗系统</h3>
+        <p>状态：继续补强；完整技能运行链已经形成。</p>
+        <ul><li>冷却、计时器、延迟、Tick 与时间缩放。</li><li>对象池、资源生命周期、资源作用域和引用释放。</li><li>技能激活、标签仲裁、Timeline 编排、目标筛选、Effect / Buff、反馈与清理。</li><li>投射物、击退曲线、碰撞提前停止和终态清理。</li><li>Dirty Flag、属性局部重算和失效引用清理。</li><li>对象生命周期状态：<code>Created → Active → Releasing → Released</code>。</li><li>异步回调晚于对象释放时，如何保留原始失败并阻止越界写入。</li><li>缓存建立、版本、失效、重建和不同作用域。</li><li>命令模式：排队、撤销，以及命令与事件的区别。</li><li>事件系统进阶：事件队列、延迟事件、一次性监听、调试和事件风暴。</li><li>完整战斗判定：攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="4" hidden>
         <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
-        <h3>05 工程架构与底层能力</h3>
-        <p>目标：把“能运行的逻辑”继续整理成可扩展、可验证、可维护的工程结构。</p>
-        <ul><li>行为封装：命令模式、门面模式、泛型消重和职责边界。</li><li>数据驱动：配置字段到运行时行为的映射，以及配置与代码的分工。</li><li>框架建模：UE Gameplay、ECS、对话节点、Buff / GAS。</li><li>资源与并发：RAII、智能指针、虚拟内存、线程、原子操作和内存屏障。</li><li>平台基础：Linux、malloc / free、进程与上下文切换。</li></ul>
+        <h3>CHAPTER 05 · UI、配置与网络闭环</h3>
+        <p>状态：本阶段已覆盖，后续以专项深化为主。</p>
+        <ul><li>虚拟列表的可视窗口、节点复用、索引映射与异步取消。</li><li>UI 页面栈、面板池、覆盖与返回、绑定清理和旧回调隔离。</li><li>配置数据的结构校验、引用校验、语义校验、强类型快照与发布闸门。</li><li>网络预测、服务器权威状态、Reconcile 和输入重放。</li><li>UI 数据绑定的依赖追踪与批量刷新。</li><li>配置热更新的版本一致性和失败可见性。</li><li>网络预测中的抖动缓冲、快照插值与可观测性。</li></ul>
 
       </article>
       <article class="deck-slide" data-deck-slide="5" hidden>
         <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
-        <h3>推荐阅读顺序</h3>
-        <p>路线不是完成清单。知识库新增文章后，构建管线会自动生成章节推演；适合更深动态表达的主题再升级为独立交互专题。</p>
-        <ul><li>Flags、集合与二叉堆：先建立状态和数据结构直觉。</li><li>随机、空间划分与 A*：理解候选集如何被生成、排序和缩小。</li><li>状态机、行为树、效用 AI 与群体 AI：理解决策如何变成行动。</li><li>时间、事件、对象池、资源生命周期：理解运行时系统如何协作。</li><li>数据驱动、框架建模、C++ 与并发：进入大型工程与底层能力。</li></ul>
+        <h3>CHAPTER 06 · 工程架构与底层能力</h3>
+        <p>状态：尚未开始，是后续长期主线。</p>
+        <ul><li>UE Gameplay：GameMode、GameState、PlayerController、Pawn、Actor 与 Component。</li><li>ECS：Entity、Component、System 和数据布局。</li><li>对话系统：节点、选项、条件、效果与跳转。</li><li>C++ 对象模型：虚表、虚指针和动态绑定。</li><li>RAII、构造析构、资源所有权与智能指针。</li><li>左值、右值、移动语义、线程、锁、任务队列和生产者消费者。</li><li>虚拟内存、页、堆、栈以及 malloc / free。</li><li>原子操作、可见性、有序性、内存屏障、进程与上下文切换。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+        <h3>推荐推进顺序</h3>
+        <p>下一轮从第一个未完成主题开始：</p>
+        <ul><li>对象生命周期状态与异步竞态。</li><li>缓存与失效策略。</li><li>命令模式与事件系统进阶。</li><li>完整战斗判定流程。</li><li>NavMesh、动态障碍与合法点检测。</li><li>CCD 高速碰撞。</li><li>BFS / DFS、Dijkstra 与算法补充线。</li><li>HTN / MCTS 与行为树执行细节。</li><li>UE Gameplay、ECS 与对话系统。</li><li>C++、内存与并发基础。</li></ul>
 
       </article></div>
       </div>
@@ -131,63 +143,132 @@
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>这份路线不再逐条罗列零散概念，而是把现有内容合并成五条能持续生长的知识主线。每条主线都包含基础、可观察过程和工程应用。</p>
-<h2 id="01-状态-集合与基础结构">01 状态、集合与基础结构</h2>
-<p>目标：先掌握代码如何保存状态、组织数据，再理解上层系统为什么选择特定结构。</p>
+        <p>更新于 2026-07-28。当前知识库已有 36 篇学习笔记和 17 个交互专题；这份计划只保留仍需学习或继续补强的内容，并用六个章节串起现有知识。</p>
+<p>状态说明：</p>
 <ul>
-<li>状态表达：Flags / BitMask、普通 enum、状态机之间的边界。</li>
-<li>集合选择：List、Dictionary、HashSet、Queue、Stack 的访问和更新特征。</li>
-<li>优先级结构：二叉堆如何维护当前最值，而不是完整排序。</li>
-<li>组合规则：可叠加标签、互斥结果和复杂 Buff 数据应该如何拆分。</li>
+<li><code>已覆盖</code>：已有文章或交互专题，可以直接复习。</li>
+<li><code>继续补强</code>：已有基础内容，但仍有关键机制没有单独讲清。</li>
+<li><code>尚未开始</code>：知识库还没有对应的系统文章。</li>
 </ul>
-<p>现有交互：<a href="/knowledge/systems-lab/#flags">Flags / BitMask 状态实验</a>、<a href="/knowledge/binary-heap/">二叉堆优先队列</a>。</p>
-<h2 id="02-算法-随机与空间计算">02 算法、随机与空间计算</h2>
-<p>目标：把“遍历、选择、搜索、碰撞”拆成可度量的候选集变化。</p>
+<h2 id="chapter-01-基础结构与状态建模">CHAPTER 01 · 基础结构与状态建模</h2>
+<p>状态：已覆盖，后续以复习和语法补充为主。</p>
+<p>已经覆盖：</p>
 <ul>
-<li>搜索与排序：BFS / DFS、Dijkstra、二分查找、Top K、并查集。</li>
-<li>随机策略：普通随机、加权随机、Seed、稳定随机、保底和洗牌袋。</li>
-<li>空间查询：九宫格、空间 Hash、四叉树，以及粗筛到精筛。</li>
-<li>碰撞检测：Broad Phase / Narrow Phase、AABB、OBB、SAT、GJK、CCD。</li>
+<li>List、Dictionary、HashSet、Queue、Stack 的使用边界。</li>
+<li>集合排序、查找、筛选和常见配套语法。</li>
+<li>Flags / BitMask 的组合、判断、移除和互斥建模。</li>
+<li>二叉堆、优先队列以及提示队列从 FIFO 到优先堆的演进。</li>
 </ul>
-<p>现有交互：<a href="/knowledge/systems-lab/#random">随机策略实验</a>、<a href="/knowledge/systems-lab/#space">空间划分实验</a>、<a href="/#lab">A* 寻路</a>。</p>
-<h2 id="03-游戏-ai-导航与群体行为">03 游戏 AI、导航与群体行为</h2>
-<p>目标：区分路径、移动、决策和群体协调四个层次，避免把所有问题都塞进一个 AI 算法。</p>
+<p>继续补充：</p>
 <ul>
-<li>导航层：NavMesh、A*、动态障碍、不可达点和出生点合法性。</li>
-<li>移动层：Steering、RVO、ORCA，以及全局寻路与局部避障的分工。</li>
-<li>决策层：状态机、行为树、效用 AI、GOAP、HTN、MCTS。</li>
-<li>群体层：攻击令牌、槽位分配、非攻击意图、稳定随机和空间索引。</li>
+<li><code>struct</code> 与 <code>class</code> 的值语义和引用语义。</li>
+<li><code>interface</code>、泛型方法与职责边界。</li>
+<li><code>delegate</code>、<code>Action</code>、<code>Func</code>、<code>event</code> 的关系。</li>
+<li>属性、<code>readonly</code>、<code>const</code>、<code>static</code>、nullable 与空值判断。</li>
 </ul>
-<p>现有交互：<a href="/knowledge/swarm-ai/">怪物集群 AI</a>、<a href="/#lab">A* 寻路</a>。后续可补充 RVO / ORCA 速度空间和行为树执行栈。</p>
-<h2 id="04-游戏运行时系统">04 游戏运行时系统</h2>
-<p>目标：观察对象从创建到释放、事件从产生到消费、规则从配置到反馈的完整闭环。</p>
+<p>现有入口：<a href="/knowledge/systems-lab/#flags">Flags / BitMask 实验</a>、<a href="/knowledge/binary-heap/">二叉堆优先队列</a>。</p>
+<h2 id="chapter-02-算法-空间与碰撞">CHAPTER 02 · 算法、空间与碰撞</h2>
+<p>状态：继续补强。</p>
+<p>已经覆盖：</p>
 <ul>
-<li>时间控制：冷却、延迟、Tick、暂停与时间缩放。</li>
-<li>生命周期：对象池、资源引用、Created → Active → Releasing → Released。</li>
-<li>状态同步：Dirty Flag、缓存建立、失效、版本与重建。</li>
-<li>消息流：事件发布订阅、延迟事件、一次性监听和事件风暴。</li>
-<li>战斗系统：判定盒、伤害流程、Buff 生命周期、属性与表现联动。</li>
+<li>A* 的 G、H、F、Open / Closed 集合与 Parent 回溯。</li>
+<li>普通随机、加权随机、稳定随机、保底和洗牌袋。</li>
+<li>九宫格、空间 Hash、四叉树与“粗筛 → 精筛”。</li>
+<li>Broad Phase / Narrow Phase、AABB、OBB、BVH、SAT、GJK。</li>
+<li>圆形、扇形、盒形目标筛选与命中原因追踪。</li>
 </ul>
-<p>后续交互优先级：对象池生命周期、事件队列、Dirty Flag 缓存失效。</p>
-<h2 id="05-工程架构与底层能力">05 工程架构与底层能力</h2>
-<p>目标：把“能运行的逻辑”继续整理成可扩展、可验证、可维护的工程结构。</p>
-<ul>
-<li>行为封装：命令模式、门面模式、泛型消重和职责边界。</li>
-<li>数据驱动：配置字段到运行时行为的映射，以及配置与代码的分工。</li>
-<li>框架建模：UE Gameplay、ECS、对话节点、Buff / GAS。</li>
-<li>资源与并发：RAII、智能指针、虚拟内存、线程、原子操作和内存屏障。</li>
-<li>平台基础：Linux、malloc / free、进程与上下文切换。</li>
-</ul>
-<p>这些内容适合作为专题文章逐步补充；只有存在可观察状态、队列、图结构或计算过程时，才进入交互实验。</p>
-<h2 id="推荐阅读顺序">推荐阅读顺序</h2>
+<p>下一批：</p>
 <ol>
-<li>Flags、集合与二叉堆：先建立状态和数据结构直觉。</li>
-<li>随机、空间划分与 A*：理解候选集如何被生成、排序和缩小。</li>
-<li>状态机、行为树、效用 AI 与群体 AI：理解决策如何变成行动。</li>
-<li>时间、事件、对象池、资源生命周期：理解运行时系统如何协作。</li>
-<li>数据驱动、框架建模、C++ 与并发：进入大型工程与底层能力。</li>
+<li>BFS / DFS：遍历顺序、访问集合和适用问题。</li>
+<li>Dijkstra：从无启发式最短路理解 A* 的来源。</li>
+<li>二分查找、Top K、并查集和动态规划入门。</li>
+<li>CCD：连续碰撞检测如何处理高速物体穿透。</li>
+<li>NavMesh 多边形寻路、动态障碍和合法出生点。</li>
 </ol>
-<p>路线不是完成清单。知识库新增文章后，构建管线会自动生成章节推演；适合更深动态表达的主题再升级为独立交互专题。</p>
+<p>现有入口：<a href="/#lab">A* 寻路</a>、<a href="/knowledge/systems-lab/#space">空间划分实验</a>、<a href="/knowledge/target-filter/">目标筛选与命中判定</a>。</p>
+<h2 id="chapter-03-游戏-ai-导航与群体行为">CHAPTER 03 · 游戏 AI、导航与群体行为</h2>
+<p>状态：继续补强。</p>
+<p>已经覆盖：</p>
+<ul>
+<li>状态机、行为树、效用 AI 与 GOAP 的适用边界。</li>
+<li>RVO / ORCA 的局部避障模型。</li>
+<li>集群 AI 的槽位分配、候选评分、攻击令牌和非攻击意图。</li>
+<li>全局寻路、局部移动和群体协调的基本分工。</li>
+</ul>
+<p>下一批：</p>
+<ol>
+<li>NavMesh 烘焙数据与 A* 在多边形图上的搜索过程。</li>
+<li>动态障碍、不可达点和出生点合法性检测。</li>
+<li>行为树执行栈、节点返回值和中断。</li>
+<li>HTN 与 MCTS：它们分别适合怎样的决策问题。</li>
+<li>Steering、RVO、ORCA 的速度空间对比实验。</li>
+</ol>
+<p>现有入口：<a href="/knowledge/swarm-ai/">怪物集群 AI</a>、<a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/">状态机、行为树、效用 AI 与 GOAP</a>。</p>
+<h2 id="chapter-04-游戏运行时与战斗系统">CHAPTER 04 · 游戏运行时与战斗系统</h2>
+<p>状态：继续补强；完整技能运行链已经形成。</p>
+<p>已经覆盖：</p>
+<ul>
+<li>冷却、计时器、延迟、Tick 与时间缩放。</li>
+<li>对象池、资源生命周期、资源作用域和引用释放。</li>
+<li>技能激活、标签仲裁、Timeline 编排、目标筛选、Effect / Buff、反馈与清理。</li>
+<li>投射物、击退曲线、碰撞提前停止和终态清理。</li>
+<li>Dirty Flag、属性局部重算和失效引用清理。</li>
+</ul>
+<p>下一批：</p>
+<ol>
+<li>对象生命周期状态：<code>Created → Active → Releasing → Released</code>。</li>
+<li>异步回调晚于对象释放时，如何保留原始失败并阻止越界写入。</li>
+<li>缓存建立、版本、失效、重建和不同作用域。</li>
+<li>命令模式：排队、撤销，以及命令与事件的区别。</li>
+<li>事件系统进阶：事件队列、延迟事件、一次性监听、调试和事件风暴。</li>
+<li>完整战斗判定：攻击盒、受击盒、防御、无敌、霸体、硬直、反击与反馈。</li>
+</ol>
+<p>现有入口：<a href="/knowledge/ability-flow/">一次技能从输入到结束</a>、<a href="/knowledge/effect-lifecycle/">Effect / Buff 生命周期</a>、<a href="/knowledge/projectile-motion/">命中后的运动与投射物</a>。</p>
+<h2 id="chapter-05-ui-配置与网络闭环">CHAPTER 05 · UI、配置与网络闭环</h2>
+<p>状态：本阶段已覆盖，后续以专项深化为主。</p>
+<p>已经覆盖：</p>
+<ul>
+<li>虚拟列表的可视窗口、节点复用、索引映射与异步取消。</li>
+<li>UI 页面栈、面板池、覆盖与返回、绑定清理和旧回调隔离。</li>
+<li>配置数据的结构校验、引用校验、语义校验、强类型快照与发布闸门。</li>
+<li>网络预测、服务器权威状态、Reconcile 和输入重放。</li>
+</ul>
+<p>可选深化：</p>
+<ul>
+<li>UI 数据绑定的依赖追踪与批量刷新。</li>
+<li>配置热更新的版本一致性和失败可见性。</li>
+<li>网络预测中的抖动缓冲、快照插值与可观测性。</li>
+</ul>
+<p>现有入口：<a href="/knowledge/virtual-list/">虚拟列表与节点复用</a>、<a href="/knowledge/config-pipeline/">配置数据生成管线</a>、<a href="/knowledge/network-prediction/">网络预测与服务器校正</a>、<a href="/knowledge/ui-stack-pool/">UI 页面栈与面板池</a>。</p>
+<h2 id="chapter-06-工程架构与底层能力">CHAPTER 06 · 工程架构与底层能力</h2>
+<p>状态：尚未开始，是后续长期主线。</p>
+<p>下一批：</p>
+<ol>
+<li>UE Gameplay：GameMode、GameState、PlayerController、Pawn、Actor 与 Component。</li>
+<li>ECS：Entity、Component、System 和数据布局。</li>
+<li>对话系统：节点、选项、条件、效果与跳转。</li>
+<li>C++ 对象模型：虚表、虚指针和动态绑定。</li>
+<li>RAII、构造析构、资源所有权与智能指针。</li>
+<li>左值、右值、移动语义、线程、锁、任务队列和生产者消费者。</li>
+<li>虚拟内存、页、堆、栈以及 malloc / free。</li>
+<li>原子操作、可见性、有序性、内存屏障、进程与上下文切换。</li>
+</ol>
+<p>这些主题先写成结构清晰的文章；只有存在可观察状态、队列、图结构或计算过程时，再升级为交互专题。</p>
+<h2 id="推荐推进顺序">推荐推进顺序</h2>
+<p>下一轮从第一个未完成主题开始：</p>
+<ol>
+<li>对象生命周期状态与异步竞态。</li>
+<li>缓存与失效策略。</li>
+<li>命令模式与事件系统进阶。</li>
+<li>完整战斗判定流程。</li>
+<li>NavMesh、动态障碍与合法点检测。</li>
+<li>CCD 高速碰撞。</li>
+<li>BFS / DFS、Dijkstra 与算法补充线。</li>
+<li>HTN / MCTS 与行为树执行细节。</li>
+<li>UE Gameplay、ECS 与对话系统。</li>
+<li>C++、内存与并发基础。</li>
+</ol>
+<p>每完成一个主题，都要同步更新这份计划、网站章节目录、知识索引和相关交叉链接。</p>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/"><small>← PREVIOUS</small>状态机、行为树、效用 AI 与 GOAP 对比</a>
           <a href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E5%B8%B8%E8%A7%81%E9%85%8D%E5%A5%97%E8%AF%AD%E6%B3%95/"><small>NEXT →</small>集合常见配套语法</a>
