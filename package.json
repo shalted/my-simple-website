@@ -6,6 +6,7 @@
     "knowledge:import": "node scripts/knowledge-pipeline.mjs import",
     "knowledge:build": "node scripts/knowledge-pipeline.mjs build",
     "knowledge:all": "node scripts/knowledge-pipeline.mjs all",
+    "check:content": "node scripts/check-learning-content.mjs",
     "check:links": "node scripts/check-static-links.mjs"
   }
 }

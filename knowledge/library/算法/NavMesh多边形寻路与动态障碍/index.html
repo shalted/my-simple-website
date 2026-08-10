@@ -55,10 +55,13 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>25 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>28 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#navmesh-解决什么问题">NavMesh 解决什么问题</a>
       <a data-toc-link href="#完整事实链">完整事实链</a>
+      <a data-toc-link href="#跟着代码做-先在多边形图上找到走廊">跟着代码做：先在多边形图上找到走廊</a>
+      <a data-toc-link href="#第二步-从多边形走廊得到移动点">第二步：从多边形走廊得到移动点</a>
+      <a data-toc-link href="#第三步-让一扇门变成动态阻挡">第三步：让一扇门变成动态阻挡</a>
       <a data-toc-link href="#烘焙数据是什么">烘焙数据是什么</a>
       <a class="sub" data-toc-link href="#为什么常用凸多边形">为什么常用凸多边形</a>
       <a data-toc-link href="#多边形图搜索">多边形图搜索</a>
@@ -98,7 +101,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -110,44 +113,56 @@
       <span>02</span>
       <strong>完整事实链</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：烘焙数据是什么">
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码做：先在多边形图上找到走廊">
       <span>03</span>
+      <strong>跟着代码做：先在多边形图上找到走廊</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二步：从多边形走廊得到移动点">
+      <span>04</span>
+      <strong>第二步：从多边形走廊得到移动点</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三步：让一扇门变成动态阻挡">
+      <span>05</span>
+      <strong>第三步：让一扇门变成动态阻挡</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：烘焙数据是什么">
+      <span>06</span>
       <strong>烘焙数据是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：多边形图搜索">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：多边形图搜索">
+      <span>07</span>
       <strong>多边形图搜索</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：多边形走廊不是最终折线路径">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：多边形走廊不是最终折线路径">
+      <span>08</span>
       <strong>多边形走廊不是最终折线路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：门户与漏斗算法">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：门户与漏斗算法">
+      <span>09</span>
       <strong>门户与漏斗算法</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：动态障碍">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：动态障碍">
+      <span>10</span>
       <strong>动态障碍</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：不可达点">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：不可达点">
+      <span>11</span>
       <strong>不可达点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：合法出生点">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：合法出生点">
+      <span>12</span>
       <strong>合法出生点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常、边界与失败情况">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常、边界与失败情况">
+      <span>13</span>
       <strong>正常、边界与失败情况</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：复杂度与代价">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：复杂度与代价">
+      <span>14</span>
       <strong>复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最重要的收获">
+      <span>15</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -183,6 +198,38 @@
       </article>
       <article class="deck-slide" data-deck-slide="2" hidden>
         <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>跟着代码做：先在多边形图上找到走廊</h3>
+        <p>先把几何问题缩小成四个多边形节点：</p>
+
+        <pre><code class="language-text">Start --2--&gt; Hall --2--&gt; Door --2--&gt; Goal
+   \                              ↑
+    --------6--&gt; Balcony --3------</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>第二步：从多边形走廊得到移动点</h3>
+        <p>相邻多边形共享的一条边叫门户。可以先写一个容易理解、但路径质量一般的版本：取每个门户中点。</p>
+
+        <pre><code class="language-csharp">using System.Numerics;
+
+static Vector2 Midpoint((Vector2 Left, Vector2 Right) portal) =&gt;
+    (portal.Left + portal.Right) * 0.5f;
+
+foreach ((Vector2 Left, Vector2 Right) portal in corridorPortals)
+    movementPoints.Add(Midpoint(portal));</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>第三步：让一扇门变成动态阻挡</h3>
+        <p>如果 <code>Door</code> 被锁住，最小处理是让搜索图不再提供这条连接，然后重新搜索：</p>
+
+        <pre><code class="language-csharp">graph[&quot;Hall&quot;].RemoveAll(edge =&gt; edge.To == &quot;Door&quot;);
+
+List&lt;string&gt; detour = FindCorridor(graph, &quot;Start&quot;, &quot;Goal&quot;);
+Console.WriteLine(string.Join(&quot; -&gt; &quot;, detour));</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>烘焙数据是什么</h3>
         <p>烘焙是把场景与导航规则转换为导航数据的过程。输入通常可能包括：</p>
 
@@ -192,8 +239,8 @@
 角色尺寸或对应的导航代理规格。
 区域成本与特殊连接。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>多边形图搜索</h3>
         <p>NavMesh 可以抽象成图：</p>
 
@@ -201,15 +248,15 @@
 边：两个多边形之间可以通行的共享边或连接。
 成本：距离、区域代价或它们的组合。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>多边形走廊不是最终折线路径</h3>
         <p>图搜索回溯得到的是：</p>
 
         <pre><code class="language-text">A → B → D → F</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>门户与漏斗算法</h3>
         <p>把走廊中的共享边依次展开，可以形成左右边界：</p>
 
@@ -220,16 +267,16 @@
      | portal 3 | → 终点
         右边界</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>动态障碍</h3>
         <p>动态障碍会带来两个层次的问题：</p>
 
         <pre><code class="language-text">短暂阻挡：路径拓扑仍然可用，只是当前有人或物挡路。
 结构改变：某条通道长期封闭，原来的多边形连接已经不再可通行。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>不可达点</h3>
         <p>“终点在 NavMesh 上”不等于“终点可达”。</p>
 
@@ -239,8 +286,8 @@
 存在拓扑路径，但连接受代理能力或通行规则限制。
 搜索因资源限制中止，尚不能证明不存在路径。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>合法出生点</h3>
         <p>合法出生点比“点落在某个多边形里”要求更多。</p>
 
@@ -251,8 +298,8 @@
 5. 当前是否与动态占用物发生冲突。
 6. 从出生点到最低限度的安全目标是否存在有效路径。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>正常、边界与失败情况</h3>
         <p>边界输入需要稳定的几何容差与确定性规则，但容差的具体值属于实现参数。</p>
 
@@ -262,15 +309,15 @@
 漏斗算法生成有限的拐点。
 移动过程中走廊保持可通行。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>复杂度与代价</h3>
         <p>设多边形图有 <code>V</code> 个节点、<code>E</code> 条邻接边。</p>
 
         <pre><code class="language-text">O((V + E) log V)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -324,6 +371,107 @@
     ↓
 环境变化时验证、局部避让或重新寻路</code></pre>
 <p>这条链上任何一步失败，都不应该被“返回一条看起来合理的直线”掩盖。</p>
+<h2 id="跟着代码做-先在多边形图上找到走廊">跟着代码做：先在多边形图上找到走廊</h2>
+<p>先把几何问题缩小成四个多边形节点：</p>
+<pre><code class="language-text">Start --2--&gt; Hall --2--&gt; Door --2--&gt; Goal
+   \                              ↑
+    --------6--&gt; Balcony --3------</code></pre>
+<p>数字表示穿过相邻多边形的代价。下面用 .NET 6 的 <code>PriorityQueue</code> 实现一个不带启发函数的最小版本；它等价于在多边形图上运行 Dijkstra，也是理解 A* 走廊搜索的第一步。</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+static List&lt;string&gt; FindCorridor(
+    Dictionary&lt;string, List&lt;(string To, float Cost)&gt;&gt; graph,
+    string start,
+    string goal)
+{
+    PriorityQueue&lt;string, float&gt; open = new();
+    Dictionary&lt;string, float&gt; cost = new() { [start] = 0f };
+    Dictionary&lt;string, string&gt; parent = new();
+
+    open.Enqueue(start, 0f);
+
+    while (open.TryDequeue(out string current, out float queuedCost))
+    {
+        if (current == goal)
+            break;
+
+        if (queuedCost &gt; cost[current])
+            continue; // 跳过队列里已经过时的旧记录
+
+        foreach ((string To, float Cost) edge in graph[current])
+        {
+            float nextCost = cost[current] + edge.Cost;
+
+            if (cost.TryGetValue(edge.To, out float oldCost) &amp;&amp;
+                nextCost &gt;= oldCost)
+                continue;
+
+            cost[edge.To] = nextCost;
+            parent[edge.To] = current;
+            open.Enqueue(edge.To, nextCost);
+        }
+    }
+
+    if (!cost.ContainsKey(goal))
+        return new List&lt;string&gt;();
+
+    List&lt;string&gt; path = new() { goal };
+    while (path[^1] != start)
+        path.Add(parent[path[^1]]);
+
+    path.Reverse();
+    return path;
+}</code></pre>
+<p>构造输入并运行：</p>
+<pre><code class="language-csharp">Dictionary&lt;string, List&lt;(string To, float Cost)&gt;&gt; graph = new()
+{
+    [&quot;Start&quot;] = new() { new(&quot;Hall&quot;, 2), new(&quot;Balcony&quot;, 6) },
+    [&quot;Hall&quot;] = new() { new(&quot;Door&quot;, 2) },
+    [&quot;Door&quot;] = new() { new(&quot;Goal&quot;, 2) },
+    [&quot;Balcony&quot;] = new() { new(&quot;Goal&quot;, 3) },
+    [&quot;Goal&quot;] = new()
+};
+
+List&lt;string&gt; corridor = FindCorridor(graph, &quot;Start&quot;, &quot;Goal&quot;);
+Console.WriteLine(string.Join(&quot; -&gt; &quot;, corridor));</code></pre>
+<p>输出：</p>
+<pre><code class="language-text">Start -&gt; Hall -&gt; Door -&gt; Goal</code></pre>
+<p>逐轮观察队列：</p>
+<pre><code class="language-text">取出 Start：发现 Hall 成本 2，Balcony 成本 6
+取出 Hall：发现 Door 总成本 4
+取出 Door：发现 Goal 总成本 6
+取出 Balcony：到 Goal 总成本 9，不优于已有的 6
+取出 Goal：搜索结束，沿 parent 反向恢复走廊</code></pre>
+<p>这时得到的只是<strong>多边形 ID 列表</strong>，角色还不知道具体该走哪几个世界坐标。</p>
+<h2 id="第二步-从多边形走廊得到移动点">第二步：从多边形走廊得到移动点</h2>
+<p>相邻多边形共享的一条边叫门户。可以先写一个容易理解、但路径质量一般的版本：取每个门户中点。</p>
+<pre><code class="language-csharp">using System.Numerics;
+
+static Vector2 Midpoint((Vector2 Left, Vector2 Right) portal) =&gt;
+    (portal.Left + portal.Right) * 0.5f;
+
+foreach ((Vector2 Left, Vector2 Right) portal in corridorPortals)
+    movementPoints.Add(Midpoint(portal));</code></pre>
+<p>假设走廊有两个门户：</p>
+<pre><code class="language-text">门户 1：Left=(2,1)，Right=(2,3) -&gt; 中点=(2,2)
+门户 2：Left=(5,0)，Right=(5,4) -&gt; 中点=(5,2)</code></pre>
+<p>角色可以沿 <code>(2,2) -&gt; (5,2)</code> 移动，因此系统已经跑通。但每道门都走中点可能产生不必要的折线。后面的 Funnel 算法就是在<strong>同一组门户</strong>上收紧左右边界，只在必须转弯时输出拐点。</p>
+<p>学习顺序因此是：</p>
+<pre><code class="language-text">多边形图搜索 -&gt; 得到 corridor
+corridor 相邻边 -&gt; 得到 portals
+门户中点法 -&gt; 先得到能走的路径
+Funnel -&gt; 再把路径拉直
+移动组件 -&gt; 最后沿世界坐标移动</code></pre>
+<h2 id="第三步-让一扇门变成动态阻挡">第三步：让一扇门变成动态阻挡</h2>
+<p>如果 <code>Door</code> 被锁住，最小处理是让搜索图不再提供这条连接，然后重新搜索：</p>
+<pre><code class="language-csharp">graph[&quot;Hall&quot;].RemoveAll(edge =&gt; edge.To == &quot;Door&quot;);
+
+List&lt;string&gt; detour = FindCorridor(graph, &quot;Start&quot;, &quot;Goal&quot;);
+Console.WriteLine(string.Join(&quot; -&gt; &quot;, detour));</code></pre>
+<p>当前示例图中的 <code>Start -&gt; Balcony</code> 仍然存在，所以输出会改为：</p>
+<pre><code class="language-text">Start -&gt; Balcony -&gt; Goal</code></pre>
+<p>这清楚地区分了两个层次：附近角色短暂挡路时通常只改局部速度；门关闭导致多边形连接失效时，才修改导航拓扑或触发重新寻路。真实 NavMesh 不一定直接修改这个字典，但决策依据相同。</p>
 <h2 id="烘焙数据是什么">烘焙数据是什么</h2>
 <p>烘焙是把场景与导航规则转换为导航数据的过程。输入通常可能包括：</p>
 <pre><code class="language-text">可参与导航计算的几何。

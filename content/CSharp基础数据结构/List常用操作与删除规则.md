@@ -30,6 +30,73 @@ List<Unit>       存 Unit
 List<GameObject> 存 GameObject
 ```
 
+## 跟着一个列表逐步运行
+
+具体场景是维护“当前场上的敌人 ID”。为什么选择 `List<int>`：业务需要保留进入顺序、允许按下标访问，并且敌人数量会动态增减；这些都是 List 的直接职责。
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+List<int> enemyIds = new() { 101, 102, 103 };
+
+enemyIds.Add(104);
+Console.WriteLine(string.Join(", ", enemyIds));
+
+enemyIds.Remove(102);
+Console.WriteLine(string.Join(", ", enemyIds));
+
+Console.WriteLine(enemyIds.Contains(103));
+Console.WriteLine(enemyIds[0]);
+```
+
+按行运行后的状态是：
+
+```text
+初始                    [101, 102, 103]
+Add(104)               [101, 102, 103, 104]
+Remove(102)            [101, 103, 104]
+Contains(103)          输出 True，列表不变
+enemyIds[0]            输出 101，列表不变
+```
+
+注意两个不同概念：`Remove(102)` 按“值”删除，`RemoveAt(1)` 按“下标”删除。在当前状态 `[101, 103, 104]` 上调用 `RemoveAt(1)`，删掉的是值 `103`。
+
+### 发现问题：正序删除会跳过元素
+
+```csharp
+List<int> values = new() { 2, 4, 5 };
+
+for (int i = 0; i < values.Count; i++)
+{
+    if (values[i] % 2 == 0)
+        values.RemoveAt(i);
+}
+```
+
+逐步看：
+
+```text
+i=0，删除 2       -> [4, 5]
+循环执行 i++      -> i=1
+此时 4 已移到下标 0，却不会再检查
+最终错误结果       -> [4, 5]
+```
+
+倒序遍历时，删除只会影响已经检查过的右侧元素：
+
+```csharp
+for (int i = values.Count - 1; i >= 0; i--)
+{
+    if (values[i] % 2 == 0)
+        values.RemoveAt(i);
+}
+
+Console.WriteLine(string.Join(", ", values)); // 5
+```
+
+后面的每种删除规则，都可以用这份列表手工跟踪“删除前下标、删除的值、删除后元素怎样左移”。
+
 ## 常用操作
 
 添加：

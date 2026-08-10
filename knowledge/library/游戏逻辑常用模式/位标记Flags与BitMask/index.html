@@ -55,9 +55,13 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>16 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#核心思想">核心思想</a>
+      <a data-toc-link href="#跟着二进制位一步步运行">跟着二进制位一步步运行</a>
+      <a class="sub" data-toc-link href="#第二步-判断一个或多个标记">第二步：判断一个或多个标记</a>
+      <a class="sub" data-toc-link href="#第三步-只移除-stunned">第三步：只移除 Stunned</a>
+      <a class="sub" data-toc-link href="#第四步-把位判断用于技能入口">第四步：把位判断用于技能入口</a>
       <a data-toc-link href="#基础声明">基础声明</a>
       <a data-toc-link href="#添加标记">添加标记</a>
       <a data-toc-link href="#判断标记">判断标记</a>
@@ -85,7 +89,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -93,48 +97,52 @@
       <span>01</span>
       <strong>核心思想</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：基础声明">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着二进制位一步步运行">
       <span>02</span>
+      <strong>跟着二进制位一步步运行</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：基础声明">
+      <span>03</span>
       <strong>基础声明</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：添加标记">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：添加标记">
+      <span>04</span>
       <strong>添加标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：判断标记">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：判断标记">
+      <span>05</span>
       <strong>判断标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：移除标记">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：移除标记">
+      <span>06</span>
       <strong>移除标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：互斥状态为什么也能放在 Flags 里">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：互斥状态为什么也能放在 Flags 里">
+      <span>07</span>
       <strong>互斥状态为什么也能放在 Flags 里</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最大好处">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最大好处">
+      <span>08</span>
       <strong>最大好处</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最多支持多少位">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最多支持多少位">
+      <span>09</span>
       <strong>最多支持多少位</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：适合什么">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：适合什么">
+      <span>10</span>
       <strong>适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：不适合什么">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：不适合什么">
+      <span>11</span>
       <strong>不适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：常用模板">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：常用模板">
+      <span>12</span>
       <strong>常用模板</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -147,6 +155,23 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着二进制位一步步运行</h3>
+        <p>先用四个状态观察每一位怎样变化：</p>
+
+        <pre><code class="language-csharp">using System;
+
+[Flags]
+enum UnitState
+{
+    None       = 0,      // 0000
+    CanMove    = 1 &lt;&lt; 0, // 0001
+    CanAttack  = 1 &lt;&lt; 1, // 0010
+    Stunned    = 1 &lt;&lt; 2, // 0100
+    Invincible = 1 &lt;&lt; 3  // 1000
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>基础声明</h3>
         <p>以攻击结果为例，可以这样声明标记：</p>
 
@@ -162,16 +187,16 @@ public enum AttributeAttackEffect
     Heal = 1 &lt;&lt; 5,
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>添加标记</h3>
         <p>添加标记用按位或：</p>
 
         <pre><code class="language-csharp">effects |= AttributeAttackEffect.Precision;
 effects |= AttributeAttackEffect.Critical;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>判断标记</h3>
         <p>判断有没有某个标记，用按位与：</p>
 
@@ -180,15 +205,15 @@ effects |= AttributeAttackEffect.Critical;</code></pre>
     // 有暴击标记
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>移除标记</h3>
         <p>移除标记常用：</p>
 
         <pre><code class="language-csharp">flags &amp;= ~SomeFlag;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>互斥状态为什么也能放在 Flags 里</h3>
         <p>注意：Flags 只是存储和传递多个标签的方式，不负责保证业务规则。</p>
 
@@ -196,15 +221,15 @@ effects |= AttributeAttackEffect.Critical;</code></pre>
 Miss 和 Block 通常互斥。
 Precision 和 Critical 可以叠加。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>最大好处</h3>
         <p>最大的好处不是省内存，而是：</p>
 
         <pre><code class="language-text">把一次结果里可能带的多个信息压成一个字段，传递和判断都很方便。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>最多支持多少位</h3>
         <p>Flags 能支持多少个标记，取决于底层类型。</p>
 
@@ -213,8 +238,8 @@ uint：可以更舒服地用满 32 位。
 long：常用 63 个常规标记。
 ulong：可以用满 64 位。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>适合什么</h3>
         <p>适合：</p>
 
@@ -224,8 +249,8 @@ ulong：可以用满 64 位。</code></pre>
 状态数量不太多
 需要轻量传递或保存结果标签</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>不适合什么</h3>
         <p>不适合：</p>
 
@@ -234,8 +259,8 @@ ulong：可以用满 64 位。</code></pre>
 需要记录来源、持续时间、层数的 Buff
 需要策划动态扩展很多类型的状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>常用模板</h3>
 
 
@@ -251,8 +276,8 @@ flags &amp;= ~SomeFlag;
 // 多个组合
 var combined = FlagA | FlagB;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>它适合表达“多标签结果”，但不自动保证业务合法性。</p>
 
@@ -290,6 +315,74 @@ bool isMiss;
 bool isHeal;</code></pre>
 <p>用 Flags 可以集中成一个字段：</p>
 <pre><code class="language-csharp">AttributeAttackEffect effects;</code></pre>
+<h2 id="跟着二进制位一步步运行">跟着二进制位一步步运行</h2>
+<p>先用四个状态观察每一位怎样变化：</p>
+<pre><code class="language-csharp">using System;
+
+[Flags]
+enum UnitState
+{
+    None       = 0,      // 0000
+    CanMove    = 1 &lt;&lt; 0, // 0001
+    CanAttack  = 1 &lt;&lt; 1, // 0010
+    Stunned    = 1 &lt;&lt; 2, // 0100
+    Invincible = 1 &lt;&lt; 3  // 1000
+}</code></pre>
+<p>从空状态开始添加两个标记：</p>
+<pre><code class="language-csharp">UnitState state = UnitState.None; // 0000
+state |= UnitState.CanMove;       // 0001
+state |= UnitState.Invincible;    // 1001
+
+Console.WriteLine(state); // CanMove, Invincible</code></pre>
+<p><code>|</code> 把对应位置设为 1，同时保留其他位：</p>
+<pre><code class="language-text">0001  CanMove
+1000  Invincible
+----
+1001  两个状态同时存在</code></pre>
+<h3 id="第二步-判断一个或多个标记">第二步：判断一个或多个标记</h3>
+<pre><code class="language-csharp">bool canMove = (state &amp; UnitState.CanMove) != 0;
+
+UnitState required = UnitState.CanMove | UnitState.Invincible;
+bool hasAll = (state &amp; required) == required;
+bool hasAny = (state &amp; required) != 0;</code></pre>
+<p>代入 <code>state = 1001</code>：</p>
+<pre><code class="language-text">1001 &amp; 0001 = 0001，不为 0        -&gt; 包含 CanMove
+1001 &amp; 1001 = 1001，等于 required -&gt; 同时包含两个要求</code></pre>
+<p>判断“全部包含”要比较 <code>== required</code>；判断“至少包含一个”才使用 <code>!= 0</code>。</p>
+<h3 id="第三步-只移除-stunned">第三步：只移除 Stunned</h3>
+<pre><code class="language-csharp">state |= UnitState.Stunned;  // 1101
+state &amp;= ~UnitState.Stunned; // 1001</code></pre>
+<p><code>~Stunned</code> 会得到除了 <code>Stunned</code> 位以外全是 1 的掩码；再用 <code>&amp;</code>，只把目标位清零，<code>CanMove</code> 与 <code>Invincible</code> 保持不变。</p>
+<h3 id="第四步-把位判断用于技能入口">第四步：把位判断用于技能入口</h3>
+<pre><code class="language-csharp">static bool CanCast(UnitState state)
+{
+    bool blocked = (state &amp; UnitState.Stunned) != 0;
+    bool canAttack = (state &amp; UnitState.CanAttack) != 0;
+    return !blocked &amp;&amp; canAttack;
+}</code></pre>
+<p>用具体输入验证：</p>
+<table><thead><tr>
+<th>state</th>
+<th>二进制</th>
+<th><code>CanCast</code></th>
+</tr></thead><tbody>
+<tr>
+<td><code>CanAttack</code></td>
+<td><code>0010</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>CanAttack + Stunned</code></td>
+<td><code>0110</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>CanMove</code></td>
+<td><code>0001</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody></table>
+<p>这时 Flags 不再只是位运算语法，而是一条完整业务链：声明独立位、组合状态、查询要求、清除状态，再把查询结果用于技能规则。</p>
 <h2 id="基础声明">基础声明</h2>
 <p>以攻击结果为例，可以这样声明标记：</p>
 <pre><code class="language-csharp">[Flags]

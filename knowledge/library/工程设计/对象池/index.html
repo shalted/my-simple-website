@@ -55,9 +55,11 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>10 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#对象池解决什么问题">对象池解决什么问题</a>
+      <a data-toc-link href="#跟着代码跑一次-创建-回收-再次取出">跟着代码跑一次：创建、回收、再次取出</a>
+      <a class="sub" data-toc-link href="#第二步-复现重复回收">第二步：复现重复回收</a>
       <a data-toc-link href="#核心结构">核心结构</a>
       <a data-toc-link href="#取对象">取对象</a>
       <a data-toc-link href="#回收对象">回收对象</a>
@@ -78,7 +80,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -86,40 +88,44 @@
       <span>01</span>
       <strong>对象池解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心结构">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码跑一次：创建、回收、再次取出">
       <span>02</span>
+      <strong>跟着代码跑一次：创建、回收、再次取出</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：核心结构">
+      <span>03</span>
       <strong>核心结构</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：取对象">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：取对象">
+      <span>04</span>
       <strong>取对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：回收对象">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：回收对象">
+      <span>05</span>
       <strong>回收对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：简化版对象池">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：简化版对象池">
+      <span>06</span>
       <strong>简化版对象池</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：坑一：取出时要重置状态">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：坑一：取出时要重置状态">
+      <span>07</span>
       <strong>坑一：取出时要重置状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：坑二：防止重复回收">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：坑二：防止重复回收">
+      <span>08</span>
       <strong>坑二：防止重复回收</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：坑三：对象池不是越大越好">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：坑三：对象池不是越大越好">
+      <span>09</span>
       <strong>坑三：对象池不是越大越好</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：适合对象池的场景">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：适合对象池的场景">
+      <span>10</span>
       <strong>适合对象池的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -139,13 +145,61 @@ UI 列表项
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码跑一次：创建、回收、再次取出</h3>
+        <p>先用普通 C# 对象模拟子弹，不依赖 Unity：</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+sealed class Bullet
+{
+    private static int nextId;
+    public int Id { get; } = ++nextId;
+    public bool Active { get; private set; }
+    public float Damage { get; private set; }
+
+    public void Spawn(float damage)
+    {
+        Active = true;
+        Damage = damage;
+    }
+
+    public void Despawn()
+    {
+        Active = false;
+        Damage = 0f;
+    }
+}
+
+sealed class BulletPool
+{
+    private readonly Stack&lt;Bullet&gt; available = new();
+
+    public Bullet Rent(float damage)
+    {
+        Bullet bullet = available.Count &gt; 0
+            ? available.Pop()
+            : new Bullet();
+        bullet.Spawn(damage);
+        return bullet;
+    }
+
+    public void Return(Bullet bullet)
+    {
+        bullet.Despawn();
+        available.Push(bullet);
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>核心结构</h3>
         <p>对象池常用 <code>Stack&lt;T&gt;</code> 保存空闲对象：</p>
 
         <pre><code class="language-csharp">Stack&lt;GameObject&gt; pool = new();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>取对象</h3>
         <p>逻辑：</p>
 
@@ -161,8 +215,8 @@ UI 列表项
     return Instantiate(prefab);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>回收对象</h3>
         <p>逻辑：</p>
 
@@ -172,8 +226,8 @@ UI 列表项
     pool.Push(obj);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>简化版对象池</h3>
         <p>使用：</p>
 
@@ -211,8 +265,8 @@ UI 列表项
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>坑一：取出时要重置状态</h3>
         <p>对象复用前一定要清理旧状态。</p>
 
@@ -221,23 +275,23 @@ UI 列表项
 目标 = enemyA
 已经命中 = true</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>坑二：防止重复回收</h3>
         <p>如果同一个对象被回收两次：</p>
 
         <pre><code class="language-csharp">pool.Release(bullet);
 pool.Release(bullet);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>坑三：对象池不是越大越好</h3>
         <p>对象池减少创建销毁，但也会占内存。</p>
 
         <pre><code class="language-text">不销毁也会占内存。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>适合对象池的场景</h3>
         <p>适合：</p>
 
@@ -246,8 +300,8 @@ pool.Release(bullet);</code></pre>
 生命周期短
 复用成本低</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最重要的三个坑：</p>
 
@@ -285,6 +339,82 @@ GC 压力
 <p>对象池的思路是：</p>
 <pre><code class="language-text">不用了不要销毁，先放回池子。
 下次要用，再从池子里拿出来复用。</code></pre>
+<h2 id="跟着代码跑一次-创建-回收-再次取出">跟着代码跑一次：创建、回收、再次取出</h2>
+<p>先用普通 C# 对象模拟子弹，不依赖 Unity：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+sealed class Bullet
+{
+    private static int nextId;
+    public int Id { get; } = ++nextId;
+    public bool Active { get; private set; }
+    public float Damage { get; private set; }
+
+    public void Spawn(float damage)
+    {
+        Active = true;
+        Damage = damage;
+    }
+
+    public void Despawn()
+    {
+        Active = false;
+        Damage = 0f;
+    }
+}
+
+sealed class BulletPool
+{
+    private readonly Stack&lt;Bullet&gt; available = new();
+
+    public Bullet Rent(float damage)
+    {
+        Bullet bullet = available.Count &gt; 0
+            ? available.Pop()
+            : new Bullet();
+        bullet.Spawn(damage);
+        return bullet;
+    }
+
+    public void Return(Bullet bullet)
+    {
+        bullet.Despawn();
+        available.Push(bullet);
+    }
+}</code></pre>
+<p>按下面顺序调用：</p>
+<pre><code class="language-csharp">BulletPool pool = new();
+Bullet first = pool.Rent(10f);
+Console.WriteLine($&quot;第一次: Bullet #{first.Id}, Damage={first.Damage}&quot;);
+
+pool.Return(first);
+
+Bullet second = pool.Rent(25f);
+Console.WriteLine($&quot;第二次: Bullet #{second.Id}, Damage={second.Damage}&quot;);</code></pre>
+<p>两次都是 <code>Bullet #1</code>，但第二次伤害是 <code>25</code>：</p>
+<pre><code class="language-text">Rent(10) -&gt; 池为空，创建 #1，Spawn(10)
+Return   -&gt; Despawn 清理 #1，压回池
+Rent(25) -&gt; 弹出 #1，Spawn(25)</code></pre>
+<h3 id="第二步-复现重复回收">第二步：复现重复回收</h3>
+<pre><code class="language-csharp">pool.Return(second);
+pool.Return(second); // 错：同一个引用被压入两次
+
+Bullet a = pool.Rent(5f);
+Bullet b = pool.Rent(8f);
+Console.WriteLine(ReferenceEquals(a, b)); // True，严重错误</code></pre>
+<p>两个调用者以为各自拿到一颗子弹，实际拿到同一个对象。加入“当前是否在池中”的集合：</p>
+<pre><code class="language-csharp">private readonly HashSet&lt;Bullet&gt; inPool = new();
+
+public void Return(Bullet bullet)
+{
+    if (!inPool.Add(bullet))
+        throw new InvalidOperationException(&quot;Bullet 被重复回收&quot;);
+
+    bullet.Despawn();
+    available.Push(bullet);
+}</code></pre>
+<p>同时在 <code>Rent</code> 弹出对象后执行 <code>inPool.Remove(bullet)</code>。这次第二个 <code>Return</code> 会立即报出生命周期错误，而不是几帧后表现成两发子弹互相覆盖。后面的 Unity 版本只是把 <code>Spawn/Despawn</code> 换成激活状态、Transform、协程和事件绑定清理，池的状态机没有变化。</p>
 <h2 id="核心结构">核心结构</h2>
 <p>对象池常用 <code>Stack&lt;T&gt;</code> 保存空闲对象：</p>
 <pre><code class="language-csharp">Stack&lt;GameObject&gt; pool = new();</code></pre>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="网络预测关注：">
+  <meta name="description" content="这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。">
   <title>网络抖动缓冲、快照插值与可观测性 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -51,12 +51,17 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>网络抖动缓冲、快照插值与可观测性</h1>
-      <p class="hero-copy">网络预测关注：</p>
+      <p class="hero-copy">这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>46 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>51 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先把标题翻译成人话">先把标题翻译成人话</a>
+      <a data-toc-link href="#顺着最小代码走一遍">顺着最小代码走一遍</a>
+      <a class="sub" data-toc-link href="#收包-先存-不立即显示">收包：先存，不立即显示</a>
+      <a class="sub" data-toc-link href="#每帧渲染-显示稍早的时间">每帧渲染：显示稍早的时间</a>
+      <a class="sub" data-toc-link href="#可观测性-不要只返回一个位置">可观测性：不要只返回一个位置</a>
       <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
       <a data-toc-link href="#生活化模型-用广播节目理解抖动缓冲">生活化模型：用广播节目理解抖动缓冲</a>
       <a data-toc-link href="#三条时间线">三条时间线</a>
@@ -114,89 +119,118 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 19</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把标题翻译成人话">
       <span>01</span>
+      <strong>先把标题翻译成人话</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：顺着最小代码走一遍">
+      <span>02</span>
+      <strong>顺着最小代码走一遍</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：这篇文章深化什么">
+      <span>03</span>
       <strong>这篇文章深化什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：用广播节目理解抖动缓冲">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：生活化模型：用广播节目理解抖动缓冲">
+      <span>04</span>
       <strong>生活化模型：用广播节目理解抖动缓冲</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：三条时间线">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：三条时间线">
+      <span>05</span>
       <strong>三条时间线</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：快照应该携带什么">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：快照应该携带什么">
+      <span>06</span>
       <strong>快照应该携带什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：缓冲区的关键状态">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：缓冲区的关键状态">
+      <span>07</span>
       <strong>缓冲区的关键状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：从收包到显示的逐步流程">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从收包到显示的逐步流程">
+      <span>08</span>
       <strong>从收包到显示的逐步流程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最小 C# 插值结果">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 插值结果">
+      <span>09</span>
       <strong>最小 C# 插值结果</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：缓冲区查询伪代码">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：缓冲区查询伪代码">
+      <span>10</span>
       <strong>缓冲区查询伪代码</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：正常路径">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：正常路径">
+      <span>11</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界路径">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界路径">
+      <span>12</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：失败路径">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：失败路径">
+      <span>13</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：插值与预测怎样协作">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：插值与预测怎样协作">
+      <span>14</span>
       <strong>插值与预测怎样协作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：插值延迟怎样确定">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：插值延迟怎样确定">
+      <span>15</span>
       <strong>插值延迟怎样确定</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：可观测性">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：可观测性">
+      <span>16</span>
       <strong>可观测性</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：代价">
+      <span>17</span>
       <strong>代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：通用机制与实现选择">
+      <span>18</span>
       <strong>通用机制与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
-      <span>17</span>
+    <button class="" type="button" data-deck-jump="18" aria-label="查看第 19 步：最后总结">
+      <span>19</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先把标题翻译成人话</h3>
+        <p>这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。</p>
+
+        <pre><code class="language-text">抖动缓冲：先把位置快照存一小会儿，吸收到达时间的忽快忽慢。
+快照插值：在前后两个已知位置之间，算出当前画面应该显示的位置。
+可观测性：记录包、缓冲和插值状态，让卡顿或瞬移的原因能够被查到。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>顺着最小代码走一遍</h3>
+        <p>假设服务器发来的每个快照只有时间和位置：</p>
+        <ul><li><code>renderTime</code>：现在估计服务器走到 <code>10.20s</code>，但画面故意播放 <code>10.10s</code>。</li><li><code>FindAround</code>：找到包住 <code>10.10s</code> 的左右两帧，比如 <code>10.05s</code> 和 <code>10.15s</code>。</li><li><code>t</code>：算出目标时间位于这段区间的百分比，此处是 <code>0.5</code>。</li><li><code>Lerp</code>：显示在两个位置正中间，角色不再从左快照瞬移到右快照。</li></ul>
+        <pre><code class="language-csharp">public readonly record struct Snapshot(
+    double ServerTime,
+    Vector3 Position);
+
+readonly List&lt;Snapshot&gt; buffer = new();
+const double interpolationDelay = 0.10; // 故意显示服务器 100ms 前的状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>这篇文章深化什么</h3>
         <p>网络预测关注：</p>
 
         <pre><code class="language-text">本地怎样在权威结果到达前先响应输入，
 以及权威状态到达后怎样校正预测。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>生活化模型：用广播节目理解抖动缓冲</h3>
         <p>想象直播节目每隔固定节奏发送一小段音频。</p>
 
@@ -205,8 +239,8 @@
 片段 103
 片段 104</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>三条时间线</h3>
         <p>网络同步至少涉及：</p>
 
@@ -214,8 +248,8 @@
 客户端本地时间
 渲染时间</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>快照应该携带什么</h3>
         <p>最小快照身份通常包括：</p>
 
@@ -224,8 +258,8 @@ ServerTick 或 ServerTime
 Sequence
 State</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>缓冲区的关键状态</h3>
         <p>每个实体或同步通道的缓冲区可以记录：</p>
 
@@ -238,8 +272,8 @@ State</code></pre>
 当前插值右快照
 缓冲质量状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>从收包到显示的逐步流程</h3>
         <p>验证：</p>
 
@@ -248,8 +282,8 @@ Tick 或时间戳格式有效
 状态字段满足协议
 版本与当前同步协议一致</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>最小 C# 插值结果</h3>
         <p>这段示例只在确认区间有效时返回位置。</p>
 
@@ -324,8 +358,8 @@ public static SnapshotSample SamplePosition(
         null);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>缓冲区查询伪代码</h3>
         <p>所有非 <code>Ready</code> 结果都保留具体原因，不返回默认位置。</p>
 
@@ -349,8 +383,8 @@ public static SnapshotSample SamplePosition(
 
     return Interpolate(left, right, renderTime)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>正常路径</h3>
         <p>服务器按序产生：</p>
 
@@ -358,23 +392,23 @@ public static SnapshotSample SamplePosition(
 Tick 202
 Tick 203</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>缓冲按服务器时间插入后仍是：</p>
 
         <pre><code class="language-text">203 先到
 202 后到</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>目标渲染时间已经超过最新快照：</p>
 
         <pre><code class="language-text">没有右快照可用于插值。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>插值与预测怎样协作</h3>
         <p>常见数据流：</p>
 
@@ -384,8 +418,8 @@ Tick 203</code></pre>
 -&gt; 快照插值
 -&gt; 远端表现</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>插值延迟怎样确定</h3>
         <p>延迟不是“越大越好”或“越小越好”。</p>
 
@@ -397,8 +431,8 @@ Tick 203</code></pre>
 目标端到端延迟
 缓冲欠载率</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>可观测性</h3>
         <p>一次问题诊断至少需要把这些事件关联到：</p>
 
@@ -410,8 +444,8 @@ InvalidSnapshotCount
 ArrivalInterval
 EstimatedJitter</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>代价</h3>
         <p>抖动缓冲与插值增加：</p>
 
@@ -422,8 +456,8 @@ EstimatedJitter</code></pre>
 离散状态边界处理
 观测数据量</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
         <h3>通用机制与实现选择</h3>
 
 
@@ -434,8 +468,8 @@ EstimatedJitter</code></pre>
 不同生命代次和离散运动边界不能直接连续插值。
 欠载时不存在完整插值区间。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="16" hidden>
-        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="18" hidden>
+        <div class="deck-step-meta">STEP 19 / CODE / LOGIC</div>
         <h3>最后总结</h3>
         <p>网络预测回答：</p>
 
@@ -451,6 +485,62 @@ EstimatedJitter</code></pre>
       </footer>
     </section>
         <p>分类：工程设计 / 网络同步</p>
+<h2 id="先把标题翻译成人话">先把标题翻译成人话</h2>
+<p>这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。</p>
+<p>服务器可能每 <code>50ms</code> 发送一次其他玩家的位置，但这些包到达客户端的时间并不整齐。客户端采用三步处理：</p>
+<pre><code class="language-text">抖动缓冲：先把位置快照存一小会儿，吸收到达时间的忽快忽慢。
+快照插值：在前后两个已知位置之间，算出当前画面应该显示的位置。
+可观测性：记录包、缓冲和插值状态，让卡顿或瞬移的原因能够被查到。</code></pre>
+<p>一句话记忆：<strong>缓冲负责等齐，插值负责画顺，可观测性负责查清。</strong></p>
+<h2 id="顺着最小代码走一遍">顺着最小代码走一遍</h2>
+<p>假设服务器发来的每个快照只有时间和位置：</p>
+<pre><code class="language-csharp">public readonly record struct Snapshot(
+    double ServerTime,
+    Vector3 Position);
+
+readonly List&lt;Snapshot&gt; buffer = new();
+const double interpolationDelay = 0.10; // 故意显示服务器 100ms 前的状态</code></pre>
+<h3 id="收包-先存-不立即显示">收包：先存，不立即显示</h3>
+<pre><code class="language-csharp">void OnSnapshotReceived(Snapshot snapshot)
+{
+    buffer.Add(snapshot);
+    buffer.Sort((a, b) =&gt; a.ServerTime.CompareTo(b.ServerTime));
+}</code></pre>
+<p><code>buffer.Add</code> 是“缓冲”：收到快照后先保存。<code>Sort</code> 是为了处理乱序，例如 <code>10.10s</code> 的包可能比 <code>10.05s</code> 更早到达；播放顺序应该看服务器时间，而不是到达顺序。</p>
+<h3 id="每帧渲染-显示稍早的时间">每帧渲染：显示稍早的时间</h3>
+<pre><code class="language-csharp">void Render(double estimatedServerNow)
+{
+    double renderTime = estimatedServerNow - interpolationDelay;
+    (Snapshot left, Snapshot right) = FindAround(buffer, renderTime);
+
+    double duration = right.ServerTime - left.ServerTime;
+    float t = (float)((renderTime - left.ServerTime) / duration);
+    transform.position = Vector3.Lerp(left.Position, right.Position, t);
+}</code></pre>
+<p>按顺序理解这几行：</p>
+<ol>
+<li><code>renderTime</code>：现在估计服务器走到 <code>10.20s</code>，但画面故意播放 <code>10.10s</code>。</li>
+<li><code>FindAround</code>：找到包住 <code>10.10s</code> 的左右两帧，比如 <code>10.05s</code> 和 <code>10.15s</code>。</li>
+<li><code>t</code>：算出目标时间位于这段区间的百分比，此处是 <code>0.5</code>。</li>
+<li><code>Lerp</code>：显示在两个位置正中间，角色不再从左快照瞬移到右快照。</li>
+</ol>
+<p>具体数字如下：</p>
+<pre><code class="language-text">左快照：时间 10.05s，位置 x = 0
+右快照：时间 10.15s，位置 x = 10
+渲染时间：10.10s
+
+t = (10.10 - 10.05) / (10.15 - 10.05) = 0.5
+x = Lerp(0, 10, 0.5) = 5</code></pre>
+<p>这段最小代码还不够安全：左右快照可能找不到、时间可能相同、快照可能跨越传送，网络也可能长时间没有新包。后文的 <code>SnapshotSampleStatus</code> 和完整示例，就是把这些失败情况从“代码崩溃或角色乱跳”变成明确结果。</p>
+<h3 id="可观测性-不要只返回一个位置">可观测性：不要只返回一个位置</h3>
+<p>如果 <code>FindAround</code> 找不到右快照，只返回 <code>Vector3.zero</code>，画面会把角色拉到世界原点，开发者却不知道发生了什么。更合适的接口会同时返回：</p>
+<pre><code class="language-csharp">return new SnapshotSample(
+    Status: SnapshotSampleStatus.Underrun,
+    Position: null,
+    LeftTick: latest.ServerTick,
+    RightTick: null,
+    Error: &quot;目标渲染时间已超过最新快照&quot;);</code></pre>
+<p>这里的 <code>Status</code> 和 <code>Error</code> 就是最小的可观测性：上层可以选择冻结或外推，调试面板也能明确显示“缓冲欠载”，而不是只看到角色突然停住。</p>
 <h2 id="这篇文章深化什么">这篇文章深化什么</h2>
 <p>网络预测关注：</p>
 <pre><code class="language-text">本地怎样在权威结果到达前先响应输入，
@@ -695,6 +785,13 @@ public static SnapshotSample SamplePosition(
         null);
 }</code></pre>
 <p>这段示例只在确认区间有效时返回位置。</p>
+<p>把它和前面的最小代码对照：</p>
+<pre><code class="language-text">LifetimeGeneration 检查  -&gt; 防止把角色死亡前和重生后的位置连起来
+duration &lt;= 0             -&gt; 防止重复或倒序时间造成除零和错误比例
+renderTime 区间检查       -&gt; 明确报告缺少左/右快照，不能盲目插值
+factor                    -&gt; 就是前面例子中的 t
+Vector3.Lerp              -&gt; 根据 t 计算左右位置之间的显示位置
+SnapshotSample.Status     -&gt; 把本次结果是否可信一起交给调用方</code></pre>
 <p>它没有在 <code>Underrun</code> 时：</p>
 <pre><code class="language-text">冻结最后位置
 外推速度

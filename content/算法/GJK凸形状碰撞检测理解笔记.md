@@ -37,6 +37,131 @@ SAT：找分离轴。
 GJK：看闵可夫斯基差 A - B 是否包含原点。
 ```
 
+## 跟着代码算出第一个 Support 点
+
+先实现最基础的“沿某方向找最远顶点”：
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+
+static Vector2 Furthest(Vector2[] vertices, Vector2 direction)
+{
+    Vector2 best = vertices[0];
+    float bestDot = Vector2.Dot(best, direction);
+
+    for (int i = 1; i < vertices.Length; i++)
+    {
+        float dot = Vector2.Dot(vertices[i], direction);
+        if (dot > bestDot)
+        {
+            best = vertices[i];
+            bestDot = dot;
+        }
+    }
+
+    return best;
+}
+
+static Vector2 MinkowskiSupport(
+    Vector2[] shapeA,
+    Vector2[] shapeB,
+    Vector2 direction)
+{
+    return Furthest(shapeA, direction)
+         - Furthest(shapeB, -direction);
+}
+```
+
+两个正方形左右分开：
+
+```csharp
+Vector2[] a =
+{
+    new(-1, -1), new(1, -1),
+    new( 1,  1), new(-1, 1)
+};
+
+Vector2[] b =
+{
+    new(2, -1), new(4, -1),
+    new(4,  1), new(2, 1)
+};
+
+Vector2 direction = Vector2.UnitX;
+Vector2 support = MinkowskiSupport(a, b, direction);
+
+Console.WriteLine(support);                    // <-1, 0>
+Console.WriteLine(Vector2.Dot(support, direction)); // -1
+```
+
+沿右方向计算时：
+
+```text
+A 在 +X 最远的点 x = 1
+B 在 -X 最远的点 x = 2
+A - B 的 support.x = 1 - 2 = -1
+```
+
+Support 点在原点左侧，且沿搜索方向的点积仍小于 0。这说明闵可夫斯基差在这个方向到不了原点，可以提前判定两个形状不相交。
+
+## 第二步：让两个方块发生重叠
+
+把 B 左移：
+
+```csharp
+b = new[]
+{
+    new Vector2(0.5f, -1), new Vector2(2.5f, -1),
+    new Vector2(2.5f,  1), new Vector2(0.5f,  1)
+};
+
+support = MinkowskiSupport(a, b, Vector2.UnitX);
+Console.WriteLine(support); // <0.5, 0>
+```
+
+现在点积为正，只能说明沿这个方向没有立即找到分离证据，**不能只凭一个点判定相交**。GJK 接下来会把 Support 点加入 Simplex，并把搜索方向转向原点：
+
+```csharp
+List<Vector2> simplex = new() { support };
+direction = -support;
+```
+
+后续迭代反复执行：
+
+```text
+1. 沿 direction 取新的 Minkowski Support
+2. 新点沿 direction 仍越不过原点 -> 不相交
+3. 否则把点加入 Simplex
+4. 根据点、线段或三角形中离原点最近的区域更新 Simplex
+5. Simplex 包含原点 -> 相交
+```
+
+### 用日志观察一次迭代
+
+```csharp
+for (int iteration = 0; iteration < maxIterations; iteration++)
+{
+    Vector2 point = MinkowskiSupport(a, b, direction);
+    float progress = Vector2.Dot(point, direction);
+
+    Console.WriteLine(
+        $"iter={iteration}, dir={direction}, " +
+        $"support={point}, dot={progress}");
+
+    if (progress < 0f)
+        return false;
+
+    simplex.Add(point);
+
+    if (UpdateSimplexAndDirection(simplex, ref direction))
+        return true;
+}
+```
+
+`UpdateSimplexAndDirection` 是 GJK 最容易写错的部分：它要根据 Simplex 的 Voronoi 区域删点、换方向，并判断原点是否被包围。教学时可以继续沿后文的一维、二维图理解；项目里应使用经过验证的物理库实现，并为重合点、零方向和迭代上限保留测试，而不是只复制这段循环骨架。
+
 ## 原点不是选出来的
 
 GJK 里的原点不是算法随便选的点。

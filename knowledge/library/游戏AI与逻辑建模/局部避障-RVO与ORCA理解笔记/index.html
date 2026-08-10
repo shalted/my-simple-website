@@ -55,10 +55,13 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#先记住它解决什么问题">先记住它解决什么问题</a>
       <a data-toc-link href="#改速度不只是改快慢">改速度不只是改快慢</a>
+      <a data-toc-link href="#跟着代码做-先判断两个人会不会撞">跟着代码做：先判断两个人会不会撞</a>
+      <a data-toc-link href="#第二步-从候选速度里挑一个安全的">第二步：从候选速度里挑一个安全的</a>
+      <a data-toc-link href="#第三步-从-我全躲-变成-双方分担">第三步：从“我全躲”变成“双方分担”</a>
       <a data-toc-link href="#它为什么能提前避让">它为什么能提前避让</a>
       <a data-toc-link href="#rvo-和-orca-的直观区别">RVO 和 ORCA 的直观区别</a>
       <a data-toc-link href="#开阔地里的图解">开阔地里的图解</a>
@@ -77,7 +80,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -89,32 +92,44 @@
       <span>02</span>
       <strong>改速度不只是改快慢</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：它为什么能提前避让">
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码做：先判断两个人会不会撞">
       <span>03</span>
+      <strong>跟着代码做：先判断两个人会不会撞</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二步：从候选速度里挑一个安全的">
+      <span>04</span>
+      <strong>第二步：从候选速度里挑一个安全的</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三步：从“我全躲”变成“双方分担”">
+      <span>05</span>
+      <strong>第三步：从“我全躲”变成“双方分担”</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：它为什么能提前避让">
+      <span>06</span>
       <strong>它为什么能提前避让</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：RVO 和 ORCA 的直观区别">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：RVO 和 ORCA 的直观区别">
+      <span>07</span>
       <strong>RVO 和 ORCA 的直观区别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：开阔地里的图解">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：开阔地里的图解">
+      <span>08</span>
       <strong>开阔地里的图解</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：左侧有墙时的问题">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：左侧有墙时的问题">
+      <span>09</span>
       <strong>左侧有墙时的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：窄路时 RVO / ORCA 不够">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：窄路时 RVO / ORCA 不够">
+      <span>10</span>
       <strong>窄路时 RVO / ORCA 不够</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：现在的分层理解">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：现在的分层理解">
+      <span>11</span>
       <strong>现在的分层理解</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -134,27 +149,121 @@
       </article>
       <article class="deck-slide" data-deck-slide="2" hidden>
         <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>跟着代码做：先判断两个人会不会撞</h3>
+        <p>先不实现完整 RVO / ORCA，只做一个可以运行的二维预测器。A 在左边向右走，B 在右边向左走：</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Numerics;
+
+static bool WillCollide(
+    Vector2 positionA,
+    Vector2 velocityA,
+    Vector2 positionB,
+    Vector2 velocityB,
+    float combinedRadius,
+    float timeHorizon)
+{
+    Vector2 relativePosition = positionB - positionA;
+    Vector2 relativeVelocity = velocityB - velocityA;
+
+    float speedSquared = relativeVelocity.LengthSquared();
+    if (speedSquared &lt; 0.0001f)
+        return relativePosition.Length() &lt; combinedRadius;
+
+    float closestTime = -Vector2.Dot(
+        relativePosition,
+        relativeVelocity) / speedSquared;
+
+    closestTime = Math.Clamp(closestTime, 0f, timeHorizon);
+    Vector2 separation =
+        relativePosition + relativeVelocity * closestTime;
+
+    return separation.Length() &lt; combinedRadius;
+}
+
+Vector2 positionA = new(-2f, 0f);
+Vector2 velocityA = new(1f, 0f);
+Vector2 positionB = new( 2f, 0f);
+Vector2 velocityB = new(-1f, 0f);
+
+Console.WriteLine(WillCollide(
+    positionA, velocityA,
+    positionB, velocityB,
+    combinedRadius: 1f,
+    timeHorizon: 3f));</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+        <h3>第二步：从候选速度里挑一个安全的</h3>
+        <p>先用离散候选做教学版本：直走、左绕、右绕和停下。</p>
+
+        <pre><code class="language-csharp">Vector2 preferredVelocity = new(1f, 0f);
+
+Vector2[] candidates =
+{
+    new(1.0f,  0.0f),
+    new(0.7f,  0.7f),
+    new(0.7f, -0.7f),
+    Vector2.Zero
+};
+
+Vector2 best = Vector2.Zero;
+float bestCost = float.PositiveInfinity;
+
+foreach (Vector2 candidate in candidates)
+{
+    bool unsafeVelocity = WillCollide(
+        positionA, candidate,
+        positionB, velocityB,
+        combinedRadius: 1f,
+        timeHorizon: 3f);
+
+    if (unsafeVelocity)
+        continue;
+
+    float cost = Vector2.DistanceSquared(
+        candidate, preferredVelocity);
+
+    if (cost &lt; bestCost)
+    {
+        best = candidate;
+        bestCost = cost;
+    }
+}
+
+Console.WriteLine($&quot;选择速度: ({best.X:F1}, {best.Y:F1})&quot;);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>第三步：从“我全躲”变成“双方分担”</h3>
+        <p>上面的 A 假设 B 完全不改变速度，于是 A 承担全部避让。如果双方都运行同一规则，可以各自修正一部分：</p>
+
+        <pre><code class="language-text">A 原速度 ( 1.0, 0.0) -&gt; 建议修正到 ( 0.85, 0.35)
+B 原速度 (-1.0, 0.0) -&gt; 建议修正到 (-0.85,-0.35)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>它为什么能提前避让</h3>
         <p>如果只判断当前有没有碰撞，发现时通常已经晚了。</p>
 
         <pre><code class="language-text">如果我继续用某个速度移动，未来几秒内会不会和附近单位重叠。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>RVO 和 ORCA 的直观区别</h3>
         <p>RVO 的意思是 Reciprocal Velocity Obstacles。</p>
 
         <pre><code class="language-text">双方共同承担避让。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>开阔地里的图解</h3>
         <p>开阔地时，RVO / ORCA 比较适合：</p>
 
         <pre><code class="language-text">A ---&gt;           &lt;--- B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>左侧有墙时的问题</h3>
         <p>如果左侧是墙：</p>
 
@@ -163,15 +272,15 @@
 |   A ---&gt;        &lt;--- B
 |</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>窄路时 RVO / ORCA 不够</h3>
         <p>如果两侧都是墙：</p>
 
         <pre><code class="language-text">墙 |  A ---&gt;     &lt;--- B  | 墙</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>现在的分层理解</h3>
         <p>可以先按这几层记：</p>
 
@@ -183,8 +292,8 @@ RVO / ORCA：开阔区域里，实时选择安全速度向量。
 通道预约 / 优先级：窄路里决定谁先过。
 物理碰撞：最后防止真的穿模重叠。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>RVO / ORCA 的作用不是：</p>
 
@@ -220,6 +329,112 @@ RVO / ORCA：开阔区域里，实时选择安全速度向量。
 <p>它同时包含：</p>
 <pre><code class="language-text">方向
 大小</code></pre>
+<h2 id="跟着代码做-先判断两个人会不会撞">跟着代码做：先判断两个人会不会撞</h2>
+<p>先不实现完整 RVO / ORCA，只做一个可以运行的二维预测器。A 在左边向右走，B 在右边向左走：</p>
+<pre><code class="language-csharp">using System;
+using System.Numerics;
+
+static bool WillCollide(
+    Vector2 positionA,
+    Vector2 velocityA,
+    Vector2 positionB,
+    Vector2 velocityB,
+    float combinedRadius,
+    float timeHorizon)
+{
+    Vector2 relativePosition = positionB - positionA;
+    Vector2 relativeVelocity = velocityB - velocityA;
+
+    float speedSquared = relativeVelocity.LengthSquared();
+    if (speedSquared &lt; 0.0001f)
+        return relativePosition.Length() &lt; combinedRadius;
+
+    float closestTime = -Vector2.Dot(
+        relativePosition,
+        relativeVelocity) / speedSquared;
+
+    closestTime = Math.Clamp(closestTime, 0f, timeHorizon);
+    Vector2 separation =
+        relativePosition + relativeVelocity * closestTime;
+
+    return separation.Length() &lt; combinedRadius;
+}
+
+Vector2 positionA = new(-2f, 0f);
+Vector2 velocityA = new(1f, 0f);
+Vector2 positionB = new( 2f, 0f);
+Vector2 velocityB = new(-1f, 0f);
+
+Console.WriteLine(WillCollide(
+    positionA, velocityA,
+    positionB, velocityB,
+    combinedRadius: 1f,
+    timeHorizon: 3f));</code></pre>
+<p>预期输出是 <code>True</code>。把数值代进去：</p>
+<pre><code class="language-text">relativePosition = (2, 0) - (-2, 0) = (4, 0)
+relativeVelocity = (-1, 0) - (1, 0) = (-2, 0)
+closestTime = -Dot((4,0),(-2,0)) / 4 = 2 秒
+2 秒后的相对距离 = (4,0) + (-2,0) * 2 = (0,0)</code></pre>
+<p>两人的中心会在预测窗口内重合，所以当前速度不安全。这里第一次体现了“速度空间”的思路：我们没有等角色真正撞上，而是在测试<strong>某个候选速度会导致什么未来结果</strong>。</p>
+<h2 id="第二步-从候选速度里挑一个安全的">第二步：从候选速度里挑一个安全的</h2>
+<p>先用离散候选做教学版本：直走、左绕、右绕和停下。</p>
+<pre><code class="language-csharp">Vector2 preferredVelocity = new(1f, 0f);
+
+Vector2[] candidates =
+{
+    new(1.0f,  0.0f),
+    new(0.7f,  0.7f),
+    new(0.7f, -0.7f),
+    Vector2.Zero
+};
+
+Vector2 best = Vector2.Zero;
+float bestCost = float.PositiveInfinity;
+
+foreach (Vector2 candidate in candidates)
+{
+    bool unsafeVelocity = WillCollide(
+        positionA, candidate,
+        positionB, velocityB,
+        combinedRadius: 1f,
+        timeHorizon: 3f);
+
+    if (unsafeVelocity)
+        continue;
+
+    float cost = Vector2.DistanceSquared(
+        candidate, preferredVelocity);
+
+    if (cost &lt; bestCost)
+    {
+        best = candidate;
+        bestCost = cost;
+    }
+}
+
+Console.WriteLine($&quot;选择速度: ({best.X:F1}, {best.Y:F1})&quot;);</code></pre>
+<p>运行过程是：</p>
+<pre><code class="language-text">(1.0, 0.0)  -&gt; 会撞，排除
+(0.7, 0.7)  -&gt; 安全，与期望速度的差异较小，暂存
+(0.7,-0.7)  -&gt; 也安全，但不比当前结果更好
+(0.0, 0.0)  -&gt; 安全，但离期望速度更远
+最终选择 (0.7, 0.7)</code></pre>
+<p>这段代码展示了局部避障的共同骨架：</p>
+<pre><code class="language-text">期望速度 preferredVelocity
+-&gt; 排除会碰撞的速度
+-&gt; 在安全速度中选择最接近期望的一个
+-&gt; 用选中速度推进角色</code></pre>
+<p>它还不是 RVO 或 ORCA，只是离散采样教学版。真正的 RVO / ORCA 不需要只试四个候选点，而是在连续速度空间里构造禁区或半平面约束。</p>
+<h2 id="第三步-从-我全躲-变成-双方分担">第三步：从“我全躲”变成“双方分担”</h2>
+<p>上面的 A 假设 B 完全不改变速度，于是 A 承担全部避让。如果双方都运行同一规则，可以各自修正一部分：</p>
+<pre><code class="language-text">A 原速度 ( 1.0, 0.0) -&gt; 建议修正到 ( 0.85, 0.35)
+B 原速度 (-1.0, 0.0) -&gt; 建议修正到 (-0.85,-0.35)</code></pre>
+<p>RVO 的“Reciprocal”强调双方共同响应。ORCA 进一步把对邻居的避碰要求表示成速度空间中的线性约束，并在所有约束允许的区域里选择最接近期望速度的解。</p>
+<p>因此阅读后面的速度障碍图时，可以一直对应这三样东西：</p>
+<pre><code class="language-text">preferredVelocity -&gt; 如果没有邻居，角色最想采用的速度
+forbidden region  -&gt; 会在时间窗口内发生碰撞的速度集合
+chosen velocity   -&gt; 约束外、且尽量接近期望的最终速度</code></pre>
+<p>项目实现还要加入多个邻居、墙体约束、最大速度、数值容差和无可行解处理。示例的任务只是先让“为什么改速度就能提前避让”可以用具体数字跑出来。</p>
 <p>所以 RVO / ORCA 改速度，其实也在改移动方向。</p>
 <p>例如原本想往右走：</p>
 <pre><code class="language-text">desiredVelocity = (1, 0) * 3</code></pre>

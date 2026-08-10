@@ -34,8 +34,11 @@ npm run knowledge:build
 检查所有静态页面的站内文件、传统锚点和交互场景链接：
 
 ```powershell
+npm run check:content
 npm run check:links
 ```
+
+`check:content` 会检查每篇正文是否同时包含实现代码、具体场景、运行跟踪、原因说明和边界说明，避免文章退回到“只有术语和结论”的状态。
 
 ## 自动部署
 

@@ -32,6 +32,109 @@ Broad Phase 负责少算。
 Narrow Phase 负责算准。
 ```
 
+## 跟着代码筛一次碰撞对
+
+先用二维 AABB 跑通宽阶段。把包围盒类型放在 `Aabb.cs`：
+
+```csharp
+using System.Numerics;
+
+readonly record struct Aabb(Vector2 Min, Vector2 Max)
+{
+    public bool Overlaps(Aabb other)
+    {
+        bool separated =
+            Max.X < other.Min.X ||
+            Min.X > other.Max.X ||
+            Max.Y < other.Min.Y ||
+            Min.Y > other.Max.Y;
+
+        return !separated;
+    }
+}
+```
+
+准备三个物体：
+
+```csharp
+using System;
+using System.Numerics;
+
+Aabb player = new(
+    new Vector2(0, 0),
+    new Vector2(2, 2));
+
+Aabb enemy = new(
+    new Vector2(1, 1),
+    new Vector2(3, 3));
+
+Aabb tree = new(
+    new Vector2(10, 10),
+    new Vector2(12, 12));
+
+Console.WriteLine(player.Overlaps(enemy)); // True
+Console.WriteLine(player.Overlaps(tree));  // False
+```
+
+`player` 与 `enemy` 在 X、Y 两个方向都有重叠，所以进入候选；`tree` 在 X 方向已经完全分开，不需要继续做精确形状检测。
+
+### 第二步：从所有组合中收集候选对
+
+```csharp
+var bodies = new[]
+{
+    (Name: "Player", Bounds: player),
+    (Name: "Enemy", Bounds: enemy),
+    (Name: "Tree", Bounds: tree)
+};
+
+for (int i = 0; i < bodies.Length; i++)
+{
+    for (int j = i + 1; j < bodies.Length; j++)
+    {
+        if (!bodies[i].Bounds.Overlaps(bodies[j].Bounds))
+            continue;
+
+        Console.WriteLine(
+            $"候选对: {bodies[i].Name} - {bodies[j].Name}");
+    }
+}
+```
+
+输出只有：
+
+```text
+候选对: Player - Enemy
+```
+
+注意它仍然叫“候选对”。AABB 重叠不保证内部的旋转多边形真的接触，只保证它们**可能**接触。
+
+### 第三步：只对候选对做窄阶段
+
+```csharp
+foreach ((Shape A, Shape B) pair in broadPhasePairs)
+{
+    CollisionResult result = Sat.Test(pair.A, pair.B);
+
+    if (result.Intersects)
+        Resolve(pair, result.Normal, result.Depth);
+}
+```
+
+这段是项目接口示意：`broadPhasePairs` 来自宽阶段；`Sat.Test` 才检查凸形状在各条候选轴上的投影；只有确认相交后才进入响应。
+
+完整运行链是：
+
+```text
+3 个物体产生 3 个两两组合
+-> AABB 快速排除 Player-Tree、Enemy-Tree
+-> 只把 Player-Enemy 送入 SAT
+-> SAT 返回是否相交、法线和穿透深度
+-> 响应层决定推开、反弹或触发事件
+```
+
+后文的 OBB、BVH 和 SAT 分别改进包围体精度、候选查询效率和窄阶段准确性，但不会改变“先少算，再算准”的调用顺序。
+
 ## Broad Phase
 
 Broad Phase 不追求精确。

@@ -22,6 +22,65 @@ A → B → A → C → B
 
 第二个 `A` 和第二个 `B` 没有被再次写入。页面上方的实验会把这个过程拆成 11 个状态，建议先手动点完一遍。
 
+## 跟着代码处理一遍输入
+
+下面的控制台示例同时输出每一步的返回值和集合状态：
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+string[] input = { "A", "B", "A", "C", "B" };
+HashSet<string> seen = new();
+
+foreach (string value in input)
+{
+    bool added = seen.Add(value);
+    string result = added ? "第一次出现" : "重复值";
+
+    Console.WriteLine(
+        $"输入 {value} -> {result} -> 集合 {{{string.Join(", ", seen)}}}");
+}
+```
+
+一次可能的输出是：
+
+```text
+输入 A -> 第一次出现 -> 集合 {A}
+输入 B -> 第一次出现 -> 集合 {A, B}
+输入 A -> 重复值     -> 集合 {A, B}
+输入 C -> 第一次出现 -> 集合 {A, B, C}
+输入 B -> 重复值     -> 集合 {A, B, C}
+```
+
+`HashSet` 不保证用插入顺序枚举，所以不同运行环境的打印顺序可能不同；重要的是集合成员始终只有 `A、B、C`。
+
+### 第二步：把重复值单独收集起来
+
+```csharp
+HashSet<string> seen = new();
+List<string> duplicates = new();
+
+foreach (string value in input)
+{
+    if (!seen.Add(value))
+        duplicates.Add(value);
+}
+
+Console.WriteLine(string.Join(", ", duplicates)); // A, B
+```
+
+沿代码理解：第一次 `A` 被 `seen.Add` 消费并返回 `true`；第二次 `A` 返回 `false`，才进入 `duplicates`。因此 `seen` 表示“见过哪些不同值”，`duplicates` 表示“哪些输入再次出现过”。
+
+### 第三步：用于图遍历时为什么能防止死循环
+
+```csharp
+if (!visited.Add(currentNodeId))
+    continue;
+```
+
+节点第一次到达时 `Add` 返回 `true`，继续展开邻居；环路再次把同一节点送回来时返回 `false`，直接跳过。一个布尔返回值同时完成登记和重复检测，这就是后文 `visited` 写法的来源。
+
 ## Add 其实同时做了两件事
 
 这一行不是单纯的“添加”：

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="网络移动有两个看似冲突的目标：">
+  <meta name="description" content="玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：">
   <title>网络预测与服务器校正：先响应，再用权威结果收敛 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -51,12 +51,15 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>网络预测与服务器校正：先响应，再用权威结果收敛</h1>
-      <p class="hero-copy">网络移动有两个看似冲突的目标：</p>
+      <p class="hero-copy">玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：</p>
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先把标题翻译成人话">先把标题翻译成人话</a>
+      <a data-toc-link href="#先认识网络条件">先认识网络条件</a>
+      <a data-toc-link href="#用一段最小代码看完整过程">用一段最小代码看完整过程</a>
       <a data-toc-link href="#1-输入必须先变成可编号的快照">1. 输入必须先变成可编号的快照</a>
       <a data-toc-link href="#2-本地预测与发送共享同一份输入">2. 本地预测与发送共享同一份输入</a>
       <a data-toc-link href="#3-服务器从输入队列推进权威状态">3. 服务器从输入队列推进权威状态</a>
@@ -84,45 +87,97 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 输入必须先变成可编号的快照">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把标题翻译成人话">
       <span>01</span>
+      <strong>先把标题翻译成人话</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先认识网络条件">
+      <span>02</span>
+      <strong>先认识网络条件</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：用一段最小代码看完整过程">
+      <span>03</span>
+      <strong>用一段最小代码看完整过程</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：1. 输入必须先变成可编号的快照">
+      <span>04</span>
       <strong>1. 输入必须先变成可编号的快照</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 本地预测与发送共享同一份输入">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：2. 本地预测与发送共享同一份输入">
+      <span>05</span>
       <strong>2. 本地预测与发送共享同一份输入</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 服务器从输入队列推进权威状态">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：3. 服务器从输入队列推进权威状态">
+      <span>06</span>
       <strong>3. 服务器从输入队列推进权威状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 校正由“确认 Tick”切开历史">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：4. 校正由“确认 Tick”切开历史">
+      <span>07</span>
       <strong>4. 校正由“确认 Tick”切开历史</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 重放把客户端追回“现在”">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：5. 重放把客户端追回“现在”">
+      <span>08</span>
       <strong>5. 重放把客户端追回“现在”</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：三类必须单独观察的场景">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：三类必须单独观察的场景">
+      <span>09</span>
       <strong>三类必须单独观察的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：边界与代价">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界与代价">
+      <span>10</span>
       <strong>边界与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：调试时应该回答什么">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：调试时应该回答什么">
+      <span>11</span>
       <strong>调试时应该回答什么</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先把标题翻译成人话</h3>
+        <p>玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：</p>
+        <ul><li><strong>预测</strong>：客户端提前执行自己的输入，解决“按下后没有立即反应”。</li><li><strong>权威</strong>：最终以服务器计算结果为准，客户端不能自行决定穿墙、加速或命中。</li><li><strong>校正</strong>：客户端发现自己的旧预测与服务器结果不同时，恢复服务器状态。</li><li><strong>重放</strong>：恢复之后，把服务器尚未处理的输入按原顺序重新执行，让角色追回客户端眼中的“现在”。</li><li><strong>收敛</strong>：经过恢复和重放，客户端状态重新靠近服务器认可的状态。</li></ul>
+        <pre><code class="language-text">先相信这次输入有效，让自己的角色立即移动；
+服务器稍后给出真正结果；
+如果两边不同，客户端回到服务器结果，再补算尚未确认的输入。</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>先认识网络条件</h3>
+        <p>代码里的输入和快照都是一个个数据包。它们在网络上传输时通常会遇到：</p>
+
+        <pre><code class="language-text">正常：50ms、50ms、50ms        -&gt; 延迟稳定
+抖动：20ms、130ms、35ms       -&gt; 平均值不一定很高，但到达没规律
+丢包：Tick 14、Tick 15、（空） -&gt; Tick 16 没有到达</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>用一段最小代码看完整过程</h3>
+        <p>先只看骨架，不考虑碰撞和异常：</p>
+        <ul><li>玩家按下方向后，画面应该立刻响应；</li><li>所有参与者最终必须接受同一份权威状态。</li></ul>
+        <pre><code class="language-csharp">void ClientTick()
+{
+    MoveInput input = CaptureInput(++localTick); // 1. 给本次输入编号
+    pendingInputs.Add(input);                    // 2. 留下副本，之后可能重放
+    SendToServer(input);                         // 3. 发给服务器
+    predictedState = Simulate(predictedState, input); // 4. 不等待回复，立即移动
+}
+
+void OnServerState(StateSnapshot snapshot)
+{
+    predictedState = snapshot.state;             // 5. 回到服务器确认的位置
+    pendingInputs.RemoveThrough(snapshot.confirmedTick); // 6. 删除已确认输入
+
+    foreach (MoveInput input in pendingInputs)   // 7. 重放未确认输入
+        predictedState = Simulate(predictedState, input);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>1. 输入必须先变成可编号的快照</h3>
         <p>渲染帧里的摇杆或键盘状态会不断变化。网络模拟不能只保存“当前方向”，而要在每个模拟 Tick 创建独立输入：</p>
 
@@ -136,8 +191,8 @@
         sprintPressed);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>2. 本地预测与发送共享同一份输入</h3>
         <p>客户端为输入写入当前 Tick，放入历史队列，然后立即调用模拟函数：</p>
 
@@ -150,8 +205,8 @@
     predictedState = Simulate(predictedState, input);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>3. 服务器从输入队列推进权威状态</h3>
         <p>服务器收到输入后先验证来源与 Tick，再按顺序消费：</p>
 
@@ -165,8 +220,8 @@
         state: authoritativeState));
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>4. 校正由“确认 Tick”切开历史</h3>
         <p>客户端收到权威快照后，先比较同一 Tick 的预测状态：</p>
 
@@ -179,8 +234,8 @@
     inputHistory.RemoveThrough(snapshot.confirmedTick);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>5. 重放把客户端追回“现在”</h3>
         <p>应用权威状态后，客户端按 Tick 顺序重放剩余输入：</p>
 
@@ -193,22 +248,22 @@
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CONCEPT</div>
         <h3>三类必须单独观察的场景</h3>
         <p>输入按序到达，预测轨迹和权威轨迹接近。即使误差很小，历史裁剪仍然要发生，否则队列会持续增长。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
         <h3>边界与代价</h3>
 
         <ul><li><strong>确定性</strong>：相同状态和输入若不能得到相同结果，重放只会制造新误差。</li><li><strong>历史内存</strong>：输入与状态历史必须有明确裁剪点；确认停滞时还要有可观察的上限策略。</li><li><strong>重放成本</strong>：延迟越高，单次校正可能重放越多 Tick。</li><li><strong>丢包不是免费恢复</strong>：历史冗余增加带宽，也不能保证恢复所有缺口。</li><li><strong>视觉平滑与逻辑校正不同</strong>：逻辑状态可以立即回到权威结果，渲染层是否平滑追赶是另一套设计。</li><li><strong>副作用隔离</strong>：重放移动时不能重复播放音效、生成奖励或再次发送不可逆事件。</li><li><strong>生命周期清理</strong>：停止网络模拟时要取消 Tick 回调；历史条目被确认或对象销毁时要释放，避免旧输入在新生命周期中被重放。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
         <h3>调试时应该回答什么</h3>
         <p>一个有用的预测调试器不只画两条线，还要能回答：</p>
         <ul><li>当前输入属于哪个 Tick？</li><li>客户端已经预测到哪里？</li><li>服务器确认到了哪个 Tick？</li><li>同一确认 Tick 上的误差是多少？</li><li>哪些输入被裁剪，哪些进入重放队列？</li><li>当前轨迹差异来自延迟、丢包，还是权威规则冲突？</li></ul>
@@ -223,7 +278,81 @@
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>网络移动有两个看似冲突的目标：</p>
+        <h2 id="先把标题翻译成人话">先把标题翻译成人话</h2>
+<p>玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：</p>
+<pre><code class="language-text">先相信这次输入有效，让自己的角色立即移动；
+服务器稍后给出真正结果；
+如果两边不同，客户端回到服务器结果，再补算尚未确认的输入。</code></pre>
+<p>因此：</p>
+<ul>
+<li><strong>预测</strong>：客户端提前执行自己的输入，解决“按下后没有立即反应”。</li>
+<li><strong>权威</strong>：最终以服务器计算结果为准，客户端不能自行决定穿墙、加速或命中。</li>
+<li><strong>校正</strong>：客户端发现自己的旧预测与服务器结果不同时，恢复服务器状态。</li>
+<li><strong>重放</strong>：恢复之后，把服务器尚未处理的输入按原顺序重新执行，让角色追回客户端眼中的“现在”。</li>
+<li><strong>收敛</strong>：经过恢复和重放，客户端状态重新靠近服务器认可的状态。</li>
+</ul>
+<p>这里的“重放”不是播放录像，而是重新调用运动代码计算最近几次输入。</p>
+<h2 id="先认识网络条件">先认识网络条件</h2>
+<p>代码里的输入和快照都是一个个数据包。它们在网络上传输时通常会遇到：</p>
+<table><thead><tr>
+<th>名称</th>
+<th>它表示什么</th>
+<th>游戏中的表现</th>
+</tr></thead><tbody>
+<tr>
+<td>延迟（Latency / Ping）</td>
+<td>一个包往返需要多久</td>
+<td>操作确认来得晚，待重放输入变多</td>
+</tr>
+<tr>
+<td>抖动（Jitter）</td>
+<td>每个包的延迟忽高忽低</td>
+<td>确认消息到达节奏不稳定，偶尔一次校正很多 Tick</td>
+</tr>
+<tr>
+<td>丢包（Packet Loss）</td>
+<td>某些包没有到达</td>
+<td>输入或快照中间出现缺口，可能需要冗余或重传</td>
+</tr>
+<tr>
+<td>带宽（Bandwidth）</td>
+<td>一段时间最多能传多少数据</td>
+<td>历史窗口或快照太大时可能挤塞网络</td>
+</tr>
+</tbody></table>
+<p>例如三个输入本来每隔 <code>50ms</code> 到达服务器：</p>
+<pre><code class="language-text">正常：50ms、50ms、50ms        -&gt; 延迟稳定
+抖动：20ms、130ms、35ms       -&gt; 平均值不一定很高，但到达没规律
+丢包：Tick 14、Tick 15、（空） -&gt; Tick 16 没有到达</code></pre>
+<h2 id="用一段最小代码看完整过程">用一段最小代码看完整过程</h2>
+<p>先只看骨架，不考虑碰撞和异常：</p>
+<pre><code class="language-csharp">void ClientTick()
+{
+    MoveInput input = CaptureInput(++localTick); // 1. 给本次输入编号
+    pendingInputs.Add(input);                    // 2. 留下副本，之后可能重放
+    SendToServer(input);                         // 3. 发给服务器
+    predictedState = Simulate(predictedState, input); // 4. 不等待回复，立即移动
+}
+
+void OnServerState(StateSnapshot snapshot)
+{
+    predictedState = snapshot.state;             // 5. 回到服务器确认的位置
+    pendingInputs.RemoveThrough(snapshot.confirmedTick); // 6. 删除已确认输入
+
+    foreach (MoveInput input in pendingInputs)   // 7. 重放未确认输入
+        predictedState = Simulate(predictedState, input);
+}</code></pre>
+<p>假设客户端已经执行到 <code>Tick 18</code>，服务器只确认到 <code>Tick 14</code>：</p>
+<pre><code class="language-text">客户端保存的输入：14、15、16、17、18
+服务器回复：我确认了 14，这是 Tick 14 的正确状态
+
+客户端接着做：
+恢复服务器的 Tick 14 状态
+删除输入 14
+重放 15、16、17、18
+得到新的 Tick 18 预测状态</code></pre>
+<p>为什么不能收到服务器位置后直接显示它？因为那个位置属于较早的 <code>Tick 14</code>。如果不重放，玩家刚刚做出的 15 到 18 号输入会暂时消失，画面就会明显向后跳。</p>
+<p>网络移动有两个看似冲突的目标：</p>
 <ul>
 <li>玩家按下方向后，画面应该立刻响应；</li>
 <li>所有参与者最终必须接受同一份权威状态。</li>
@@ -250,6 +379,7 @@
         sprintPressed);
 }</code></pre>
 <p>Tick 是输入、预测状态和权威状态之间的共同坐标。没有它，客户端无法知道服务器确认到了哪一步，也无法确定应该重放哪些输入。</p>
+<p>可以把 Tick 理解为输入的流水号。服务器回复 <code>confirmedTick = 14</code>，不是说“我大概处理到这里”，而是在明确告诉客户端：<code>14</code> 以及更早的输入都已经包含在这份权威状态里。</p>
 <p>输入入口切换时还要避免双写：一旦预测链路真正接管移动，旧的逐帧移动命令应停止提交。否则同一输入会被两个系统各消费一次，误差来源将不再可解释。</p>
 <h2 id="2-本地预测与发送共享同一份输入">2. 本地预测与发送共享同一份输入</h2>
 <p>客户端为输入写入当前 Tick，放入历史队列，然后立即调用模拟函数：</p>
@@ -261,6 +391,10 @@
     // 当前 Tick 立即响应，不等待网络往返。
     predictedState = Simulate(predictedState, input);
 }</code></pre>
+<p>逐行对应前面的最小流程：</p>
+<pre><code class="language-text">inputHistory.Add(input)       保存输入，给未来的重放使用
+Send(RecentWindow())          把本次输入和少量旧输入发给服务器
+Simulate(state, input)        立即得到本地预测结果，不等服务器</code></pre>
 <p>发送最近的一小段历史可以让后续数据携带先前输入，从而提高偶发丢包后的恢复机会。但这是冗余，不是可靠送达承诺；窗口大小、发送策略和带宽预算必须由具体系统验证。</p>
 <p>本地模拟应保存“实际移动后的结果”，而不只是期望速度。碰撞、地形限制或外部驱动会让实际位移与输入意图不同，权威端必须使用同样的运动规则。</p>
 <h2 id="3-服务器从输入队列推进权威状态">3. 服务器从输入队列推进权威状态</h2>
@@ -286,6 +420,7 @@
     Restore(snapshot.state);
     inputHistory.RemoveThrough(snapshot.confirmedTick);
 }</code></pre>
+<p>这里比较的是“同一 Tick 的两个结果”，不是拿服务器的旧位置和客户端当前的新位置比较。服务器发来 <code>Tick 14</code> 时，应该与 <code>stateHistory</code> 中保存的客户端 <code>Tick 14</code> 预测结果比较；否则网络延迟本身造成的时间差会被误判成位置错误。</p>
 <p>无论误差是否肉眼可见，确认 Tick 之前的输入都已经被权威结果覆盖，可以从历史中裁剪。确认 Tick 之后的输入仍然是客户端已执行、服务器尚未确认的部分，不能丢掉。</p>
 <p>恢复状态不仅包括位置。若运动模型依赖旋转、水平速度、垂直速度或接地状态，这些状态也必须一起恢复，否则下一次模拟仍会从错误条件出发。</p>
 <h2 id="5-重放把客户端追回-现在">5. 重放把客户端追回“现在”</h2>
@@ -299,6 +434,7 @@
     }
 }</code></pre>
 <p>重放应调用与正常预测相同的模拟函数，而不是另写一套“近似修正”。两套逻辑会让误差在每次校正后重新出现。</p>
+<p>重放时通常只重复纯逻辑计算。脚步声、粒子、奖励发放和网络发送等副作用不能再次触发，否则一次校正可能播放四次音效、重复生成奖励，甚至把重放输入再次发给服务器。</p>
 <p>一次完整收敛可以写成：</p>
 <pre><code class="language-text">客户端当前 Tick = 18
 服务器确认 Tick = 14

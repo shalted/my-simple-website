@@ -55,9 +55,13 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>18 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#空间划分解决什么问题">空间划分解决什么问题</a>
+      <a data-toc-link href="#跟着代码完成一次九宫格查询">跟着代码完成一次九宫格查询</a>
+      <a class="sub" data-toc-link href="#第一步-实体进入网格">第一步：实体进入网格</a>
+      <a class="sub" data-toc-link href="#第二步-只收集周围九格候选">第二步：只收集周围九格候选</a>
+      <a class="sub" data-toc-link href="#第三步-候选不等于命中">第三步：候选不等于命中</a>
       <a data-toc-link href="#九宫格查找">九宫格查找</a>
       <a data-toc-link href="#为什么用距离平方">为什么用距离平方</a>
       <a data-toc-link href="#空间-hash">空间 Hash</a>
@@ -87,7 +91,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -95,56 +99,60 @@
       <span>01</span>
       <strong>空间划分解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：九宫格查找">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码完成一次九宫格查询">
       <span>02</span>
+      <strong>跟着代码完成一次九宫格查询</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：九宫格查找">
+      <span>03</span>
       <strong>九宫格查找</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么用距离平方">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：为什么用距离平方">
+      <span>04</span>
       <strong>为什么用距离平方</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：空间 Hash">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：空间 Hash">
+      <span>05</span>
       <strong>空间 Hash</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：四叉树是什么">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：四叉树是什么">
+      <span>06</span>
       <strong>四叉树是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：四叉树节点结构">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：四叉树节点结构">
+      <span>07</span>
       <strong>四叉树节点结构</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：四叉树什么时候切分">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：四叉树什么时候切分">
+      <span>08</span>
       <strong>四叉树什么时候切分</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：插入对象">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：插入对象">
+      <span>09</span>
       <strong>插入对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：查询范围">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：查询范围">
+      <span>10</span>
       <strong>查询范围</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：四叉树为什么能加速">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：四叉树为什么能加速">
+      <span>11</span>
       <strong>四叉树为什么能加速</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：四叉树的常见坑">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：四叉树的常见坑">
+      <span>12</span>
       <strong>四叉树的常见坑</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：九宫格和四叉树的区别">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：九宫格和四叉树的区别">
+      <span>13</span>
       <strong>九宫格和四叉树的区别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：怎么选">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：怎么选">
+      <span>14</span>
       <strong>怎么选</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最重要的收获">
+      <span>15</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -157,6 +165,15 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码完成一次九宫格查询</h3>
+        <p>先把实体类型放进 <code>Entity.cs</code>：</p>
+
+        <pre><code class="language-csharp">using System.Numerics;
+
+record Entity(string Name, Vector2 Position);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>九宫格查找</h3>
         <p>九宫格查找通常基于固定网格。</p>
 
@@ -168,22 +185,22 @@
 |   |   | E |   |
 +---+---+---+---+</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>为什么用距离平方</h3>
         <p>判断对象是否在半径内时，可以写：</p>
 
         <pre><code class="language-csharp">Vector3.Distance(a, b) &lt;= radius</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>空间 Hash</h3>
         <p>固定网格不一定要真的创建一张二维数组。</p>
 
         <pre><code class="language-csharp">Dictionary&lt;Vector2Int, List&lt;Unit&gt;&gt; grids;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>四叉树是什么</h3>
         <p>四叉树是另一种空间划分方式。</p>
 
@@ -195,8 +212,8 @@
 |   SW    |   SE    |
 +---------+---------+</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>四叉树节点结构</h3>
         <p>一个四叉树节点通常包含：</p>
 
@@ -207,16 +224,16 @@ Depth：当前深度
 Capacity：当前节点最多容纳多少对象
 MaxDepth：最多切多少层</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>四叉树什么时候切分</h3>
         <p>通常有两个限制：</p>
 
         <pre><code class="language-text">每个节点最多放多少对象。
 树最多切到多深。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>插入对象</h3>
         <p>插入对象时，从根节点开始：</p>
 
@@ -225,23 +242,23 @@ MaxDepth：最多切多少层</code></pre>
 如果没有子节点，先放到当前节点。
 如果当前节点对象太多，就切分并下放对象。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>查询范围</h3>
         <p>查询时通常传入一个矩形范围。</p>
 
         <pre><code class="language-text">x: 5 ~ 15
 y: 5 ~ 15</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>四叉树为什么能加速</h3>
         <p>直接遍历是：</p>
 
         <pre><code class="language-text">每次查询都检查所有对象。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>四叉树的常见坑</h3>
         <p>第一，动态对象维护成本高。</p>
 
@@ -249,15 +266,15 @@ y: 5 ~ 15</code></pre>
 插入新节点。
 必要时重新分裂或合并节点。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>九宫格和四叉树的区别</h3>
         <p>九宫格 / 空间 Hash 是固定切法：</p>
 
         <pre><code class="language-text">所有格子一样大。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>怎么选</h3>
         <p>如果只是做：</p>
 
@@ -267,8 +284,8 @@ AOE 找目标
 附近单位粗筛
 移动单位高频查询</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>空间划分的本质是：</p>
 
@@ -308,6 +325,86 @@ AOE 找目标
 再对候选对象做精确距离判断。</code></pre>
 <p>也就是：</p>
 <pre><code class="language-text">先粗筛，再精筛。</code></pre>
+<h2 id="跟着代码完成一次九宫格查询">跟着代码完成一次九宫格查询</h2>
+<p>先把实体类型放进 <code>Entity.cs</code>：</p>
+<pre><code class="language-csharp">using System.Numerics;
+
+record Entity(string Name, Vector2 Position);</code></pre>
+<p>固定每格边长为 5，把世界坐标转换成格子坐标：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+const float cellSize = 5f;
+
+static (int X, int Y) ToCell(Vector2 position, float cellSize)
+{
+    return (
+        (int)MathF.Floor(position.X / cellSize),
+        (int)MathF.Floor(position.Y / cellSize));
+}
+
+Dictionary&lt;(int X, int Y), List&lt;Entity&gt;&gt; grid = new();</code></pre>
+<h3 id="第一步-实体进入网格">第一步：实体进入网格</h3>
+<pre><code class="language-csharp">void Insert(Entity entity)
+{
+    (int X, int Y) cell = ToCell(entity.Position, cellSize);
+
+    if (!grid.TryGetValue(cell, out List&lt;Entity&gt;? bucket))
+    {
+        bucket = new List&lt;Entity&gt;();
+        grid.Add(cell, bucket);
+    }
+
+    bucket.Add(entity);
+}
+
+Insert(new Entity(&quot;A&quot;, new Vector2(2, 1)));   // Cell (0,0)
+Insert(new Entity(&quot;B&quot;, new Vector2(7, 1)));   // Cell (1,0)
+Insert(new Entity(&quot;C&quot;, new Vector2(20, 20))); // Cell (4,4)</code></pre>
+<p>此时字典只保存实际有对象的格子：</p>
+<pre><code class="language-text">(0,0) -&gt; [A]
+(1,0) -&gt; [B]
+(4,4) -&gt; [C]</code></pre>
+<h3 id="第二步-只收集周围九格候选">第二步：只收集周围九格候选</h3>
+<pre><code class="language-csharp">Vector2 center = new(1, 1);
+(int X, int Y) centerCell = ToCell(center, cellSize);
+List&lt;Entity&gt; candidates = new();
+
+for (int y = centerCell.Y - 1; y &lt;= centerCell.Y + 1; y++)
+{
+    for (int x = centerCell.X - 1; x &lt;= centerCell.X + 1; x++)
+    {
+        if (grid.TryGetValue((x, y), out List&lt;Entity&gt;? bucket))
+            candidates.AddRange(bucket);
+    }
+}
+
+Console.WriteLine(string.Join(&quot;, &quot;, candidates.Select(e =&gt; e.Name)));
+// A, B</code></pre>
+<p>C 位于 <code>(4,4)</code>，粗筛阶段已经排除。示例里的 <code>Select</code> 只用于打印；高频查询可以用普通循环避免额外枚举器或分配。</p>
+<h3 id="第三步-候选不等于命中">第三步：候选不等于命中</h3>
+<pre><code class="language-csharp">float radius = 5f;
+float radiusSquared = radius * radius;
+List&lt;Entity&gt; result = new();
+
+foreach (Entity candidate in candidates)
+{
+    float distanceSquared = Vector2.DistanceSquared(
+        center, candidate.Position);
+
+    if (distanceSquared &lt;= radiusSquared)
+        result.Add(candidate);
+}
+
+Console.WriteLine(string.Join(&quot;, &quot;, result.Select(e =&gt; e.Name)));
+// A</code></pre>
+<p>B 虽然在相邻格，但离查询中心 6 米，因此精筛后被排除。完整状态变化是：</p>
+<pre><code class="language-text">世界里 3 个对象
+-&gt; 九格粗筛得到 A、B 两个候选
+-&gt; 距离平方精筛只留下 A</code></pre>
+<p>如果查询半径大于格子边长，只检查九格就可能漏掉目标。通用写法应根据 <code>ceil(radius / cellSize)</code> 计算需要扩展多少圈；九宫格只是“查询范围最多跨一格”时的特例。</p>
 <h2 id="九宫格查找">九宫格查找</h2>
 <p>九宫格查找通常基于固定网格。</p>
 <p>先把地图切成一格一格：</p>

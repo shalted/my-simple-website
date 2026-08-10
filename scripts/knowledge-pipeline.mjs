@@ -977,90 +977,90 @@ function renderLibraryIndex(documents) {
     <section class="section knowledge-shell" data-library-discovery>
       <div class="section-heading"><h2>交互专题</h2><span>17 LABS · LEARN BY DOING</span></div>
       <div class="feature-grid">
-        <a class="feature-card" href="/knowledge/ability-flow/">
+        <a class="feature-card" href="/knowledge/library/工程设计/一次技能从输入到结束/">
           <small>ABILITY / END-TO-END FLOW</small>
           <div><h3>一次技能从输入到结束</h3><p>沿激活闸门、运行实例、编排、命中、结算与清理逐步调试完整链路。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/effect-lifecycle/">
+        <a class="feature-card" href="/knowledge/library/工程设计/Effect与Buff生命周期/">
           <small>EFFECT / LIFECYCLE</small>
           <div><h3>Effect / Buff 生命周期</h3><p>对比瞬时、持续、周期、叠层、刷新、到期和主动移除。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/target-filter/">
+        <a class="feature-card" href="/knowledge/library/算法/目标筛选与命中判定/">
           <small>TARGET QUERY / GEOMETRY TRACE</small>
           <div><h3>目标筛选与命中判定</h3><p>拖动角色与目标，拆开圆形、扇形、盒形的粗筛和精确判断。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/resource-scope/">
+        <a class="feature-card" href="/knowledge/library/工程设计/资源作用域与引用释放/">
           <small>RESOURCE / OWNERSHIP</small>
           <div><h3>资源作用域与引用释放</h3><p>观察请求合并、缓存命中、Owner 矩阵和最终底层释放。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/network-prediction/">
+        <a class="feature-card" href="/knowledge/library/工程设计/网络预测与服务器校正/">
           <small>NETWORK / RECONCILE</small>
           <div><h3>网络预测与服务器校正</h3><p>调整延迟与丢包，对齐输入 Tick、预测轨迹、权威状态和重放队列。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/virtual-list/">
+        <a class="feature-card" href="/knowledge/library/工程设计/虚拟列表与节点复用/">
           <small>UI / VIRTUALIZATION</small>
           <div><h3>虚拟列表与节点复用</h3><p>用固定槽位滚动大量数据，观察索引映射、复用和异步取消。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/config-pipeline/">
+        <a class="feature-card" href="/knowledge/library/工程设计/配置数据生成管线/">
           <small>CONFIG / BUILD GATE</small>
           <div><h3>配置数据生成管线</h3><p>从源数据到强类型快照，观察分层校验、错误袋、索引和发布闸门。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/ui-stack-pool/">
+        <a class="feature-card" href="/knowledge/library/工程设计/UI页面栈与面板池/">
           <small>UI / STACK &amp; POOL</small>
           <div><h3>UI 页面栈与面板池</h3><p>拆解打开、覆盖、返回、复用、绑定清理和旧回调冲突。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/tag-arbitration/">
+        <a class="feature-card" href="/knowledge/library/工程设计/状态来源与技能仲裁/">
           <small>STATE SOURCE / ARBITRATION</small>
           <div><h3>状态来源与技能仲裁</h3><p>用来源账本和阶段矩阵拆解标签聚合、激活阻挡、预输入与打断清理。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/projectile-motion/">
+        <a class="feature-card" href="/knowledge/library/工程设计/命中后的运动与投射物/">
           <small>PROJECTILE / MOTION FEEDBACK</small>
           <div><h3>命中后的运动与投射物</h3><p>沿运动策略、扫掠命中、击退曲线、碰撞反馈和终态清理逐步调试。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/dirty-attribute/">
+        <a class="feature-card" href="/knowledge/library/游戏逻辑常用模式/属性脏标记与局部重算/">
           <small>DIRTY FLAGS / LOCAL RECOMPUTE</small>
           <div><h3>属性脏标记与局部重算</h3><p>观察实体粗筛、属性精筛、同帧合并、即时刷新和失效引用清理。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/#lab">
+        <a class="feature-card" href="/knowledge/library/算法/A星寻路中的G值与Parent回溯/">
           <small>PATHFINDING / STEP DEBUG</small>
           <div><h3>A* 寻路</h3><p>逐步观察代价、Open / Closed 集合与 Parent 回溯。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/swarm-ai/">
+        <a class="feature-card" href="/knowledge/library/算法/集群AI槽位分配与非攻击意图/">
           <small>SWARM AI / LIVE LOGIC</small>
           <div><h3>怪物集群 AI</h3><p>在手动与自动模式间切换，观察群体决策的最小闭环。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/binary-heap/">
+        <a class="feature-card" href="/knowledge/library/数据结构/二叉堆优先队列/">
           <small>BINARY HEAP / LIVE STRUCTURE</small>
           <div><h3>二叉堆优先队列</h3><p>同步观察数组与树，逐步调试 BubbleUp 和 BubbleDown。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/systems-lab/#flags">
+        <a class="feature-card" href="/knowledge/library/游戏逻辑常用模式/位标记Flags与BitMask/">
           <small>BITMASK / LIVE STATE</small>
           <div><h3>Flags / BitMask</h3><p>覆盖组合、判断、移除、合法叠加与互斥结果建模。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/systems-lab/#random">
+        <a class="feature-card" href="/knowledge/library/游戏逻辑常用模式/随机系统/">
           <small>RANDOM / DISTRIBUTION</small>
           <div><h3>随机系统</h3><p>对比权重、保底、洗牌袋、Seed 与稳定随机。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
-        <a class="feature-card" href="/knowledge/systems-lab/#space">
+        <a class="feature-card" href="/knowledge/library/算法/空间划分-九宫格与四叉树/">
           <small>SPATIAL / QUERY PIPELINE</small>
           <div><h3>空间划分</h3><p>覆盖九宫格、空间 Hash、四叉树和两阶段范围查询。</p></div>
-          <span class="card-arrow">进入实验 →</span>
+          <span class="card-arrow">先读讲解 →</span>
         </a>
       </div>
     </section>

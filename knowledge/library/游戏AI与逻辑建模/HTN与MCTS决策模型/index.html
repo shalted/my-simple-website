@@ -55,9 +55,15 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>40 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>46 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#两种完全不同的-想下一步">两种完全不同的“想下一步”</a>
+      <a data-toc-link href="#先运行两个最小例子">先运行两个最小例子</a>
+      <a class="sub" data-toc-link href="#htn-第一步-根据状态选择任务列表">HTN 第一步：根据状态选择任务列表</a>
+      <a class="sub" data-toc-link href="#htn-第二步-不能只看第一个条件">HTN 第二步：不能只看第一个条件</a>
+      <a class="sub" data-toc-link href="#mcts-第一步-先保存每个动作的统计">MCTS 第一步：先保存每个动作的统计</a>
+      <a class="sub" data-toc-link href="#mcts-第二步-既利用好动作-也探索少试的动作">MCTS 第二步：既利用好动作，也探索少试的动作</a>
+      <a class="sub" data-toc-link href="#两段代码的根本差别">两段代码的根本差别</a>
       <a data-toc-link href="#htn-分层任务网络">HTN：分层任务网络</a>
       <a class="sub" data-toc-link href="#复合任务">复合任务</a>
       <a class="sub" data-toc-link href="#方法">方法</a>
@@ -108,7 +114,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -116,64 +122,68 @@
       <span>01</span>
       <strong>两种完全不同的“想下一步”</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：HTN：分层任务网络">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先运行两个最小例子">
       <span>02</span>
+      <strong>先运行两个最小例子</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：HTN：分层任务网络">
+      <span>03</span>
       <strong>HTN：分层任务网络</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：HTN 怎样逐步生成计划">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：HTN 怎样逐步生成计划">
+      <span>04</span>
       <strong>HTN 怎样逐步生成计划</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：HTN 的最小伪代码">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：HTN 的最小伪代码">
+      <span>05</span>
       <strong>HTN 的最小伪代码</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：HTN 的关键状态">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：HTN 的关键状态">
+      <span>06</span>
       <strong>HTN 的关键状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：HTN 的正常、边界与失败路径">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：HTN 的正常、边界与失败路径">
+      <span>07</span>
       <strong>HTN 的正常、边界与失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：MCTS：蒙特卡洛树搜索">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：MCTS：蒙特卡洛树搜索">
+      <span>08</span>
       <strong>MCTS：蒙特卡洛树搜索</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：MCTS 怎样逐步搜索">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：MCTS 怎样逐步搜索">
+      <span>09</span>
       <strong>MCTS 怎样逐步搜索</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：MCTS 最小伪代码">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：MCTS 最小伪代码">
+      <span>10</span>
       <strong>MCTS 最小伪代码</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：MCTS 的关键状态">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：MCTS 的关键状态">
+      <span>11</span>
       <strong>MCTS 的关键状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：MCTS 的正常、边界与失败路径">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：MCTS 的正常、边界与失败路径">
+      <span>12</span>
       <strong>MCTS 的正常、边界与失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：HTN 与 MCTS 的核心差异">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：HTN 与 MCTS 的核心差异">
+      <span>13</span>
       <strong>HTN 与 MCTS 的核心差异</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：能否组合使用">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：能否组合使用">
+      <span>14</span>
       <strong>能否组合使用</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：代价与适用边界">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价与适用边界">
+      <span>15</span>
       <strong>代价与适用边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：通用算法与实现选择">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用算法与实现选择">
+      <span>16</span>
       <strong>通用算法与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：最后总结">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
+      <span>17</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
@@ -192,6 +202,40 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>先运行两个最小例子</h3>
+        <p>先不要同时理解整套算法。下面让 HTN 和 MCTS 各自解决一个很小的问题，并观察代码实际改变了什么。</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+static List&lt;string&gt; PlanDinner(WorldState world)
+{
+    if (world.HasFood)
+    {
+        return new List&lt;string&gt;
+        {
+            &quot;PrepareFood&quot;,
+            &quot;Cook&quot;,
+            &quot;Serve&quot;
+        };
+    }
+
+    return new List&lt;string&gt;
+    {
+        &quot;BuyFood&quot;,
+        &quot;PrepareFood&quot;,
+        &quot;Cook&quot;,
+        &quot;Serve&quot;
+    };
+}
+
+WorldState world = new(HasFood: false, MealReady: false);
+Console.WriteLine(string.Join(&quot; -&gt; &quot;, PlanDinner(world)));
+
+record WorldState(bool HasFood, bool MealReady);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>HTN：分层任务网络</h3>
         <p>HTN 是 Hierarchical Task Network，核心对象通常包括：</p>
 
@@ -200,8 +244,8 @@
 原子任务 Primitive Task
 世界状态 World State</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>HTN 怎样逐步生成计划</h3>
         <p>初始状态：</p>
 
@@ -209,8 +253,8 @@
 有配菜 = false
 商店开放 = true</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>HTN 的最小伪代码</h3>
         <p>这段伪代码表达的是顺序任务的深度优先分解。是否：</p>
 
@@ -240,8 +284,8 @@
 
     return Failure</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>HTN 的关键状态</h3>
         <p>调试 HTN 时至少要区分：</p>
 
@@ -252,8 +296,8 @@
 已生成计划：已经确定的原子任务序列。
 执行游标：运行时执行到计划的哪一步。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>HTN 的正常、边界与失败路径</h3>
         <p>如果规划器支持回溯，应撤销该方法在模拟状态上的效果，再尝试其他方法。</p>
 
@@ -262,8 +306,8 @@
 得到完整计划
 执行时世界状态与预测一致</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>MCTS：蒙特卡洛树搜索</h3>
         <p>MCTS 是 Monte Carlo Tree Search。它通常反复执行四个阶段：</p>
 
@@ -272,8 +316,8 @@ Expansion：为未完全展开的节点加入新分支。
 Simulation：从新节点继续模拟一段过程。
 Backpropagation：把模拟结果沿路径回传。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>MCTS 怎样逐步搜索</h3>
         <p>假设当前有三个可选动作：</p>
 
@@ -281,8 +325,8 @@ Backpropagation：把模拟结果沿路径回传。</code></pre>
 B：快速尝试
 C：保守等待</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>MCTS 最小伪代码</h3>
         <p>需要特别注意“从谁的视角回传价值”。在双方对抗问题中：</p>
 
@@ -311,8 +355,8 @@ C：保守等待</code></pre>
 
     return ChooseFinalAction(root)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>MCTS 的关键状态</h3>
         <p>一次搜索至少涉及：</p>
 
@@ -324,8 +368,8 @@ C：保守等待</code></pre>
 剩余时间、迭代次数或其他预算
 奖励值及其视角</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>MCTS 的正常、边界与失败路径</h3>
         <p>如果最终规则是“访问次数最多”，则选择 A。</p>
 
@@ -333,23 +377,23 @@ C：保守等待</code></pre>
 B：访问 35 次，平均价值 0.41
 C：访问 15 次，平均价值 0.22</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CONCEPT</div>
         <h3>HTN 与 MCTS 的核心差异</h3>
         <p>| 维度 | HTN | MCTS | |---|---|---| | 主要输入 | 任务、方法、世界状态 | 状态、合法动作、转移与奖励模型 | | 核心过程 | 分解任务 | 采样搜索 | | 领域知识 | 显式写在方法和任务层级中 | 可写在选择、模拟和估值策略中 | | 主要输出 | 可执行任务序列或网络 | 当前状态下建议的动作 | | 可解释性 | 通常较强，可说明用了哪个方法 | 需要查看访问次数、价值和模拟统计 | | 计算形态 | 受分解方法与回溯影响 | 可随预算渐进改善估计 | | 典型风险 | 方法覆盖不全、状态预测失真 | 模拟器偏差、奖励偏差、预算不足 |</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>能否组合使用</h3>
         <p>HTN 与 MCTS 并不互斥。</p>
 
         <pre><code class="language-text">HTN 负责把长期任务拆成结构化候选方案。
 MCTS 负责在某个高分支局部决策中选择当前动作。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>代价与适用边界</h3>
         <p>HTN 的代价：</p>
 
@@ -358,8 +402,8 @@ MCTS 负责在某个高分支局部决策中选择当前动作。</code></pre>
 希望计划具有较强可解释性
 动作前置条件和效果可以建模</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>通用算法与实现选择</h3>
 
 
@@ -369,8 +413,8 @@ MCTS 反复执行选择、扩展、模拟和回传。
 MCTS 使用访问与价值统计在探索和利用之间取得平衡。
 两种模型的结论都依赖输入状态与领域模型的正确性。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>最后总结</h3>
         <p>HTN 的问题是：</p>
 
@@ -406,6 +450,130 @@ MCTS 使用访问与价值统计在探索和利用之间取得平衡。
 <p>一句话区分：</p>
 <pre><code class="language-text">HTN 用领域知识把任务逐层分解成可执行步骤。
 MCTS 用反复采样在巨大决策树中估计更好的动作。</code></pre>
+<h2 id="先运行两个最小例子">先运行两个最小例子</h2>
+<p>先不要同时理解整套算法。下面让 HTN 和 MCTS 各自解决一个很小的问题，并观察代码实际改变了什么。</p>
+<h3 id="htn-第一步-根据状态选择任务列表">HTN 第一步：根据状态选择任务列表</h3>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+static List&lt;string&gt; PlanDinner(WorldState world)
+{
+    if (world.HasFood)
+    {
+        return new List&lt;string&gt;
+        {
+            &quot;PrepareFood&quot;,
+            &quot;Cook&quot;,
+            &quot;Serve&quot;
+        };
+    }
+
+    return new List&lt;string&gt;
+    {
+        &quot;BuyFood&quot;,
+        &quot;PrepareFood&quot;,
+        &quot;Cook&quot;,
+        &quot;Serve&quot;
+    };
+}
+
+WorldState world = new(HasFood: false, MealReady: false);
+Console.WriteLine(string.Join(&quot; -&gt; &quot;, PlanDinner(world)));
+
+record WorldState(bool HasFood, bool MealReady);</code></pre>
+<p>输出是：</p>
+<pre><code class="language-text">BuyFood -&gt; PrepareFood -&gt; Cook -&gt; Serve</code></pre>
+<p>这已经包含 HTN 的最小思想：<code>PlanDinner</code> 是复合任务，根据世界状态选择一种分解方法，返回的字符串是尚未真正执行的原子任务序列。</p>
+<h3 id="htn-第二步-不能只看第一个条件">HTN 第二步：不能只看第一个条件</h3>
+<p>第一版的问题是：它只在选方法时检查 <code>HasFood</code>，没有验证后面的每一步是否真的可执行。加入原子任务和状态模拟：</p>
+<pre><code class="language-csharp">static bool TryBuildPlan(
+    WorldState start,
+    IReadOnlyList&lt;PrimitiveTask&gt; tasks,
+    out List&lt;string&gt; plan)
+{
+    WorldState simulated = start;
+    plan = new List&lt;string&gt;();
+
+    foreach (PrimitiveTask task in tasks)
+    {
+        if (!task.CanRun(simulated))
+        {
+            plan.Clear();
+            return false;
+        }
+
+        plan.Add(task.Name);
+        simulated = task.Apply(simulated);
+    }
+
+    return true;
+}
+
+record PrimitiveTask(
+    string Name,
+    Func&lt;WorldState, bool&gt; CanRun,
+    Func&lt;WorldState, WorldState&gt; Apply);</code></pre>
+<p>关键是 <code>simulated</code>：规划器不修改真实世界，而是在副本上推演。假设 <code>BuyFood</code> 成功后把 <code>HasFood</code> 设为 <code>true</code>，后面的 <code>Cook</code> 才能通过前置条件。</p>
+<p>一次失败跟踪可能是：</p>
+<pre><code class="language-text">BuyFood     -&gt; 可执行，模拟状态 HasFood = true
+PrepareFood -&gt; 可执行
+Cook        -&gt; 炉灶损坏，CanRun = false
+整条方法失败，清空临时计划，再尝试其他方法</code></pre>
+<p>这解释了为什么 HTN 不能“找到第一个看起来适用的方法就立刻执行”：必须先完整分解并验证，失败时还要回退临时状态。</p>
+<h3 id="mcts-第一步-先保存每个动作的统计">MCTS 第一步：先保存每个动作的统计</h3>
+<p>MCTS 不预先写死完整任务列表。假设 NPC 有三个动作：进攻、防守、治疗。每次模拟后记录访问次数和累计奖励：</p>
+<pre><code class="language-csharp">ActionStats attack = new(&quot;Attack&quot;);
+attack.Record(1.0);  // 第一次模拟获胜
+attack.Record(0.0);  // 第二次模拟失败
+
+Console.WriteLine(
+    $&quot;{attack.Name}: visits={attack.Visits}, &quot; +
+    $&quot;average={attack.AverageReward:F2}&quot;);
+
+sealed class ActionStats
+{
+    public string Name { get; }
+    public int Visits { get; private set; }
+    public double TotalReward { get; private set; }
+    public double AverageReward =&gt;
+        Visits == 0 ? 0 : TotalReward / Visits;
+
+    public ActionStats(string name) =&gt; Name = name;
+
+    public void Record(double reward)
+    {
+        Visits++;
+        TotalReward += reward;
+    }
+}</code></pre>
+<p>输出：</p>
+<pre><code class="language-text">Attack: visits=2, average=0.50</code></pre>
+<p>MCTS 最终不是问“某次模拟赢了吗”，而是比较计算预算内积累的统计结果。</p>
+<h3 id="mcts-第二步-既利用好动作-也探索少试的动作">MCTS 第二步：既利用好动作，也探索少试的动作</h3>
+<p>如果只选平均奖励最高的动作，一个早期碰巧获胜的动作可能永远霸占搜索。选择阶段通常加入探索项。下面是常见 UCB1 形式的最小代码：</p>
+<pre><code class="language-csharp">static double UcbScore(
+    ActionStats action,
+    int parentVisits,
+    double exploration = 1.414)
+{
+    if (action.Visits == 0)
+        return double.PositiveInfinity;
+
+    double exploit = action.AverageReward;
+    double explore = exploration * Math.Sqrt(
+        Math.Log(parentVisits) / action.Visits);
+
+    return exploit + explore;
+}</code></pre>
+<p>给出一组具体统计：</p>
+<pre><code class="language-text">根节点共访问 20 次
+Attack：访问 10 次，平均奖励 0.70
+Defend：访问  2 次，平均奖励 0.55</code></pre>
+<p><code>Attack</code> 的利用价值更高，但 <code>Defend</code> 因为尝试次数少，会获得更大的探索加成。搜索继续后，统计会逐渐说明它是真的有潜力，还是仅仅没被充分验证。</p>
+<h3 id="两段代码的根本差别">两段代码的根本差别</h3>
+<pre><code class="language-text">HTN：代码先定义“任务怎样分解”，运行时生成一条可执行计划。
+MCTS：代码先定义“动作、状态转移和奖励”，运行时反复模拟并更新统计。</code></pre>
+<p>后文的 HTN 分解栈和 MCTS 四阶段，都是对这两个最小例子的扩展。阅读时可以持续追问：HTN 当前在验证哪条任务链；MCTS 当前在更新哪个节点的访问次数与奖励。</p>
 <h2 id="htn-分层任务网络">HTN：分层任务网络</h2>
 <p>HTN 是 Hierarchical Task Network，核心对象通常包括：</p>
 <pre><code class="language-text">复合任务 Compound Task

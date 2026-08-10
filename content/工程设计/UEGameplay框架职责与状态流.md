@@ -45,6 +45,142 @@ UActorComponent 及其派生类型用于组合 Actor 能力。
 
 其他框架可能把这些职责合并或拆得更细。不能因为 UE 有这些类，就把同样的类名当成所有游戏架构的必需结构。
 
+## 跟着代码走一遍：玩家加入一局游戏
+
+先设一个具体目标：玩家连接服务器后生成一个角色；服务器把在线人数写入共享状态；玩家按键后控制自己的角色移动。
+
+下面是 UE C++ 教学骨架。它依赖 Unreal 类型和宏，不是独立控制台程序，但每段都可以对应到 UE 项目中的一个类。
+
+### 第一步：GameMode 接受玩家并生成 Pawn
+
+```cpp
+void AMyGameMode::PostLogin(APlayerController* NewPlayer)
+{
+    Super::PostLogin(NewPlayer);
+
+    APawn* NewPawn = SpawnDefaultPawnFor(
+        NewPlayer,
+        FindPlayerStart(NewPlayer));
+
+    NewPlayer->Possess(NewPawn);
+
+    AMyGameState* SharedState = GetGameState<AMyGameState>();
+    SharedState->SetPlayerCount(GetNumPlayers());
+}
+```
+
+沿调用顺序看：
+
+```text
+PostLogin(NewPlayer)          服务器确认一名玩家完成登录
+FindPlayerStart              规则层选择出生点
+SpawnDefaultPawnFor          在世界中创建可控制角色
+Possess(NewPawn)             Controller 与 Pawn 建立控制关系
+SetPlayerCount               把所有客户端需要看到的信息写进 GameState
+```
+
+这里故意没有把人数存在 `GameMode` 里供客户端读取。`GameMode` 只存在于服务端；共享信息应该进入可复制的 `GameState`。
+
+### 第二步：GameState 复制共享人数
+
+```cpp
+UCLASS()
+class AMyGameState : public AGameStateBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(ReplicatedUsing = OnRep_PlayerCount)
+    int32 PlayerCount = 0;
+
+    void SetPlayerCount(int32 NewCount)
+    {
+        check(HasAuthority());
+        PlayerCount = NewCount;
+        OnRep_PlayerCount(); // 让服务器本地界面也走同一刷新入口
+    }
+
+protected:
+    UFUNCTION()
+    void OnRep_PlayerCount()
+    {
+        UE_LOG(LogTemp, Log, TEXT("当前玩家数: %d"), PlayerCount);
+    }
+};
+```
+
+运行两名玩家加入的测试时，状态变化应是：
+
+```text
+玩家 A 登录 -> 服务端 PlayerCount = 1 -> 客户端收到 1
+玩家 B 登录 -> 服务端 PlayerCount = 2 -> 两个客户端都收到 2
+```
+
+`OnRep_PlayerCount` 不是决定人数的地方，它只消费服务器已经决定的结果。规则仍归 `GameMode`，共享事实归 `GameState`。
+
+项目中还要在 `GetLifetimeReplicatedProps` 注册该字段：
+
+```cpp
+void AMyGameState::GetLifetimeReplicatedProps(
+    TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AMyGameState, PlayerCount);
+}
+```
+
+### 第三步：Pawn 接收本地移动输入
+
+```cpp
+void AMyCharacter::SetupPlayerInputComponent(
+    UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+    PlayerInputComponent->BindAxis(
+        "MoveForward", this, &AMyCharacter::MoveForward);
+}
+
+void AMyCharacter::MoveForward(float Value)
+{
+    if (!FMath::IsNearlyZero(Value))
+        AddMovementInput(GetActorForwardVector(), Value);
+}
+```
+
+按下 `W` 后的职责链是：
+
+```text
+本机输入系统产生 MoveForward = 1
+-> 当前玩家控制的 Pawn 收到输入
+-> Pawn 把移动意图交给 MovementComponent
+-> CharacterMovement 处理预测、服务端验证与移动复制
+```
+
+这里不应让 `GameMode` 每帧读取键盘，也不需要把移动输入写进 `GameState`。它们分别是规则层和共享会话状态，不是某个 Pawn 的运动入口。
+
+### 第四步：把整条运行链连起来
+
+在 PIE 中用 `2 Players`、`Play As Listen Server` 测试，可以沿日志观察：
+
+```text
+1. 服务端 AMyGameMode::PostLogin 被调用两次
+2. 每次为对应 PlayerController 生成并 Possess 一个 Pawn
+3. AMyGameState::PlayerCount 从 1 变成 2
+4. 客户端 OnRep_PlayerCount 收到共享人数
+5. 每个客户端的输入只驱动自己 Possess 的 Pawn
+```
+
+如果出现问题，可以按职责反查：
+
+```text
+没有生成角色       -> 查 GameMode 的出生规则和 PlayerStart
+角色生成但不能控制 -> 查 PlayerController 是否成功 Possess
+服务端人数正确但 UI 不更新 -> 查 GameState 字段是否注册复制和 OnRep
+所有角色一起响应输入 -> 查输入是否错误地写在全局对象上
+```
+
+这就是后文职责图的实际用途：不是记继承关系，而是让一次运行故障能够沿所有权边界定位。
+
 ## 职责图
 
 ```text

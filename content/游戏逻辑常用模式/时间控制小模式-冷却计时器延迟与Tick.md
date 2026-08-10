@@ -388,6 +388,54 @@ if (Time.time >= nextTickTime)
 }
 ```
 
+## 用实际帧时间观察漏 Tick 与补 Tick
+
+假设逻辑每 `0.1s` 执行一次，`nextTickTime = 1.0`。正常帧在 `1.02s` 到来：
+
+```text
+Time.time = 1.02 >= 1.00
+执行 Tick #1
+nextTickTime = 1.02 + 0.10 = 1.12
+```
+
+如果某帧卡顿，时间直接从 `1.02` 跳到 `1.37`，只执行一次的版本会丢掉中间节拍：
+
+```csharp
+if (Time.time >= nextTickTime)
+{
+    nextTickTime = Time.time + interval;
+    Tick();
+}
+```
+
+运行结果：只执行一次，并把下一次安排到 `1.47`。这种行为适合 AI 感知刷新，因为卡顿结束后没有必要瞬间扫描三遍。
+
+需要补 Tick 的模拟可以写成：
+
+```csharp
+int safety = 0;
+
+while (Time.time >= nextTickTime && safety < 8)
+{
+    Tick();
+    nextTickTime += interval;
+    safety++;
+}
+```
+
+在 `Time.time = 1.37` 时，它会依次补执行 `1.1、1.2、1.3` 三个节拍。这里使用 `nextTickTime += interval`，不能改成 `Time.time + interval`，否则第一轮就会跳到未来，补 Tick 立即停止。
+
+### 边界：不能无上限追赶
+
+如果游戏暂停十秒后恢复，`while` 可能一次执行上百次。`safety < 8` 是本帧上限示例；达到上限后应记录欠账、丢弃过旧节拍或分摊到后续帧，具体策略取决于系统语义。
+
+```text
+AI 感知：通常不补，执行一次最新扫描
+持续伤害：可能补次数，但要限制单帧峰值
+物理模拟：通常交给固定时间步系统处理
+倒计时 UI：直接根据目标时间计算，不逐次补动画
+```
+
 补 Tick：
 
 ```text

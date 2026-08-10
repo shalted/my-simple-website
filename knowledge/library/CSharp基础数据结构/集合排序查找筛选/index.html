@@ -55,9 +55,14 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>10 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#说明">说明</a>
+      <a data-toc-link href="#用同一组敌人贯穿所有操作">用同一组敌人贯穿所有操作</a>
+      <a class="sub" data-toc-link href="#第一步-先按距离排序">第一步：先按距离排序</a>
+      <a class="sub" data-toc-link href="#第二步-距离相同时-血量低的优先">第二步：距离相同时，血量低的优先</a>
+      <a class="sub" data-toc-link href="#第三步-排序后寻找第一个可攻击目标">第三步：排序后寻找第一个可攻击目标</a>
+      <a class="sub" data-toc-link href="#第四步-清掉死亡对象">第四步：清掉死亡对象</a>
       <a data-toc-link href="#sort-排序-list">Sort：排序 List</a>
       <a data-toc-link href="#自定义排序">自定义排序</a>
       <a data-toc-link href="#多条件排序">多条件排序</a>
@@ -78,7 +83,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -86,40 +91,44 @@
       <span>01</span>
       <strong>说明</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Sort：排序 List">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：用同一组敌人贯穿所有操作">
       <span>02</span>
+      <strong>用同一组敌人贯穿所有操作</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Sort：排序 List">
+      <span>03</span>
       <strong>Sort：排序 List</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：自定义排序">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：自定义排序">
+      <span>04</span>
       <strong>自定义排序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：多条件排序">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：多条件排序">
+      <span>05</span>
       <strong>多条件排序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Find：找第一个满足条件的元素">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Find：找第一个满足条件的元素">
+      <span>06</span>
       <strong>Find：找第一个满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：FindAll：找所有满足条件的元素">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：FindAll：找所有满足条件的元素">
+      <span>07</span>
       <strong>FindAll：找所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Exists：判断有没有满足条件的元素">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Exists：判断有没有满足条件的元素">
+      <span>08</span>
       <strong>Exists：判断有没有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：RemoveAll：删除所有满足条件的元素">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：RemoveAll：删除所有满足条件的元素">
+      <span>09</span>
       <strong>RemoveAll：删除所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：高频逻辑更推荐手写 for">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：高频逻辑更推荐手写 for">
+      <span>10</span>
       <strong>高频逻辑更推荐手写 for</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -137,6 +146,22 @@ RemoveAll
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>用同一组敌人贯穿所有操作</h3>
+        <p>先准备一组具体数据：</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+List&lt;(string Name, int Hp, float Distance)&gt; enemies = new()
+{
+    new(&quot;Slime&quot;,  30, 6f),
+    new(&quot;Knight&quot;, 80, 3f),
+    new(&quot;Archer&quot;,  50, 3f),
+    new(&quot;Ghost&quot;,    0, 8f)
+};</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>Sort：排序 List</h3>
         <p>数字排序：</p>
 
@@ -144,8 +169,8 @@ RemoveAll
 
 nums.Sort();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>自定义排序</h3>
         <p>假设有一个物品类：</p>
 
@@ -156,8 +181,8 @@ nums.Sort();</code></pre>
     public int Count;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>多条件排序</h3>
         <p>例如先按品质降序，再按 ID 升序：</p>
 
@@ -172,36 +197,36 @@ nums.Sort();</code></pre>
     return a.Id.CompareTo(b.Id);
 });</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Find：找第一个满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">Item item = items.Find(item =&gt; item.Id == 1001);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>FindAll：找所有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">List&lt;Item&gt; highQualityItems = items.FindAll(item =&gt; item.Quality &gt;= 4);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>Exists：判断有没有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">bool hasRareItem = items.Exists(item =&gt; item.Quality &gt;= 5);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>RemoveAll：删除所有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">int removedCount = items.RemoveAll(item =&gt; item.Count &lt;= 0);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>高频逻辑更推荐手写 for</h3>
         <p>如果在每帧、战斗、AI、资源热路径里，推荐手写 <code>for</code>：</p>
 
@@ -216,8 +241,8 @@ for (int i = 0; i &lt; items.Count; i++)
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>常用语法：</p>
 
@@ -247,6 +272,61 @@ Exists
 RemoveAll
 手写 for 循环</code></pre>
 <p>LINQ 写法虽然简洁，但在性能和分配上不够友好，尤其不适合高频运行逻辑，所以本节不作为重点推荐。</p>
+<p>为什么把排序、查找和删除放在同一篇里：实际战斗代码通常不是只调用一个 API，而是先整理候选顺序，再找出目标，最后清理无效对象。分清每一步是否修改原集合，才能避免前一步悄悄改变后一步的输入。</p>
+<h2 id="用同一组敌人贯穿所有操作">用同一组敌人贯穿所有操作</h2>
+<p>先准备一组具体数据：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+List&lt;(string Name, int Hp, float Distance)&gt; enemies = new()
+{
+    new(&quot;Slime&quot;,  30, 6f),
+    new(&quot;Knight&quot;, 80, 3f),
+    new(&quot;Archer&quot;,  50, 3f),
+    new(&quot;Ghost&quot;,    0, 8f)
+};</code></pre>
+<h3 id="第一步-先按距离排序">第一步：先按距离排序</h3>
+<pre><code class="language-csharp">enemies.Sort((a, b) =&gt; a.Distance.CompareTo(b.Distance));
+
+foreach ((string Name, int Hp, float Distance) enemy in enemies)
+    Console.WriteLine($&quot;{enemy.Name}: {enemy.Distance}m&quot;);</code></pre>
+<p>输出：</p>
+<pre><code class="language-text">Knight: 3m
+Archer: 3m
+Slime: 6m
+Ghost: 8m</code></pre>
+<p><code>Sort</code> 会直接改变原列表。<code>Knight</code> 和 <code>Archer</code> 距离相同，这时只比较距离不足以表达我们希望谁排在前面。</p>
+<h3 id="第二步-距离相同时-血量低的优先">第二步：距离相同时，血量低的优先</h3>
+<pre><code class="language-csharp">enemies.Sort((a, b) =&gt;
+{
+    int byDistance = a.Distance.CompareTo(b.Distance);
+    if (byDistance != 0)
+        return byDistance;
+
+    return a.Hp.CompareTo(b.Hp);
+});</code></pre>
+<p>比较器返回值只表达顺序：</p>
+<pre><code class="language-text">小于 0 -&gt; a 排在 b 前面
+等于 0 -&gt; 当前规则认为两者相等
+大于 0 -&gt; a 排在 b 后面</code></pre>
+<p>现在 <code>Archer(50 HP)</code> 会排在 <code>Knight(80 HP)</code> 前面。第二条件只在第一条件相等时执行。</p>
+<h3 id="第三步-排序后寻找第一个可攻击目标">第三步：排序后寻找第一个可攻击目标</h3>
+<pre><code class="language-csharp">(string Name, int Hp, float Distance)? target = enemies.Find(enemy =&gt;
+    enemy.Hp &gt; 0 &amp;&amp; enemy.Distance &lt;= 5f);
+
+Console.WriteLine(target?.Name ?? &quot;没有目标&quot;); // Archer</code></pre>
+<p><code>Find</code> 从列表开头向后检查。因为前一步已经按“近距离、低血量”排序，第一个满足“存活且 5 米内”的敌人就是当前优先目标。</p>
+<h3 id="第四步-清掉死亡对象">第四步：清掉死亡对象</h3>
+<pre><code class="language-csharp">int removed = enemies.RemoveAll(enemy =&gt; enemy.Hp &lt;= 0);
+
+Console.WriteLine(removed); // 1
+Console.WriteLine(enemies.Count); // 3</code></pre>
+<p>这条完整链的状态变化是：</p>
+<pre><code class="language-text">原列表 4 个敌人
+-&gt; Sort 改变遍历顺序，但数量仍为 4
+-&gt; Find 返回一个引用，但不修改列表
+-&gt; RemoveAll 删除 Ghost，数量变成 3</code></pre>
+<p>后面各 API 的独立例子，都可以对照这条运行链判断：它是原地修改集合、只返回查询结果，还是创建一个新集合。</p>
 <h2 id="sort-排序-list">Sort：排序 List</h2>
 <p>数字排序：</p>
 <pre><code class="language-csharp">List&lt;int&gt; nums = new() { 3, 1, 5, 2 };

@@ -55,8 +55,11 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#跟着代码做-从重复计算改成一次重算">跟着代码做：从重复计算改成一次重算</a>
+      <a class="sub" data-toc-link href="#第二步-写入时只标脏">第二步：写入时只标脏</a>
+      <a class="sub" data-toc-link href="#第三步-读取发生在统一消费之前">第三步：读取发生在统一消费之前</a>
       <a data-toc-link href="#1-两级标记不是重复信息">1. 两级标记不是重复信息</a>
       <a data-toc-link href="#2-同帧合并">2. 同帧合并</a>
       <a data-toc-link href="#3-局部重算">3. 局部重算</a>
@@ -81,45 +84,73 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 两级标记不是重复信息">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：跟着代码做：从重复计算改成一次重算">
       <span>01</span>
+      <strong>跟着代码做：从重复计算改成一次重算</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：1. 两级标记不是重复信息">
+      <span>02</span>
       <strong>1. 两级标记不是重复信息</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 同帧合并">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：2. 同帧合并">
+      <span>03</span>
       <strong>2. 同帧合并</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 局部重算">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：3. 局部重算">
+      <span>04</span>
       <strong>3. 局部重算</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. active modifiers">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：4. active modifiers">
+      <span>05</span>
       <strong>4. active modifiers</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 需要立即读取：ensureFresh">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：5. 需要立即读取：ensureFresh">
+      <span>06</span>
       <strong>5. 需要立即读取：ensureFresh</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. clear 与 notify">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：6. clear 与 notify">
+      <span>07</span>
       <strong>6. clear 与 notify</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 复杂度">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：7. 复杂度">
+      <span>08</span>
       <strong>7. 复杂度</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 必须验证的边界">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：8. 必须验证的边界">
+      <span>09</span>
       <strong>8. 必须验证的边界</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>跟着代码做：从重复计算改成一次重算</h3>
+        <p>具体场景是：角色在同一帧内更换武器、升级并获得 Buff，三次操作都会修改攻击力。先做一个最直接的属性类，每次修改基础攻击力都立即计算最终值：</p>
+
+        <pre><code class="language-csharp">sealed class AttackAttribute
+{
+    public float BaseValue { get; private set; } = 100f;
+    public float CurrentValue { get; private set; } = 100f;
+    public int RecalculateCount { get; private set; }
+
+    public void SetBaseValue(float value)
+    {
+        BaseValue = value;
+        Recalculate();
+    }
+
+    private void Recalculate()
+    {
+        RecalculateCount++;
+        CurrentValue = BaseValue * 1.2f; // 教学示例：固定增加 20%
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>1. 两级标记不是重复信息</h3>
         <p>可以把它想成办公楼的两层索引：</p>
         <ul><li><code>EntityDirty</code> 是楼层门口的待办牌：调度器只进入挂了牌子的实体；</li><li><code>AttributeDirty</code> 是房间内的具体清单：进入后只重算被勾选的属性。</li></ul>
@@ -131,15 +162,15 @@ EntityDirty = true         // 粗筛：哪一个实体需要进入系统
     ↓
 统一消费阶段扫描该实体</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CONCEPT</div>
         <h3>2. 同帧合并</h3>
         <p>同一帧内，装备、状态和升级可能连续改变属性。写入口只更新基础值或修改器状态，并重复写入同一布尔标记。最终消费阶段只看到“这个属性需要重算”，因此多个写入可以合并成一次计算。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>3. 局部重算</h3>
         <p>对一个脏属性，重算链可以抽象为：</p>
 
@@ -170,15 +201,15 @@ EntityDirty = true         // 粗筛：哪一个实体需要进入系统
     return next;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CONCEPT</div>
         <h3>4. active modifiers</h3>
         <p>持续修改器只有在有效且激活时才参与 <code>CurrentValue</code> 聚合。一次性变化通常直接改变基础值；持续变化保留为独立修改器，让移除、失效或叠层变化后可以从基础值重新推导。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>5. 需要立即读取：ensureFresh</h3>
         <p>统一消费适合批处理，但有些写入后马上就要读取新值。此时使用单属性即时路径：</p>
 
@@ -190,22 +221,22 @@ EntityDirty = true         // 粗筛：哪一个实体需要进入系统
     return attribute.CurrentValue;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
         <h3>6. clear 与 notify</h3>
         <p>一次成功消费包含三个提交动作：</p>
         <ul><li>写回新的 <code>CurrentValue</code>；</li><li>清除该属性的 <code>Dirty</code>；</li><li>通知观察者。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>7. 复杂度</h3>
         <p>设一个脏实体共有 <code>A</code> 个属性，其中 <code>D</code> 个属性脏；当前有 <code>E</code> 个效果，每个效果平均 <code>M</code> 个修改器：</p>
         <ul><li><code>O(A)</code>：在脏实体内寻找具体脏属性；</li><li><code>O(D × E × M)</code>：为每个脏属性聚合有效修改器。</li></ul>
         <pre><code class="language-text">O(A + D × E × M)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
         <h3>8. 必须验证的边界</h3>
 
         <ul><li>两级标记必须同时维护；</li><li>同帧多次写入是否只触发一次最终重算；</li><li>即时读取后统一阶段是否避免重复重算；</li><li>失效效果引用是否安全移除；</li><li>未激活修改器是否被跳过；</li><li>通知是否允许 <code>oldValue == newValue</code>；</li><li>跨属性依赖是否有显式传播规则。</li></ul>
@@ -226,6 +257,87 @@ EntityDirty = true         // 粗筛：哪一个实体需要进入系统
 <li><code>CurrentValue</code>：基础值叠加当前有效修改器后的结果。</li>
 </ul>
 <p>每次写入都立刻重算虽然直观，却会让同一帧的连续变化重复遍历修改器。更实用的模型是：写入阶段只标脏，统一消费阶段再局部重算。</p>
+<h2 id="跟着代码做-从重复计算改成一次重算">跟着代码做：从重复计算改成一次重算</h2>
+<p>具体场景是：角色在同一帧内更换武器、升级并获得 Buff，三次操作都会修改攻击力。先做一个最直接的属性类，每次修改基础攻击力都立即计算最终值：</p>
+<pre><code class="language-csharp">sealed class AttackAttribute
+{
+    public float BaseValue { get; private set; } = 100f;
+    public float CurrentValue { get; private set; } = 100f;
+    public int RecalculateCount { get; private set; }
+
+    public void SetBaseValue(float value)
+    {
+        BaseValue = value;
+        Recalculate();
+    }
+
+    private void Recalculate()
+    {
+        RecalculateCount++;
+        CurrentValue = BaseValue * 1.2f; // 教学示例：固定增加 20%
+    }
+}</code></pre>
+<p>同一帧连续处理装备、升级和临时修正：</p>
+<pre><code class="language-csharp">AttackAttribute attack = new();
+attack.SetBaseValue(110f);
+attack.SetBaseValue(125f);
+attack.SetBaseValue(130f);
+
+Console.WriteLine(attack.CurrentValue);     // 156
+Console.WriteLine(attack.RecalculateCount); // 3</code></pre>
+<p>最终只关心 <code>BaseValue = 130</code>，中间两次完整计算没有被任何系统读取，却仍然执行了三遍修改器遍历。</p>
+<h3 id="第二步-写入时只标脏">第二步：写入时只标脏</h3>
+<pre><code class="language-csharp">sealed class AttackAttribute
+{
+    public float BaseValue { get; private set; } = 100f;
+    public float CurrentValue { get; private set; } = 100f;
+    public bool Dirty { get; private set; }
+    public int RecalculateCount { get; private set; }
+
+    public void SetBaseValue(float value)
+    {
+        BaseValue = value;
+        Dirty = true;
+    }
+
+    public void RefreshIfDirty()
+    {
+        if (!Dirty)
+            return;
+
+        RecalculateCount++;
+        CurrentValue = BaseValue * 1.2f;
+        Dirty = false;
+    }
+}</code></pre>
+<p>调用方式改成：</p>
+<pre><code class="language-csharp">attack.SetBaseValue(110f);
+attack.SetBaseValue(125f);
+attack.SetBaseValue(130f);
+
+// 本帧所有写入完成后，由属性系统统一消费。
+attack.RefreshIfDirty();
+
+Console.WriteLine(attack.CurrentValue);     // 156
+Console.WriteLine(attack.RecalculateCount); // 1</code></pre>
+<p>三次写入都只是把同一个 <code>Dirty</code> 设为 <code>true</code>，消费阶段只重算一次。这就是同帧合并。</p>
+<h3 id="第三步-读取发生在统一消费之前">第三步：读取发生在统一消费之前</h3>
+<p>如果技能结算在本帧中途立刻读取：</p>
+<pre><code class="language-csharp">attack.SetBaseValue(200f);
+DealDamage(attack.CurrentValue); // 错：仍然可能读到旧值 156</code></pre>
+<p>需要提供一个保证新鲜的读取入口：</p>
+<pre><code class="language-csharp">public float GetCurrentValue()
+{
+    RefreshIfDirty();
+    return CurrentValue;
+}
+
+attack.SetBaseValue(200f);
+DealDamage(attack.GetCurrentValue()); // 240</code></pre>
+<p>现在形成两条明确路径：</p>
+<pre><code class="language-text">普通情况：多次写入 -&gt; 帧末统一 RefreshIfDirty
+立即读取：写入 -&gt; GetCurrentValue -&gt; 必要时提前刷新</code></pre>
+<p>后文的两级标记是在这个单属性版本上再增加一层：世界里可能有几千个实体，系统先用 <code>EntityDirty</code> 找到哪些实体值得进入，再用每个属性自己的 <code>Dirty</code> 找到具体要重算的字段。</p>
 <h2 id="1-两级标记不是重复信息">1. 两级标记不是重复信息</h2>
 <p>可以把它想成办公楼的两层索引：</p>
 <ul>

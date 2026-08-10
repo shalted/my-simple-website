@@ -20,6 +20,97 @@ H：从当前点到终点，估计还要多少成本。
 F：综合评分。
 ```
 
+## 跟着代码看一次“换父节点”
+
+先只实现 A* 中最关键的一步：发现一条更便宜的路线时，更新邻居的 `G` 和 `Parent`。把下面两个类型放在 `Node.cs`：
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+sealed class Node
+{
+    public string Id { get; }
+    public int G { get; set; } = int.MaxValue;
+    public Node? Parent { get; set; }
+
+    public Node(string id) => Id = id;
+}
+
+static class AStarStep
+{
+    public static bool TryRelax(Node current, Node neighbor, int edgeCost)
+    {
+        int newG = current.G + edgeCost;
+
+        if (newG >= neighbor.G)
+            return false;
+
+        neighbor.G = newG;
+        neighbor.Parent = current;
+        return true;
+    }
+
+    public static List<string> BuildPath(Node goal)
+    {
+        List<string> path = new();
+
+        for (Node? node = goal; node != null; node = node.Parent)
+            path.Add(node.Id);
+
+        path.Reverse();
+        return path;
+    }
+}
+```
+
+构造一个很小的图：
+
+```text
+S --3--> A
+S --1--> B --1--> A
+```
+
+先从 S 直接发现 A：
+
+```csharp
+Node s = new("S") { G = 0 };
+Node a = new("A");
+Node b = new("B");
+
+AStarStep.TryRelax(s, a, 3);
+Console.WriteLine($"A: G={a.G}, Parent={a.Parent?.Id}");
+// A: G=3, Parent=S
+```
+
+再经过 B 到达 A：
+
+```csharp
+AStarStep.TryRelax(s, b, 1); // B.G = 1
+AStarStep.TryRelax(b, a, 1); // 新路线成本 1 + 1 = 2
+
+Console.WriteLine($"A: G={a.G}, Parent={a.Parent?.Id}");
+// A: G=2, Parent=B
+```
+
+第二次更新不是为 A 保存另一条完整路径，而是覆盖两个字段：
+
+```text
+A.G：3 -> 2
+A.Parent：S -> B
+```
+
+### 第二步：沿 Parent 恢复最终路径
+
+`BuildPath` 已经在 `AStarStep` 中。`Program.cs` 调用它：
+
+```csharp
+Console.WriteLine(string.Join(" -> ", AStarStep.BuildPath(a)));
+// S -> B -> A
+```
+
+搜索阶段不断修改 `G` 和 `Parent`；只有找到终点后，才从终点沿 Parent 反向走回起点。后文所有关于 Open、Closed 和路径正确性的讨论，都可以对应到这两个操作：`TryRelax` 负责改进记录，`BuildPath` 负责最终回溯。
+
 ## G 值为什么重要
 
 `G` 看起来像“过去的账”，但它非常关键。
@@ -234,6 +325,25 @@ if (newG < neighbor.G || !openSet.Contains(neighbor))
 ```
 
 这句就是保证最终路径正确的关键。
+
+## 运行边界：什么时候没有路径
+
+如果 Open 集合已经为空，终点仍未被发现，结果应该是“不可达”，而不是返回离终点最近的半条路径：
+
+```csharp
+if (open.Count == 0 && !states.ContainsKey(goal))
+    return PathResult.Unreachable;
+```
+
+还要明确这些边界：
+
+- 普通 A* 不能处理负成本边。
+- `G + edgeCost` 要防止整数溢出，`int.MaxValue` 不能直接参与加法。
+- 起点等于终点时，正确结果是只包含起点的零成本路径。
+- 地图在搜索期间变化时，旧 Parent 链可能穿过新障碍，需要版本检查或重新寻路。
+- 启发函数如果高估真实剩余成本，就不再保证最短路径。
+
+失败结果应该返回状态和原因，调用方再决定原地等待、换目标还是请求最近可达点。
 
 ## 最重要的收获
 

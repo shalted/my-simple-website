@@ -55,15 +55,18 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#a-星解决什么问题">A 星解决什么问题</a>
+      <a data-toc-link href="#跟着代码看一次-换父节点">跟着代码看一次“换父节点”</a>
+      <a class="sub" data-toc-link href="#第二步-沿-parent-恢复最终路径">第二步：沿 Parent 恢复最终路径</a>
       <a data-toc-link href="#g-值为什么重要">G 值为什么重要</a>
       <a data-toc-link href="#数字例子">数字例子</a>
       <a data-toc-link href="#搜索阶段不是移动阶段">搜索阶段不是移动阶段</a>
       <a data-toc-link href="#a-星不为每个候选点保存完整路径">A 星不为每个候选点保存完整路径</a>
       <a data-toc-link href="#换路线时发生了什么">换路线时发生了什么</a>
       <a data-toc-link href="#保证路径正确的关键">保证路径正确的关键</a>
+      <a data-toc-link href="#运行边界-什么时候没有路径">运行边界：什么时候没有路径</a>
       <a data-toc-link href="#最重要的收获">最重要的收获</a>
     </nav>
   </details>
@@ -81,7 +84,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -89,32 +92,40 @@
       <span>01</span>
       <strong>A 星解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：G 值为什么重要">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码看一次“换父节点”">
       <span>02</span>
+      <strong>跟着代码看一次“换父节点”</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：G 值为什么重要">
+      <span>03</span>
       <strong>G 值为什么重要</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：数字例子">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：数字例子">
+      <span>04</span>
       <strong>数字例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：搜索阶段不是移动阶段">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：搜索阶段不是移动阶段">
+      <span>05</span>
       <strong>搜索阶段不是移动阶段</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：A 星不为每个候选点保存完整路径">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：A 星不为每个候选点保存完整路径">
+      <span>06</span>
       <strong>A 星不为每个候选点保存完整路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：换路线时发生了什么">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：换路线时发生了什么">
+      <span>07</span>
       <strong>换路线时发生了什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：保证路径正确的关键">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：保证路径正确的关键">
+      <span>08</span>
       <strong>保证路径正确的关键</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最重要的收获">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：运行边界：什么时候没有路径">
+      <span>09</span>
+      <strong>运行边界：什么时候没有路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -127,13 +138,56 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码看一次“换父节点”</h3>
+        <p>先只实现 A* 中最关键的一步：发现一条更便宜的路线时，更新邻居的 <code>G</code> 和 <code>Parent</code>。把下面两个类型放在 <code>Node.cs</code>：</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+sealed class Node
+{
+    public string Id { get; }
+    public int G { get; set; } = int.MaxValue;
+    public Node? Parent { get; set; }
+
+    public Node(string id) =&gt; Id = id;
+}
+
+static class AStarStep
+{
+    public static bool TryRelax(Node current, Node neighbor, int edgeCost)
+    {
+        int newG = current.G + edgeCost;
+
+        if (newG &gt;= neighbor.G)
+            return false;
+
+        neighbor.G = newG;
+        neighbor.Parent = current;
+        return true;
+    }
+
+    public static List&lt;string&gt; BuildPath(Node goal)
+    {
+        List&lt;string&gt; path = new();
+
+        for (Node? node = goal; node != null; node = node.Parent)
+            path.Add(node.Id);
+
+        path.Reverse();
+        return path;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>G 值为什么重要</h3>
         <p><code>G</code> 看起来像“过去的账”，但它非常关键。</p>
 
         <pre><code class="language-text">从起点到终点的总路程尽量短。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>数字例子</h3>
         <p>假设有两个候选点：</p>
 
@@ -147,8 +201,8 @@ G = 3   已经走了 3 步
 H = 6   估计离终点还差 6 步
 F = 9</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>搜索阶段不是移动阶段</h3>
         <p>A 星搜索时，角色并没有真的移动。</p>
 
@@ -156,8 +210,8 @@ F = 9</code></pre>
 每个点当前最便宜的到达方式是什么？
 哪个候选点最值得继续探索？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>A 星不为每个候选点保存完整路径</h3>
         <p>如果每个候选点都保存一整条路径：</p>
 
@@ -166,23 +220,31 @@ B: [S, A, B]
 C: [S, A, B, C]
 D: [S, X, Y, D]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>换路线时发生了什么</h3>
         <p>假设某个节点 <code>X</code> 之前是这样到达的：</p>
 
         <pre><code class="language-text">S -&gt; A -&gt; B -&gt; X</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>保证路径正确的关键</h3>
         <p>关键规则是：</p>
 
         <pre><code class="language-text">如果第一次发现某个节点，记录它的 G 和 Parent。
 如果之后发现更低 G 的路线，更新它的 G 和 Parent。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>运行边界：什么时候没有路径</h3>
+        <p>如果 Open 集合已经为空，终点仍未被发现，结果应该是“不可达”，而不是返回离终点最近的半条路径：</p>
+        <ul><li>普通 A* 不能处理负成本边。</li><li><code>G + edgeCost</code> 要防止整数溢出，<code>int.MaxValue</code> 不能直接参与加法。</li><li>起点等于终点时，正确结果是只包含起点的零成本路径。</li><li>地图在搜索期间变化时，旧 Parent 链可能穿过新障碍，需要版本检查或重新寻路。</li><li>启发函数如果高估真实剩余成本，就不再保证最短路径。</li></ul>
+        <pre><code class="language-csharp">if (open.Count == 0 &amp;&amp; !states.ContainsKey(goal))
+    return PathResult.Unreachable;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最终路径不是一路维护一个大 List，而是：</p>
 
@@ -206,6 +268,70 @@ D: [S, X, Y, D]</code></pre>
 <pre><code class="language-text">G：从起点走到当前点，已经花了多少成本。
 H：从当前点到终点，估计还要多少成本。
 F：综合评分。</code></pre>
+<h2 id="跟着代码看一次-换父节点">跟着代码看一次“换父节点”</h2>
+<p>先只实现 A* 中最关键的一步：发现一条更便宜的路线时，更新邻居的 <code>G</code> 和 <code>Parent</code>。把下面两个类型放在 <code>Node.cs</code>：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+sealed class Node
+{
+    public string Id { get; }
+    public int G { get; set; } = int.MaxValue;
+    public Node? Parent { get; set; }
+
+    public Node(string id) =&gt; Id = id;
+}
+
+static class AStarStep
+{
+    public static bool TryRelax(Node current, Node neighbor, int edgeCost)
+    {
+        int newG = current.G + edgeCost;
+
+        if (newG &gt;= neighbor.G)
+            return false;
+
+        neighbor.G = newG;
+        neighbor.Parent = current;
+        return true;
+    }
+
+    public static List&lt;string&gt; BuildPath(Node goal)
+    {
+        List&lt;string&gt; path = new();
+
+        for (Node? node = goal; node != null; node = node.Parent)
+            path.Add(node.Id);
+
+        path.Reverse();
+        return path;
+    }
+}</code></pre>
+<p>构造一个很小的图：</p>
+<pre><code class="language-text">S --3--&gt; A
+S --1--&gt; B --1--&gt; A</code></pre>
+<p>先从 S 直接发现 A：</p>
+<pre><code class="language-csharp">Node s = new(&quot;S&quot;) { G = 0 };
+Node a = new(&quot;A&quot;);
+Node b = new(&quot;B&quot;);
+
+AStarStep.TryRelax(s, a, 3);
+Console.WriteLine($&quot;A: G={a.G}, Parent={a.Parent?.Id}&quot;);
+// A: G=3, Parent=S</code></pre>
+<p>再经过 B 到达 A：</p>
+<pre><code class="language-csharp">AStarStep.TryRelax(s, b, 1); // B.G = 1
+AStarStep.TryRelax(b, a, 1); // 新路线成本 1 + 1 = 2
+
+Console.WriteLine($&quot;A: G={a.G}, Parent={a.Parent?.Id}&quot;);
+// A: G=2, Parent=B</code></pre>
+<p>第二次更新不是为 A 保存另一条完整路径，而是覆盖两个字段：</p>
+<pre><code class="language-text">A.G：3 -&gt; 2
+A.Parent：S -&gt; B</code></pre>
+<h3 id="第二步-沿-parent-恢复最终路径">第二步：沿 Parent 恢复最终路径</h3>
+<p><code>BuildPath</code> 已经在 <code>AStarStep</code> 中。<code>Program.cs</code> 调用它：</p>
+<pre><code class="language-csharp">Console.WriteLine(string.Join(&quot; -&gt; &quot;, AStarStep.BuildPath(a)));
+// S -&gt; B -&gt; A</code></pre>
+<p>搜索阶段不断修改 <code>G</code> 和 <code>Parent</code>；只有找到终点后，才从终点沿 Parent 反向走回起点。后文所有关于 Open、Closed 和路径正确性的讨论，都可以对应到这两个操作：<code>TryRelax</code> 负责改进记录，<code>BuildPath</code> 负责最终回溯。</p>
 <h2 id="g-值为什么重要">G 值为什么重要</h2>
 <p><code>G</code> 看起来像“过去的账”，但它非常关键。</p>
 <p>A 星不是只想找“看起来离终点近”的点，而是想找：</p>
@@ -301,6 +427,19 @@ X.Parent = C</code></pre>
     neighbor.Parent = current;
 }</code></pre>
 <p>这句就是保证最终路径正确的关键。</p>
+<h2 id="运行边界-什么时候没有路径">运行边界：什么时候没有路径</h2>
+<p>如果 Open 集合已经为空，终点仍未被发现，结果应该是“不可达”，而不是返回离终点最近的半条路径：</p>
+<pre><code class="language-csharp">if (open.Count == 0 &amp;&amp; !states.ContainsKey(goal))
+    return PathResult.Unreachable;</code></pre>
+<p>还要明确这些边界：</p>
+<ul>
+<li>普通 A* 不能处理负成本边。</li>
+<li><code>G + edgeCost</code> 要防止整数溢出，<code>int.MaxValue</code> 不能直接参与加法。</li>
+<li>起点等于终点时，正确结果是只包含起点的零成本路径。</li>
+<li>地图在搜索期间变化时，旧 Parent 链可能穿过新障碍，需要版本检查或重新寻路。</li>
+<li>启发函数如果高估真实剩余成本，就不再保证最短路径。</li>
+</ul>
+<p>失败结果应该返回状态和原因，调用方再决定原地等待、换目标还是请求最近可达点。</p>
 <h2 id="最重要的收获">最重要的收获</h2>
 <pre><code class="language-text">A 星搜索时不是角色在走路，而是在内存里推演路线。</code></pre>
 <pre><code class="language-text">G 记录从起点到当前点的真实成本。

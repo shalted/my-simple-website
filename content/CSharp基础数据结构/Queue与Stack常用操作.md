@@ -310,6 +310,62 @@ list.RemoveAt(0);
 
 `Queue.Dequeue()` 更适合队列场景。
 
+## 完整运行：任务排队与操作撤销
+
+为什么 Queue 适合任务处理：先到的请求必须先执行。
+
+```csharp
+Queue<string> jobs = new();
+jobs.Enqueue("加载配置");
+jobs.Enqueue("创建角色");
+jobs.Enqueue("进入场景");
+
+while (jobs.TryDequeue(out string? job))
+    Console.WriteLine(job);
+```
+
+输出严格保持入队顺序：
+
+```text
+加载配置
+创建角色
+进入场景
+```
+
+为什么 Stack 适合撤销：最后完成的操作必须最先回退。
+
+```csharp
+Stack<string> undo = new();
+undo.Push("放置节点 A");
+undo.Push("移动节点 A");
+undo.Push("删除节点 A");
+
+while (undo.TryPop(out string? operation))
+    Console.WriteLine($"撤销: {operation}");
+```
+
+输出顺序相反：
+
+```text
+撤销: 删除节点 A
+撤销: 移动节点 A
+撤销: 放置节点 A
+```
+
+### 边界：空容器不能直接取值
+
+队列为空时调用 `Dequeue()`、栈为空时调用 `Pop()` 都会抛出异常。输入是否可能为空不确定时，使用 `TryDequeue` 和 `TryPop`：
+
+```csharp
+if (!jobs.TryDequeue(out string? nextJob))
+    Console.WriteLine("当前没有待处理任务");
+
+if (!undo.TryPop(out string? lastOperation))
+    Console.WriteLine("当前没有可撤销操作");
+```
+
+另一个边界是容量无限增长：生产者持续入队而消费者处理不过来时，Queue 会占用越来越多内存。工程系统要监控队列长度，并明确限流、丢弃、合并或背压策略。
+
 ## 最重要的收获
 
 ```text

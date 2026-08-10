@@ -55,6 +55,147 @@ velocity = direction * speed
 大小
 ```
 
+## 跟着代码做：先判断两个人会不会撞
+
+先不实现完整 RVO / ORCA，只做一个可以运行的二维预测器。A 在左边向右走，B 在右边向左走：
+
+```csharp
+using System;
+using System.Numerics;
+
+static bool WillCollide(
+    Vector2 positionA,
+    Vector2 velocityA,
+    Vector2 positionB,
+    Vector2 velocityB,
+    float combinedRadius,
+    float timeHorizon)
+{
+    Vector2 relativePosition = positionB - positionA;
+    Vector2 relativeVelocity = velocityB - velocityA;
+
+    float speedSquared = relativeVelocity.LengthSquared();
+    if (speedSquared < 0.0001f)
+        return relativePosition.Length() < combinedRadius;
+
+    float closestTime = -Vector2.Dot(
+        relativePosition,
+        relativeVelocity) / speedSquared;
+
+    closestTime = Math.Clamp(closestTime, 0f, timeHorizon);
+    Vector2 separation =
+        relativePosition + relativeVelocity * closestTime;
+
+    return separation.Length() < combinedRadius;
+}
+
+Vector2 positionA = new(-2f, 0f);
+Vector2 velocityA = new(1f, 0f);
+Vector2 positionB = new( 2f, 0f);
+Vector2 velocityB = new(-1f, 0f);
+
+Console.WriteLine(WillCollide(
+    positionA, velocityA,
+    positionB, velocityB,
+    combinedRadius: 1f,
+    timeHorizon: 3f));
+```
+
+预期输出是 `True`。把数值代进去：
+
+```text
+relativePosition = (2, 0) - (-2, 0) = (4, 0)
+relativeVelocity = (-1, 0) - (1, 0) = (-2, 0)
+closestTime = -Dot((4,0),(-2,0)) / 4 = 2 秒
+2 秒后的相对距离 = (4,0) + (-2,0) * 2 = (0,0)
+```
+
+两人的中心会在预测窗口内重合，所以当前速度不安全。这里第一次体现了“速度空间”的思路：我们没有等角色真正撞上，而是在测试**某个候选速度会导致什么未来结果**。
+
+## 第二步：从候选速度里挑一个安全的
+
+先用离散候选做教学版本：直走、左绕、右绕和停下。
+
+```csharp
+Vector2 preferredVelocity = new(1f, 0f);
+
+Vector2[] candidates =
+{
+    new(1.0f,  0.0f),
+    new(0.7f,  0.7f),
+    new(0.7f, -0.7f),
+    Vector2.Zero
+};
+
+Vector2 best = Vector2.Zero;
+float bestCost = float.PositiveInfinity;
+
+foreach (Vector2 candidate in candidates)
+{
+    bool unsafeVelocity = WillCollide(
+        positionA, candidate,
+        positionB, velocityB,
+        combinedRadius: 1f,
+        timeHorizon: 3f);
+
+    if (unsafeVelocity)
+        continue;
+
+    float cost = Vector2.DistanceSquared(
+        candidate, preferredVelocity);
+
+    if (cost < bestCost)
+    {
+        best = candidate;
+        bestCost = cost;
+    }
+}
+
+Console.WriteLine($"选择速度: ({best.X:F1}, {best.Y:F1})");
+```
+
+运行过程是：
+
+```text
+(1.0, 0.0)  -> 会撞，排除
+(0.7, 0.7)  -> 安全，与期望速度的差异较小，暂存
+(0.7,-0.7)  -> 也安全，但不比当前结果更好
+(0.0, 0.0)  -> 安全，但离期望速度更远
+最终选择 (0.7, 0.7)
+```
+
+这段代码展示了局部避障的共同骨架：
+
+```text
+期望速度 preferredVelocity
+-> 排除会碰撞的速度
+-> 在安全速度中选择最接近期望的一个
+-> 用选中速度推进角色
+```
+
+它还不是 RVO 或 ORCA，只是离散采样教学版。真正的 RVO / ORCA 不需要只试四个候选点，而是在连续速度空间里构造禁区或半平面约束。
+
+## 第三步：从“我全躲”变成“双方分担”
+
+上面的 A 假设 B 完全不改变速度，于是 A 承担全部避让。如果双方都运行同一规则，可以各自修正一部分：
+
+```text
+A 原速度 ( 1.0, 0.0) -> 建议修正到 ( 0.85, 0.35)
+B 原速度 (-1.0, 0.0) -> 建议修正到 (-0.85,-0.35)
+```
+
+RVO 的“Reciprocal”强调双方共同响应。ORCA 进一步把对邻居的避碰要求表示成速度空间中的线性约束，并在所有约束允许的区域里选择最接近期望速度的解。
+
+因此阅读后面的速度障碍图时，可以一直对应这三样东西：
+
+```text
+preferredVelocity -> 如果没有邻居，角色最想采用的速度
+forbidden region  -> 会在时间窗口内发生碰撞的速度集合
+chosen velocity   -> 约束外、且尽量接近期望的最终速度
+```
+
+项目实现还要加入多个邻居、墙体约束、最大速度、数值容差和无可行解处理。示例的任务只是先让“为什么改速度就能提前避让”可以用具体数字跑出来。
+
 所以 RVO / ORCA 改速度，其实也在改移动方向。
 
 例如原本想往右走：

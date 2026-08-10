@@ -38,6 +38,177 @@ HTN 用领域知识把任务逐层分解成可执行步骤。
 MCTS 用反复采样在巨大决策树中估计更好的动作。
 ```
 
+## 先运行两个最小例子
+
+先不要同时理解整套算法。下面让 HTN 和 MCTS 各自解决一个很小的问题，并观察代码实际改变了什么。
+
+### HTN 第一步：根据状态选择任务列表
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+static List<string> PlanDinner(WorldState world)
+{
+    if (world.HasFood)
+    {
+        return new List<string>
+        {
+            "PrepareFood",
+            "Cook",
+            "Serve"
+        };
+    }
+
+    return new List<string>
+    {
+        "BuyFood",
+        "PrepareFood",
+        "Cook",
+        "Serve"
+    };
+}
+
+WorldState world = new(HasFood: false, MealReady: false);
+Console.WriteLine(string.Join(" -> ", PlanDinner(world)));
+
+record WorldState(bool HasFood, bool MealReady);
+```
+
+输出是：
+
+```text
+BuyFood -> PrepareFood -> Cook -> Serve
+```
+
+这已经包含 HTN 的最小思想：`PlanDinner` 是复合任务，根据世界状态选择一种分解方法，返回的字符串是尚未真正执行的原子任务序列。
+
+### HTN 第二步：不能只看第一个条件
+
+第一版的问题是：它只在选方法时检查 `HasFood`，没有验证后面的每一步是否真的可执行。加入原子任务和状态模拟：
+
+```csharp
+static bool TryBuildPlan(
+    WorldState start,
+    IReadOnlyList<PrimitiveTask> tasks,
+    out List<string> plan)
+{
+    WorldState simulated = start;
+    plan = new List<string>();
+
+    foreach (PrimitiveTask task in tasks)
+    {
+        if (!task.CanRun(simulated))
+        {
+            plan.Clear();
+            return false;
+        }
+
+        plan.Add(task.Name);
+        simulated = task.Apply(simulated);
+    }
+
+    return true;
+}
+
+record PrimitiveTask(
+    string Name,
+    Func<WorldState, bool> CanRun,
+    Func<WorldState, WorldState> Apply);
+```
+
+关键是 `simulated`：规划器不修改真实世界，而是在副本上推演。假设 `BuyFood` 成功后把 `HasFood` 设为 `true`，后面的 `Cook` 才能通过前置条件。
+
+一次失败跟踪可能是：
+
+```text
+BuyFood     -> 可执行，模拟状态 HasFood = true
+PrepareFood -> 可执行
+Cook        -> 炉灶损坏，CanRun = false
+整条方法失败，清空临时计划，再尝试其他方法
+```
+
+这解释了为什么 HTN 不能“找到第一个看起来适用的方法就立刻执行”：必须先完整分解并验证，失败时还要回退临时状态。
+
+### MCTS 第一步：先保存每个动作的统计
+
+MCTS 不预先写死完整任务列表。假设 NPC 有三个动作：进攻、防守、治疗。每次模拟后记录访问次数和累计奖励：
+
+```csharp
+ActionStats attack = new("Attack");
+attack.Record(1.0);  // 第一次模拟获胜
+attack.Record(0.0);  // 第二次模拟失败
+
+Console.WriteLine(
+    $"{attack.Name}: visits={attack.Visits}, " +
+    $"average={attack.AverageReward:F2}");
+
+sealed class ActionStats
+{
+    public string Name { get; }
+    public int Visits { get; private set; }
+    public double TotalReward { get; private set; }
+    public double AverageReward =>
+        Visits == 0 ? 0 : TotalReward / Visits;
+
+    public ActionStats(string name) => Name = name;
+
+    public void Record(double reward)
+    {
+        Visits++;
+        TotalReward += reward;
+    }
+}
+```
+
+输出：
+
+```text
+Attack: visits=2, average=0.50
+```
+
+MCTS 最终不是问“某次模拟赢了吗”，而是比较计算预算内积累的统计结果。
+
+### MCTS 第二步：既利用好动作，也探索少试的动作
+
+如果只选平均奖励最高的动作，一个早期碰巧获胜的动作可能永远霸占搜索。选择阶段通常加入探索项。下面是常见 UCB1 形式的最小代码：
+
+```csharp
+static double UcbScore(
+    ActionStats action,
+    int parentVisits,
+    double exploration = 1.414)
+{
+    if (action.Visits == 0)
+        return double.PositiveInfinity;
+
+    double exploit = action.AverageReward;
+    double explore = exploration * Math.Sqrt(
+        Math.Log(parentVisits) / action.Visits);
+
+    return exploit + explore;
+}
+```
+
+给出一组具体统计：
+
+```text
+根节点共访问 20 次
+Attack：访问 10 次，平均奖励 0.70
+Defend：访问  2 次，平均奖励 0.55
+```
+
+`Attack` 的利用价值更高，但 `Defend` 因为尝试次数少，会获得更大的探索加成。搜索继续后，统计会逐渐说明它是真的有潜力，还是仅仅没被充分验证。
+
+### 两段代码的根本差别
+
+```text
+HTN：代码先定义“任务怎样分解”，运行时生成一条可执行计划。
+MCTS：代码先定义“动作、状态转移和奖励”，运行时反复模拟并更新统计。
+```
+
+后文的 HTN 分解栈和 MCTS 四阶段，都是对这两个最小例子的扩展。阅读时可以持续追问：HTN 当前在验证哪条任务链；MCTS 当前在更新哪个节点的访问次数与奖励。
+
 ## HTN：分层任务网络
 
 HTN 是 Hierarchical Task Network，核心对象通常包括：

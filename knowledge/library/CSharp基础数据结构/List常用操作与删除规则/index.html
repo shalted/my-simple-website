@@ -55,9 +55,11 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>06 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#list-是什么">List 是什么</a>
+      <a data-toc-link href="#跟着一个列表逐步运行">跟着一个列表逐步运行</a>
+      <a class="sub" data-toc-link href="#发现问题-正序删除会跳过元素">发现问题：正序删除会跳过元素</a>
       <a data-toc-link href="#常用操作">常用操作</a>
       <a data-toc-link href="#remove-只删除第一个匹配元素">Remove 只删除第一个匹配元素</a>
       <a data-toc-link href="#removeall-删除所有满足条件的元素">RemoveAll 删除所有满足条件的元素</a>
@@ -74,7 +76,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 06</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -82,24 +84,28 @@
       <span>01</span>
       <strong>List 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：常用操作">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着一个列表逐步运行">
       <span>02</span>
+      <strong>跟着一个列表逐步运行</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：常用操作">
+      <span>03</span>
       <strong>常用操作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Remove 只删除第一个匹配元素">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Remove 只删除第一个匹配元素">
+      <span>04</span>
       <strong>Remove 只删除第一个匹配元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：RemoveAll 删除所有满足条件的元素">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：RemoveAll 删除所有满足条件的元素">
+      <span>05</span>
       <strong>RemoveAll 删除所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：边遍历边删除时用倒序 for">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：边遍历边删除时用倒序 for">
+      <span>06</span>
       <strong>边遍历边删除时用倒序 for</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最重要的收获">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最重要的收获">
+      <span>07</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -112,6 +118,25 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着一个列表逐步运行</h3>
+        <p>具体场景是维护“当前场上的敌人 ID”。为什么选择 <code>List&lt;int&gt;</code>：业务需要保留进入顺序、允许按下标访问，并且敌人数量会动态增减；这些都是 List 的直接职责。</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+List&lt;int&gt; enemyIds = new() { 101, 102, 103 };
+
+enemyIds.Add(104);
+Console.WriteLine(string.Join(&quot;, &quot;, enemyIds));
+
+enemyIds.Remove(102);
+Console.WriteLine(string.Join(&quot;, &quot;, enemyIds));
+
+Console.WriteLine(enemyIds.Contains(103));
+Console.WriteLine(enemyIds[0]);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>常用操作</h3>
         <p>添加：</p>
 
@@ -119,8 +144,8 @@
 names.Add(&quot;Alice&quot;);
 names.Add(&quot;Bob&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Remove 只删除第一个匹配元素</h3>
         <p><code>Remove</code> 不会删除全部相同元素，它只删除第一个匹配到的元素。</p>
 
@@ -128,15 +153,15 @@ names.Add(&quot;Bob&quot;);</code></pre>
 
 names.Remove(&quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>RemoveAll 删除所有满足条件的元素</h3>
         <p>如果想删除所有 <code>&quot;Alice&quot;</code>：</p>
 
         <pre><code class="language-csharp">names.RemoveAll(name =&gt; name == &quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>边遍历边删除时用倒序 for</h3>
         <p>不要正序边遍历边 <code>RemoveAt</code>：</p>
 
@@ -148,8 +173,8 @@ names.Remove(&quot;Alice&quot;);</code></pre>
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -181,6 +206,50 @@ nums.Add(30);</code></pre>
 List&lt;string&gt;     存 string
 List&lt;Unit&gt;       存 Unit
 List&lt;GameObject&gt; 存 GameObject</code></pre>
+<h2 id="跟着一个列表逐步运行">跟着一个列表逐步运行</h2>
+<p>具体场景是维护“当前场上的敌人 ID”。为什么选择 <code>List&lt;int&gt;</code>：业务需要保留进入顺序、允许按下标访问，并且敌人数量会动态增减；这些都是 List 的直接职责。</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+List&lt;int&gt; enemyIds = new() { 101, 102, 103 };
+
+enemyIds.Add(104);
+Console.WriteLine(string.Join(&quot;, &quot;, enemyIds));
+
+enemyIds.Remove(102);
+Console.WriteLine(string.Join(&quot;, &quot;, enemyIds));
+
+Console.WriteLine(enemyIds.Contains(103));
+Console.WriteLine(enemyIds[0]);</code></pre>
+<p>按行运行后的状态是：</p>
+<pre><code class="language-text">初始                    [101, 102, 103]
+Add(104)               [101, 102, 103, 104]
+Remove(102)            [101, 103, 104]
+Contains(103)          输出 True，列表不变
+enemyIds[0]            输出 101，列表不变</code></pre>
+<p>注意两个不同概念：<code>Remove(102)</code> 按“值”删除，<code>RemoveAt(1)</code> 按“下标”删除。在当前状态 <code>[101, 103, 104]</code> 上调用 <code>RemoveAt(1)</code>，删掉的是值 <code>103</code>。</p>
+<h3 id="发现问题-正序删除会跳过元素">发现问题：正序删除会跳过元素</h3>
+<pre><code class="language-csharp">List&lt;int&gt; values = new() { 2, 4, 5 };
+
+for (int i = 0; i &lt; values.Count; i++)
+{
+    if (values[i] % 2 == 0)
+        values.RemoveAt(i);
+}</code></pre>
+<p>逐步看：</p>
+<pre><code class="language-text">i=0，删除 2       -&gt; [4, 5]
+循环执行 i++      -&gt; i=1
+此时 4 已移到下标 0，却不会再检查
+最终错误结果       -&gt; [4, 5]</code></pre>
+<p>倒序遍历时，删除只会影响已经检查过的右侧元素：</p>
+<pre><code class="language-csharp">for (int i = values.Count - 1; i &gt;= 0; i--)
+{
+    if (values[i] % 2 == 0)
+        values.RemoveAt(i);
+}
+
+Console.WriteLine(string.Join(&quot;, &quot;, values)); // 5</code></pre>
+<p>后面的每种删除规则，都可以用这份列表手工跟踪“删除前下标、删除的值、删除后元素怎样左移”。</p>
 <h2 id="常用操作">常用操作</h2>
 <p>添加：</p>
 <pre><code class="language-csharp">List&lt;string&gt; names = new();

@@ -25,6 +25,35 @@
 Dictionary<string, int> scores = new();
 ```
 
+## 具体场景：根据玩家 ID 更新血量
+
+假设服务器不断收到玩家扣血消息。为什么使用 `Dictionary`？因为消息给的是玩家 ID，业务需要直接定位对应状态，而不是每次从玩家列表头部扫描到尾部。
+
+```csharp
+Dictionary<int, int> hpByPlayerId = new()
+{
+    [101] = 100,
+    [205] = 80
+};
+
+int playerId = 205;
+int damage = 30;
+
+if (hpByPlayerId.TryGetValue(playerId, out int hp))
+{
+    hpByPlayerId[playerId] = Math.Max(0, hp - damage);
+    Console.WriteLine(hpByPlayerId[playerId]); // 50
+}
+else
+{
+    Console.WriteLine($"未知玩家: {playerId}");
+}
+```
+
+运行顺序是：用 `205` 查到 `80`，减去 `30`，再用同一个 key 覆盖成 `50`。如果 ID 不存在，`TryGetValue` 返回 `false`，不会把“找不到”误当成血量 `0`。
+
+这个场景也解释了 key 必须稳定的原因：玩家改昵称不应该让状态查找失效，所以应使用不变的玩家 ID，而不是显示名称。
+
 含义：
 
 ```text

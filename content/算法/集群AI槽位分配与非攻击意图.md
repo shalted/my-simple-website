@@ -29,6 +29,155 @@
 非攻击意图：让没攻击的怪继续制造压力
 ```
 
+## 跟着代码做：先让三只怪站成一圈
+
+先只解决最小问题：玩家站在原点，三只怪分别应该走向哪里。下面是一个可以直接放进 C# 控制台项目的教学版本：
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+
+static Vector2 GetSlotPosition(
+    Vector2 playerPosition,
+    int slotIndex,
+    int slotCount,
+    float radius)
+{
+    float angle = MathF.Tau * slotIndex / slotCount;
+    Vector2 offset = new(MathF.Cos(angle), MathF.Sin(angle));
+    return playerPosition + offset * radius;
+}
+
+Vector2 player = Vector2.Zero;
+
+for (int i = 0; i < 3; i++)
+{
+    Vector2 target = GetSlotPosition(player, i, 3, 2f);
+    Console.WriteLine($"怪物 {i} -> ({target.X:F1}, {target.Y:F1})");
+}
+```
+
+这段代码的运行思路是：
+
+```text
+slotIndex / slotCount       算出该槽位占整圈的比例
+比例乘 MathF.Tau            得到弧度角；Tau 就是 2π
+Cos(angle), Sin(angle)      得到从玩家指向槽位的单位方向
+方向乘 radius               把槽位推到距离玩家 2 米的位置
+最后加 playerPosition       把局部圆环移动到玩家身边
+```
+
+预期输出近似为：
+
+```text
+怪物 0 -> ( 2.0,  0.0)
+怪物 1 -> (-1.0,  1.7)
+怪物 2 -> (-1.0, -1.7)
+```
+
+此时已经有了一个最小闭环：**输入玩家位置、槽位编号和半径，输出每只怪的移动目标点。**
+
+## 第二步：发现“每帧换座位”的问题
+
+第一版直接把列表下标当槽位编号：
+
+```csharp
+for (int i = 0; i < enemies.Count; i++)
+    enemies[i].MoveTo(GetSlotPosition(player, i, enemies.Count, 2f));
+```
+
+假设第一帧列表是：
+
+```text
+[A, B, C] -> A=0，B=1，C=2
+```
+
+下一帧因为距离排序变成：
+
+```text
+[C, A, B] -> C=0，A=1，B=2
+```
+
+三只怪会同时换目标点，看起来像队形在抖动。问题不在圆周公式，而在于“槽位身份没有保存”。
+
+## 第三步：保存稳定槽位
+
+用怪物 ID 保存分配结果；只有怪物加入、离开或槽位失效时才重新分配：
+
+```csharp
+readonly Dictionary<int, int> slotByEnemyId = new();
+
+int GetOrAssignSlot(int enemyId, int slotCount)
+{
+    if (slotByEnemyId.TryGetValue(enemyId, out int existing))
+        return existing;
+
+    for (int slot = 0; slot < slotCount; slot++)
+    {
+        if (!slotByEnemyId.ContainsValue(slot))
+        {
+            slotByEnemyId.Add(enemyId, slot);
+            return slot;
+        }
+    }
+
+    return -1; // 没有空槽位，交给后面的非攻击意图处理
+}
+```
+
+现在即使 `enemies` 的遍历顺序发生变化，A 再次查询时仍会拿到原来的槽位。项目版本通常不会每次用 `ContainsValue` 线性扫描，而会维护空闲槽位集合；这里先保留最容易看懂的写法。
+
+## 第四步：没有攻击权也要有行为
+
+槽位只回答“站在哪里”，没有回答“到达后做什么”。可以先实现一个明确的决策顺序：
+
+```csharp
+enum Intent
+{
+    Attack,
+    MoveToSlot,
+    Strafe,
+    Reposition
+}
+
+Intent ChooseIntent(
+    bool ownsAttackToken,
+    bool reachedSlot,
+    bool slotStillValid)
+{
+    if (ownsAttackToken)
+        return Intent.Attack;
+
+    if (!slotStillValid)
+        return Intent.Reposition;
+
+    if (!reachedSlot)
+        return Intent.MoveToSlot;
+
+    return Intent.Strafe;
+}
+```
+
+用四组输入手工验证：
+
+| 攻击令牌 | 已到槽位 | 槽位有效 | 输出 |
+| --- | --- | --- | --- |
+| 有 | 任意 | 任意 | `Attack` |
+| 无 | 否 | 是 | `MoveToSlot` |
+| 无 | 是 | 是 | `Strafe` |
+| 无 | 任意 | 否 | `Reposition` |
+
+至此代码逐步回答了三个不同问题：
+
+```text
+GetSlotPosition   -> 槽位的世界坐标在哪里
+GetOrAssignSlot   -> 某只怪稳定占用哪个槽位
+ChooseIntent      -> 怪物现在应该做什么
+```
+
+真实项目再在这个基础上加入导航可达性、槽位释放、攻击令牌仲裁和冷却时间，而不是把所有判断塞进一个巨大的 `Update`。
+
 ## 槽位是什么
 
 槽位不是地图上预先摆好的固定点，也不是 Unity 里的真实格子。
@@ -219,6 +368,33 @@ Reposition：重新找一个更合适的位置
 主攻怪负责出手。
 其他怪负责占位、包围、威胁、制造空间压力。
 ```
+
+## 边界：槽位不是永远有效
+
+运行时至少要处理这些边界：
+
+```text
+怪物死亡或离队 -> 立即释放槽位
+新怪物加入     -> 只分配空槽位，不重排旧成员
+目标瞬移       -> 旧世界坐标失效，重建槽位位置
+槽位不可达     -> 尝试其他槽位
+怪物多于槽位   -> 返回 -1，进入外围游走或等待
+```
+
+释放时要同时更新怪物映射与空闲槽位集合：
+
+```csharp
+bool ReleaseSlot(int enemyId)
+{
+    if (!slotByEnemyId.Remove(enemyId, out int slot))
+        return false;
+
+    freeSlots.Add(slot);
+    return true;
+}
+```
+
+如果使用 NavMesh，圆周公式算出的点还要投影到可行走区域并检查路径。投影失败不能悄悄使用玩家脚下的位置，否则怪物仍会挤成一团。
 
 ## 最重要的收获
 

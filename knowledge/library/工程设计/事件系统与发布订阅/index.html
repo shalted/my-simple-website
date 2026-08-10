@@ -55,9 +55,12 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>10 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>13 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#事件系统解决什么问题">事件系统解决什么问题</a>
+      <a data-toc-link href="#跟着代码跑一次扣血事件">跟着代码跑一次扣血事件</a>
+      <a class="sub" data-toc-link href="#第二步-对象关闭前取消订阅">第二步：对象关闭前取消订阅</a>
+      <a class="sub" data-toc-link href="#第三步-事件参数必须带足事实">第三步：事件参数必须带足事实</a>
       <a data-toc-link href="#发布订阅">发布订阅</a>
       <a data-toc-link href="#c-简单写法">C# 简单写法</a>
       <a data-toc-link href="#订阅事件">订阅事件</a>
@@ -78,7 +81,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -86,40 +89,44 @@
       <span>01</span>
       <strong>事件系统解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：发布订阅">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码跑一次扣血事件">
       <span>02</span>
+      <strong>跟着代码跑一次扣血事件</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：发布订阅">
+      <span>03</span>
       <strong>发布订阅</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：C# 简单写法">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：C# 简单写法">
+      <span>04</span>
       <strong>C# 简单写法</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：订阅事件">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：订阅事件">
+      <span>05</span>
       <strong>订阅事件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：为什么要取消订阅">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么要取消订阅">
+      <span>06</span>
       <strong>为什么要取消订阅</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：适合事件系统的场景">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：适合事件系统的场景">
+      <span>07</span>
       <strong>适合事件系统的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：不适合事件系统的场景">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：不适合事件系统的场景">
+      <span>08</span>
       <strong>不适合事件系统的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最大收益">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最大收益">
+      <span>09</span>
       <strong>最大收益</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最大风险">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最大风险">
+      <span>10</span>
       <strong>最大风险</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -133,14 +140,34 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码跑一次扣血事件</h3>
+        <p>先不用通用事件总线，只用一个明确的 C# 事件：</p>
+
+        <pre><code class="language-csharp">using System;
+
+sealed class Health
+{
+    public event Action&lt;int, int&gt;? Changed;
+    public int Current { get; private set; } = 100;
+
+    public void TakeDamage(int damage)
+    {
+        int previous = Current;
+        Current = Math.Max(0, Current - damage);
+        Changed?.Invoke(previous, Current);
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>发布订阅</h3>
         <p>事件系统的思路是：</p>
 
         <pre><code class="language-text">发布者 Publish：广播一件事情发生了。
 订阅者 Subscribe：自己监听并响应这件事。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>C# 简单写法</h3>
         <p>定义事件参数：</p>
 
@@ -150,8 +177,8 @@
     public int CurrentHp;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>订阅事件</h3>
         <p>血条系统：</p>
 
@@ -170,15 +197,15 @@ void HandleDamage(DamageEvent e)
     hpBar.SetValue(e.CurrentHp);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>为什么要取消订阅</h3>
         <p>取消订阅非常重要：</p>
 
         <pre><code class="language-csharp">GameEvents.OnDamage -= HandleDamage;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>适合事件系统的场景</h3>
         <p>适合一个事件有多个响应者：</p>
 
@@ -192,8 +219,8 @@ void HandleDamage(DamageEvent e)
 配置刷新
 UI 窗口打开关闭</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>不适合事件系统的场景</h3>
         <p>事件系统不适合隐藏强流程依赖。</p>
 
@@ -202,22 +229,22 @@ UI 窗口打开关闭</code></pre>
 再播放动画
 再进入战斗</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>最大收益</h3>
         <p>事件系统最大的收益是解耦。</p>
 
         <pre><code class="language-text">我发了一个事件。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最大风险</h3>
         <p>事件太多、乱用，会让流程变隐形。</p>
 
         <pre><code class="language-csharp">GameEvents.OnDamage?.Invoke(e);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最重要的三条：</p>
 
@@ -251,6 +278,59 @@ UI 窗口打开关闭</code></pre>
 认识成就
 认识飘字</code></pre>
 <p>这叫耦合太高。</p>
+<h2 id="跟着代码跑一次扣血事件">跟着代码跑一次扣血事件</h2>
+<p>先不用通用事件总线，只用一个明确的 C# 事件：</p>
+<pre><code class="language-csharp">using System;
+
+sealed class Health
+{
+    public event Action&lt;int, int&gt;? Changed;
+    public int Current { get; private set; } = 100;
+
+    public void TakeDamage(int damage)
+    {
+        int previous = Current;
+        Current = Math.Max(0, Current - damage);
+        Changed?.Invoke(previous, Current);
+    }
+}</code></pre>
+<p>UI 和音效分别订阅，不需要让 <code>Health</code> 认识它们：</p>
+<pre><code class="language-csharp">Health health = new();
+
+void UpdateBar(int previous, int current) =&gt;
+    Console.WriteLine($&quot;血条: {previous} -&gt; {current}&quot;);
+
+void PlayHitSound(int previous, int current) =&gt;
+    Console.WriteLine(&quot;播放受击音效&quot;);
+
+health.Changed += UpdateBar;
+health.Changed += PlayHitSound;
+health.TakeDamage(30);</code></pre>
+<p>运行顺序：</p>
+<pre><code class="language-text">TakeDamage(30)
+-&gt; Health 从 100 改成 70
+-&gt; 发布 Changed(100, 70)
+-&gt; UpdateBar 输出血条变化
+-&gt; PlayHitSound 播放声音</code></pre>
+<h3 id="第二步-对象关闭前取消订阅">第二步：对象关闭前取消订阅</h3>
+<pre><code class="language-csharp">void OnOpen()
+{
+    health.Changed += UpdateBar;
+}
+
+void OnClose()
+{
+    health.Changed -= UpdateBar;
+}</code></pre>
+<p>手工验证：</p>
+<pre><code class="language-text">OnOpen -&gt; TakeDamage(10) -&gt; UI 收到一次
+OnClose -&gt; TakeDamage(10) -&gt; UI 不再收到
+再次 OnOpen -&gt; TakeDamage(10) -&gt; UI 仍只收到一次</code></pre>
+<p>如果最后一步收到两次，说明某条打开路径重复订阅或某条关闭路径漏了取消。</p>
+<h3 id="第三步-事件参数必须带足事实">第三步：事件参数必须带足事实</h3>
+<p>只发布 <code>Action</code> 会迫使订阅者再回头查询 Health，而且查询时状态可能已经继续变化。这里直接携带 <code>previous</code> 和 <code>current</code>，订阅者可以立即计算：</p>
+<pre><code class="language-csharp">int damageTaken = previous - current;</code></pre>
+<p>实际项目还可以携带攻击者、伤害类型和事件 ID，但不要把可修改的内部对象随意暴露给订阅者。后文的事件风暴和发布边界，都是从这次 <code>TakeDamage</code> 的同步调用链扩展出来的。</p>
 <h2 id="发布订阅">发布订阅</h2>
 <p>事件系统的思路是：</p>
 <pre><code class="language-text">发布者 Publish：广播一件事情发生了。

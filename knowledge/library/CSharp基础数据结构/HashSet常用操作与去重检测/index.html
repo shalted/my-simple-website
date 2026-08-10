@@ -55,9 +55,12 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#先建立一个准确的画面">先建立一个准确的画面</a>
+      <a data-toc-link href="#跟着代码处理一遍输入">跟着代码处理一遍输入</a>
+      <a class="sub" data-toc-link href="#第二步-把重复值单独收集起来">第二步：把重复值单独收集起来</a>
+      <a class="sub" data-toc-link href="#第三步-用于图遍历时为什么能防止死循环">第三步：用于图遍历时为什么能防止死循环</a>
       <a data-toc-link href="#add-其实同时做了两件事">Add 其实同时做了两件事</a>
       <a data-toc-link href="#contains-只提问-不修改">Contains 只提问，不修改</a>
       <a data-toc-link href="#remove-只有找到时才改变集合">Remove 只有找到时才改变集合</a>
@@ -146,6 +149,45 @@
 <p>处理结束后，集合是：</p>
 <pre><code class="language-text">{ A, B, C }</code></pre>
 <p>第二个 <code>A</code> 和第二个 <code>B</code> 没有被再次写入。页面上方的实验会把这个过程拆成 11 个状态，建议先手动点完一遍。</p>
+<h2 id="跟着代码处理一遍输入">跟着代码处理一遍输入</h2>
+<p>下面的控制台示例同时输出每一步的返回值和集合状态：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+
+string[] input = { &quot;A&quot;, &quot;B&quot;, &quot;A&quot;, &quot;C&quot;, &quot;B&quot; };
+HashSet&lt;string&gt; seen = new();
+
+foreach (string value in input)
+{
+    bool added = seen.Add(value);
+    string result = added ? &quot;第一次出现&quot; : &quot;重复值&quot;;
+
+    Console.WriteLine(
+        $&quot;输入 {value} -&gt; {result} -&gt; 集合 {{{string.Join(&quot;, &quot;, seen)}}}&quot;);
+}</code></pre>
+<p>一次可能的输出是：</p>
+<pre><code class="language-text">输入 A -&gt; 第一次出现 -&gt; 集合 {A}
+输入 B -&gt; 第一次出现 -&gt; 集合 {A, B}
+输入 A -&gt; 重复值     -&gt; 集合 {A, B}
+输入 C -&gt; 第一次出现 -&gt; 集合 {A, B, C}
+输入 B -&gt; 重复值     -&gt; 集合 {A, B, C}</code></pre>
+<p><code>HashSet</code> 不保证用插入顺序枚举，所以不同运行环境的打印顺序可能不同；重要的是集合成员始终只有 <code>A、B、C</code>。</p>
+<h3 id="第二步-把重复值单独收集起来">第二步：把重复值单独收集起来</h3>
+<pre><code class="language-csharp">HashSet&lt;string&gt; seen = new();
+List&lt;string&gt; duplicates = new();
+
+foreach (string value in input)
+{
+    if (!seen.Add(value))
+        duplicates.Add(value);
+}
+
+Console.WriteLine(string.Join(&quot;, &quot;, duplicates)); // A, B</code></pre>
+<p>沿代码理解：第一次 <code>A</code> 被 <code>seen.Add</code> 消费并返回 <code>true</code>；第二次 <code>A</code> 返回 <code>false</code>，才进入 <code>duplicates</code>。因此 <code>seen</code> 表示“见过哪些不同值”，<code>duplicates</code> 表示“哪些输入再次出现过”。</p>
+<h3 id="第三步-用于图遍历时为什么能防止死循环">第三步：用于图遍历时为什么能防止死循环</h3>
+<pre><code class="language-csharp">if (!visited.Add(currentNodeId))
+    continue;</code></pre>
+<p>节点第一次到达时 <code>Add</code> 返回 <code>true</code>，继续展开邻居；环路再次把同一节点送回来时返回 <code>false</code>，直接跳过。一个布尔返回值同时完成登记和重复检测，这就是后文 <code>visited</code> 写法的来源。</p>
 <h2 id="add-其实同时做了两件事">Add 其实同时做了两件事</h2>
 <p>这一行不是单纯的“添加”：</p>
 <pre><code class="language-csharp">bool added = seen.Add(value);</code></pre>

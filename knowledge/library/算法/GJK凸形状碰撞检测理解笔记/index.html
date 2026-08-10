@@ -55,9 +55,12 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#gjk-解决什么问题">GJK 解决什么问题</a>
+      <a data-toc-link href="#跟着代码算出第一个-support-点">跟着代码算出第一个 Support 点</a>
+      <a data-toc-link href="#第二步-让两个方块发生重叠">第二步：让两个方块发生重叠</a>
+      <a class="sub" data-toc-link href="#用日志观察一次迭代">用日志观察一次迭代</a>
       <a data-toc-link href="#原点不是选出来的">原点不是选出来的</a>
       <a data-toc-link href="#一维例子">一维例子</a>
       <a data-toc-link href="#二维例子">二维例子</a>
@@ -79,7 +82,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -87,44 +90,52 @@
       <span>01</span>
       <strong>GJK 解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：原点不是选出来的">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码算出第一个 Support 点">
       <span>02</span>
+      <strong>跟着代码算出第一个 Support 点</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二步：让两个方块发生重叠">
+      <span>03</span>
+      <strong>第二步：让两个方块发生重叠</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：原点不是选出来的">
+      <span>04</span>
       <strong>原点不是选出来的</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：一维例子">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：一维例子">
+      <span>05</span>
       <strong>一维例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：二维例子">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：二维例子">
+      <span>06</span>
       <strong>二维例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：三维里不是只看 x/y/z">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：三维里不是只看 x/y/z">
+      <span>07</span>
       <strong>三维里不是只看 x/y/z</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Support 点是什么">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Support 点是什么">
+      <span>08</span>
       <strong>Support 点是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：当前方向上最远点怎么找">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：当前方向上最远点怎么找">
+      <span>09</span>
       <strong>当前方向上最远点怎么找</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：每次都要跑所有点吗">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：每次都要跑所有点吗">
+      <span>10</span>
       <strong>每次都要跑所有点吗</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：方向是怎么选的">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：方向是怎么选的">
+      <span>11</span>
       <strong>方向是怎么选的</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：Simplex 是什么">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：Simplex 是什么">
+      <span>12</span>
       <strong>Simplex 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -137,65 +148,115 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码算出第一个 Support 点</h3>
+        <p>先实现最基础的“沿某方向找最远顶点”：</p>
+
+        <pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Numerics;
+
+static Vector2 Furthest(Vector2[] vertices, Vector2 direction)
+{
+    Vector2 best = vertices[0];
+    float bestDot = Vector2.Dot(best, direction);
+
+    for (int i = 1; i &lt; vertices.Length; i++)
+    {
+        float dot = Vector2.Dot(vertices[i], direction);
+        if (dot &gt; bestDot)
+        {
+            best = vertices[i];
+            bestDot = dot;
+        }
+    }
+
+    return best;
+}
+
+static Vector2 MinkowskiSupport(
+    Vector2[] shapeA,
+    Vector2[] shapeB,
+    Vector2 direction)
+{
+    return Furthest(shapeA, direction)
+         - Furthest(shapeB, -direction);
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+        <h3>第二步：让两个方块发生重叠</h3>
+        <p>把 B 左移：</p>
+
+        <pre><code class="language-csharp">b = new[]
+{
+    new Vector2(0.5f, -1), new Vector2(2.5f, -1),
+    new Vector2(2.5f,  1), new Vector2(0.5f,  1)
+};
+
+support = MinkowskiSupport(a, b, Vector2.UnitX);
+Console.WriteLine(support); // &lt;0.5, 0&gt;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>原点不是选出来的</h3>
         <p>GJK 里的原点不是算法随便选的点。</p>
 
         <pre><code class="language-text">(0, 0)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>一维例子</h3>
         <p>A 是线段：</p>
 
         <pre><code class="language-text">A = [2, 5]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>二维例子</h3>
         <p>A 是正方形：</p>
 
         <pre><code class="language-text">x: 0 ~ 2
 y: 0 ~ 2</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>三维里不是只看 x/y/z</h3>
         <p>容易误解的一点：</p>
 
         <pre><code class="language-text">三维里是不是只要 x、y、z 三个方向的差值集合都包含 0，就相交？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>Support 点是什么</h3>
         <p>GJK 不会真的生成完整的 A - B。</p>
 
         <pre><code class="language-text">100 * 100 = 10000 个差值点</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>当前方向上最远点怎么找</h3>
         <p>最朴素的做法是：</p>
 
         <pre><code class="language-text">对所有顶点做点积。
 谁的 dot(point, dir) 最大，谁就是这个方向上的最远点。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>每次都要跑所有点吗</h3>
         <p>朴素实现里，是的。</p>
 
         <pre><code class="language-text">A：遍历 n 个顶点，找 dir 方向最远点。
 B：遍历 m 个顶点，找 -dir 方向最远点。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>方向是怎么选的</h3>
         <p>GJK 的方向不是随便选一条边。</p>
 
         <pre><code class="language-text">当前 Simplex 和原点的位置关系。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>Simplex 是什么</h3>
         <p>Simplex 是 GJK 当前收集到的少量 Support 点组成的小形状。</p>
 
@@ -203,8 +264,8 @@ B：遍历 m 个顶点，找 -dir 方向最远点。</code></pre>
 线段
 三角形</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -243,6 +304,99 @@ GJK 不生成完整 A - B，而是用 Support 函数逐步找边界点。
 <p>区别可以先这样记：</p>
 <pre><code class="language-text">SAT：找分离轴。
 GJK：看闵可夫斯基差 A - B 是否包含原点。</code></pre>
+<h2 id="跟着代码算出第一个-support-点">跟着代码算出第一个 Support 点</h2>
+<p>先实现最基础的“沿某方向找最远顶点”：</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Numerics;
+
+static Vector2 Furthest(Vector2[] vertices, Vector2 direction)
+{
+    Vector2 best = vertices[0];
+    float bestDot = Vector2.Dot(best, direction);
+
+    for (int i = 1; i &lt; vertices.Length; i++)
+    {
+        float dot = Vector2.Dot(vertices[i], direction);
+        if (dot &gt; bestDot)
+        {
+            best = vertices[i];
+            bestDot = dot;
+        }
+    }
+
+    return best;
+}
+
+static Vector2 MinkowskiSupport(
+    Vector2[] shapeA,
+    Vector2[] shapeB,
+    Vector2 direction)
+{
+    return Furthest(shapeA, direction)
+         - Furthest(shapeB, -direction);
+}</code></pre>
+<p>两个正方形左右分开：</p>
+<pre><code class="language-csharp">Vector2[] a =
+{
+    new(-1, -1), new(1, -1),
+    new( 1,  1), new(-1, 1)
+};
+
+Vector2[] b =
+{
+    new(2, -1), new(4, -1),
+    new(4,  1), new(2, 1)
+};
+
+Vector2 direction = Vector2.UnitX;
+Vector2 support = MinkowskiSupport(a, b, direction);
+
+Console.WriteLine(support);                    // &lt;-1, 0&gt;
+Console.WriteLine(Vector2.Dot(support, direction)); // -1</code></pre>
+<p>沿右方向计算时：</p>
+<pre><code class="language-text">A 在 +X 最远的点 x = 1
+B 在 -X 最远的点 x = 2
+A - B 的 support.x = 1 - 2 = -1</code></pre>
+<p>Support 点在原点左侧，且沿搜索方向的点积仍小于 0。这说明闵可夫斯基差在这个方向到不了原点，可以提前判定两个形状不相交。</p>
+<h2 id="第二步-让两个方块发生重叠">第二步：让两个方块发生重叠</h2>
+<p>把 B 左移：</p>
+<pre><code class="language-csharp">b = new[]
+{
+    new Vector2(0.5f, -1), new Vector2(2.5f, -1),
+    new Vector2(2.5f,  1), new Vector2(0.5f,  1)
+};
+
+support = MinkowskiSupport(a, b, Vector2.UnitX);
+Console.WriteLine(support); // &lt;0.5, 0&gt;</code></pre>
+<p>现在点积为正，只能说明沿这个方向没有立即找到分离证据，<strong>不能只凭一个点判定相交</strong>。GJK 接下来会把 Support 点加入 Simplex，并把搜索方向转向原点：</p>
+<pre><code class="language-csharp">List&lt;Vector2&gt; simplex = new() { support };
+direction = -support;</code></pre>
+<p>后续迭代反复执行：</p>
+<pre><code class="language-text">1. 沿 direction 取新的 Minkowski Support
+2. 新点沿 direction 仍越不过原点 -&gt; 不相交
+3. 否则把点加入 Simplex
+4. 根据点、线段或三角形中离原点最近的区域更新 Simplex
+5. Simplex 包含原点 -&gt; 相交</code></pre>
+<h3 id="用日志观察一次迭代">用日志观察一次迭代</h3>
+<pre><code class="language-csharp">for (int iteration = 0; iteration &lt; maxIterations; iteration++)
+{
+    Vector2 point = MinkowskiSupport(a, b, direction);
+    float progress = Vector2.Dot(point, direction);
+
+    Console.WriteLine(
+        $&quot;iter={iteration}, dir={direction}, &quot; +
+        $&quot;support={point}, dot={progress}&quot;);
+
+    if (progress &lt; 0f)
+        return false;
+
+    simplex.Add(point);
+
+    if (UpdateSimplexAndDirection(simplex, ref direction))
+        return true;
+}</code></pre>
+<p><code>UpdateSimplexAndDirection</code> 是 GJK 最容易写错的部分：它要根据 Simplex 的 Voronoi 区域删点、换方向，并判断原点是否被包围。教学时可以继续沿后文的一维、二维图理解；项目里应使用经过验证的物理库实现，并为重合点、零方向和迭代上限保留测试，而不是只复制这段循环骨架。</p>
 <h2 id="原点不是选出来的">原点不是选出来的</h2>
 <p>GJK 里的原点不是算法随便选的点。</p>
 <p>2D 里原点是：</p>

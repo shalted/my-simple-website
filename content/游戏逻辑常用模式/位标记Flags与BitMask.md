@@ -45,6 +45,92 @@ bool isHeal;
 AttributeAttackEffect effects;
 ```
 
+## 跟着二进制位一步步运行
+
+先用四个状态观察每一位怎样变化：
+
+```csharp
+using System;
+
+[Flags]
+enum UnitState
+{
+    None       = 0,      // 0000
+    CanMove    = 1 << 0, // 0001
+    CanAttack  = 1 << 1, // 0010
+    Stunned    = 1 << 2, // 0100
+    Invincible = 1 << 3  // 1000
+}
+```
+
+从空状态开始添加两个标记：
+
+```csharp
+UnitState state = UnitState.None; // 0000
+state |= UnitState.CanMove;       // 0001
+state |= UnitState.Invincible;    // 1001
+
+Console.WriteLine(state); // CanMove, Invincible
+```
+
+`|` 把对应位置设为 1，同时保留其他位：
+
+```text
+0001  CanMove
+1000  Invincible
+----
+1001  两个状态同时存在
+```
+
+### 第二步：判断一个或多个标记
+
+```csharp
+bool canMove = (state & UnitState.CanMove) != 0;
+
+UnitState required = UnitState.CanMove | UnitState.Invincible;
+bool hasAll = (state & required) == required;
+bool hasAny = (state & required) != 0;
+```
+
+代入 `state = 1001`：
+
+```text
+1001 & 0001 = 0001，不为 0        -> 包含 CanMove
+1001 & 1001 = 1001，等于 required -> 同时包含两个要求
+```
+
+判断“全部包含”要比较 `== required`；判断“至少包含一个”才使用 `!= 0`。
+
+### 第三步：只移除 Stunned
+
+```csharp
+state |= UnitState.Stunned;  // 1101
+state &= ~UnitState.Stunned; // 1001
+```
+
+`~Stunned` 会得到除了 `Stunned` 位以外全是 1 的掩码；再用 `&`，只把目标位清零，`CanMove` 与 `Invincible` 保持不变。
+
+### 第四步：把位判断用于技能入口
+
+```csharp
+static bool CanCast(UnitState state)
+{
+    bool blocked = (state & UnitState.Stunned) != 0;
+    bool canAttack = (state & UnitState.CanAttack) != 0;
+    return !blocked && canAttack;
+}
+```
+
+用具体输入验证：
+
+| state | 二进制 | `CanCast` |
+| --- | --- | --- |
+| `CanAttack` | `0010` | `true` |
+| `CanAttack + Stunned` | `0110` | `false` |
+| `CanMove` | `0001` | `false` |
+
+这时 Flags 不再只是位运算语法，而是一条完整业务链：声明独立位、组合状态、查询要求、清除状态，再把查询结果用于技能规则。
+
 ## 基础声明
 
 以攻击结果为例，可以这样声明标记：

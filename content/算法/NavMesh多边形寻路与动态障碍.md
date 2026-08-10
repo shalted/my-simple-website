@@ -55,6 +55,153 @@ NavMesh 不等于完整移动系统。转向、加速度、角色半径、局部
 
 这条链上任何一步失败，都不应该被“返回一条看起来合理的直线”掩盖。
 
+## 跟着代码做：先在多边形图上找到走廊
+
+先把几何问题缩小成四个多边形节点：
+
+```text
+Start --2--> Hall --2--> Door --2--> Goal
+   \                              ↑
+    --------6--> Balcony --3------
+```
+
+数字表示穿过相邻多边形的代价。下面用 .NET 6 的 `PriorityQueue` 实现一个不带启发函数的最小版本；它等价于在多边形图上运行 Dijkstra，也是理解 A* 走廊搜索的第一步。
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+static List<string> FindCorridor(
+    Dictionary<string, List<(string To, float Cost)>> graph,
+    string start,
+    string goal)
+{
+    PriorityQueue<string, float> open = new();
+    Dictionary<string, float> cost = new() { [start] = 0f };
+    Dictionary<string, string> parent = new();
+
+    open.Enqueue(start, 0f);
+
+    while (open.TryDequeue(out string current, out float queuedCost))
+    {
+        if (current == goal)
+            break;
+
+        if (queuedCost > cost[current])
+            continue; // 跳过队列里已经过时的旧记录
+
+        foreach ((string To, float Cost) edge in graph[current])
+        {
+            float nextCost = cost[current] + edge.Cost;
+
+            if (cost.TryGetValue(edge.To, out float oldCost) &&
+                nextCost >= oldCost)
+                continue;
+
+            cost[edge.To] = nextCost;
+            parent[edge.To] = current;
+            open.Enqueue(edge.To, nextCost);
+        }
+    }
+
+    if (!cost.ContainsKey(goal))
+        return new List<string>();
+
+    List<string> path = new() { goal };
+    while (path[^1] != start)
+        path.Add(parent[path[^1]]);
+
+    path.Reverse();
+    return path;
+}
+```
+
+构造输入并运行：
+
+```csharp
+Dictionary<string, List<(string To, float Cost)>> graph = new()
+{
+    ["Start"] = new() { new("Hall", 2), new("Balcony", 6) },
+    ["Hall"] = new() { new("Door", 2) },
+    ["Door"] = new() { new("Goal", 2) },
+    ["Balcony"] = new() { new("Goal", 3) },
+    ["Goal"] = new()
+};
+
+List<string> corridor = FindCorridor(graph, "Start", "Goal");
+Console.WriteLine(string.Join(" -> ", corridor));
+```
+
+输出：
+
+```text
+Start -> Hall -> Door -> Goal
+```
+
+逐轮观察队列：
+
+```text
+取出 Start：发现 Hall 成本 2，Balcony 成本 6
+取出 Hall：发现 Door 总成本 4
+取出 Door：发现 Goal 总成本 6
+取出 Balcony：到 Goal 总成本 9，不优于已有的 6
+取出 Goal：搜索结束，沿 parent 反向恢复走廊
+```
+
+这时得到的只是**多边形 ID 列表**，角色还不知道具体该走哪几个世界坐标。
+
+## 第二步：从多边形走廊得到移动点
+
+相邻多边形共享的一条边叫门户。可以先写一个容易理解、但路径质量一般的版本：取每个门户中点。
+
+```csharp
+using System.Numerics;
+
+static Vector2 Midpoint((Vector2 Left, Vector2 Right) portal) =>
+    (portal.Left + portal.Right) * 0.5f;
+
+foreach ((Vector2 Left, Vector2 Right) portal in corridorPortals)
+    movementPoints.Add(Midpoint(portal));
+```
+
+假设走廊有两个门户：
+
+```text
+门户 1：Left=(2,1)，Right=(2,3) -> 中点=(2,2)
+门户 2：Left=(5,0)，Right=(5,4) -> 中点=(5,2)
+```
+
+角色可以沿 `(2,2) -> (5,2)` 移动，因此系统已经跑通。但每道门都走中点可能产生不必要的折线。后面的 Funnel 算法就是在**同一组门户**上收紧左右边界，只在必须转弯时输出拐点。
+
+学习顺序因此是：
+
+```text
+多边形图搜索 -> 得到 corridor
+corridor 相邻边 -> 得到 portals
+门户中点法 -> 先得到能走的路径
+Funnel -> 再把路径拉直
+移动组件 -> 最后沿世界坐标移动
+```
+
+## 第三步：让一扇门变成动态阻挡
+
+如果 `Door` 被锁住，最小处理是让搜索图不再提供这条连接，然后重新搜索：
+
+```csharp
+graph["Hall"].RemoveAll(edge => edge.To == "Door");
+
+List<string> detour = FindCorridor(graph, "Start", "Goal");
+Console.WriteLine(string.Join(" -> ", detour));
+```
+
+当前示例图中的 `Start -> Balcony` 仍然存在，所以输出会改为：
+
+```text
+Start -> Balcony -> Goal
+```
+
+这清楚地区分了两个层次：附近角色短暂挡路时通常只改局部速度；门关闭导致多边形连接失效时，才修改导航拓扑或触发重新寻路。真实 NavMesh 不一定直接修改这个字典，但决策依据相同。
+
 ## 烘焙数据是什么
 
 烘焙是把场景与导航规则转换为导航数据的过程。输入通常可能包括：

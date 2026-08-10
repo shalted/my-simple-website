@@ -55,9 +55,14 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>21 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#解决的问题">解决的问题</a>
+      <a data-toc-link href="#跟着代码选出一次攻击者">跟着代码选出一次攻击者</a>
+      <a class="sub" data-toc-link href="#第一步-先过滤-不能靠低分代替非法">第一步：先过滤，不能靠低分代替非法</a>
+      <a class="sub" data-toc-link href="#第二步-把每个分项单独算出来">第二步：把每个分项单独算出来</a>
+      <a class="sub" data-toc-link href="#第三步-单次遍历选最高分">第三步：单次遍历选最高分</a>
+      <a class="sub" data-toc-link href="#第四步-执行前再检查一次">第四步：执行前再检查一次</a>
       <a data-toc-link href="#核心模型">核心模型</a>
       <a data-toc-link href="#第一步-过滤候选">第一步：过滤候选</a>
       <a data-toc-link href="#第二步-候选打分">第二步：候选打分</a>
@@ -71,6 +76,7 @@
       <a data-toc-link href="#第四步-执行前全局检查">第四步：执行前全局检查</a>
       <a data-toc-link href="#简化例子">简化例子</a>
       <a data-toc-link href="#可迁移场景">可迁移场景</a>
+      <a data-toc-link href="#边界-候选为空-同分和异常分数">边界：候选为空、同分和异常分数</a>
       <a data-toc-link href="#最重要的收获">最重要的收获</a>
     </nav>
   </details>
@@ -88,7 +94,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -96,36 +102,44 @@
       <span>01</span>
       <strong>解决的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心模型">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码选出一次攻击者">
       <span>02</span>
+      <strong>跟着代码选出一次攻击者</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：核心模型">
+      <span>03</span>
       <strong>核心模型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第一步：过滤候选">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第一步：过滤候选">
+      <span>04</span>
       <strong>第一步：过滤候选</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二步：候选打分">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第二步：候选打分">
+      <span>05</span>
       <strong>第二步：候选打分</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三步：选择最高分">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第三步：选择最高分">
+      <span>06</span>
       <strong>第三步：选择最高分</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第四步：执行前全局检查">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第四步：执行前全局检查">
+      <span>07</span>
       <strong>第四步：执行前全局检查</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：简化例子">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：简化例子">
+      <span>08</span>
       <strong>简化例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：可迁移场景">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：可迁移场景">
+      <span>09</span>
       <strong>可迁移场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界：候选为空、同分和异常分数">
+      <span>10</span>
+      <strong>边界：候选为空、同分和异常分数</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -138,13 +152,27 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码选出一次攻击者</h3>
+        <p>先准备三个具体候选。把类型放在 <code>Candidate.cs</code>：</p>
+
+        <pre><code class="language-csharp">using System;
+
+record Candidate(
+    string Name,
+    float Distance,
+    float WaitSeconds,
+    bool CanAttack,
+    bool AttackedLastTime);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>核心模型</h3>
         <p>这类问题可以抽象为：</p>
 
         <pre><code class="language-text">多个对象都可以做某件事，但资源有限，只能选一个或少数几个。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>第一步：过滤候选</h3>
         <p>过滤不是选最好的，而是先排除“不应该参与竞争”的对象。</p>
 
@@ -158,8 +186,8 @@
 技能 ID 非法
 当前 AI 认为技能不可释放</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第二步：候选打分</h3>
         <p>核心评分模型可以写成：</p>
 
@@ -171,16 +199,16 @@
   - 最近攻击过的惩罚
   - 最近同角色攻击过的惩罚</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>第三步：选择最高分</h3>
         <p>选择阶段遍历所有候选，保留最高分。</p>
 
         <pre><code class="language-text">如果存在最近没攻击过的候选，就跳过最近攻击过的候选。
 如果所有候选都刚攻击过，就不跳过，避免系统卡死。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>第四步：执行前全局检查</h3>
         <p>选出来的候选不一定马上攻击，还要检查：</p>
 
@@ -188,8 +216,8 @@
 攻击名额是否还有
 攻击节奏冷却是否到了</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>简化例子</h3>
         <p>假设有 3 只怪：</p>
 
@@ -197,8 +225,8 @@
 B：近战，距离 2 米，等了 2 秒
 C：远程，距离 5 米，等了 4 秒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>可迁移场景</h3>
         <p>这个模型可以迁移到很多系统：</p>
 
@@ -211,8 +239,16 @@ UI Tips 显示策略
 战斗仇恨目标选择
 系统通知选择</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>边界：候选为空、同分和异常分数</h3>
+        <p>没有合法候选不是错误，也不能退回未过滤列表随机选一个：</p>
+
+        <pre><code class="language-csharp">if (valid.Count == 0)
+    return DecisionResult.NoCandidate;</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>先过滤，再评分，再选择，再执行。</p>
 
@@ -247,6 +283,80 @@ UI Tips 显示策略
 选择最高分
 发放攻击令牌
 给没拿到令牌的怪分配非攻击行为</code></pre>
+<h2 id="跟着代码选出一次攻击者">跟着代码选出一次攻击者</h2>
+<p>先准备三个具体候选。把类型放在 <code>Candidate.cs</code>：</p>
+<pre><code class="language-csharp">using System;
+
+record Candidate(
+    string Name,
+    float Distance,
+    float WaitSeconds,
+    bool CanAttack,
+    bool AttackedLastTime);</code></pre>
+<p>再在 <code>Program.cs</code> 构造本轮候选快照：</p>
+<pre><code class="language-csharp">using System.Collections.Generic;
+
+List&lt;Candidate&gt; candidates = new()
+{
+    new(&quot;A&quot;, Distance: 2f, WaitSeconds: 1f, CanAttack: true,  AttackedLastTime: true),
+    new(&quot;B&quot;, Distance: 4f, WaitSeconds: 5f, CanAttack: true,  AttackedLastTime: false),
+    new(&quot;C&quot;, Distance: 1f, WaitSeconds: 8f, CanAttack: false, AttackedLastTime: false)
+};</code></pre>
+<h3 id="第一步-先过滤-不能靠低分代替非法">第一步：先过滤，不能靠低分代替非法</h3>
+<pre><code class="language-csharp">List&lt;Candidate&gt; valid = candidates.FindAll(candidate =&gt;
+    candidate.CanAttack &amp;&amp; candidate.Distance &lt;= 5f);</code></pre>
+<p>结果是：</p>
+<pre><code class="language-text">A 保留：可以攻击，距离 2
+B 保留：可以攻击，距离 4
+C 删除：CanAttack = false</code></pre>
+<p>即使 C 距离最近、等待最久，它也不能进入打分阶段。过滤表达硬规则，打分只比较合法候选之间的偏好。</p>
+<h3 id="第二步-把每个分项单独算出来">第二步：把每个分项单独算出来</h3>
+<pre><code class="language-csharp">static float Score(Candidate candidate)
+{
+    float distanceScore = (5f - candidate.Distance) * 10f;
+    float waitScore = candidate.WaitSeconds * 3f;
+    float repeatPenalty = candidate.AttackedLastTime ? 25f : 0f;
+
+    return distanceScore + waitScore - repeatPenalty;
+}</code></pre>
+<p>代入数值：</p>
+<pre><code class="language-text">A：距离分 (5-2)*10 = 30，等待分 1*3 = 3，连续攻击惩罚 25
+   总分 = 30 + 3 - 25 = 8
+
+B：距离分 (5-4)*10 = 10，等待分 5*3 = 15，无连续攻击惩罚
+   总分 = 10 + 15 = 25</code></pre>
+<p>A 更近，但刚攻击过；B 等得更久，因此 B 获胜。分项日志能解释结果，而只记录“B 分数 25”很难排查权重问题。</p>
+<h3 id="第三步-单次遍历选最高分">第三步：单次遍历选最高分</h3>
+<pre><code class="language-csharp">Candidate? winner = null;
+float bestScore = float.NegativeInfinity;
+
+foreach (Candidate candidate in valid)
+{
+    float score = Score(candidate);
+    Console.WriteLine($&quot;{candidate.Name}: {score}&quot;);
+
+    if (score &gt; bestScore)
+    {
+        winner = candidate;
+        bestScore = score;
+    }
+}
+
+Console.WriteLine($&quot;攻击令牌 -&gt; {winner?.Name ?? &quot;无人&quot;}&quot;);</code></pre>
+<p>输出：</p>
+<pre><code class="language-text">A: 8
+B: 25
+攻击令牌 -&gt; B</code></pre>
+<h3 id="第四步-执行前再检查一次">第四步：执行前再检查一次</h3>
+<p>打分和真正发放令牌之间，B 可能被控制或死亡：</p>
+<pre><code class="language-csharp">if (winner is null || !winner.CanAttack)
+{
+    // 本轮不发令牌，下一调度 Tick 重新收集候选。
+    return;
+}
+
+GrantAttackToken(winner);</code></pre>
+<p>教学记录里的 <code>Candidate</code> 是不可变快照，真实项目应在发放前通过实体 ID 查询最新状态，而不是相信旧快照。后文的距离分、等待分、随机分和各种惩罚项，都是在这条“过滤 -&gt; 分项打分 -&gt; 选最大值 -&gt; 执行前复验”的代码链上增加新因素。</p>
 <h2 id="核心模型">核心模型</h2>
 <p>这类问题可以抽象为：</p>
 <pre><code class="language-text">多个对象都可以做某件事，但资源有限，只能选一个或少数几个。</code></pre>
@@ -377,6 +487,14 @@ UI Tips 显示策略
 4. 哪些情况要扣分？
 5. 有没有公平性或冷却约束？
 6. 最后执行前还要不要检查全局条件？</code></pre>
+<h2 id="边界-候选为空-同分和异常分数">边界：候选为空、同分和异常分数</h2>
+<p>没有合法候选不是错误，也不能退回未过滤列表随机选一个：</p>
+<pre><code class="language-csharp">if (valid.Count == 0)
+    return DecisionResult.NoCandidate;</code></pre>
+<p>两个候选同分时必须有稳定规则，例如等待更久者优先，再以实体 ID 作为最终顺序。否则容器的偶然遍历顺序会让结果在不同机器上变化。</p>
+<pre><code class="language-csharp">if (!float.IsFinite(score))
+    return DecisionResult.InvalidScore(candidate.Name);</code></pre>
+<p>权重产生 <code>NaN</code> 或无穷大时要拒绝结果并记录每个分项。距离、等待时间等输入也要限制范围，避免某个量纲完全吞掉其他权重。</p>
 <h2 id="最重要的收获">最重要的收获</h2>
 <p>先过滤，再评分，再选择，再执行。</p>
 <p>这是一种启发式决策模型：</p>

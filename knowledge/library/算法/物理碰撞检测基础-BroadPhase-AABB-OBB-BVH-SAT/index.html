@@ -55,9 +55,12 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#碰撞检测为什么要分阶段">碰撞检测为什么要分阶段</a>
+      <a data-toc-link href="#跟着代码筛一次碰撞对">跟着代码筛一次碰撞对</a>
+      <a class="sub" data-toc-link href="#第二步-从所有组合中收集候选对">第二步：从所有组合中收集候选对</a>
+      <a class="sub" data-toc-link href="#第三步-只对候选对做窄阶段">第三步：只对候选对做窄阶段</a>
       <a data-toc-link href="#broad-phase">Broad Phase</a>
       <a data-toc-link href="#narrow-phase">Narrow Phase</a>
       <a data-toc-link href="#aabb">AABB</a>
@@ -82,7 +85,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -90,56 +93,60 @@
       <span>01</span>
       <strong>碰撞检测为什么要分阶段</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Broad Phase">
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码筛一次碰撞对">
       <span>02</span>
+      <strong>跟着代码筛一次碰撞对</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Broad Phase">
+      <span>03</span>
       <strong>Broad Phase</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Narrow Phase">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Narrow Phase">
+      <span>04</span>
       <strong>Narrow Phase</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：AABB">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：AABB">
+      <span>05</span>
       <strong>AABB</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Unity 里的 Bounds">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Unity 里的 Bounds">
+      <span>06</span>
       <strong>Unity 里的 Bounds</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：OBB">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：OBB">
+      <span>07</span>
       <strong>OBB</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：BVH">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：BVH">
+      <span>08</span>
       <strong>BVH</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：SAT">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：SAT">
+      <span>09</span>
       <strong>SAT</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：SAT 的投影">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：SAT 的投影">
+      <span>10</span>
       <strong>SAT 的投影</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：SAT 流程">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：SAT 流程">
+      <span>11</span>
       <strong>SAT 流程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：SAT 的限制">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：SAT 的限制">
+      <span>12</span>
       <strong>SAT 的限制</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：SAT 还能得到穿透方向">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：SAT 还能得到穿透方向">
+      <span>13</span>
       <strong>SAT 还能得到穿透方向</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：知识总结">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：知识总结">
+      <span>14</span>
       <strong>知识总结</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最重要的收获">
+      <span>15</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -152,28 +159,49 @@
       </article>
       <article class="deck-slide" data-deck-slide="1" hidden>
         <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+        <h3>跟着代码筛一次碰撞对</h3>
+        <p>先用二维 AABB 跑通宽阶段。把包围盒类型放在 <code>Aabb.cs</code>：</p>
+
+        <pre><code class="language-csharp">using System.Numerics;
+
+readonly record struct Aabb(Vector2 Min, Vector2 Max)
+{
+    public bool Overlaps(Aabb other)
+    {
+        bool separated =
+            Max.X &lt; other.Min.X ||
+            Min.X &gt; other.Max.X ||
+            Max.Y &lt; other.Min.Y ||
+            Min.Y &gt; other.Max.Y;
+
+        return !separated;
+    }
+}</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>Broad Phase</h3>
         <p>Broad Phase 不追求精确。</p>
 
         <pre><code class="language-text">这两个物体有没有可能碰撞？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Narrow Phase</h3>
         <p>Narrow Phase 处理 Broad Phase 筛出来的候选对。</p>
 
         <pre><code class="language-text">它们可能碰撞。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>AABB</h3>
         <p>AABB 全名：</p>
 
         <pre><code class="language-text">Axis-Aligned Bounding Box
 轴对齐包围盒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Unity 里的 Bounds</h3>
         <p>Unity 里的：</p>
 
@@ -181,39 +209,39 @@
 Collider.bounds
 Bounds.Intersects(...)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>OBB</h3>
         <p>OBB 全名：</p>
 
         <pre><code class="language-text">Oriented Bounding Box
 有方向包围盒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>BVH</h3>
         <p>BVH 全名：</p>
 
         <pre><code class="language-text">Bounding Volume Hierarchy
 包围体层次结构</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>SAT</h3>
         <p>SAT 全名：</p>
 
         <pre><code class="language-text">Separating Axis Theorem
 分离轴定理</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>SAT 的投影</h3>
         <p>对某条轴 <code>axis</code>，把形状的所有顶点投影上去：</p>
 
         <pre><code class="language-csharp">float value = Vector2.Dot(point, axis);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>SAT 流程</h3>
         <p>伪代码：</p>
 
@@ -233,8 +261,8 @@ Bounds.Intersects(...)</code></pre>
     return true;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>SAT 的限制</h3>
         <p>SAT 适合凸形状。</p>
 
@@ -243,22 +271,22 @@ Bounds.Intersects(...)</code></pre>
 六边形
 凸包</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>SAT 还能得到穿透方向</h3>
         <p>如果所有轴都重叠，可以记录每条轴上的重叠长度。</p>
 
         <pre><code class="language-text">MTV：Minimum Translation Vector</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>知识总结</h3>
         <p>碰撞检测流程：</p>
 
         <pre><code class="language-text">碰撞检测通常分 Broad Phase 和 Narrow Phase。Broad Phase 用 AABB、空间划分、BVH、Sweep and Prune 等方法快速筛出可能碰撞的对象对，目标是减少候选数量。Narrow Phase 再对候选对做精确形状检测，比如球、胶囊体、OBB、凸多边形，可能用 SAT、GJK 等算法。确认碰撞后，会生成碰撞点、法线、穿透深度等信息，后续交给物理求解器或游戏逻辑处理。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -291,6 +319,80 @@ Narrow Phase：窄阶段，对候选物体对做精确碰撞检测。</code></pr
 <p>一句话：</p>
 <pre><code class="language-text">Broad Phase 负责少算。
 Narrow Phase 负责算准。</code></pre>
+<h2 id="跟着代码筛一次碰撞对">跟着代码筛一次碰撞对</h2>
+<p>先用二维 AABB 跑通宽阶段。把包围盒类型放在 <code>Aabb.cs</code>：</p>
+<pre><code class="language-csharp">using System.Numerics;
+
+readonly record struct Aabb(Vector2 Min, Vector2 Max)
+{
+    public bool Overlaps(Aabb other)
+    {
+        bool separated =
+            Max.X &lt; other.Min.X ||
+            Min.X &gt; other.Max.X ||
+            Max.Y &lt; other.Min.Y ||
+            Min.Y &gt; other.Max.Y;
+
+        return !separated;
+    }
+}</code></pre>
+<p>准备三个物体：</p>
+<pre><code class="language-csharp">using System;
+using System.Numerics;
+
+Aabb player = new(
+    new Vector2(0, 0),
+    new Vector2(2, 2));
+
+Aabb enemy = new(
+    new Vector2(1, 1),
+    new Vector2(3, 3));
+
+Aabb tree = new(
+    new Vector2(10, 10),
+    new Vector2(12, 12));
+
+Console.WriteLine(player.Overlaps(enemy)); // True
+Console.WriteLine(player.Overlaps(tree));  // False</code></pre>
+<p><code>player</code> 与 <code>enemy</code> 在 X、Y 两个方向都有重叠，所以进入候选；<code>tree</code> 在 X 方向已经完全分开，不需要继续做精确形状检测。</p>
+<h3 id="第二步-从所有组合中收集候选对">第二步：从所有组合中收集候选对</h3>
+<pre><code class="language-csharp">var bodies = new[]
+{
+    (Name: &quot;Player&quot;, Bounds: player),
+    (Name: &quot;Enemy&quot;, Bounds: enemy),
+    (Name: &quot;Tree&quot;, Bounds: tree)
+};
+
+for (int i = 0; i &lt; bodies.Length; i++)
+{
+    for (int j = i + 1; j &lt; bodies.Length; j++)
+    {
+        if (!bodies[i].Bounds.Overlaps(bodies[j].Bounds))
+            continue;
+
+        Console.WriteLine(
+            $&quot;候选对: {bodies[i].Name} - {bodies[j].Name}&quot;);
+    }
+}</code></pre>
+<p>输出只有：</p>
+<pre><code class="language-text">候选对: Player - Enemy</code></pre>
+<p>注意它仍然叫“候选对”。AABB 重叠不保证内部的旋转多边形真的接触，只保证它们<strong>可能</strong>接触。</p>
+<h3 id="第三步-只对候选对做窄阶段">第三步：只对候选对做窄阶段</h3>
+<pre><code class="language-csharp">foreach ((Shape A, Shape B) pair in broadPhasePairs)
+{
+    CollisionResult result = Sat.Test(pair.A, pair.B);
+
+    if (result.Intersects)
+        Resolve(pair, result.Normal, result.Depth);
+}</code></pre>
+<p>这段是项目接口示意：<code>broadPhasePairs</code> 来自宽阶段；<code>Sat.Test</code> 才检查凸形状在各条候选轴上的投影；只有确认相交后才进入响应。</p>
+<p>完整运行链是：</p>
+<pre><code class="language-text">3 个物体产生 3 个两两组合
+-&gt; AABB 快速排除 Player-Tree、Enemy-Tree
+-&gt; 只把 Player-Enemy 送入 SAT
+-&gt; SAT 返回是否相交、法线和穿透深度
+-&gt; 响应层决定推开、反弹或触发事件</code></pre>
+<p>后文的 OBB、BVH 和 SAT 分别改进包围体精度、候选查询效率和窄阶段准确性，但不会改变“先少算，再算准”的调用顺序。</p>
 <h2 id="broad-phase">Broad Phase</h2>
 <p>Broad Phase 不追求精确。</p>
 <p>它只回答：</p>

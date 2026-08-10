@@ -55,7 +55,7 @@
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
       <a data-toc-link href="#queue-是什么">Queue 是什么</a>
       <a data-toc-link href="#queue-常用操作">Queue 常用操作</a>
@@ -65,6 +65,8 @@
       <a data-toc-link href="#stack-适合什么场景">Stack 适合什么场景</a>
       <a data-toc-link href="#queue-和-stack-对比">Queue 和 Stack 对比</a>
       <a data-toc-link href="#和-list-的区别">和 List 的区别</a>
+      <a data-toc-link href="#完整运行-任务排队与操作撤销">完整运行：任务排队与操作撤销</a>
+      <a class="sub" data-toc-link href="#边界-空容器不能直接取值">边界：空容器不能直接取值</a>
       <a data-toc-link href="#最重要的收获">最重要的收获</a>
     </nav>
   </details>
@@ -77,7 +79,7 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
@@ -113,8 +115,12 @@
       <span>08</span>
       <strong>和 List 的区别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：完整运行：任务排队与操作撤销">
       <span>09</span>
+      <strong>完整运行：任务排队与操作撤销</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
@@ -188,6 +194,19 @@ list.RemoveAt(list.Count - 1); // pop</code></pre>
       </article>
       <article class="deck-slide" data-deck-slide="8" hidden>
         <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>完整运行：任务排队与操作撤销</h3>
+        <p>为什么 Queue 适合任务处理：先到的请求必须先执行。</p>
+
+        <pre><code class="language-csharp">Queue&lt;string&gt; jobs = new();
+jobs.Enqueue(&quot;加载配置&quot;);
+jobs.Enqueue(&quot;创建角色&quot;);
+jobs.Enqueue(&quot;进入场景&quot;);
+
+while (jobs.TryDequeue(out string? job))
+    Console.WriteLine(job);</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最常记的 API：</p>
 
@@ -345,6 +364,39 @@ list.RemoveAt(list.Count - 1); // pop</code></pre>
 list.RemoveAt(0);</code></pre>
 <p><code>RemoveAt(0)</code> 会导致后面所有元素前移，成本是 <code>O(n)</code>。</p>
 <p><code>Queue.Dequeue()</code> 更适合队列场景。</p>
+<h2 id="完整运行-任务排队与操作撤销">完整运行：任务排队与操作撤销</h2>
+<p>为什么 Queue 适合任务处理：先到的请求必须先执行。</p>
+<pre><code class="language-csharp">Queue&lt;string&gt; jobs = new();
+jobs.Enqueue(&quot;加载配置&quot;);
+jobs.Enqueue(&quot;创建角色&quot;);
+jobs.Enqueue(&quot;进入场景&quot;);
+
+while (jobs.TryDequeue(out string? job))
+    Console.WriteLine(job);</code></pre>
+<p>输出严格保持入队顺序：</p>
+<pre><code class="language-text">加载配置
+创建角色
+进入场景</code></pre>
+<p>为什么 Stack 适合撤销：最后完成的操作必须最先回退。</p>
+<pre><code class="language-csharp">Stack&lt;string&gt; undo = new();
+undo.Push(&quot;放置节点 A&quot;);
+undo.Push(&quot;移动节点 A&quot;);
+undo.Push(&quot;删除节点 A&quot;);
+
+while (undo.TryPop(out string? operation))
+    Console.WriteLine($&quot;撤销: {operation}&quot;);</code></pre>
+<p>输出顺序相反：</p>
+<pre><code class="language-text">撤销: 删除节点 A
+撤销: 移动节点 A
+撤销: 放置节点 A</code></pre>
+<h3 id="边界-空容器不能直接取值">边界：空容器不能直接取值</h3>
+<p>队列为空时调用 <code>Dequeue()</code>、栈为空时调用 <code>Pop()</code> 都会抛出异常。输入是否可能为空不确定时，使用 <code>TryDequeue</code> 和 <code>TryPop</code>：</p>
+<pre><code class="language-csharp">if (!jobs.TryDequeue(out string? nextJob))
+    Console.WriteLine(&quot;当前没有待处理任务&quot;);
+
+if (!undo.TryPop(out string? lastOperation))
+    Console.WriteLine(&quot;当前没有可撤销操作&quot;);</code></pre>
+<p>另一个边界是容量无限增长：生产者持续入队而消费者处理不过来时，Queue 会占用越来越多内存。工程系统要监控队列长度，并明确限流、丢弃、合并或背压策略。</p>
 <h2 id="最重要的收获">最重要的收获</h2>
 <pre><code class="language-text">Queue：适合排队处理，先来的先处理。
 Stack：适合回退撤销，后来的先处理。</code></pre>
