@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象图书馆为热门书架准备了一张手写索引卡：">
+  <meta name="description" content="缓存是可重建副本，权威来源才决定正确数据。失效表示“现有副本不能继续被信任”，版本号用来阻止旧的异步重建结果覆盖更新的数据。">
   <title>缓存：建立、失效、版本与重建 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>缓存：建立、失效、版本与重建</h1>
-      <p class="hero-copy">想象图书馆为热门书架准备了一张手写索引卡：</p>
+      <p class="hero-copy">缓存是可重建副本，权威来源才决定正确数据。失效表示“现有副本不能继续被信任”，版本号用来阻止旧的异步重建结果覆盖更新的数据。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>25 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>27 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#两次重建为什么只能提交后一次">两次重建为什么只能提交后一次</a>
       <a data-toc-link href="#生活化模型-图书馆的手写索引卡">生活化模型：图书馆的手写索引卡</a>
       <a data-toc-link href="#缓存的完整事实链">缓存的完整事实链</a>
       <a data-toc-link href="#先确定权威来源">先确定权威来源</a>
@@ -84,7 +86,7 @@
       <a data-toc-link href="#版本与-generation-token">版本与 Generation Token</a>
       <a class="sub" data-toc-link href="#source-version">Source Version</a>
       <a class="sub" data-toc-link href="#generation">Generation</a>
-      <a data-toc-link href="#异步重建晚到">异步重建晚到</a>
+      <a data-toc-link href="#进阶-异步重建晚到">进阶：异步重建晚到</a>
       <a data-toc-link href="#最小-c-示例">最小 C# 示例</a>
       <a data-toc-link href="#取消与错误可见性">取消与错误可见性</a>
       <a class="sub" data-toc-link href="#旧构建失败也要被观察">旧构建失败也要被观察</a>
@@ -110,85 +112,100 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：图书馆的手写索引卡">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：图书馆的手写索引卡">
+      <span>02</span>
       <strong>生活化模型：图书馆的手写索引卡</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：缓存的完整事实链">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：缓存的完整事实链">
+      <span>03</span>
       <strong>缓存的完整事实链</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：先确定权威来源">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：先确定权威来源">
+      <span>04</span>
       <strong>先确定权威来源</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：缓存状态机">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：缓存状态机">
+      <span>05</span>
       <strong>缓存状态机</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：建立缓存">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：建立缓存">
+      <span>06</span>
       <strong>建立缓存</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：失效是什么">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：失效是什么">
+      <span>07</span>
       <strong>失效是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：版本与 Generation Token">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：版本与 Generation Token">
+      <span>08</span>
       <strong>版本与 Generation Token</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：异步重建晚到">
-      <span>08</span>
-      <strong>异步重建晚到</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 示例">
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：进阶：异步重建晚到">
       <span>09</span>
+      <strong>进阶：异步重建晚到</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小 C# 示例">
+      <span>10</span>
       <strong>最小 C# 示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：取消与错误可见性">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：取消与错误可见性">
+      <span>11</span>
       <strong>取消与错误可见性</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：可视化的逐步状态">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：可视化的逐步状态">
+      <span>12</span>
       <strong>可视化的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：正常路径">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常路径">
+      <span>13</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：边界路径">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：边界路径">
+      <span>14</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败路径">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：失败路径">
+      <span>15</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价与权衡">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：代价与权衡">
+      <span>16</span>
       <strong>代价与权衡</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：最重要的收获">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最重要的收获">
+      <span>17</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>缓存是可重建副本，权威来源才决定正确数据。失效表示“现有副本不能继续被信任”，版本号用来阻止旧的异步重建结果覆盖更新的数据。</p>
+
+        <pre><code class="language-text">当前缓存版本：12
+请求 A 开始重建版本 13
+源数据再次变化，请求 B 开始重建版本 14
+请求 B 先完成并提交版本 14
+请求 A 后完成，仍携带版本 13</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>生活化模型：图书馆的手写索引卡</h3>
         <p>想象图书馆为热门书架准备了一张手写索引卡：</p>
 
         <pre><code class="language-text">索引卡记录书放在哪一排。
 读者先看索引卡，不必每次遍历全部书架。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>缓存的完整事实链</h3>
         <p>“缓存存在”不代表“缓存有效”。至少需要同时知道内容与它对应的版本。</p>
 
@@ -210,8 +227,8 @@
     ↓
 启动新版本重建</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>先确定权威来源</h3>
         <p>缓存不是事实的最终所有者。</p>
 
@@ -220,8 +237,8 @@
 如何读取一个一致的源数据快照。
 怎样得到可比较的版本标识。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>缓存状态机</h3>
         <p>一个教学状态机可以是：</p>
 
@@ -239,8 +256,8 @@ Ready
 Stale
   └─ Rebuild ─&gt; Building</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>建立缓存</h3>
         <p>建立缓存不是简单赋值，而是一次有输入版本的计算：</p>
 
@@ -254,24 +271,24 @@ Stale
     ↓
 原子发布候选缓存</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>失效是什么</h3>
         <p>失效表示：</p>
 
         <pre><code class="language-text">现有缓存不再被证明与当前权威数据一致。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>版本与 Generation Token</h3>
         <p>缓存常同时需要两个概念：</p>
 
         <pre><code class="language-text">sourceVersion：缓存内容对应的权威数据版本。
 generation：本地重建请求的代次。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
-        <h3>异步重建晚到</h3>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>进阶：异步重建晚到</h3>
         <p>异步缓存重建的竞态链如下：</p>
 
         <pre><code class="language-text">缓存因版本 V1 开始重建 A
@@ -288,8 +305,8 @@ A 的 generation 或 sourceVersion 不匹配
     ↓
 拒绝发布 A 的结果</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最小 C# 示例</h3>
         <p>下面示例只允许读取已验证的当前快照，不自动返回旧值，不提供默认成功，也不重试。</p>
 
@@ -438,8 +455,8 @@ public sealed class VersionedCache&lt;T&gt; : IDisposable
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>取消与错误可见性</h3>
         <p>缓存重建至少应区分：</p>
 
@@ -448,8 +465,8 @@ Cancelled：当前任务接受了本缓存发出的取消请求。
 Superseded：构建完成，但已不属于当前 generation 或版本。
 Faulted：构建失败，并携带原始 Exception。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>可视化的逐步状态</h3>
         <p>可以用双轨时间线展示源版本与构建代次：</p>
 
@@ -463,8 +480,8 @@ generation    G1           G2
 当前快照      Empty        V2 Ready
 A 发布判断                 G1 != G2，拒绝</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>正常路径</h3>
 
 
@@ -476,15 +493,15 @@ A 发布判断                 G1 != G2，拒绝</code></pre>
 一次性发布快照。
 同版本读请求成功。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>读取策略必须明确。</p>
 
         <pre><code class="language-text">Building 不是 Ready，因此 ReadRequired 抛出状态错误。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>失败状态不应被自动改写为 <code>Ready</code>。</p>
 
@@ -496,8 +513,8 @@ A 发布判断                 G1 != G2，拒绝</code></pre>
 generation 溢出：checked 运算暴露异常。
 缓存内容可变并被外部修改：快照一致性被破坏。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>代价与权衡</h3>
         <p>缓存减少重复计算或读取，但增加：</p>
 
@@ -508,8 +525,8 @@ generation 溢出：checked 运算暴露异常。
 候选快照与当前快照短暂共存的峰值内存。
 取消但尚未停止的后台工作。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -531,6 +548,15 @@ Source Version 证明数据来源，generation 决定异步任务的发布资格
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>缓存是可重建副本，权威来源才决定正确数据。失效表示“现有副本不能继续被信任”，版本号用来阻止旧的异步重建结果覆盖更新的数据。</p>
+<h3 id="两次重建为什么只能提交后一次">两次重建为什么只能提交后一次</h3>
+<pre><code class="language-text">当前缓存版本：12
+请求 A 开始重建版本 13
+源数据再次变化，请求 B 开始重建版本 14
+请求 B 先完成并提交版本 14
+请求 A 后完成，仍携带版本 13</code></pre>
+<p>请求 A 必须被拒绝，否则缓存会从 14 倒退回 13。失效时是否继续提供旧值、阻塞等待新值或直接报错，是业务一致性策略，不能由容器私自决定。</p>
 <h2 id="生活化模型-图书馆的手写索引卡">生活化模型：图书馆的手写索引卡</h2>
 <p>想象图书馆为热门书架准备了一张手写索引卡：</p>
 <pre><code class="language-text">索引卡记录书放在哪一排。
@@ -650,7 +676,7 @@ generation：本地重建请求的代次。</code></pre>
 因为 G1 != G2，A 不得覆盖 B</code></pre>
 <p><code>G1</code>、<code>G2</code> 是<strong>教学符号</strong>。</p>
 <p>只比较 Source Version 有时仍不够：同一源版本也可能因本地计算规则变化而发起新构建。只比较 generation 也不够：它不能证明源数据快照本身是哪一版。</p>
-<h2 id="异步重建晚到">异步重建晚到</h2>
+<h2 id="进阶-异步重建晚到">进阶：异步重建晚到</h2>
 <p>异步缓存重建的竞态链如下：</p>
 <pre><code class="language-text">缓存因版本 V1 开始重建 A
     ↓

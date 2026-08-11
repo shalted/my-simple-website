@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。">
+  <meta name="description" content="状态标签不能只记录“有或没有”，还要记录由谁添加。多个技能都提供 Stunned 时，移除其中一个来源不应把另一个来源仍维持的状态一起清掉；技能仲裁则根据阶段和优先级决定新旧实例怎样共存。">
   <title>状态来源与技能仲裁 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>状态来源与技能仲裁</h1>
-      <p class="hero-copy">“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
+      <p class="hero-copy">状态标签不能只记录“有或没有”，还要记录由谁添加。多个技能都提供 Stunned 时，移除其中一个来源不应把另一个来源仍维持的状态一起清掉；技能仲裁则根据阶段和优先级决定新旧实例怎样共存。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>10 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#两个来源共同维持-stunned">两个来源共同维持 Stunned</a>
       <a data-toc-link href="#先把标签理解成来源账本">先把标签理解成来源账本</a>
       <a data-toc-link href="#标签层级改变的是查询-不是所有权">标签层级改变的是查询，不是所有权</a>
       <a data-toc-link href="#普通激活-先允许新实例成立-再取消低级旧实例">普通激活：先允许新实例成立，再取消低级旧实例</a>
@@ -98,45 +100,59 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把标签理解成来源账本">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先把标签理解成来源账本">
+      <span>02</span>
       <strong>先把标签理解成来源账本</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：标签层级改变的是查询，不是所有权">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：标签层级改变的是查询，不是所有权">
+      <span>03</span>
       <strong>标签层级改变的是查询，不是所有权</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：普通激活：先允许新实例成立，再取消低级旧实例">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：普通激活：先允许新实例成立，再取消低级旧实例">
+      <span>04</span>
       <strong>普通激活：先允许新实例成立，再取消低级旧实例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：预输入窗口：阶段规则比数字更重要">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：预输入窗口：阶段规则比数字更重要">
+      <span>05</span>
       <strong>预输入窗口：阶段规则比数字更重要</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：外部强制打断：另一条轨道">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：外部强制打断：另一条轨道">
+      <span>06</span>
       <strong>外部强制打断：另一条轨道</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：六个最小调试场景">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：六个最小调试场景">
+      <span>07</span>
       <strong>六个最小调试场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：代价与边界">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：代价与边界">
+      <span>08</span>
       <strong>代价与边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最后记住">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最后记住">
+      <span>09</span>
       <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>状态标签不能只记录“有或没有”，还要记录由谁添加。多个技能都提供 Stunned 时，移除其中一个来源不应把另一个来源仍维持的状态一起清掉；技能仲裁则根据阶段和优先级决定新旧实例怎样共存。</p>
+        <ul><li>这个状态由谁提供，还有多少来源没有释放？</li><li>当前输入走的是普通激活、预输入窗口，还是外部强制打断？</li><li>被拒绝、排队或取消时，哪一条规则做出了决定？</li><li>旧状态结束后，清理会不会误伤其他来源？</li></ul>
+        <pre><code class="language-text">来源 SkillA 添加 Stunned：来源集合 {A}
+来源 TrapB 添加 Stunned：来源集合 {A, B}
+SkillA 结束：来源集合 {B}，角色仍然眩晕
+TrapB 结束：来源集合 {}，Stunned 才真正移除</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先把标签理解成来源账本</h3>
         <p>固定标签适合描述对象长期拥有的能力，例如“可以移动”。临时标签则应记录来源，例如某个运行实例和某个持续状态都提供“控制受限”。</p>
 
@@ -145,16 +161,16 @@
 ├─ 临时来源：运行实例 A
 └─ 临时来源：持续状态 B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>标签层级改变的是查询，不是所有权</h3>
         <p>标签可以有父子关系。拥有“动作.施法”时，查询“动作”可以返回真；但账本仍应保存真正添加的叶子标签和来源。</p>
         <ul><li><code>all</code>：所有要求都能由当前有效标签满足；</li><li><code>any</code>：至少一个要求被满足；</li><li><code>none</code>：要求中的标签一个也不能被满足。</li><li>临时标签加入后，是否一定产生聚合状态 Add 通知，取决于通知机制是否覆盖该写入路径；</li><li>把临时状态提升为固定状态时，层级匹配与精确删除若使用不同规则，可能留下来源记录。</li></ul>
         <pre><code class="language-text">动作
 └─ 动作.施法</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>普通激活：先允许新实例成立，再取消低级旧实例</h3>
         <p>普通激活的优先级规则可以抽象为：</p>
         <ul><li>新请求完成资源、标签和冷却等全部裁决；</li><li>新运行实例成功建立；</li><li>严格低于新实例的旧能力收到取消请求；</li><li>旧能力执行中断语义并按来源清理；</li><li>新实例继续运行。</li></ul>
@@ -172,8 +188,8 @@
     return ActivationResult.Allowed;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>预输入窗口：阶段规则比数字更重要</h3>
         <p>同级切换不能简单绕过普通激活规则。预输入窗口保存当前能力、当前优先级、已排队输入和窗口阶段，并使用独立决策表。</p>
 
@@ -194,8 +210,8 @@
     return QueueResult.CancelAndQueue;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>外部强制打断：另一条轨道</h3>
         <p>Effect 或环境规则发起的强制打断不是“某个新技能完成普通激活”。它没有新技能实例接管，而是用过滤条件选择当前能力，再提交取消请求。</p>
         <ul><li>普通激活：新输入与活动能力比较；</li><li>预输入窗口：由窗口阶段决定缓存、替换或取消；</li><li>外部强制打断：按目标优先级区间与打断强度过滤。</li></ul>
@@ -215,22 +231,22 @@
     return true;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
         <h3>六个最小调试场景</h3>
         <p>| 场景 | 观察重点 | |---|---| | 来源账本 | 固定标签与两个临时来源共同维持有效状态 | | 高优先级接管 | 新实例成立后，低级旧实例才进入取消 | | 同级首个缓存 | 窗口内首个同级输入被缓存，后续输入被拒绝 | | 低级输入阻挡 | 普通激活在产生副作用前明确拒绝 | | PostWindow 切换 | 较低输入仍进入取消与排队，不进行优先级比较 | | 来源清理冲突 | 一个来源结束时只删除自己，其他来源继续维持状态 |</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
         <h3>代价与边界</h3>
 
         <ul><li>标签查询若直接扫描固定与临时缓冲，成本约为 <code>O(查询标签数 × 当前标签记录数)</code>；频繁查询可建立索引，但来源账本仍是清理依据。</li><li>普通激活扫描活动能力，成本约为 <code>O(活动能力数)</code>。</li><li>预输入窗口应保持每个拥有者常量级状态；事件监听必须在结束、取消和全局清理时对称注销。</li><li>外部批量打断扫描活动能力，成本约为 <code>O(活动能力数)</code>，并应保留每个目标未通过的具体过滤原因。</li><li>固定标签、临时标签和层级关系是三种不同维度。查询可以聚合，写入与删除不能靠查询结果反推。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CONCEPT</div>
         <h3>最后记住</h3>
         <p>标签负责描述“当前世界认为对象处于什么状态”，来源账本负责回答“谁有权撤销它”；普通激活、预输入窗口和外部强制打断则分别回答三种不同的冲突问题。</p>
 
@@ -245,7 +261,15 @@
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>状态标签不能只记录“有或没有”，还要记录由谁添加。多个技能都提供 Stunned 时，移除其中一个来源不应把另一个来源仍维持的状态一起清掉；技能仲裁则根据阶段和优先级决定新旧实例怎样共存。</p>
+<h3 id="两个来源共同维持-stunned">两个来源共同维持 Stunned</h3>
+<pre><code class="language-text">来源 SkillA 添加 Stunned：来源集合 {A}
+来源 TrapB 添加 Stunned：来源集合 {A, B}
+SkillA 结束：来源集合 {B}，角色仍然眩晕
+TrapB 结束：来源集合 {}，Stunned 才真正移除</code></pre>
+<p>同理，高优先级技能开始时是否取消低优先级技能，要在新实例确认可以成立后执行；先取消旧技能再发现新技能资源不足，会让两个技能都不存在。</p>
+<p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p>
 <p>一个可靠的运行时需要同时回答：</p>
 <ol>
 <li>这个状态由谁提供，还有多少来源没有释放？</li>

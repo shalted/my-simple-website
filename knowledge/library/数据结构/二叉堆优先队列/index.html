@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。">
+  <meta name="description" content="优先队列保证每次取出当前优先级最高或最低的元素，但不保证所有元素整体有序。二叉堆通过一个局部不变量做到这一点：父节点始终不比子节点更差。">
   <title>二叉堆优先队列 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">数据结构 / KNOWLEDGE NOTE</div>
       <h1>二叉堆优先队列</h1>
-      <p class="hero-copy">优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
+      <p class="hero-copy">优先队列保证每次取出当前优先级最高或最低的元素，但不保证所有元素整体有序。二叉堆通过一个局部不变量做到这一点：父节点始终不比子节点更差。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,11 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#三个优先级怎样变化">三个优先级怎样变化</a>
+      <a data-toc-link href="#常见误解">常见误解</a>
       <a data-toc-link href="#解决的问题">解决的问题</a>
       <a data-toc-link href="#核心结构">核心结构</a>
       <a data-toc-link href="#bubbleup-入队过程">BubbleUp：入队过程</a>
@@ -102,89 +105,116 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：解决的问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：常见误解">
+      <span>02</span>
+      <strong>常见误解</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：解决的问题">
+      <span>03</span>
       <strong>解决的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心结构">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：核心结构">
+      <span>04</span>
       <strong>核心结构</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：BubbleUp：入队过程">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：BubbleUp：入队过程">
+      <span>05</span>
       <strong>BubbleUp：入队过程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：BubbleDown：出队过程">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：BubbleDown：出队过程">
+      <span>06</span>
       <strong>BubbleDown：出队过程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：为什么不用普通队列">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：为什么不用普通队列">
+      <span>07</span>
       <strong>为什么不用普通队列</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么不每次排序">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：为什么不每次排序">
+      <span>08</span>
       <strong>为什么不每次排序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：堆适合什么场景">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：堆适合什么场景">
+      <span>09</span>
       <strong>堆适合什么场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从 FIFO 到堆调度：先确认消费点">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：从 FIFO 到堆调度：先确认消费点">
+      <span>10</span>
       <strong>从 FIFO 到堆调度：先确认消费点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：工程上可以补强的点">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：工程上可以补强的点">
+      <span>11</span>
       <strong>工程上可以补强的点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
-        <div class="deck-step-meta">STEP 01 / CONCEPT</div>
+        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>优先队列保证每次取出当前优先级最高或最低的元素，但不保证所有元素整体有序。二叉堆通过一个局部不变量做到这一点：父节点始终不比子节点更差。</p>
+
+        <pre><code class="language-text">依次入队：任务 A=40，B=10，C=30（数字越小越优先）
+堆顶：B=10
+第一次出队：B
+新的堆顶：C=30
+第二次出队：C
+最后：A=40</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / FLOW / RULES</div>
+        <h3>常见误解</h3>
+
+        <ul><li>堆数组不是从小到大排列，只保证父子关系。</li><li>修改元素优先级后不能什么都不做，必须重新调整或采用重新入队策略。</li><li>相同优先级的元素未必保持进入顺序；需要稳定性时加入递增序号作为第二排序键。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CONCEPT</div>
         <h3>解决的问题</h3>
         <p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>核心结构</h3>
         <p>看起来只是一个 <code>List</code>，但它不是普通数组，而是把它当成一棵“隐式二叉树”。</p>
 
         <pre><code class="language-csharp">private readonly List&lt;MessageConfig&gt; _heap = new();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>BubbleUp：入队过程</h3>
         <p>假设现在堆里已经有这些 Tips，数字代表 <code>Priority</code>：</p>
 
         <pre><code class="language-text">_heap = [90, 70, 80, 30, 50, 60]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>BubbleDown：出队过程</h3>
         <p>现在堆是：</p>
 
         <pre><code class="language-text">_heap = [90, 70, 85, 30, 50, 60, 80]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>为什么不用普通队列</h3>
         <p>普通队列是先进先出：</p>
 
         <pre><code class="language-text">入队顺序: A(10), B(100), C(30)
 出队顺序: A, B, C</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>为什么不每次排序</h3>
         <p>可以用排序列表，比如每次插入后排序：</p>
 
@@ -192,22 +222,22 @@
 插入 B(100) -&gt; [100, 10]
 插入 C(30) -&gt; [100, 30, 10]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>堆适合什么场景</h3>
         <p>堆的特点是：它不保证整个数组有序，只保证堆顶最大。</p>
 
         <pre><code class="language-text">[90, 70, 85, 30, 50, 60, 80]</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>从 FIFO 到堆调度：先确认消费点</h3>
         <p>提示系统可以分成四个角色：</p>
         <ul><li>入口 FIFO 汇聚并发到达的消息，并避免重复打开显示面板；</li><li>面板 FIFO 依次取出消息，维护活动视图与对象池；</li><li>已实现的最大堆没有接到这条消费链上。</li><li>抢占：高优先消息是否立即替换正在显示的低优先消息；</li><li>老化：等待越久是否逐渐提高有效优先级；</li><li>防饥饿：低优先消息等待多久后必须获得机会。</li></ul>
         <pre><code class="language-text">生产者 → 等待区 → 调度器 → 活动区 → 到期回对象池</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>工程上可以补强的点</h3>
         <p>这个实现已经足够完整；如果继续扩展，可以加入一个 <code>Peek</code>：</p>
 
@@ -216,8 +246,8 @@
     return _heap.Count == 0 ? null : _heap[0];
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>堆不是为了让全部元素有序。</p>
 
@@ -234,6 +264,22 @@
       </footer>
     </section>
         <p>分类：数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p>优先队列保证每次取出当前优先级最高或最低的元素，但不保证所有元素整体有序。二叉堆通过一个局部不变量做到这一点：父节点始终不比子节点更差。</p>
+<h3 id="三个优先级怎样变化">三个优先级怎样变化</h3>
+<pre><code class="language-text">依次入队：任务 A=40，B=10，C=30（数字越小越优先）
+堆顶：B=10
+第一次出队：B
+新的堆顶：C=30
+第二次出队：C
+最后：A=40</code></pre>
+<p>堆内部数组可能是 <code>[10, 40, 30]</code>，这不是完整排序，但根节点已经足够回答“下一项是谁”。因此入队和出队只需修复一条树路径，而不是每次重排全部元素。</p>
+<h2 id="常见误解">常见误解</h2>
+<ul>
+<li>堆数组不是从小到大排列，只保证父子关系。</li>
+<li>修改元素优先级后不能什么都不做，必须重新调整或采用重新入队策略。</li>
+<li>相同优先级的元素未必保持进入顺序；需要稳定性时加入递增序号作为第二排序键。</li>
+</ul>
 <h2 id="解决的问题">解决的问题</h2>
 <p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p>
 <p>普通做法可能是每次取的时候遍历一遍列表找最大值，复杂度是 <code>O(n)</code>。二叉堆把入队和出队控制在 <code>O(log n)</code>，适合元素持续进入、调度器持续取最大值的场景。提示消息是一个容易理解的教学例子，但是否真的按优先级显示，必须继续验证展示端消费的是 FIFO 还是堆。</p>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象一座展馆：">
+  <meta name="description" content="BFS 按层扩展，适合无权图最少边数；DFS 沿一条分支深入，适合遍历、回溯和结构检查；Dijkstra 每次扩展当前累计成本最低的节点，适合边权非负的最短路。三者的差异主要在“下一步从哪里取节点”。">
   <title>图遍历与最短路：BFS、DFS、Dijkstra · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>图遍历与最短路：BFS、DFS、Dijkstra</h1>
-      <p class="hero-copy">想象一座展馆：</p>
+      <p class="hero-copy">BFS 按层扩展，适合无权图最少边数；DFS 沿一条分支深入，适合遍历、回溯和结构检查；Dijkstra 每次扩展当前累计成本最低的节点，适合边权非负的最短路。三者的差异主要在“下一步从哪里取节点”。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>25 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>27 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#同一张图得到不同关注点">同一张图得到不同关注点</a>
       <a data-toc-link href="#先用生活模型理解图">先用生活模型理解图</a>
       <a data-toc-link href="#图怎样存进内存">图怎样存进内存</a>
       <a data-toc-link href="#bfs-像水波一样一层层扩散">BFS：像水波一样一层层扩散</a>
@@ -110,49 +112,63 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解图">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用生活模型理解图">
+      <span>02</span>
       <strong>先用生活模型理解图</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：图怎样存进内存">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：图怎样存进内存">
+      <span>03</span>
       <strong>图怎样存进内存</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：BFS：像水波一样一层层扩散">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：BFS：像水波一样一层层扩散">
+      <span>04</span>
       <strong>BFS：像水波一样一层层扩散</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：DFS：先沿一条路深入到底">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：DFS：先沿一条路深入到底">
+      <span>05</span>
       <strong>DFS：先沿一条路深入到底</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Dijkstra：按当前最便宜的累计代价扩展">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Dijkstra：按当前最便宜的累计代价扩展">
+      <span>06</span>
       <strong>Dijkstra：按当前最便宜的累计代价扩展</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：三种算法怎样选择">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：三种算法怎样选择">
+      <span>07</span>
       <strong>三种算法怎样选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：边界与失败情况">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：边界与失败情况">
+      <span>08</span>
       <strong>边界与失败情况</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：复杂度与代价">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：复杂度与代价">
+      <span>09</span>
       <strong>复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：小结">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：小结">
+      <span>10</span>
       <strong>小结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>BFS 按层扩展，适合无权图最少边数；DFS 沿一条分支深入，适合遍历、回溯和结构检查；Dijkstra 每次扩展当前累计成本最低的节点，适合边权非负的最短路。三者的差异主要在“下一步从哪里取节点”。</p>
+
+        <pre><code class="language-text">A -&gt; B，成本 1
+A -&gt; C，成本 5
+B -&gt; D，成本 10
+C -&gt; D，成本 1</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先用生活模型理解图</h3>
         <p>想象一座展馆：</p>
         <ul><li>房间是<strong>节点</strong>。</li><li>房间之间的通道是<strong>边</strong>。</li><li>穿过通道所需的时间是<strong>边权重</strong>。</li></ul>
@@ -160,8 +176,8 @@
 DFS：沿一条路线不断深入，走不通再退回。
 Dijkstra：考虑每条通道的代价，寻找累计代价最小的路线。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>图怎样存进内存</h3>
         <p>常见表示方法有邻接表和邻接矩阵。</p>
 
@@ -170,8 +186,8 @@ B -&gt; A, D
 C -&gt; A
 D -&gt; B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>BFS：像水波一样一层层扩散</h3>
         <p>BFS 是 Breadth-First Search，即广度优先搜索。</p>
         <ul><li>按层遍历；</li><li>查找无权图最少边数路径；</li><li>计算节点与起点相隔几层；</li><li>判断某个可达目标是否存在。</li></ul>
@@ -181,8 +197,8 @@ C -&gt; E
 D -&gt; F
 E -&gt; F</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>DFS：先沿一条路深入到底</h3>
         <p>DFS 是 Depth-First Search，即深度优先搜索。</p>
         <ul><li>判断可达性；</li><li>枚举一条完整分支；</li><li>检测环；</li><li>拓扑排序；</li><li>寻找连通分量；</li><li>需要回溯的搜索。</li></ul>
@@ -194,37 +210,37 @@ E -&gt; F</code></pre>
 └─ C
    └─ E</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Dijkstra：按当前最便宜的累计代价扩展</h3>
         <p>BFS 把每条边都视为相同代价。如果通道耗时不同，仅比较经过几条边就不够了。</p>
 
         <pre><code class="language-text">distance[x]：目前已知从起点到 x 的最小累计代价。
 priority queue：按当前累计代价取出最小候选节点。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
         <h3>三种算法怎样选择</h3>
         <p>| 问题 | 合适算法 | 原因 | |---|---|---| | 只需遍历所有可达节点 | BFS 或 DFS | 两者都能覆盖可达区域 | | 无权图最少边数路径 | BFS | 按层扩展 | | 沿分支深入、回溯或检测结构 | DFS | 栈保存当前深入路径 | | 非负权图最小累计代价 | Dijkstra | 按当前最小距离扩展 |</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
         <h3>边界与失败情况</h3>
         <p>没有 <code>visited</code> 或等价状态时，BFS 和 DFS 可能不断重复访问环中的节点。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CONCEPT</div>
         <h3>复杂度与代价</h3>
         <p>邻接表表示下：</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>小结</h3>
         <p>真正决定算法的不是名字，而是问题约束：边是否等价、权重能否为负、是否需要最短、输入规模有多大。先写清这些条件，再选数据结构，算法过程就会自然清晰。</p>
 
@@ -243,6 +259,14 @@ Dijkstra 用优先队列扩展当前累计代价最小的节点，
       </footer>
     </section>
         <p>分类：算法</p>
+<h2 id="先说结论">先说结论</h2>
+<p>BFS 按层扩展，适合无权图最少边数；DFS 沿一条分支深入，适合遍历、回溯和结构检查；Dijkstra 每次扩展当前累计成本最低的节点，适合边权非负的最短路。三者的差异主要在“下一步从哪里取节点”。</p>
+<h3 id="同一张图得到不同关注点">同一张图得到不同关注点</h3>
+<pre><code class="language-text">A -&gt; B，成本 1
+A -&gt; C，成本 5
+B -&gt; D，成本 10
+C -&gt; D，成本 1</code></pre>
+<p>BFS 只数边数，会认为 A-B-D 与 A-C-D 都是 2 条边；Dijkstra 计算成本，选择 A-C-D，总成本 6，而 A-B-D 为 11。DFS 可能先完整走 A-B-D，但它第一次到达 D 不代表找到了最低成本。</p>
 <h2 id="先用生活模型理解图">先用生活模型理解图</h2>
 <p>想象一座展馆：</p>
 <ul>

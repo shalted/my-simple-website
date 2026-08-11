@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象一块公告板：">
+  <meta name="description" content="事件队列把“事件发生”和“监听者何时处理”分开，能稳定顺序并避免深层同步重入；代价是结果不再立刻可见，还必须定义延迟、容量和事件风暴策略。">
   <title>事件队列：延迟、监听、调试与事件风暴 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>事件队列：延迟、监听、调试与事件风暴</h1>
-      <p class="hero-copy">想象一块公告板：</p>
+      <p class="hero-copy">事件队列把“事件发生”和“监听者何时处理”分开，能稳定顺序并避免深层同步重入；代价是结果不再立刻可见，还必须定义延迟、容量和事件风暴策略。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>31 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>33 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#a-事件产生-b-事件">A 事件产生 B 事件</a>
       <a data-toc-link href="#先用生活模型理解事件">先用生活模型理解事件</a>
       <a data-toc-link href="#事件与命令的职责差异">事件与命令的职责差异</a>
       <a data-toc-link href="#为什么需要事件队列">为什么需要事件队列</a>
@@ -90,7 +92,7 @@
       <a class="sub" data-toc-link href="#因果链">因果链</a>
       <a class="sub" data-toc-link href="#环形历史缓冲">环形历史缓冲</a>
       <a class="sub" data-toc-link href="#异常可见性">异常可见性</a>
-      <a data-toc-link href="#事件风暴怎样形成">事件风暴怎样形成</a>
+      <a data-toc-link href="#进阶-事件风暴怎样形成">进阶：事件风暴怎样形成</a>
       <a class="sub" data-toc-link href="#常见形成方式">常见形成方式</a>
       <a class="sub" data-toc-link href="#用数量理解扇出">用数量理解扇出</a>
       <a class="sub" data-toc-link href="#发现事件风暴">发现事件风暴</a>
@@ -116,72 +118,87 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解事件">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用生活模型理解事件">
+      <span>02</span>
       <strong>先用生活模型理解事件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：事件与命令的职责差异">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：事件与命令的职责差异">
+      <span>03</span>
       <strong>事件与命令的职责差异</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么需要事件队列">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：为什么需要事件队列">
+      <span>04</span>
       <strong>为什么需要事件队列</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：事件队列的逐步状态">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：事件队列的逐步状态">
+      <span>05</span>
       <strong>事件队列的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：最小 C# 示例">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小 C# 示例">
+      <span>06</span>
       <strong>最小 C# 示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：监听者生命周期">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：监听者生命周期">
+      <span>07</span>
       <strong>监听者生命周期</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：延迟事件的时间语义">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：延迟事件的时间语义">
+      <span>08</span>
       <strong>延迟事件的时间语义</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：事件顺序与重入">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：事件顺序与重入">
+      <span>09</span>
       <strong>事件顺序与重入</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：怎样调试事件系统">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：怎样调试事件系统">
+      <span>10</span>
       <strong>怎样调试事件系统</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：事件风暴怎样形成">
-      <span>10</span>
-      <strong>事件风暴怎样形成</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界与失败路径">
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：进阶：事件风暴怎样形成">
       <span>11</span>
+      <strong>进阶：事件风暴怎样形成</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界与失败路径">
+      <span>12</span>
       <strong>边界与失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：复杂度与代价">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：复杂度与代价">
+      <span>13</span>
       <strong>复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：小结">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：小结">
+      <span>14</span>
       <strong>小结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>事件队列把“事件发生”和“监听者何时处理”分开，能稳定顺序并避免深层同步重入；代价是结果不再立刻可见，还必须定义延迟、容量和事件风暴策略。</p>
+
+        <pre><code class="language-text">队列初始：[Damage(30)]
+处理 Damage：HP 100 -&gt; 70，并入队 HealthChanged(70)
+当前队列：[HealthChanged(70)]
+处理 HealthChanged：UI 更新为 70
+队列结束：[]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先用生活模型理解事件</h3>
         <p>想象一块公告板：</p>
         <ul><li>引导员更新路线；</li><li>记录员写入日志；</li><li>显示屏刷新状态；</li><li>也可能暂时没有人关注。</li></ul>
         <pre><code class="language-text">“三号房间已开放。”</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>事件与命令的职责差异</h3>
         <p>事件和命令不能只靠“都是消息”混为一谈。</p>
 
@@ -191,8 +208,8 @@
     ↓
 发布 DoorOpenedEvent</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>为什么需要事件队列</h3>
         <p>最直接的事件分发是同步调用：</p>
         <ul><li>避免在状态修改过程中重入监听逻辑；</li><li>统一在某个逻辑阶段处理通知；</li><li>控制每轮处理量；</li><li>记录事件顺序并辅助调试；</li><li>为明确的延迟语义提供容器。</li></ul>
@@ -202,8 +219,8 @@
     ↓
 全部返回后，发布函数才返回</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>事件队列的逐步状态</h3>
         <p>一个教学模型：</p>
 
@@ -215,8 +232,8 @@ Dispatching：从队列取出，建立监听者快照
     ↓
 Handled：所有监听者完成</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>最小 C# 示例</h3>
         <p>下面示例使用类型作为事件分类键，并在分发前复制监听列表，避免监听者在回调中订阅或退订时破坏当前枚举。</p>
         <ul><li>发布只负责入队；</li><li><code>DispatchNext</code> 才执行监听者；</li><li>无人监听是合法状态；</li><li>监听异常不会被替换为成功结果。</li></ul>
@@ -294,8 +311,8 @@ events.Subscribe(printLength);
 events.Publish(new TextAdded(&quot;示例&quot;));
 events.DispatchNext();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>监听者生命周期</h3>
         <p>事件发布者通常持有监听委托。若监听委托引用了对象，发布者可能间接延长该对象的生命周期。</p>
         <ul><li>明确的 <code>Subscribe</code> / <code>Unsubscribe</code> 成对调用；</li><li>返回一个可释放的订阅令牌；</li><li>由具有相同生命周期的容器统一管理。</li></ul>
@@ -307,8 +324,8 @@ events.DispatchNext();</code></pre>
     ↓
 对象离开有效期前退订</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>延迟事件的时间语义</h3>
         <p>“延迟”至少可能表示三种不同含义：</p>
         <ul><li>目标轮是“开始时”还是“结束时”触发；</li><li>同一目标轮的事件按什么顺序；</li><li>调度一个已经过期的目标轮是报错还是立即处理；</li><li>暂停、变速或回放是否影响逻辑轮；</li><li>延迟事件是否允许取消。</li></ul>
@@ -316,16 +333,16 @@ events.DispatchNext();</code></pre>
 延迟指定逻辑时长；
 延迟到某个阶段结束。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>事件顺序与重入</h3>
         <p>假设处理事件 <code>A</code> 时又发布事件 <code>B</code>。</p>
 
         <pre><code class="language-text">立即重入：当前监听栈内立刻处理 B。
 排队：先完成 A 的所有监听者，再在队列顺序中处理 B。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>怎样调试事件系统</h3>
         <p>队列切断了直接调用栈，因此需要补充可观察信息。</p>
         <ul><li>哪个监听者失败；</li><li>原始异常和调用栈；</li><li>后续监听者是否仍被执行；</li><li>事件是否被系统视为处理完成。</li></ul>
@@ -339,9 +356,9 @@ events.DispatchNext();</code></pre>
 处理顺序；
 失败监听者与原始异常。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
-        <h3>事件风暴怎样形成</h3>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>进阶：事件风暴怎样形成</h3>
         <p>事件风暴指短时间内事件数量或派生链急剧增长，使队列、CPU 或日志压力失控。</p>
         <ul><li>每轮发布数和处理数；</li><li>队列长度变化；</li><li>单一事件类型的频率；</li><li>单个根事件形成的因果链深度和宽度；</li><li>同一发布源的重复事件；</li><li>最老事件的等待时间。</li></ul>
         <pre><code class="language-text">循环：
@@ -356,22 +373,22 @@ A 的监听者发布 B，B 的监听者又发布 A。
 追赶：
 处理速度长期低于发布速度，队列持续增长。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
         <h3>边界与失败路径</h3>
         <p>对于事实广播，无监听者通常可以是合法状态。本文示例明确采用这个契约。若某消息必须有人执行，它更可能是命令，不应依赖事件碰巧被监听。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / FLOW / RULES</div>
         <h3>复杂度与代价</h3>
         <p>设队列长度为 <code>Q</code>，某事件类型监听者数量为 <code>L</code>：</p>
         <ul><li>发布与处理不在同一调用栈，调试更难；</li><li>时序、重入和监听快照规则需要文档化；</li><li>事件对象与追踪记录增加内存；</li><li>异常隔离、重试和背压都需要明确语义。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>小结</h3>
         <p>一个可调试的事件系统，不只是“能把消息发出去”，还要让人回答：</p>
 
@@ -392,6 +409,15 @@ A 的监听者发布 B，B 的监听者又发布 A。
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>事件队列把“事件发生”和“监听者何时处理”分开，能稳定顺序并避免深层同步重入；代价是结果不再立刻可见，还必须定义延迟、容量和事件风暴策略。</p>
+<h3 id="a-事件产生-b-事件">A 事件产生 B 事件</h3>
+<pre><code class="language-text">队列初始：[Damage(30)]
+处理 Damage：HP 100 -&gt; 70，并入队 HealthChanged(70)
+当前队列：[HealthChanged(70)]
+处理 HealthChanged：UI 更新为 70
+队列结束：[]</code></pre>
+<p>若采用同步递归发布，UI 监听会在 Damage 处理尚未完全结束时进入。队列模式则让当前事件先完成，再处理新事件。若每个 HealthChanged 又发布另一个 HealthChanged，队列会持续增长，这就是需要监控的事件风暴。</p>
 <h2 id="先用生活模型理解事件">先用生活模型理解事件</h2>
 <p>想象一块公告板：</p>
 <pre><code class="language-text">“三号房间已开放。”</code></pre>
@@ -682,7 +708,7 @@ catch
 本事件最终状态是什么；
 失败是否触发重试，以及重试是否会重复副作用。</code></pre>
 <p>在规则未确定前，保留原始失败比返回默认成功更可靠。</p>
-<h2 id="事件风暴怎样形成">事件风暴怎样形成</h2>
+<h2 id="进阶-事件风暴怎样形成">进阶：事件风暴怎样形成</h2>
 <p>事件风暴指短时间内事件数量或派生链急剧增长，使队列、CPU 或日志压力失控。</p>
 <h3 id="常见形成方式">常见形成方式</h3>
 <pre><code class="language-text">循环：

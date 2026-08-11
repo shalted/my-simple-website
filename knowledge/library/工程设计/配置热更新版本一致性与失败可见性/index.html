@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="配置生成管线关注：">
+  <meta name="description" content="热更新应先完整下载和验证一套不可变配置快照，再用一次原子切换让新请求看到新版本。不能逐张表边下载边替换，否则同一次业务可能混用两个版本。">
   <title>配置热更新：版本一致性与失败可见性 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>配置热更新：版本一致性与失败可见性</h1>
-      <p class="hero-copy">配置生成管线关注：</p>
+      <p class="hero-copy">热更新应先完整下载和验证一套不可变配置快照，再用一次原子切换让新请求看到新版本。不能逐张表边下载边替换，否则同一次业务可能混用两个版本。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,12 +71,14 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>37 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>39 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#版本-12-到-13-的安全切换">版本 12 到 13 的安全切换</a>
       <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
       <a data-toc-link href="#生活化模型-用换菜单理解版本一致性">生活化模型：用换菜单理解版本一致性</a>
       <a data-toc-link href="#版本清单是配置集合的身份证">版本清单是配置集合的身份证</a>
-      <a data-toc-link href="#三种版本不要混为一谈">三种版本不要混为一谈</a>
+      <a data-toc-link href="#进阶-三种版本不要混为一谈">进阶：三种版本不要混为一谈</a>
       <a class="sub" data-toc-link href="#内容版本">内容版本</a>
       <a class="sub" data-toc-link href="#结构版本">结构版本</a>
       <a class="sub" data-toc-link href="#构建身份">构建身份</a>
@@ -122,88 +124,102 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 18</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：这篇文章深化什么">
+      <span>02</span>
       <strong>这篇文章深化什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：用换菜单理解版本一致性">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：生活化模型：用换菜单理解版本一致性">
+      <span>03</span>
       <strong>生活化模型：用换菜单理解版本一致性</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：版本清单是配置集合的身份证">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：版本清单是配置集合的身份证">
+      <span>04</span>
       <strong>版本清单是配置集合的身份证</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：三种版本不要混为一谈">
-      <span>04</span>
-      <strong>三种版本不要混为一谈</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：不可变配置快照">
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：进阶：三种版本不要混为一谈">
       <span>05</span>
+      <strong>进阶：三种版本不要混为一谈</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：不可变配置快照">
+      <span>06</span>
       <strong>不可变配置快照</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：热更新状态机">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：热更新状态机">
+      <span>07</span>
       <strong>热更新状态机</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从发现版本到生效的逐步流程">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从发现版本到生效的逐步流程">
+      <span>08</span>
       <strong>从发现版本到生效的逐步流程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最小 C# 快照模型">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 快照模型">
+      <span>09</span>
       <strong>最小 C# 快照模型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：更新尝试的失败结果">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：更新尝试的失败结果">
+      <span>10</span>
       <strong>更新尝试的失败结果</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常路径">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：正常路径">
+      <span>11</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界路径">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界路径">
+      <span>12</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：失败路径">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：失败路径">
+      <span>13</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：当前旧版本还在，不等于自动回退">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：当前旧版本还在，不等于自动回退">
+      <span>14</span>
       <strong>当前旧版本还在，不等于自动回退</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：代价">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价">
+      <span>15</span>
       <strong>代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：可观测性">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：可观测性">
+      <span>16</span>
       <strong>可观测性</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：通用机制与实现选择">
+      <span>17</span>
       <strong>通用机制与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
-      <span>17</span>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：最后总结">
+      <span>18</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>热更新应先完整下载和验证一套不可变配置快照，再用一次原子切换让新请求看到新版本。不能逐张表边下载边替换，否则同一次业务可能混用两个版本。</p>
+
+        <pre><code class="language-text">当前活动快照：v12（角色表、技能表都为 v12）
+后台下载：v13
+角色表 v13 成功，技能表 v13 校验失败
+结果：继续整体使用 v12，并报告 v13 更新失败</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>这篇文章深化什么</h3>
         <p>配置生成管线关注：</p>
 
         <pre><code class="language-text">源数据怎样经过校验、生成和打包，变成运行时可读取的数据。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>生活化模型：用换菜单理解版本一致性</h3>
         <p>想象一家餐厅要更换整套菜单。</p>
 
@@ -212,8 +228,8 @@
 套餐关系表
 过敏原说明表</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>版本清单是配置集合的身份证</h3>
         <p>热更新包不应只是一组散落文件。它需要一个可验证清单：</p>
 
@@ -224,17 +240,17 @@ Files
 Dependencies
 ContentHash</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
-        <h3>三种版本不要混为一谈</h3>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+        <h3>进阶：三种版本不要混为一谈</h3>
         <p>表示配置数据内容发生了变化：</p>
 
         <pre><code class="language-text">商品数值变化
 文本变化
 规则开关变化</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>不可变配置快照</h3>
         <p>运行时读取配置时，不应让一个逻辑过程看到“切到一半”的集合。</p>
 
@@ -245,8 +261,8 @@ ContentHash</code></pre>
   BundleTable
   Metadata</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>热更新状态机</h3>
         <p>一个明确的更新状态机可以包含：</p>
 
@@ -261,8 +277,8 @@ Committing
 Active
 Failed</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>从发现版本到生效的逐步流程</h3>
         <p>检查：</p>
 
@@ -272,8 +288,8 @@ Failed</code></pre>
 结构版本被当前读取器支持
 文件集合完整</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>最小 C# 快照模型</h3>
         <p>这段示例确定表达：</p>
 
@@ -332,8 +348,8 @@ public sealed class ConfigProvider
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>更新尝试的失败结果</h3>
         <p>失败结果不应只是一个布尔值：</p>
 
@@ -355,8 +371,8 @@ public sealed record ConfigUpdateFailure(
     string Message,
     Exception? Cause);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>正常路径</h3>
         <p><code>VersionActivated</code> 必须在提交成功后发布。</p>
 
@@ -370,16 +386,16 @@ public sealed record ConfigUpdateFailure(
 发布 VersionActivated 事件
 状态 -&gt; Active</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>如果目标内容哈希与当前活动集合完全一致：</p>
 
         <pre><code class="language-text">是否跳过提交
 是否记录为已检查但无变化</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>应报告：</p>
 
@@ -388,15 +404,15 @@ public sealed record ConfigUpdateFailure(
 报告目标文件、期望哈希、实际哈希
 不进入解析与提交</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>当前旧版本还在，不等于自动回退</h3>
         <p>如果候选版本在提交前失败，活动引用仍指向旧快照。这是因为：</p>
 
         <pre><code class="language-text">新版本从未提交。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>代价</h3>
         <p>版本一致性会增加：</p>
 
@@ -407,8 +423,8 @@ public sealed record ConfigUpdateFailure(
 旧快照引用追踪
 失败诊断数据</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>可观测性</h3>
         <p>每次更新尝试应记录：</p>
 
@@ -426,8 +442,8 @@ CommitResult
 FailureCode
 OriginalError</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>通用机制与实现选择</h3>
 
 
@@ -438,8 +454,8 @@ OriginalError</code></pre>
 提交竞争必须验证预期活动版本。
 失败后的目标版本不能标记为 Active。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="16" hidden>
-        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
         <h3>最后总结</h3>
         <p>配置管线保证：</p>
 
@@ -455,6 +471,14 @@ OriginalError</code></pre>
       </footer>
     </section>
         <p>分类：工程设计 / 配置系统</p>
+<h2 id="先说结论">先说结论</h2>
+<p>热更新应先完整下载和验证一套不可变配置快照，再用一次原子切换让新请求看到新版本。不能逐张表边下载边替换，否则同一次业务可能混用两个版本。</p>
+<h3 id="版本-12-到-13-的安全切换">版本 12 到 13 的安全切换</h3>
+<pre><code class="language-text">当前活动快照：v12（角色表、技能表都为 v12）
+后台下载：v13
+角色表 v13 成功，技能表 v13 校验失败
+结果：继续整体使用 v12，并报告 v13 更新失败</code></pre>
+<p>只有全部 v13 文件、引用和语义校验通过后，活动指针才从 v12 一次切到 v13。失败可见不等于让游戏立刻不可用；旧快照能否继续服务取决于兼容和过期策略。</p>
 <h2 id="这篇文章深化什么">这篇文章深化什么</h2>
 <p>配置生成管线关注：</p>
 <pre><code class="language-text">源数据怎样经过校验、生成和打包，变成运行时可读取的数据。</code></pre>
@@ -513,7 +537,7 @@ Dependencies:
 每个文件是否完整且未被替换？
 读取代码是否理解这个结构版本？
 跨表引用需要哪些成员同时存在？</code></pre>
-<h2 id="三种版本不要混为一谈">三种版本不要混为一谈</h2>
+<h2 id="进阶-三种版本不要混为一谈">进阶：三种版本不要混为一谈</h2>
 <h3 id="内容版本">内容版本</h3>
 <p>表示配置数据内容发生了变化：</p>
 <pre><code class="language-text">商品数值变化

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="一群怪物都想攻击玩家，但不能所有怪一起攻击。">
+  <meta name="description" content="启发式打分把多个“不完全确定但有偏好”的条件变成同一尺度的分数，然后选择当前最高分候选。过滤负责排除绝对不能选的对象，打分只比较剩余对象，执行前还要再次验证世界状态。">
   <title>启发式决策模型：怪物集群候选打分 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>启发式决策模型：怪物集群候选打分</h1>
-      <p class="hero-copy">一群怪物都想攻击玩家，但不能所有怪一起攻击。</p>
+      <p class="hero-copy">启发式打分把多个“不完全确定但有偏好”的条件变成同一尺度的分数，然后选择当前最高分候选。过滤负责排除绝对不能选的对象，打分只比较剩余对象，执行前还要再次验证世界状态。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>21 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>23 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#三个候选怎样得出结果">三个候选怎样得出结果</a>
       <a data-toc-link href="#解决的问题">解决的问题</a>
       <a data-toc-link href="#跟着代码选出一次攻击者">跟着代码选出一次攻击者</a>
       <a class="sub" data-toc-link href="#第一步-先过滤-不能靠低分代替非法">第一步：先过滤，不能靠低分代替非法</a>
@@ -111,64 +113,75 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：解决的问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：解决的问题">
+      <span>02</span>
       <strong>解决的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码选出一次攻击者">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码选出一次攻击者">
+      <span>03</span>
       <strong>跟着代码选出一次攻击者</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：核心模型">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：核心模型">
+      <span>04</span>
       <strong>核心模型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第一步：过滤候选">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第一步：过滤候选">
+      <span>05</span>
       <strong>第一步：过滤候选</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第二步：候选打分">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第二步：候选打分">
+      <span>06</span>
       <strong>第二步：候选打分</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第三步：选择最高分">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第三步：选择最高分">
+      <span>07</span>
       <strong>第三步：选择最高分</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第四步：执行前全局检查">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：第四步：执行前全局检查">
+      <span>08</span>
       <strong>第四步：执行前全局检查</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：简化例子">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：简化例子">
+      <span>09</span>
       <strong>简化例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：可迁移场景">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：可迁移场景">
+      <span>10</span>
       <strong>可迁移场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界：候选为空、同分和异常分数">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界：候选为空、同分和异常分数">
+      <span>11</span>
       <strong>边界：候选为空、同分和异常分数</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
-        <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <div class="deck-step-meta">STEP 01 / CONCEPT</div>
+        <h3>先说结论</h3>
+        <p>启发式打分把多个“不完全确定但有偏好”的条件变成同一尺度的分数，然后选择当前最高分候选。过滤负责排除绝对不能选的对象，打分只比较剩余对象，执行前还要再次验证世界状态。</p>
+
+
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>解决的问题</h3>
         <p>一群怪物都想攻击玩家，但不能所有怪一起攻击。</p>
 
         <pre><code class="language-text">这一刻，谁最适合拿到攻击机会？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着代码选出一次攻击者</h3>
         <p>先准备三个具体候选。把类型放在 <code>Candidate.cs</code>：</p>
 
@@ -181,15 +194,15 @@ record Candidate(
     bool CanAttack,
     bool AttackedLastTime);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>核心模型</h3>
         <p>这类问题可以抽象为：</p>
 
         <pre><code class="language-text">多个对象都可以做某件事，但资源有限，只能选一个或少数几个。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第一步：过滤候选</h3>
         <p>过滤不是选最好的，而是先排除“不应该参与竞争”的对象。</p>
 
@@ -203,8 +216,8 @@ record Candidate(
 技能 ID 非法
 当前 AI 认为技能不可释放</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>第二步：候选打分</h3>
         <p>核心评分模型可以写成：</p>
 
@@ -216,16 +229,16 @@ record Candidate(
   - 最近攻击过的惩罚
   - 最近同角色攻击过的惩罚</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>第三步：选择最高分</h3>
         <p>选择阶段遍历所有候选，保留最高分。</p>
 
         <pre><code class="language-text">如果存在最近没攻击过的候选，就跳过最近攻击过的候选。
 如果所有候选都刚攻击过，就不跳过，避免系统卡死。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>第四步：执行前全局检查</h3>
         <p>选出来的候选不一定马上攻击，还要检查：</p>
 
@@ -233,8 +246,8 @@ record Candidate(
 攻击名额是否还有
 攻击节奏冷却是否到了</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>简化例子</h3>
         <p>假设有 3 只怪：</p>
 
@@ -242,8 +255,8 @@ record Candidate(
 B：近战，距离 2 米，等了 2 秒
 C：远程，距离 5 米，等了 4 秒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>可迁移场景</h3>
         <p>这个模型可以迁移到很多系统：</p>
 
@@ -256,16 +269,16 @@ UI Tips 显示策略
 战斗仇恨目标选择
 系统通知选择</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>边界：候选为空、同分和异常分数</h3>
         <p>没有合法候选不是错误，也不能退回未过滤列表随机选一个：</p>
 
         <pre><code class="language-csharp">if (valid.Count == 0)
     return DecisionResult.NoCandidate;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>先过滤，再评分，再选择，再执行。</p>
 
@@ -282,6 +295,39 @@ UI Tips 显示策略
       </footer>
     </section>
         <p>分类：算法</p>
+<h2 id="先说结论">先说结论</h2>
+<p>启发式打分把多个“不完全确定但有偏好”的条件变成同一尺度的分数，然后选择当前最高分候选。过滤负责排除绝对不能选的对象，打分只比较剩余对象，执行前还要再次验证世界状态。</p>
+<h3 id="三个候选怎样得出结果">三个候选怎样得出结果</h3>
+<table><thead><tr>
+<th>怪物</th>
+<th>距离分</th>
+<th>朝向分</th>
+<th>等待奖励</th>
+<th>总分</th>
+</tr></thead><tbody>
+<tr>
+<td>A</td>
+<td>80</td>
+<td>10</td>
+<td>0</td>
+<td>90</td>
+</tr>
+<tr>
+<td>B</td>
+<td>60</td>
+<td>20</td>
+<td>20</td>
+<td>100</td>
+</tr>
+<tr>
+<td>C</td>
+<td>95</td>
+<td>0</td>
+<td>0</td>
+<td>95</td>
+</tr>
+</tbody></table>
+<p>B 虽然不是最近的，但等待奖励让它得到 100 分并获选。若 B 在真正执行前已经死亡或失去攻击槽位，系统必须重新选择，不能因为旧分数最高就强行执行。</p>
 <h2 id="解决的问题">解决的问题</h2>
 <p>一群怪物都想攻击玩家，但不能所有怪一起攻击。</p>
 <p>系统要决定：</p>

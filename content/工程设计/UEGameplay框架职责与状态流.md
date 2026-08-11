@@ -2,6 +2,22 @@
 
 分类：工程设计
 
+## 先说结论
+
+UE Gameplay 框架把规则、全局可观察状态、玩家连接和可控制实体分给不同对象：GameMode 负责服务端规则，GameState 负责复制的全局状态，PlayerController 代表玩家连接，Pawn 是当前被控制的世界实体。
+
+### 一个玩家加入对局
+
+```text
+玩家连接：PlayerId=42
+服务端创建 PlayerController 42
+GameMode 选择出生点并生成 Pawn 9001
+PlayerController 42 Possess Pawn 9001
+GameState 玩家数：3 -> 4，并复制给客户端
+```
+
+Pawn 9001 死亡后可以生成 Pawn 9010 并重新 Possess，但 PlayerController 42 仍代表同一连接。把长期玩家数据全塞进 Pawn，会在换角色或重生时丢失职责边界。
+
 ## 生活化模型：一场有裁判和记分牌的比赛
 
 可以把一局多人比赛想成：
@@ -454,7 +470,7 @@ Pawn 成功生成并被 Possess。
 GameState 把公共状态同步给客户端。
 ```
 
-## 边界路径
+## 进阶：边界路径
 
 ```text
 Controller 已存在，但 Pawn 尚未生成。

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="游戏里有很多对象会频繁创建和销毁：">
+  <meta name="description" content="对象池用“回收后再次使用”代替高频创建和销毁。它减少分配和实例化抖动，但不会自动重置旧状态；池中对象只是暂时空闲，不是全新对象。">
   <title>对象池 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>对象池</h1>
-      <p class="hero-copy">游戏里有很多对象会频繁创建和销毁：</p>
+      <p class="hero-copy">对象池用“回收后再次使用”代替高频创建和销毁。它减少分配和实例化抖动，但不会自动重置旧状态；池中对象只是暂时空闲，不是全新对象。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#四次发射只创建三颗子弹">四次发射只创建三颗子弹</a>
       <a data-toc-link href="#对象池解决什么问题">对象池解决什么问题</a>
       <a data-toc-link href="#跟着代码跑一次-创建-回收-再次取出">跟着代码跑一次：创建、回收、再次取出</a>
       <a class="sub" data-toc-link href="#第二步-复现重复回收">第二步：复现重复回收</a>
@@ -97,57 +99,71 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：对象池解决什么问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：对象池解决什么问题">
+      <span>02</span>
       <strong>对象池解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码跑一次：创建、回收、再次取出">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码跑一次：创建、回收、再次取出">
+      <span>03</span>
       <strong>跟着代码跑一次：创建、回收、再次取出</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：核心结构">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：核心结构">
+      <span>04</span>
       <strong>核心结构</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：取对象">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：取对象">
+      <span>05</span>
       <strong>取对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：回收对象">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：回收对象">
+      <span>06</span>
       <strong>回收对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：简化版对象池">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：简化版对象池">
+      <span>07</span>
       <strong>简化版对象池</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：坑一：取出时要重置状态">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：坑一：取出时要重置状态">
+      <span>08</span>
       <strong>坑一：取出时要重置状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：坑二：防止重复回收">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：坑二：防止重复回收">
+      <span>09</span>
       <strong>坑二：防止重复回收</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：坑三：对象池不是越大越好">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：坑三：对象池不是越大越好">
+      <span>10</span>
       <strong>坑三：对象池不是越大越好</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：适合对象池的场景">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：适合对象池的场景">
+      <span>11</span>
       <strong>适合对象池的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>对象池用“回收后再次使用”代替高频创建和销毁。它减少分配和实例化抖动，但不会自动重置旧状态；池中对象只是暂时空闲，不是全新对象。</p>
+
+        <pre><code class="language-text">初始：池中 0，已创建 0
+发射 A、B、C：池中 0，已创建 3
+A 命中并 Release：池中 1，已创建仍为 3
+第四次 Get：复用 A，池中 0，已创建仍为 3</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>对象池解决什么问题</h3>
         <p>游戏里有很多对象会频繁创建和销毁：</p>
 
@@ -160,8 +176,8 @@
 UI 列表项
 怪物预制体</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着代码跑一次：创建、回收、再次取出</h3>
         <p>先用普通 C# 对象模拟子弹，不依赖 Unity：</p>
 
@@ -208,15 +224,15 @@ sealed class BulletPool
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>核心结构</h3>
         <p>对象池常用 <code>Stack&lt;T&gt;</code> 保存空闲对象：</p>
 
         <pre><code class="language-csharp">Stack&lt;GameObject&gt; pool = new();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>取对象</h3>
         <p>逻辑：</p>
 
@@ -232,8 +248,8 @@ sealed class BulletPool
     return Instantiate(prefab);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>回收对象</h3>
         <p>逻辑：</p>
 
@@ -243,8 +259,8 @@ sealed class BulletPool
     pool.Push(obj);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>简化版对象池</h3>
         <p>使用：</p>
 
@@ -282,8 +298,8 @@ sealed class BulletPool
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>坑一：取出时要重置状态</h3>
         <p>对象复用前一定要清理旧状态。</p>
 
@@ -292,23 +308,23 @@ sealed class BulletPool
 目标 = enemyA
 已经命中 = true</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>坑二：防止重复回收</h3>
         <p>如果同一个对象被回收两次：</p>
 
         <pre><code class="language-csharp">pool.Release(bullet);
 pool.Release(bullet);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>坑三：对象池不是越大越好</h3>
         <p>对象池减少创建销毁，但也会占内存。</p>
 
         <pre><code class="language-text">不销毁也会占内存。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>适合对象池的场景</h3>
         <p>适合：</p>
 
@@ -317,8 +333,8 @@ pool.Release(bullet);</code></pre>
 生命周期短
 复用成本低</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最重要的三个坑：</p>
 
@@ -334,6 +350,14 @@ pool.Release(bullet);</code></pre>
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>对象池用“回收后再次使用”代替高频创建和销毁。它减少分配和实例化抖动，但不会自动重置旧状态；池中对象只是暂时空闲，不是全新对象。</p>
+<h3 id="四次发射只创建三颗子弹">四次发射只创建三颗子弹</h3>
+<pre><code class="language-text">初始：池中 0，已创建 0
+发射 A、B、C：池中 0，已创建 3
+A 命中并 Release：池中 1，已创建仍为 3
+第四次 Get：复用 A，池中 0，已创建仍为 3</code></pre>
+<p>第四次取出 A 时必须清除它上次的目标、命中标记和回调。重复 Release A 会让池中出现两个相同引用，之后两个调用者可能同时拿到同一个对象。</p>
 <h2 id="对象池解决什么问题">对象池解决什么问题</h2>
 <p>游戏里有很多对象会频繁创建和销毁：</p>
 <pre><code class="language-text">子弹

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：">
+  <meta name="description" content="排序改变整个集合的顺序，查找返回一个元素，筛选产生多个匹配元素，判断只返回真假，删除则会修改原集合。它们可能使用相似的 lambda，但结果类型和副作用完全不同。">
   <title>集合排序查找筛选 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>集合排序查找筛选</h1>
-      <p class="hero-copy">这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p>
+      <p class="hero-copy">排序改变整个集合的顺序，查找返回一个元素，筛选产生多个匹配元素，判断只返回真假，删除则会修改原集合。它们可能使用相似的 lambda，但结果类型和副作用完全不同。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#用同一组敌人比较结果">用同一组敌人比较结果</a>
       <a data-toc-link href="#说明">说明</a>
       <a data-toc-link href="#用同一组敌人贯穿所有操作">用同一组敌人贯穿所有操作</a>
       <a class="sub" data-toc-link href="#第一步-先按距离排序">第一步：先按距离排序</a>
@@ -100,57 +102,72 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：说明">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：说明">
+      <span>02</span>
       <strong>说明</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：用同一组敌人贯穿所有操作">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：用同一组敌人贯穿所有操作">
+      <span>03</span>
       <strong>用同一组敌人贯穿所有操作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Sort：排序 List">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Sort：排序 List">
+      <span>04</span>
       <strong>Sort：排序 List</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：自定义排序">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：自定义排序">
+      <span>05</span>
       <strong>自定义排序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：多条件排序">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：多条件排序">
+      <span>06</span>
       <strong>多条件排序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Find：找第一个满足条件的元素">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Find：找第一个满足条件的元素">
+      <span>07</span>
       <strong>Find：找第一个满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：FindAll：找所有满足条件的元素">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：FindAll：找所有满足条件的元素">
+      <span>08</span>
       <strong>FindAll：找所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Exists：判断有没有满足条件的元素">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：Exists：判断有没有满足条件的元素">
+      <span>09</span>
       <strong>Exists：判断有没有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：RemoveAll：删除所有满足条件的元素">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：RemoveAll：删除所有满足条件的元素">
+      <span>10</span>
       <strong>RemoveAll：删除所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：高频逻辑更推荐手写 for">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：高频逻辑更推荐手写 for">
+      <span>11</span>
       <strong>高频逻辑更推荐手写 for</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>排序改变整个集合的顺序，查找返回一个元素，筛选产生多个匹配元素，判断只返回真假，删除则会修改原集合。它们可能使用相似的 lambda，但结果类型和副作用完全不同。</p>
+
+        <pre><code class="language-text">按 HP、距离排序 -&gt; [3, 2, 1]
+Find(HP &lt; 30)   -&gt; 2（取决于当前顺序）
+FindAll(HP &lt; 30)-&gt; [2, 3]
+Exists(距离 &lt; 5)-&gt; true
+RemoveAll(HP &lt; 30) 后只剩 [1]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>说明</h3>
         <p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p>
 
@@ -161,8 +178,8 @@ Exists
 RemoveAll
 手写 for 循环</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>用同一组敌人贯穿所有操作</h3>
         <p>先准备一组具体数据：</p>
 
@@ -177,8 +194,8 @@ List&lt;(string Name, int Hp, float Distance)&gt; enemies = new()
     new(&quot;Ghost&quot;,    0, 8f)
 };</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Sort：排序 List</h3>
         <p>数字排序：</p>
 
@@ -186,8 +203,8 @@ List&lt;(string Name, int Hp, float Distance)&gt; enemies = new()
 
 nums.Sort();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>自定义排序</h3>
         <p>假设有一个物品类：</p>
 
@@ -198,8 +215,8 @@ nums.Sort();</code></pre>
     public int Count;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>多条件排序</h3>
         <p>例如先按品质降序，再按 ID 升序：</p>
 
@@ -214,36 +231,36 @@ nums.Sort();</code></pre>
     return a.Id.CompareTo(b.Id);
 });</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>Find：找第一个满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">Item item = items.Find(item =&gt; item.Id == 1001);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>FindAll：找所有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">List&lt;Item&gt; highQualityItems = items.FindAll(item =&gt; item.Quality &gt;= 4);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>Exists：判断有没有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">bool hasRareItem = items.Exists(item =&gt; item.Quality &gt;= 5);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>RemoveAll：删除所有满足条件的元素</h3>
         <p>意思是：</p>
 
         <pre><code class="language-csharp">int removedCount = items.RemoveAll(item =&gt; item.Count &lt;= 0);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>高频逻辑更推荐手写 for</h3>
         <p>如果在每帧、战斗、AI、资源热路径里，推荐手写 <code>for</code>：</p>
 
@@ -258,8 +275,8 @@ for (int i = 0; i &lt; items.Count; i++)
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>常用语法：</p>
 
@@ -280,6 +297,36 @@ RemoveAll：删除所有满足条件的。
       </footer>
     </section>
         <p>分类：CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p>排序改变整个集合的顺序，查找返回一个元素，筛选产生多个匹配元素，判断只返回真假，删除则会修改原集合。它们可能使用相似的 lambda，但结果类型和副作用完全不同。</p>
+<h3 id="用同一组敌人比较结果">用同一组敌人比较结果</h3>
+<table><thead><tr>
+<th>ID</th>
+<th>HP</th>
+<th>距离</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>80</td>
+<td>6</td>
+</tr>
+<tr>
+<td>2</td>
+<td>20</td>
+<td>9</td>
+</tr>
+<tr>
+<td>3</td>
+<td>20</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<pre><code class="language-text">按 HP、距离排序 -&gt; [3, 2, 1]
+Find(HP &lt; 30)   -&gt; 2（取决于当前顺序）
+FindAll(HP &lt; 30)-&gt; [2, 3]
+Exists(距离 &lt; 5)-&gt; true
+RemoveAll(HP &lt; 30) 后只剩 [1]</code></pre>
+<p><code>Find</code> 返回谁取决于调用时的集合顺序，所以“找最小值”不能随便用 <code>Find</code> 代替比较过程。</p>
 <h2 id="说明">说明</h2>
 <p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p>
 <pre><code class="language-text">Sort

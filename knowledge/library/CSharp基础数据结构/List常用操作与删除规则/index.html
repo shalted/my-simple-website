@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="List&lt;T&gt; 可以理解成“可变长度数组”。">
+  <meta name="description" content="List&lt;T&gt; 是可按下标访问、会保持顺序的动态数组。真正容易出错的不是 Add，而是删除后后续元素左移，导致下标和遍历位置发生变化。">
   <title>List 常用操作与删除规则 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>List 常用操作与删除规则</h1>
-      <p class="hero-copy">List&lt;T&gt; 可以理解成“可变长度数组”。</p>
+      <p class="hero-copy">List&lt;T&gt; 是可按下标访问、会保持顺序的动态数组。真正容易出错的不是 Add，而是删除后后续元素左移，导致下标和遍历位置发生变化。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>10 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#先手算一次删除">先手算一次删除</a>
       <a data-toc-link href="#list-是什么">List 是什么</a>
       <a data-toc-link href="#跟着一个列表逐步运行">跟着一个列表逐步运行</a>
       <a class="sub" data-toc-link href="#发现问题-正序删除会跳过元素">发现问题：正序删除会跳过元素</a>
@@ -93,48 +95,61 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：List 是什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：List 是什么">
+      <span>02</span>
       <strong>List 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着一个列表逐步运行">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着一个列表逐步运行">
+      <span>03</span>
       <strong>跟着一个列表逐步运行</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：常用操作">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：常用操作">
+      <span>04</span>
       <strong>常用操作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Remove 只删除第一个匹配元素">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Remove 只删除第一个匹配元素">
+      <span>05</span>
       <strong>Remove 只删除第一个匹配元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：RemoveAll 删除所有满足条件的元素">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：RemoveAll 删除所有满足条件的元素">
+      <span>06</span>
       <strong>RemoveAll 删除所有满足条件的元素</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：边遍历边删除时用倒序 for">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：边遍历边删除时用倒序 for">
+      <span>07</span>
       <strong>边遍历边删除时用倒序 for</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最重要的收获">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最重要的收获">
+      <span>08</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p><code>List&lt;T&gt;</code> 是可按下标访问、会保持顺序的动态数组。真正容易出错的不是 <code>Add</code>，而是删除后后续元素左移，导致下标和遍历位置发生变化。</p>
+
+        <pre><code class="language-text">初始：[A, B, B, C]
+Remove(B)：[A, B, C]       // 只删除第一个 B
+RemoveAll(x == B)：[A, C]  // 删除所有 B</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>List 是什么</h3>
         <p><code>List&lt;T&gt;</code> 可以理解成“可变长度数组”。</p>
 
         <pre><code class="language-csharp">int[] nums = new int[3];</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着一个列表逐步运行</h3>
         <p>具体场景是维护“当前场上的敌人 ID”。为什么选择 <code>List&lt;int&gt;</code>：业务需要保留进入顺序、允许按下标访问，并且敌人数量会动态增减；这些都是 List 的直接职责。</p>
 
@@ -152,8 +167,8 @@ Console.WriteLine(string.Join(&quot;, &quot;, enemyIds));
 Console.WriteLine(enemyIds.Contains(103));
 Console.WriteLine(enemyIds[0]);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>常用操作</h3>
         <p>添加：</p>
 
@@ -161,8 +176,8 @@ Console.WriteLine(enemyIds[0]);</code></pre>
 names.Add(&quot;Alice&quot;);
 names.Add(&quot;Bob&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>Remove 只删除第一个匹配元素</h3>
         <p><code>Remove</code> 不会删除全部相同元素，它只删除第一个匹配到的元素。</p>
 
@@ -170,15 +185,15 @@ names.Add(&quot;Bob&quot;);</code></pre>
 
 names.Remove(&quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>RemoveAll 删除所有满足条件的元素</h3>
         <p>如果想删除所有 <code>&quot;Alice&quot;</code>：</p>
 
         <pre><code class="language-csharp">names.RemoveAll(name =&gt; name == &quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>边遍历边删除时用倒序 for</h3>
         <p>不要正序边遍历边 <code>RemoveAt</code>：</p>
 
@@ -190,8 +205,8 @@ names.Remove(&quot;Alice&quot;);</code></pre>
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -209,6 +224,13 @@ RemoveAll：删除所有满足条件的元素。
       </footer>
     </section>
         <p>分类：CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p><code>List&lt;T&gt;</code> 是可按下标访问、会保持顺序的动态数组。真正容易出错的不是 <code>Add</code>，而是删除后后续元素左移，导致下标和遍历位置发生变化。</p>
+<h3 id="先手算一次删除">先手算一次删除</h3>
+<pre><code class="language-text">初始：[A, B, B, C]
+Remove(B)：[A, B, C]       // 只删除第一个 B
+RemoveAll(x == B)：[A, C]  // 删除所有 B</code></pre>
+<p>如果从左向右删除下标 1，后一个 B 会立刻从下标 2 移到下标 1，而循环随后增加到 2，便可能跳过它。倒序删除时，左侧尚未访问的数据不会因为右侧删除而改变下标。</p>
 <h2 id="list-是什么">List 是什么</h2>
 <p><code>List&lt;T&gt;</code> 可以理解成“可变长度数组”。</p>
 <p>数组长度固定：</p>

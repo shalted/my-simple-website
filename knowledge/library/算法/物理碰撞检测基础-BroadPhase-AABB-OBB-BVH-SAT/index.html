@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="物理碰撞检测解决的是：">
+  <meta name="description" content="碰撞检测分阶段，是因为“快速排除绝大多数不可能碰撞的对象”比“对所有对象都做精确几何计算”更划算。Broad Phase 产生候选对，Narrow Phase 再用 AABB、OBB、SAT 或其他形状算法确认。">
   <title>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</h1>
-      <p class="hero-copy">物理碰撞检测解决的是：</p>
+      <p class="hero-copy">碰撞检测分阶段，是因为“快速排除绝大多数不可能碰撞的对象”比“对所有对象都做精确几何计算”更划算。Broad Phase 产生候选对，Narrow Phase 再用 AABB、OBB、SAT 或其他形状算法确认。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>19 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#1000-个物体为什么不能全配对">1000 个物体为什么不能全配对</a>
       <a data-toc-link href="#碰撞检测为什么要分阶段">碰撞检测为什么要分阶段</a>
       <a data-toc-link href="#跟着代码筛一次碰撞对">跟着代码筛一次碰撞对</a>
       <a class="sub" data-toc-link href="#第二步-从所有组合中收集候选对">第二步：从所有组合中收集候选对</a>
@@ -86,7 +88,7 @@
       <a data-toc-link href="#sat">SAT</a>
       <a data-toc-link href="#sat-的投影">SAT 的投影</a>
       <a data-toc-link href="#sat-流程">SAT 流程</a>
-      <a data-toc-link href="#sat-的限制">SAT 的限制</a>
+      <a data-toc-link href="#进阶-sat-的限制">进阶：SAT 的限制</a>
       <a data-toc-link href="#sat-还能得到穿透方向">SAT 还能得到穿透方向</a>
       <a data-toc-link href="#知识总结">知识总结</a>
       <a data-toc-link href="#最重要的收获">最重要的收获</a>
@@ -102,80 +104,95 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：碰撞检测为什么要分阶段">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：碰撞检测为什么要分阶段">
+      <span>02</span>
       <strong>碰撞检测为什么要分阶段</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码筛一次碰撞对">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码筛一次碰撞对">
+      <span>03</span>
       <strong>跟着代码筛一次碰撞对</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Broad Phase">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Broad Phase">
+      <span>04</span>
       <strong>Broad Phase</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Narrow Phase">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Narrow Phase">
+      <span>05</span>
       <strong>Narrow Phase</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：AABB">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：AABB">
+      <span>06</span>
       <strong>AABB</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Unity 里的 Bounds">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Unity 里的 Bounds">
+      <span>07</span>
       <strong>Unity 里的 Bounds</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：OBB">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：OBB">
+      <span>08</span>
       <strong>OBB</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：BVH">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：BVH">
+      <span>09</span>
       <strong>BVH</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：SAT">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：SAT">
+      <span>10</span>
       <strong>SAT</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：SAT 的投影">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：SAT 的投影">
+      <span>11</span>
       <strong>SAT 的投影</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：SAT 流程">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：SAT 流程">
+      <span>12</span>
       <strong>SAT 流程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：SAT 的限制">
-      <span>12</span>
-      <strong>SAT 的限制</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：SAT 还能得到穿透方向">
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：进阶：SAT 的限制">
       <span>13</span>
+      <strong>进阶：SAT 的限制</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：SAT 还能得到穿透方向">
+      <span>14</span>
       <strong>SAT 还能得到穿透方向</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：知识总结">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：知识总结">
+      <span>15</span>
       <strong>知识总结</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最重要的收获">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：最重要的收获">
+      <span>16</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>碰撞检测分阶段，是因为“快速排除绝大多数不可能碰撞的对象”比“对所有对象都做精确几何计算”更划算。Broad Phase 产生候选对，Narrow Phase 再用 AABB、OBB、SAT 或其他形状算法确认。</p>
+
+        <pre><code class="language-text">1000 个物体的无序两两组合：
+1000 * 999 / 2 = 499,500 对
+
+Broad Phase 假设缩到 120 对：
+Narrow Phase 只需精判 120 次</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>碰撞检测为什么要分阶段</h3>
         <p>物理碰撞检测解决的是：</p>
 
         <pre><code class="language-text">场景里有很多物体，怎么高效判断谁和谁碰撞。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着代码筛一次碰撞对</h3>
         <p>先用二维 AABB 跑通宽阶段。把包围盒类型放在 <code>Aabb.cs</code>：</p>
 
@@ -195,30 +212,30 @@ readonly record struct Aabb(Vector2 Min, Vector2 Max)
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Broad Phase</h3>
         <p>Broad Phase 不追求精确。</p>
 
         <pre><code class="language-text">这两个物体有没有可能碰撞？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>Narrow Phase</h3>
         <p>Narrow Phase 处理 Broad Phase 筛出来的候选对。</p>
 
         <pre><code class="language-text">它们可能碰撞。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>AABB</h3>
         <p>AABB 全名：</p>
 
         <pre><code class="language-text">Axis-Aligned Bounding Box
 轴对齐包围盒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>Unity 里的 Bounds</h3>
         <p>Unity 里的：</p>
 
@@ -226,39 +243,39 @@ readonly record struct Aabb(Vector2 Min, Vector2 Max)
 Collider.bounds
 Bounds.Intersects(...)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>OBB</h3>
         <p>OBB 全名：</p>
 
         <pre><code class="language-text">Oriented Bounding Box
 有方向包围盒</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>BVH</h3>
         <p>BVH 全名：</p>
 
         <pre><code class="language-text">Bounding Volume Hierarchy
 包围体层次结构</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>SAT</h3>
         <p>SAT 全名：</p>
 
         <pre><code class="language-text">Separating Axis Theorem
 分离轴定理</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>SAT 的投影</h3>
         <p>对某条轴 <code>axis</code>，把形状的所有顶点投影上去：</p>
 
         <pre><code class="language-csharp">float value = Vector2.Dot(point, axis);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>SAT 流程</h3>
         <p>伪代码：</p>
 
@@ -278,9 +295,9 @@ Bounds.Intersects(...)</code></pre>
     return true;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
-        <h3>SAT 的限制</h3>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>进阶：SAT 的限制</h3>
         <p>SAT 适合凸形状。</p>
 
         <pre><code class="language-text">矩形
@@ -288,22 +305,22 @@ Bounds.Intersects(...)</code></pre>
 六边形
 凸包</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>SAT 还能得到穿透方向</h3>
         <p>如果所有轴都重叠，可以记录每条轴上的重叠长度。</p>
 
         <pre><code class="language-text">MTV：Minimum Translation Vector</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>知识总结</h3>
         <p>碰撞检测流程：</p>
 
         <pre><code class="language-text">碰撞检测通常分 Broad Phase 和 Narrow Phase。Broad Phase 用 AABB、空间划分、BVH、Sweep and Prune 等方法快速筛出可能碰撞的对象对，目标是减少候选数量。Narrow Phase 再对候选对做精确形状检测，比如球、胶囊体、OBB、凸多边形，可能用 SAT、GJK 等算法。确认碰撞后，会生成碰撞点、法线、穿透深度等信息，后续交给物理求解器或游戏逻辑处理。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -324,6 +341,15 @@ SAT 通过寻找分离轴判断凸形状是否碰撞。</code></pre>
       </footer>
     </section>
         <p>分类：算法 / 数据结构 / 游戏逻辑常用模式</p>
+<h2 id="先说结论">先说结论</h2>
+<p>碰撞检测分阶段，是因为“快速排除绝大多数不可能碰撞的对象”比“对所有对象都做精确几何计算”更划算。Broad Phase 产生候选对，Narrow Phase 再用 AABB、OBB、SAT 或其他形状算法确认。</p>
+<h3 id="1000-个物体为什么不能全配对">1000 个物体为什么不能全配对</h3>
+<pre><code class="language-text">1000 个物体的无序两两组合：
+1000 * 999 / 2 = 499,500 对
+
+Broad Phase 假设缩到 120 对：
+Narrow Phase 只需精判 120 次</code></pre>
+<p>120 是示意值，不是固定比例。若所有物体都堆在一个小区域，Broad Phase 也会产生大量候选；它保证的是不漏掉可能碰撞对，而不是保证候选永远很少。</p>
 <h2 id="碰撞检测为什么要分阶段">碰撞检测为什么要分阶段</h2>
 <p>物理碰撞检测解决的是：</p>
 <pre><code class="language-text">场景里有很多物体，怎么高效判断谁和谁碰撞。</code></pre>
@@ -603,7 +629,7 @@ B 的两个局部轴</code></pre>
 <pre><code class="language-text">A 的 3 个局部轴
 B 的 3 个局部轴
 A 的轴和 B 的轴两两叉乘得到的 9 个轴</code></pre>
-<h2 id="sat-的限制">SAT 的限制</h2>
+<h2 id="进阶-sat-的限制">进阶：SAT 的限制</h2>
 <p>SAT 适合凸形状。</p>
 <p>例如：</p>
 <pre><code class="language-text">矩形

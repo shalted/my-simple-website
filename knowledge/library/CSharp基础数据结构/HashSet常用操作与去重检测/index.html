@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。">
+  <meta name="description" content="HashSet&lt;T&gt; 只记录“某个值是否已经出现”，不保存重复次数，也不提供按下标访问。它最有价值的地方是把“检查是否存在”和“首次加入”合成一次 Add。">
   <title>HashSet：把“是否见过”变成可观察的状态 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>HashSet：把“是否见过”变成可观察的状态</h1>
-      <p class="hero-copy">HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。</p>
+      <p class="hero-copy">HashSet&lt;T&gt; 只记录“某个值是否已经出现”，不保存重复次数，也不提供按下标访问。它最有价值的地方是把“检查是否存在”和“首次加入”合成一次 Add。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一组重复输入怎样变化">一组重复输入怎样变化</a>
       <a data-toc-link href="#先建立一个准确的画面">先建立一个准确的画面</a>
       <a data-toc-link href="#跟着代码处理一遍输入">跟着代码处理一遍输入</a>
       <a class="sub" data-toc-link href="#第二步-把重复值单独收集起来">第二步：把重复值单独收集起来</a>
@@ -84,6 +86,7 @@
       <a data-toc-link href="#去重时发生了什么">去重时发生了什么</a>
       <a data-toc-link href="#list-hashset-dictionary-怎么选">List、HashSet、Dictionary 怎么选</a>
       <a data-toc-link href="#谁算-同一个值">谁算“同一个值”</a>
+      <a data-toc-link href="#常见误解">常见误解</a>
       <a data-toc-link href="#最后只记住这一个判断">最后只记住这一个判断</a>
     </nav>
   </details>
@@ -158,6 +161,13 @@
       </div>
     </section>
         <p>分类：CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p><code>HashSet&lt;T&gt;</code> 只记录“某个值是否已经出现”，不保存重复次数，也不提供按下标访问。它最有价值的地方是把“检查是否存在”和“首次加入”合成一次 <code>Add</code>。</p>
+<h3 id="一组重复输入怎样变化">一组重复输入怎样变化</h3>
+<pre><code class="language-text">输入顺序：[7, 7, 3, 7, 5]
+Add 返回：[true, false, true, false, true]
+最终集合：{7, 3, 5}</code></pre>
+<p>如果需要知道 7 出现了三次，应使用 <code>Dictionary&lt;int, int&gt;</code> 计数；如果需要保留全部输入顺序，应使用 <code>List&lt;int&gt;</code>。HashSet 丢掉重复项是设计目的，不是额外附赠的副作用。</p>
 <h2 id="先建立一个准确的画面">先建立一个准确的画面</h2>
 <p><code>HashSet&lt;T&gt;</code> 不是“一排数据”，而是一张<strong>只登记某个值是否出现过</strong>的表。</p>
 <p>它始终遵守一条规则：同一个值最多登记一次。</p>
@@ -333,6 +343,12 @@ names.Contains(&quot;alice&quot;); // false</code></pre>
 paths.Add(&quot;UI/Icon/Player&quot;);
 paths.Contains(&quot;ui/icon/player&quot;); // true</code></pre>
 <p>比较规则一旦确定，<code>Add</code>、<code>Contains</code>、<code>Remove</code> 都会使用同一套规则。</p>
+<h2 id="常见误解">常见误解</h2>
+<ul>
+<li>HashSet 去重后不会保留重复次数；需要次数时使用 Dictionary 计数。</li>
+<li>HashSet 不保证按插入顺序遍历；需要稳定顺序时另存 List。</li>
+<li>自定义对象放入集合后，不要修改参与相等性和哈希计算的字段，否则可能无法再次找到它。</li>
+</ul>
 <h2 id="最后只记住这一个判断">最后只记住这一个判断</h2>
 <pre><code class="language-csharp">if (!set.Add(value))
 {

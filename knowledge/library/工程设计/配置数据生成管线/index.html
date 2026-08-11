@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：">
+  <meta name="description" content="配置管线把策划源数据依次经过结构、引用和业务语义校验，只有全部通过才生成强类型快照和索引。目标不是“尽量把坏数据读进去”，而是让错误在构建期带着行号和字段名暴露。">
   <title>配置数据生成管线：让错误停在构建期 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>配置数据生成管线：让错误停在构建期</h1>
-      <p class="hero-copy">配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p>
+      <p class="hero-copy">配置管线把策划源数据依次经过结构、引用和业务语义校验，只有全部通过才生成强类型快照和索引。目标不是“尽量把坏数据读进去”，而是让错误在构建期带着行号和字段名暴露。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#场景-三行技能配置的结果">场景：三行技能配置的结果</a>
       <a data-toc-link href="#1-源记录与-schema-各管一件事">1. 源记录与 Schema 各管一件事</a>
       <a data-toc-link href="#2-结构校验-先确认-能不能读">2. 结构校验：先确认“能不能读”</a>
       <a data-toc-link href="#3-引用校验-目标存在才算连接成功">3. 引用校验：目标存在才算连接成功</a>
@@ -82,6 +84,7 @@
       <a data-toc-link href="#7-运行时-provider-必须有真实消费证据">7. 运行时 Provider 必须有真实消费证据</a>
       <a data-toc-link href="#8-启动失败与清理">8. 启动失败与清理</a>
       <a data-toc-link href="#调试时应该同时看到什么">调试时应该同时看到什么</a>
+      <a data-toc-link href="#最后记住">最后记住</a>
     </nav>
   </details>
       </aside>
@@ -99,49 +102,66 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 源记录与 Schema 各管一件事">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：1. 源记录与 Schema 各管一件事">
+      <span>02</span>
       <strong>1. 源记录与 Schema 各管一件事</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 结构校验：先确认“能不能读”">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：2. 结构校验：先确认“能不能读”">
+      <span>03</span>
       <strong>2. 结构校验：先确认“能不能读”</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 引用校验：目标存在才算连接成功">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：3. 引用校验：目标存在才算连接成功">
+      <span>04</span>
       <strong>3. 引用校验：目标存在才算连接成功</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 语义校验：类型正确不代表业务成立">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：4. 语义校验：类型正确不代表业务成立">
+      <span>05</span>
       <strong>4. 语义校验：类型正确不代表业务成立</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 先收集错误，再决定是否生成">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：5. 先收集错误，再决定是否生成">
+      <span>06</span>
       <strong>5. 先收集错误，再决定是否生成</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 强类型快照与索引">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：6. 强类型快照与索引">
+      <span>07</span>
       <strong>6. 强类型快照与索引</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 运行时 Provider 必须有真实消费证据">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：7. 运行时 Provider 必须有真实消费证据">
+      <span>08</span>
       <strong>7. 运行时 Provider 必须有真实消费证据</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 启动失败与清理">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：8. 启动失败与清理">
+      <span>09</span>
       <strong>8. 启动失败与清理</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：调试时应该同时看到什么">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：调试时应该同时看到什么">
+      <span>10</span>
       <strong>调试时应该同时看到什么</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最后记住">
+      <span>11</span>
+      <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>配置管线把策划源数据依次经过结构、引用和业务语义校验，只有全部通过才生成强类型快照和索引。目标不是“尽量把坏数据读进去”，而是让错误在构建期带着行号和字段名暴露。</p>
+
+        <pre><code class="language-text">Skill 101：Damage=30，EffectId=5       -&gt; 通过
+Skill 102：Damage=&quot;abc&quot;，EffectId=5  -&gt; 结构错误，Damage 不是数字
+Skill 103：Damage=20，EffectId=999     -&gt; 引用错误，Effect 999 不存在</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>1. 源记录与 Schema 各管一件事</h3>
         <p>源记录描述内容，Schema 描述契约：</p>
         <ul><li>编辑器可以提前提示字段类型；</li><li>生成器可以统一执行校验；</li><li>运行时代码可以生成强类型访问，而不是反复解析字典。</li></ul>
@@ -151,8 +171,8 @@ Schema：id:int 主键
         cost:int 范围 [0, 100]
         effect_id:int 引用 Effect.id</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>2. 结构校验：先确认“能不能读”</h3>
         <p>结构层只回答记录是否符合形状：</p>
 
@@ -164,8 +184,8 @@ Schema：id:int 主键
     RequireInteger(row, &quot;effect_id&quot;, errors);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>3. 引用校验：目标存在才算连接成功</h3>
         <p>引用不是“看起来像另一个 ID”的整数，而是一条跨表约束：</p>
 
@@ -178,8 +198,8 @@ Schema：id:int 主键
         errors.Add(row, &quot;effect_id&quot;, &quot;引用目标不存在&quot;);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>4. 语义校验：类型正确不代表业务成立</h3>
         <p><code>cost = -8</code> 是合法整数，但可能不是合法消耗。语义层负责范围、组合关系和集合约束：</p>
         <ul><li>最小值不能大于最大值；</li><li>权重总和必须满足约定；</li><li>同一分组内的稳定键必须唯一；</li><li>只有某种模式下，另一个字段才允许出现。</li></ul>
@@ -192,8 +212,8 @@ Schema：id:int 主键
         errors.Add(row, &quot;name&quot;, &quot;名称不能为空&quot;);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>5. 先收集错误，再决定是否生成</h3>
         <p>验证阶段可以继续检查互不依赖的记录，最终一次返回全部错误：</p>
 
@@ -207,8 +227,8 @@ Schema：id:int 主键
     return BuildResult.Success(snapshot);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>6. 强类型快照与索引</h3>
         <p>通过验证后，生成器把源记录转换成只读记录，并按声明的主键建立索引：</p>
         <ul><li>生成的类型定义让字段访问在编译期可检查；</li><li>生成的数据文件在启动时反序列化成对应记录和索引。</li></ul>
@@ -227,8 +247,8 @@ sealed class ActionTable
         =&gt; byId.TryGetValue(id, out value);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>7. 运行时 Provider 必须有真实消费证据</h3>
         <p>运行时通常先加载清单中的全部数据文件，再构造表集合：</p>
 
@@ -239,8 +259,8 @@ sealed class ActionTable
     return snapshot;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>8. 启动失败与清理</h3>
         <p>运行时加载缺表、类型不匹配或构造索引失败时，应让初始化保持未就绪并暴露原始错误：</p>
 
@@ -259,12 +279,21 @@ sealed class ActionTable
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
         <h3>调试时应该同时看到什么</h3>
         <p>一个可用的配置构建调试器应展示：</p>
         <ul><li>当前源记录；</li><li>每一层新增了哪些错误；</li><li>哪些阶段因前置失败而没有运行；</li><li>强类型快照是否获得发布资格；</li><li>建立了哪些索引；</li><li>运行时查询命中哪条记录；</li><li>本轮失败时，为什么没有生成假快照。</li></ul>
 
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>最后记住</h3>
+
+
+        <pre><code class="language-text">源数据先经过结构、引用和语义校验。
+所有错误集中报告，任何阻断错误都不生成新快照。
+运行时只消费已验证的强类型数据和索引。</code></pre>
       </article></div>
       </div>
       <footer class="deck-controls">
@@ -275,7 +304,14 @@ sealed class ActionTable
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>配置管线把策划源数据依次经过结构、引用和业务语义校验，只有全部通过才生成强类型快照和索引。目标不是“尽量把坏数据读进去”，而是让错误在构建期带着行号和字段名暴露。</p>
+<h3 id="场景-三行技能配置的结果">场景：三行技能配置的结果</h3>
+<pre><code class="language-text">Skill 101：Damage=30，EffectId=5       -&gt; 通过
+Skill 102：Damage=&quot;abc&quot;，EffectId=5  -&gt; 结构错误，Damage 不是数字
+Skill 103：Damage=20，EffectId=999     -&gt; 引用错误，Effect 999 不存在</code></pre>
+<p>构建应一次收集并报告第 2、3 行问题，然后拒绝生成新快照。若只跳过坏行继续生成，运行时可能出现技能列表与引用索引不一致，错误会变得更晚、更难定位。</p>
+<p>配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p>
 <pre><code class="language-text">源记录
   → 结构校验
   → 引用校验
@@ -448,6 +484,10 @@ sealed class ActionTable
 </ol>
 <p>交互实验允许制造重复 ID、缺失引用和非法范围，并逐阶段观察错误累积和构建停止。</p>
 <p><a href="/knowledge/config-pipeline/">打开配置数据生成交互实验</a></p>
+<h2 id="最后记住">最后记住</h2>
+<pre><code class="language-text">源数据先经过结构、引用和语义校验。
+所有错误集中报告，任何阻断错误都不生成新快照。
+运行时只消费已验证的强类型数据和索引。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E7%83%AD%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E5%A4%B1%E8%B4%A5%E5%8F%AF%E8%A7%81%E6%80%A7/"><small>← PREVIOUS</small>配置热更新：版本一致性与失败可见性</a>
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E9%98%9F%E5%88%97%E5%BB%B6%E8%BF%9F%E7%9B%91%E5%90%AC%E8%B0%83%E8%AF%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E9%A3%8E%E6%9A%B4/"><small>NEXT →</small>事件队列：延迟、监听、调试与事件风暴</a>

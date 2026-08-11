@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="复杂 AI 或流程逻辑不是只能靠一堆 if else。">
+  <meta name="description" content="FSM 直接定义状态怎样切换，行为树组织每帧决策流程，效用 AI 给候选行为打分，GOAP 根据前置条件和效果搜索行动序列。它们不是从低级到高级的替代关系，而是用不同方式回答“现在做什么”。">
   <title>状态机、行为树、效用 AI 与 GOAP 对比 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
       <h1>状态机、行为树、效用 AI 与 GOAP 对比</h1>
-      <p class="hero-copy">复杂 AI 或流程逻辑不是只能靠一堆 if else。</p>
+      <p class="hero-copy">FSM 直接定义状态怎样切换，行为树组织每帧决策流程，效用 AI 给候选行为打分，GOAP 根据前置条件和效果搜索行动序列。它们不是从低级到高级的替代关系，而是用不同方式回答“现在做什么”。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#同一个敌人遇到锁门">同一个敌人遇到锁门</a>
       <a data-toc-link href="#核心问题">核心问题</a>
       <a data-toc-link href="#普通状态机-fsm">普通状态机 FSM</a>
       <a data-toc-link href="#分层状态机-hierarchical-fsm">分层状态机 Hierarchical FSM</a>
@@ -81,6 +83,7 @@
       <a data-toc-link href="#效用-ai-utility-ai">效用 AI Utility AI</a>
       <a data-toc-link href="#goap-目标导向行动规划">GOAP 目标导向行动规划</a>
       <a data-toc-link href="#选择建议">选择建议</a>
+      <a data-toc-link href="#常见误解">常见误解</a>
       <a data-toc-link href="#最重要的收获">最重要的收获</a>
     </nav>
   </details>
@@ -94,49 +97,68 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心问题">
+      <span>02</span>
       <strong>核心问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：普通状态机 FSM">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：普通状态机 FSM">
+      <span>03</span>
       <strong>普通状态机 FSM</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：分层状态机 Hierarchical FSM">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：分层状态机 Hierarchical FSM">
+      <span>04</span>
       <strong>分层状态机 Hierarchical FSM</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：并行状态机 Parallel FSM">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：并行状态机 Parallel FSM">
+      <span>05</span>
       <strong>并行状态机 Parallel FSM</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：行为树 Behavior Tree">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：行为树 Behavior Tree">
+      <span>06</span>
       <strong>行为树 Behavior Tree</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：效用 AI Utility AI">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：效用 AI Utility AI">
+      <span>07</span>
       <strong>效用 AI Utility AI</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：GOAP 目标导向行动规划">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：GOAP 目标导向行动规划">
+      <span>08</span>
       <strong>GOAP 目标导向行动规划</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：选择建议">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：选择建议">
+      <span>09</span>
       <strong>选择建议</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：常见误解">
+      <span>10</span>
+      <strong>常见误解</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>FSM 直接定义状态怎样切换，行为树组织每帧决策流程，效用 AI 给候选行为打分，GOAP 根据前置条件和效果搜索行动序列。它们不是从低级到高级的替代关系，而是用不同方式回答“现在做什么”。</p>
+
+        <pre><code class="language-text">世界状态：看到玩家、门已锁、持有钥匙、弹药 0
+FSM：从 Chase 切到 OpenDoor 或 SearchAmmo
+行为树：先尝试开门分支，失败后进入找弹药分支
+效用 AI：OpenDoor=80，SearchAmmo=65，选择开门
+GOAP：规划 UseKey -&gt; OpenDoor -&gt; Chase</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心问题</h3>
         <p>复杂 AI 或流程逻辑不是只能靠一堆 <code>if else</code>。</p>
 
@@ -147,15 +169,15 @@
 效用 AI
 GOAP</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>普通状态机 FSM</h3>
         <p>核心模型：</p>
 
         <pre><code class="language-text">当前状态 + 条件 = 下一个状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>分层状态机 Hierarchical FSM</h3>
         <p>分层状态机把状态分层：</p>
 
@@ -167,8 +189,8 @@ GOAP</code></pre>
 
 Dead</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>并行状态机 Parallel FSM</h3>
         <p>并行状态机解决多个状态维度同时存在的问题。</p>
 
@@ -177,15 +199,15 @@ Dead</code></pre>
 控制状态：Normal / Stunned / Frozen
 表情状态：Normal / Hurt / Angry</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>行为树 Behavior Tree</h3>
         <p>行为树不是当前状态切来切去，而是每次从树根开始做决策。</p>
 
         <pre><code class="language-text">按优先级检查行为，谁能执行就执行谁。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>效用 AI Utility AI</h3>
         <p>效用 AI 不按固定优先级选行为，而是给每个行为打分。</p>
 
@@ -194,16 +216,16 @@ Dead</code></pre>
 追击分 = 看见目标 + 距离较远
 巡逻分 = 没有目标</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>GOAP 目标导向行动规划</h3>
         <p>GOAP 的思路是：</p>
 
         <pre><code class="language-text">AI 有目标。
 AI 自己规划一串行动达成目标。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>选择建议</h3>
         <p>实际系统中经常组合使用：</p>
 
@@ -225,8 +247,15 @@ AI 自己规划一串行动达成目标。</code></pre>
 GOAP：
 适合目标导向的自动规划。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
+        <h3>常见误解</h3>
+
+        <ul><li>行为树不是“更高级的状态机”，两者表达状态和转换的方式不同。</li><li>效用分最高只代表当前评分模型更偏好它，不代表行动一定能成功。</li><li>GOAP 生成计划后仍需要执行器处理动画、移动、失败和中断。</li></ul>
+
+      </article>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -244,6 +273,15 @@ GOAP：
       </footer>
     </section>
         <p>分类：游戏 AI 与逻辑建模</p>
+<h2 id="先说结论">先说结论</h2>
+<p>FSM 直接定义状态怎样切换，行为树组织每帧决策流程，效用 AI 给候选行为打分，GOAP 根据前置条件和效果搜索行动序列。它们不是从低级到高级的替代关系，而是用不同方式回答“现在做什么”。</p>
+<h3 id="同一个敌人遇到锁门">同一个敌人遇到锁门</h3>
+<pre><code class="language-text">世界状态：看到玩家、门已锁、持有钥匙、弹药 0
+FSM：从 Chase 切到 OpenDoor 或 SearchAmmo
+行为树：先尝试开门分支，失败后进入找弹药分支
+效用 AI：OpenDoor=80，SearchAmmo=65，选择开门
+GOAP：规划 UseKey -&gt; OpenDoor -&gt; Chase</code></pre>
+<p>同一玩法可以组合使用，例如 GOAP 选出计划，行为树执行单个动作，FSM 管理动画状态。关键是明确每一层拥有哪种状态和失败反馈。</p>
 <h2 id="核心问题">核心问题</h2>
 <p>复杂 AI 或流程逻辑不是只能靠一堆 <code>if else</code>。</p>
 <p>常见建模工具包括：</p>
@@ -474,6 +512,12 @@ GOAP：
 技能选择或目标选择：效用评分
 复杂 NPC 规划：GOAP
 Buff、异常状态：标签 / 独立状态模块</code></pre>
+<h2 id="常见误解">常见误解</h2>
+<ul>
+<li>行为树不是“更高级的状态机”，两者表达状态和转换的方式不同。</li>
+<li>效用分最高只代表当前评分模型更偏好它，不代表行动一定能成功。</li>
+<li>GOAP 生成计划后仍需要执行器处理动画、移动、失败和中断。</li>
+</ul>
 <h2 id="最重要的收获">最重要的收获</h2>
 <pre><code class="language-text">流程问题：状态机。
 决策问题：行为树 / 效用 AI。

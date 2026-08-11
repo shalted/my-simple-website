@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="事件系统解决的是：">
+  <meta name="description" content="发布订阅让发送者只声明“发生了什么”，而不直接调用 UI、音效、成就等具体模块。它降低直接依赖，但也会让调用链变得隐形，所以事件载荷、订阅生命周期和调试记录必须明确。">
   <title>事件系统与发布订阅 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>事件系统与发布订阅</h1>
-      <p class="hero-copy">事件系统解决的是：</p>
+      <p class="hero-copy">发布订阅让发送者只声明“发生了什么”，而不直接调用 UI、音效、成就等具体模块。它降低直接依赖，但也会让调用链变得隐形，所以事件载荷、订阅生命周期和调试记录必须明确。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>13 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一次扣血触发三个监听者">一次扣血触发三个监听者</a>
       <a data-toc-link href="#事件系统解决什么问题">事件系统解决什么问题</a>
       <a data-toc-link href="#跟着代码跑一次扣血事件">跟着代码跑一次扣血事件</a>
       <a class="sub" data-toc-link href="#第二步-对象关闭前取消订阅">第二步：对象关闭前取消订阅</a>
@@ -98,65 +100,80 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：事件系统解决什么问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：事件系统解决什么问题">
+      <span>02</span>
       <strong>事件系统解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码跑一次扣血事件">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码跑一次扣血事件">
+      <span>03</span>
       <strong>跟着代码跑一次扣血事件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：发布订阅">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：发布订阅">
+      <span>04</span>
       <strong>发布订阅</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：C# 简单写法">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：C# 简单写法">
+      <span>05</span>
       <strong>C# 简单写法</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：订阅事件">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：订阅事件">
+      <span>06</span>
       <strong>订阅事件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么要取消订阅">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：为什么要取消订阅">
+      <span>07</span>
       <strong>为什么要取消订阅</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：适合事件系统的场景">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：适合事件系统的场景">
+      <span>08</span>
       <strong>适合事件系统的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：不适合事件系统的场景">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：不适合事件系统的场景">
+      <span>09</span>
       <strong>不适合事件系统的场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最大收益">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最大收益">
+      <span>10</span>
       <strong>最大收益</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最大风险">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最大风险">
+      <span>11</span>
       <strong>最大风险</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
+      <span>12</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>发布订阅让发送者只声明“发生了什么”，而不直接调用 UI、音效、成就等具体模块。它降低直接依赖，但也会让调用链变得隐形，所以事件载荷、订阅生命周期和调试记录必须明确。</p>
+
+        <pre><code class="language-text">玩家 HP：100 -&gt; 70
+发布：HealthChanged(old=100, current=70)
+UI：血条显示 70%
+音效：生命值低于 30 时才播放，本次不播放
+成就：累计受伤量增加 30</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>事件系统解决什么问题</h3>
         <p>事件系统解决的是：</p>
 
         <pre><code class="language-text">一个事情发生后，很多系统都想知道；
 但发生事情的人不应该认识所有响应者。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着代码跑一次扣血事件</h3>
         <p>先不用通用事件总线，只用一个明确的 C# 事件：</p>
 
@@ -175,16 +192,16 @@ sealed class Health
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>发布订阅</h3>
         <p>事件系统的思路是：</p>
 
         <pre><code class="language-text">发布者 Publish：广播一件事情发生了。
 订阅者 Subscribe：自己监听并响应这件事。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>C# 简单写法</h3>
         <p>定义事件参数：</p>
 
@@ -194,8 +211,8 @@ sealed class Health
     public int CurrentHp;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>订阅事件</h3>
         <p>血条系统：</p>
 
@@ -214,15 +231,15 @@ void HandleDamage(DamageEvent e)
     hpBar.SetValue(e.CurrentHp);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>为什么要取消订阅</h3>
         <p>取消订阅非常重要：</p>
 
         <pre><code class="language-csharp">GameEvents.OnDamage -= HandleDamage;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>适合事件系统的场景</h3>
         <p>适合一个事件有多个响应者：</p>
 
@@ -236,8 +253,8 @@ void HandleDamage(DamageEvent e)
 配置刷新
 UI 窗口打开关闭</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>不适合事件系统的场景</h3>
         <p>事件系统不适合隐藏强流程依赖。</p>
 
@@ -246,22 +263,22 @@ UI 窗口打开关闭</code></pre>
 再播放动画
 再进入战斗</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最大收益</h3>
         <p>事件系统最大的收益是解耦。</p>
 
         <pre><code class="language-text">我发了一个事件。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最大风险</h3>
         <p>事件太多、乱用，会让流程变隐形。</p>
 
         <pre><code class="language-csharp">GameEvents.OnDamage?.Invoke(e);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最重要的三条：</p>
 
@@ -277,6 +294,15 @@ UI 窗口打开关闭</code></pre>
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>发布订阅让发送者只声明“发生了什么”，而不直接调用 UI、音效、成就等具体模块。它降低直接依赖，但也会让调用链变得隐形，所以事件载荷、订阅生命周期和调试记录必须明确。</p>
+<h3 id="一次扣血触发三个监听者">一次扣血触发三个监听者</h3>
+<pre><code class="language-text">玩家 HP：100 -&gt; 70
+发布：HealthChanged(old=100, current=70)
+UI：血条显示 70%
+音效：生命值低于 30 时才播放，本次不播放
+成就：累计受伤量增加 30</code></pre>
+<p>发布者只负责提交事实。UI 被销毁后若没有取消订阅，下一次事件仍会调用旧对象；这不是事件本身错误，而是监听者生命周期没有闭合。</p>
 <h2 id="事件系统解决什么问题">事件系统解决什么问题</h2>
 <p>事件系统解决的是：</p>
 <pre><code class="language-text">一个事情发生后，很多系统都想知道；

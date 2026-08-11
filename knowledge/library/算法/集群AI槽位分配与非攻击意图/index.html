@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="集群怪物不是每一只都应该同时攻击玩家。">
+  <meta name="description" content="槽位分配解决“多只怪物围住同一目标时各自站哪里”，稳定分配解决“不要每帧换座位”，非攻击意图解决“没拿到攻击权的怪物仍然做什么”。三者共同避免所有怪挤向同一点或原地发呆。">
   <title>集群 AI 槽位分配与非攻击意图 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>集群 AI 槽位分配与非攻击意图</h1>
-      <p class="hero-copy">集群怪物不是每一只都应该同时攻击玩家。</p>
+      <p class="hero-copy">槽位分配解决“多只怪物围住同一目标时各自站哪里”，稳定分配解决“不要每帧换座位”，非攻击意图解决“没拿到攻击权的怪物仍然做什么”。三者共同避免所有怪挤向同一点或原地发呆。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#三只怪的一圈槽位">三只怪的一圈槽位</a>
       <a data-toc-link href="#核心问题">核心问题</a>
       <a data-toc-link href="#跟着代码做-先让三只怪站成一圈">跟着代码做：先让三只怪站成一圈</a>
       <a data-toc-link href="#第二步-发现-每帧换座位-的问题">第二步：发现“每帧换座位”的问题</a>
@@ -102,69 +104,83 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心问题">
+      <span>02</span>
       <strong>核心问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码做：先让三只怪站成一圈">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码做：先让三只怪站成一圈">
+      <span>03</span>
       <strong>跟着代码做：先让三只怪站成一圈</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二步：发现“每帧换座位”的问题">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二步：发现“每帧换座位”的问题">
+      <span>04</span>
       <strong>第二步：发现“每帧换座位”的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第三步：保存稳定槽位">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三步：保存稳定槽位">
+      <span>05</span>
       <strong>第三步：保存稳定槽位</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第四步：没有攻击权也要有行为">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第四步：没有攻击权也要有行为">
+      <span>06</span>
       <strong>第四步：没有攻击权也要有行为</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：槽位是什么">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：槽位是什么">
+      <span>07</span>
       <strong>槽位是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：为什么要分配槽位">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：为什么要分配槽位">
+      <span>08</span>
       <strong>为什么要分配槽位</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：稳定随机的作用">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：稳定随机的作用">
+      <span>09</span>
       <strong>稳定随机的作用</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：没拿到攻击令牌的怪物做什么">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：没拿到攻击令牌的怪物做什么">
+      <span>10</span>
       <strong>没拿到攻击令牌的怪物做什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：槽位和非攻击意图的关系">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：槽位和非攻击意图的关系">
+      <span>11</span>
       <strong>槽位和非攻击意图的关系</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界：槽位不是永远有效">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界：槽位不是永远有效">
+      <span>12</span>
       <strong>边界：槽位不是永远有效</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>槽位分配解决“多只怪物围住同一目标时各自站哪里”，稳定分配解决“不要每帧换座位”，非攻击意图解决“没拿到攻击权的怪物仍然做什么”。三者共同避免所有怪挤向同一点或原地发呆。</p>
+
+        <pre><code class="language-text">玩家位置：(0, 0)
+环绕半径：3
+槽位角度：0°、120°、240°
+近似位置：(3, 0)、(-1.5, 2.6)、(-1.5, -2.6)</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心问题</h3>
         <p>集群怪物不是每一只都应该同时攻击玩家。</p>
 
         <pre><code class="language-text">1. 没拿到攻击令牌的怪物应该站在哪里？
 2. 它们没攻击时应该做什么？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着代码做：先让三只怪站成一圈</h3>
         <p>先只解决最小问题：玩家站在原点，三只怪分别应该走向哪里。下面是一个可以直接放进 C# 控制台项目的教学版本：</p>
 
@@ -191,16 +207,16 @@ for (int i = 0; i &lt; 3; i++)
     Console.WriteLine($&quot;怪物 {i} -&gt; ({target.X:F1}, {target.Y:F1})&quot;);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>第二步：发现“每帧换座位”的问题</h3>
         <p>第一版直接把列表下标当槽位编号：</p>
 
         <pre><code class="language-csharp">for (int i = 0; i &lt; enemies.Count; i++)
     enemies[i].MoveTo(GetSlotPosition(player, i, enemies.Count, 2f));</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第三步：保存稳定槽位</h3>
         <p>用怪物 ID 保存分配结果；只有怪物加入、离开或槽位失效时才重新分配：</p>
 
@@ -223,8 +239,8 @@ int GetOrAssignSlot(int enemyId, int slotCount)
     return -1; // 没有空槽位，交给后面的非攻击意图处理
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>第四步：没有攻击权也要有行为</h3>
         <p>槽位只回答“站在哪里”，没有回答“到达后做什么”。可以先实现一个明确的决策顺序：</p>
 
@@ -253,15 +269,15 @@ Intent ChooseIntent(
     return Intent.Strafe;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>槽位是什么</h3>
         <p>槽位不是地图上预先摆好的固定点，也不是 Unity 里的真实格子。</p>
 
         <pre><code class="language-text">怪物在围攻队形里的座位编号。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>为什么要分配槽位</h3>
         <p>最大收益是让集群怪物有序。</p>
 
@@ -270,16 +286,16 @@ B 负责右前
 C 负责后侧
 D 负责外圈</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>稳定随机的作用</h3>
         <p>稳定随机本质上是一个公式：</p>
 
         <pre><code class="language-text">同样的输入，得到同样的随机结果。
 输入变化，结果才变化。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>没拿到攻击令牌的怪物做什么</h3>
         <p>没拿到攻击令牌的怪物不是站着不动。</p>
 
@@ -287,15 +303,15 @@ D 负责外圈</code></pre>
 Threaten：靠近威胁、施压但不真正出手
 Reposition：重新找一个更合适的位置</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>槽位和非攻击意图的关系</h3>
         <p>槽位回答：</p>
 
         <pre><code class="language-text">你大概应该在哪个位置？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>边界：槽位不是永远有效</h3>
         <p>运行时至少要处理这些边界：</p>
 
@@ -305,8 +321,8 @@ Reposition：重新找一个更合适的位置</code></pre>
 槽位不可达     -&gt; 尝试其他槽位
 怪物多于槽位   -&gt; 返回 -1，进入外围游走或等待</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>这套设计的本质不是“让怪物站成圆形”，而是：</p>
 
@@ -326,6 +342,14 @@ Reposition：重新找一个更合适的位置</code></pre>
       </footer>
     </section>
         <p>分类：算法</p>
+<h2 id="先说结论">先说结论</h2>
+<p>槽位分配解决“多只怪物围住同一目标时各自站哪里”，稳定分配解决“不要每帧换座位”，非攻击意图解决“没拿到攻击权的怪物仍然做什么”。三者共同避免所有怪挤向同一点或原地发呆。</p>
+<h3 id="三只怪的一圈槽位">三只怪的一圈槽位</h3>
+<pre><code class="language-text">玩家位置：(0, 0)
+环绕半径：3
+槽位角度：0°、120°、240°
+近似位置：(3, 0)、(-1.5, 2.6)、(-1.5, -2.6)</code></pre>
+<p>怪物 A、B、C 首次分到三个槽位后应尽量保持绑定。若每帧都按瞬时距离重新排序，A 和 B 的微小移动就可能交换槽位，表现为来回横穿。只有槽位失效、怪物离开或整体重新规划时才需要重分配。</p>
 <h2 id="核心问题">核心问题</h2>
 <p>集群怪物不是每一只都应该同时攻击玩家。</p>
 <p>系统需要解决两个问题：</p>

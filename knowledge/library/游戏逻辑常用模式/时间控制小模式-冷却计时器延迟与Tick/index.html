@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="冷却、计时器、延迟和 Tick 都围绕同一个问题：">
+  <meta name="description" content="冷却回答“现在能不能再次使用”，计时器回答“还剩多久”，延迟触发回答“到点执行一次什么”，Tick 回答“按什么频率重复更新”。它们都使用时间，但保存的状态和到点后的行为不同。">
   <title>时间控制小模式：冷却、计时器、延迟与 Tick · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
       <h1>时间控制小模式：冷却、计时器、延迟与 Tick</h1>
-      <p class="hero-copy">冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
+      <p class="hero-copy">冷却回答“现在能不能再次使用”，计时器回答“还剩多久”，延迟触发回答“到点执行一次什么”，Tick 回答“按什么频率重复更新”。它们都使用时间，但保存的状态和到点后的行为不同。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>13 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#用同一条时间线区分">用同一条时间线区分</a>
       <a data-toc-link href="#核心问题">核心问题</a>
       <a data-toc-link href="#冷却-cooldown">冷却 Cooldown</a>
       <a data-toc-link href="#计时器-timer">计时器 Timer</a>
@@ -98,61 +100,75 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心问题">
+      <span>02</span>
       <strong>核心问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：冷却 Cooldown">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：冷却 Cooldown">
+      <span>03</span>
       <strong>冷却 Cooldown</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：计时器 Timer">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：计时器 Timer">
+      <span>04</span>
       <strong>计时器 Timer</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：延迟触发 Delay">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：延迟触发 Delay">
+      <span>05</span>
       <strong>延迟触发 Delay</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Tick">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Tick">
+      <span>06</span>
       <strong>Tick</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么 AI 不一定每帧 Tick">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：为什么 AI 不一定每帧 Tick">
+      <span>07</span>
       <strong>为什么 AI 不一定每帧 Tick</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：是否补 Tick">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：是否补 Tick">
+      <span>08</span>
       <strong>是否补 Tick</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Time.time 和 Time.deltaTime">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：Time.time 和 Time.deltaTime">
+      <span>09</span>
       <strong>Time.time 和 Time.deltaTime</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：unscaledTime 和 unscaledDeltaTime">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：unscaledTime 和 unscaledDeltaTime">
+      <span>10</span>
       <strong>unscaledTime 和 unscaledDeltaTime</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：怎么选择">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：怎么选择">
+      <span>11</span>
       <strong>怎么选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：用实际帧时间观察漏 Tick 与补 Tick">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：用实际帧时间观察漏 Tick 与补 Tick">
+      <span>12</span>
       <strong>用实际帧时间观察漏 Tick 与补 Tick</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>冷却回答“现在能不能再次使用”，计时器回答“还剩多久”，延迟触发回答“到点执行一次什么”，Tick 回答“按什么频率重复更新”。它们都使用时间，但保存的状态和到点后的行为不同。</p>
+
+        <pre><code class="language-text">初始 0.0 秒：释放技能，冷却结束时间设为 5.0
+2.0 秒：剩余冷却 3.0，技能不可用
+5.0 秒：冷却完成；延迟任务若设为 5 秒，也在此时触发一次
+每 0.5 秒 Tick：0.5、1.0、1.5……共执行 10 次</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心问题</h3>
         <p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
 
@@ -160,36 +176,36 @@
 多久发生一次？
 是否已经到时间了？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>冷却 Cooldown</h3>
         <p>冷却控制的是：</p>
 
         <pre><code class="language-text">做完一件事之后，多久不能再做。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>计时器 Timer</h3>
         <p>计时器控制的是：</p>
 
         <pre><code class="language-text">从现在开始，还剩多久触发。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>延迟触发 Delay</h3>
         <p>延迟触发表示：</p>
 
         <pre><code class="language-text">几秒后做一件事。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Tick</h3>
         <p><code>Tick</code> 可以理解成：</p>
 
         <pre><code class="language-text">按固定间隔执行一次逻辑。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>为什么 AI 不一定每帧 Tick</h3>
         <p>很多 AI 逻辑不需要每帧跑：</p>
 
@@ -198,36 +214,36 @@
 筛选候选技能
 扫描附近敌人</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>是否补 Tick</h3>
         <p>普通写法：</p>
 
         <pre><code class="language-csharp">nextTickTime = Time.time + tickInterval;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>Time.time 和 Time.deltaTime</h3>
         <p><code>Time.time</code>：</p>
 
         <pre><code class="language-text">游戏开始到现在经过了多少秒。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>unscaledTime 和 unscaledDeltaTime</h3>
         <p><code>Time.time</code> 和 <code>Time.deltaTime</code> 受 <code>Time.timeScale</code> 影响。</p>
 
         <pre><code class="language-csharp">Time.timeScale = 0f;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>怎么选择</h3>
         <p>冷却：</p>
 
         <pre><code class="language-text">我做完一件事后，多久不能再做？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>用实际帧时间观察漏 Tick 与补 Tick</h3>
         <p>假设逻辑每 <code>0.1s</code> 执行一次，<code>nextTickTime = 1.0</code>。正常帧在 <code>1.02s</code> 到来：</p>
 
@@ -235,8 +251,8 @@
 执行 Tick #1
 nextTickTime = 1.02 + 0.10 = 1.12</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最常用的两种写法：</p>
 
@@ -255,6 +271,14 @@ Tick 看下一次执行时间。</code></pre>
       </footer>
     </section>
         <p>分类：游戏逻辑常用模式</p>
+<h2 id="先说结论">先说结论</h2>
+<p>冷却回答“现在能不能再次使用”，计时器回答“还剩多久”，延迟触发回答“到点执行一次什么”，Tick 回答“按什么频率重复更新”。它们都使用时间，但保存的状态和到点后的行为不同。</p>
+<h3 id="用同一条时间线区分">用同一条时间线区分</h3>
+<pre><code class="language-text">初始 0.0 秒：释放技能，冷却结束时间设为 5.0
+2.0 秒：剩余冷却 3.0，技能不可用
+5.0 秒：冷却完成；延迟任务若设为 5 秒，也在此时触发一次
+每 0.5 秒 Tick：0.5、1.0、1.5……共执行 10 次</code></pre>
+<p>帧时间若从 1.4 秒直接跳到 2.1 秒，按“是否补 Tick”的规则，可能只执行一次，也可能补执行 1.5 和 2.0 两次。这个选择必须由玩法语义决定。</p>
 <h2 id="核心问题">核心问题</h2>
 <p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p>
 <pre><code class="language-text">某件事什么时候发生？

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象一家小店开门后的值班流程：">
+  <meta name="description" content="行为树节点每次 Tick 只返回三种结果：Success、Failure 或 Running。组合节点根据子节点返回值决定停在哪、继续谁；中断则必须沿当前运行路径执行清理，不能只把根节点状态改掉。">
   <title>行为树执行栈、节点返回值与中断 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
       <h1>行为树执行栈、节点返回值与中断</h1>
-      <p class="hero-copy">想象一家小店开门后的值班流程：</p>
+      <p class="hero-copy">行为树节点每次 Tick 只返回三种结果：Success、Failure 或 Running。组合节点根据子节点返回值决定停在哪、继续谁；中断则必须沿当前运行路径执行清理，不能只把根节点状态改掉。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>33 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>35 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#连续三帧的返回值">连续三帧的返回值</a>
       <a data-toc-link href="#先把行为树想成值班流程">先把行为树想成值班流程</a>
       <a data-toc-link href="#三种基本返回值">三种基本返回值</a>
       <a class="sub" data-toc-link href="#返回值不等于异常">返回值不等于异常</a>
@@ -101,7 +103,7 @@
       <a class="sub" data-toc-link href="#失败路径-中断后旧回调仍写状态">失败路径：中断后旧回调仍写状态</a>
       <a class="sub" data-toc-link href="#失败路径-共享节点保存角色状态">失败路径：共享节点保存角色状态</a>
       <a data-toc-link href="#代价与适用边界">代价与适用边界</a>
-      <a data-toc-link href="#通用算法与实现选择">通用算法与实现选择</a>
+      <a data-toc-link href="#进阶-通用算法与实现选择">进阶：通用算法与实现选择</a>
       <a class="sub" data-toc-link href="#可验证的通用机制">可验证的通用机制</a>
       <a class="sub" data-toc-link href="#必须由具体实现确定">必须由具体实现确定</a>
       <a data-toc-link href="#调试时应该记录什么">调试时应该记录什么</a>
@@ -118,69 +120,83 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先把行为树想成值班流程">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先把行为树想成值班流程">
+      <span>02</span>
       <strong>先把行为树想成值班流程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：三种基本返回值">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：三种基本返回值">
+      <span>03</span>
       <strong>三种基本返回值</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：组合节点怎样传播结果">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：组合节点怎样传播结果">
+      <span>04</span>
       <strong>组合节点怎样传播结果</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：运行中的执行路径">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：运行中的执行路径">
+      <span>05</span>
       <strong>运行中的执行路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Memory 与 Reactive 两种推进方式">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Memory 与 Reactive 两种推进方式">
+      <span>06</span>
       <strong>Memory 与 Reactive 两种推进方式</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：一次完整执行怎样推进">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：一次完整执行怎样推进">
+      <span>07</span>
       <strong>一次完整执行怎样推进</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：中断到底是什么">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：中断到底是什么">
+      <span>08</span>
       <strong>中断到底是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：中断时的清理顺序">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：中断时的清理顺序">
+      <span>09</span>
       <strong>中断时的清理顺序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 执行骨架">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小 C# 执行骨架">
+      <span>10</span>
       <strong>最小 C# 执行骨架</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常路径、边界路径与失败路径">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：正常路径、边界路径与失败路径">
+      <span>11</span>
       <strong>正常路径、边界路径与失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：代价与适用边界">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：代价与适用边界">
+      <span>12</span>
       <strong>代价与适用边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：通用算法与实现选择">
-      <span>12</span>
-      <strong>通用算法与实现选择</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：调试时应该记录什么">
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：进阶：通用算法与实现选择">
       <span>13</span>
+      <strong>进阶：通用算法与实现选择</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：调试时应该记录什么">
+      <span>14</span>
       <strong>调试时应该记录什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最后总结">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最后总结">
+      <span>15</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>行为树节点每次 Tick 只返回三种结果：Success、Failure 或 Running。组合节点根据子节点返回值决定停在哪、继续谁；中断则必须沿当前运行路径执行清理，不能只把根节点状态改掉。</p>
+
+        <pre><code class="language-text">Sequence：[靠近目标, 攻击]
+第 1 帧：靠近目标 -&gt; Running，Sequence -&gt; Running
+第 2 帧：靠近目标 -&gt; Success；攻击 -&gt; Running；Sequence -&gt; Running
+第 3 帧：攻击 -&gt; Success；Sequence -&gt; Success</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先把行为树想成值班流程</h3>
         <p>想象一家小店开门后的值班流程：</p>
 
@@ -192,8 +208,8 @@
 否则：
   整理货架</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>三种基本返回值</h3>
         <p>行为树节点最常见的返回值是：</p>
 
@@ -201,8 +217,8 @@
 Failure：本节点本次目标无法完成。
 Running：本节点还没有结束，后续需要继续执行。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>组合节点怎样传播结果</h3>
         <p>Sequence 类似逻辑“并且”：</p>
 
@@ -210,8 +226,8 @@ Running：本节点还没有结束，后续需要继续执行。</code></pre>
 走到门前
 打开门</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>运行中的执行路径</h3>
         <p>当一个叶节点返回 <code>Running</code> 时，树不能把它当成已经结束。系统至少要知道：</p>
 
@@ -220,8 +236,8 @@ Running：本节点还没有结束，后续需要继续执行。</code></pre>
 父节点下次应从哪个孩子继续
 节点内部保存了什么执行状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Memory 与 Reactive 两种推进方式</h3>
         <p>Sequence 和 Selector 常见两种语义。</p>
 
@@ -232,8 +248,8 @@ Running：本节点还没有结束，后续需要继续执行。</code></pre>
 下一次：
   直接继续动作 B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>一次完整执行怎样推进</h3>
         <p>考虑这棵树：</p>
 
@@ -245,15 +261,15 @@ Running：本节点还没有结束，后续需要继续执行。</code></pre>
    ├─ 条件：存在巡查点
    └─ 动作：移动到巡查点</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>中断到底是什么</h3>
         <p>中断不是把节点状态直接改成 <code>Failure</code>。</p>
 
         <pre><code class="language-text">正在运行的节点因为外部决策变化，被要求提前结束。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>中断时的清理顺序</h3>
         <p>假设活动路径为：</p>
 
@@ -261,8 +277,8 @@ Running：本节点还没有结束，后续需要继续执行。</code></pre>
 └─ Patrol Sequence
    └─ MoveToPoint</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最小 C# 执行骨架</h3>
         <p>下面只展示返回值、运行索引与中止传播，不绑定具体引擎：</p>
 
@@ -329,8 +345,8 @@ public sealed class SequenceNode : BehaviorNode
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>正常路径、边界路径与失败路径</h3>
         <p>检查点：</p>
 
@@ -339,8 +355,8 @@ MoveTo -&gt; Running
 MoveTo -&gt; Success
 父 Sequence 继续下一个孩子</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>代价与适用边界</h3>
         <p>行为树的优势：</p>
 
@@ -349,9 +365,9 @@ MoveTo -&gt; Success
 运行路径可视化后容易观察当前决策
 Sequence 和 Selector 能组织大量小行为</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
-        <h3>通用算法与实现选择</h3>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>进阶：通用算法与实现选择</h3>
 
 
         <pre><code class="language-text">节点返回 Success、Failure 或 Running。
@@ -360,8 +376,8 @@ Sequence 和 Selector 能组织大量小行为</code></pre>
 活动分支切换时，旧运行节点必须结束并清理。
 Sequence 与 Selector 分别表达顺序完成与候选选择。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>调试时应该记录什么</h3>
         <p>只打印“当前节点名称”通常不够。更有用的执行记录包括：</p>
 
@@ -374,8 +390,8 @@ Sequence 与 Selector 分别表达顺序完成与候选选择。</code></pre>
 异步请求的所有者或代次
 关键黑板值的变更来源</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>最后总结</h3>
         <p>理解行为树不能只看树长什么样，还要跟踪执行过程：</p>
 
@@ -395,6 +411,14 @@ Reactive 重检可能让高优先级分支重新获得控制权。
       </footer>
     </section>
         <p>分类：游戏 AI 与逻辑建模 / 决策执行</p>
+<h2 id="先说结论">先说结论</h2>
+<p>行为树节点每次 Tick 只返回三种结果：Success、Failure 或 Running。组合节点根据子节点返回值决定停在哪、继续谁；中断则必须沿当前运行路径执行清理，不能只把根节点状态改掉。</p>
+<h3 id="连续三帧的返回值">连续三帧的返回值</h3>
+<pre><code class="language-text">Sequence：[靠近目标, 攻击]
+第 1 帧：靠近目标 -&gt; Running，Sequence -&gt; Running
+第 2 帧：靠近目标 -&gt; Success；攻击 -&gt; Running；Sequence -&gt; Running
+第 3 帧：攻击 -&gt; Success；Sequence -&gt; Success</code></pre>
+<p>若第 2 帧目标死亡，攻击分支被中断时要取消移动、动画或异步请求。Memory Sequence 会从正在运行的攻击继续；Reactive Sequence 可能从第一个条件重新检查，两者不能混为同一种执行语义。</p>
 <h2 id="先把行为树想成值班流程">先把行为树想成值班流程</h2>
 <p>想象一家小店开门后的值班流程：</p>
 <pre><code class="language-text">如果有顾客：
@@ -786,7 +810,7 @@ Sequence 和 Selector 能组织大量小行为</code></pre>
 严格的事务流程或协议状态机
 大量单位的极简同质逻辑且 Tick 成本非常敏感</code></pre>
 <p>这些场景可能更适合 HTN、GOAP、效用系统、状态机或批处理数据模型。</p>
-<h2 id="通用算法与实现选择">通用算法与实现选择</h2>
+<h2 id="进阶-通用算法与实现选择">进阶：通用算法与实现选择</h2>
 <h3 id="可验证的通用机制">可验证的通用机制</h3>
 <pre><code class="language-text">节点返回 Success、Failure 或 Running。
 组合节点按自身规则解释并传播子节点结果。

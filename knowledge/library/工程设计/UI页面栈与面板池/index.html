@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="页面系统常同时维护三种状态：">
+  <meta name="description" content="页面栈记录返回顺序，活动实例表回答某页面现在是否打开，面板池保存已经关闭但可复用的对象。一个页面出现在导航历史中，不等于它当前仍有活动实例。">
   <title>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</h1>
-      <p class="hero-copy">页面系统常同时维护三种状态：</p>
+      <p class="hero-copy">页面栈记录返回顺序，活动实例表回答某页面现在是否打开，面板池保存已经关闭但可复用的对象。一个页面出现在导航历史中，不等于它当前仍有活动实例。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#打开-关闭和复用三页">打开、关闭和复用三页</a>
       <a data-toc-link href="#跟着代码做-先实现最小返回栈">跟着代码做：先实现最小返回栈</a>
       <a data-toc-link href="#第二步-加入活动实例表">第二步：加入活动实例表</a>
       <a data-toc-link href="#第三步-关闭后不要销毁-放进池里">第三步：关闭后不要销毁，放进池里</a>
@@ -85,6 +87,7 @@
       <a data-toc-link href="#6-事件订阅与旧回调冲突">6. 事件订阅与旧回调冲突</a>
       <a data-toc-link href="#7-关闭与回收">7. 关闭与回收</a>
       <a data-toc-link href="#8-复杂度与边界">8. 复杂度与边界</a>
+      <a data-toc-link href="#最后记住">最后记住</a>
     </nav>
   </details>
       </aside>
@@ -102,61 +105,80 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：跟着代码做：先实现最小返回栈">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着代码做：先实现最小返回栈">
+      <span>02</span>
       <strong>跟着代码做：先实现最小返回栈</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第二步：加入活动实例表">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二步：加入活动实例表">
+      <span>03</span>
       <strong>第二步：加入活动实例表</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第三步：关闭后不要销毁，放进池里">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第三步：关闭后不要销毁，放进池里">
+      <span>04</span>
       <strong>第三步：关闭后不要销毁，放进池里</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第四步：复用前必须清理旧绑定">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第四步：复用前必须清理旧绑定">
+      <span>05</span>
       <strong>第四步：复用前必须清理旧绑定</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：1. 打开一页的完整链路">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：1. 打开一页的完整链路">
+      <span>06</span>
       <strong>1. 打开一页的完整链路</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：2. Single 与重复打开">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：2. Single 与重复打开">
+      <span>07</span>
       <strong>2. Single 与重复打开</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：3. 页面栈只记录导航历史">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：3. 页面栈只记录导航历史">
+      <span>08</span>
       <strong>3. 页面栈只记录导航历史</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：4. 面板池的创建与复用">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：4. 面板池的创建与复用">
+      <span>09</span>
       <strong>4. 面板池的创建与复用</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：5. 面板显示、绑定与隐藏">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：5. 面板显示、绑定与隐藏">
+      <span>10</span>
       <strong>5. 面板显示、绑定与隐藏</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：6. 事件订阅与旧回调冲突">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：6. 事件订阅与旧回调冲突">
+      <span>11</span>
       <strong>6. 事件订阅与旧回调冲突</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：7. 关闭与回收">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：7. 关闭与回收">
+      <span>12</span>
       <strong>7. 关闭与回收</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：8. 复杂度与边界">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：8. 复杂度与边界">
+      <span>13</span>
       <strong>8. 复杂度与边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最后记住">
+      <span>14</span>
+      <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>页面栈记录返回顺序，活动实例表回答某页面现在是否打开，面板池保存已经关闭但可复用的对象。一个页面出现在导航历史中，不等于它当前仍有活动实例。</p>
+        <ul><li>页面栈：记录返回顺序和打开参数；</li><li>活动面板表：记录当前仍打开的实例；</li><li>面板池：保存已经关闭、可再次租用的实例。</li></ul>
+        <pre><code class="language-text">打开 Home：栈 [Home]，活动 {Home}
+打开 Inventory：栈 [Home, Inventory]，活动 {Home, Inventory}
+打开 ItemDetail：栈 [Home, Inventory, ItemDetail]
+关闭 ItemDetail：栈回到 [Home, Inventory]，Detail 面板进入池
+再次打开另一件物品详情：从池复用 Detail，并绑定新的 ItemId</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>跟着代码做：先实现最小返回栈</h3>
         <p>先只实现一个需求：打开首页，再打开设置页，按返回后回到首页。</p>
 
@@ -188,8 +210,8 @@ navigator.Open(&quot;Home&quot;);
 navigator.Open(&quot;Settings&quot;);
 navigator.Back();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>第二步：加入活动实例表</h3>
         <p>打开页面时既写历史，也登记真实实例：</p>
 
@@ -215,8 +237,8 @@ navigator.Back();</code></pre>
 
 readonly Dictionary&lt;string, Panel&gt; activePanels = new();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>第三步：关闭后不要销毁，放进池里</h3>
         <p>如果背包页经常开关，每次 <code>new Panel</code> 或加载预制体会产生重复成本。加入最小对象池：</p>
 
@@ -244,8 +266,8 @@ void Return(Panel panel)
     panels.Push(panel);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第四步：复用前必须清理旧绑定</h3>
         <p>池化最危险的不是“取不到对象”，而是对象带着上一次使用的状态回来：</p>
 
@@ -269,8 +291,8 @@ void Return(Panel panel)
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>1. 打开一页的完整链路</h3>
         <p>教学场景使用“页面 A、页面 B、覆盖页 C”作为通用名称。</p>
 
@@ -292,15 +314,15 @@ void Return(Panel panel)
     ↓
 Open(data)：绑定、显示、动画、事件</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
         <h3>2. Single 与重复打开</h3>
         <p>Single 模式应先查活动实例。若实例仍有效，直接返回它，不再租用第二个面板，也不再压入重复栈帧。异步创建期间也可以共享同一个 PendingOpen，防止两个并发请求各自创建实例。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>3. 页面栈只记录导航历史</h3>
         <p>栈帧可以记录页面键、打开数据、选项与打开时间。新面板完成挂载后，只有页面定义和本次选项都允许入栈时才 Push。</p>
 
@@ -309,22 +331,22 @@ Open(data)：绑定、显示、动画、事件</code></pre>
 
 Close(stack.Last.UIKey);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
         <h3>4. 面板池的创建与复用</h3>
         <p>可缓存页面先从池 Spawn：</p>
         <ul><li>命中：直接返回已有实例；</li><li>未命中：加载 Prefab、创建面板对象、Initialize 一次，并以 spawned 状态注册到池；</li><li>不允许缓存：创建独立实例，关闭时直接销毁。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
         <h3>5. 面板显示、绑定与隐藏</h3>
         <p>一次可复用面板应区分：</p>
         <ul><li><code>Initialize</code>：仅首次创建时缓存组件、建立动画控制；</li><li><code>Rent</code>：从池取出时保持隐藏，避免异步预载期间闪出旧画面；</li><li><code>Open(data)</code>：更新取消令牌，执行打开前数据设置，加载静态资源，先 Unbind 再 Bind，最后显示并播放动画；</li><li><code>Close</code>：取消面板令牌，执行关闭前逻辑，Unbind，再播放关闭动画；</li><li><code>Return</code>：隐藏，清宿主关系和状态，Unbind，Dispose ViewModel 与资源作用域；</li><li><code>Dispose</code>：先执行 Return 清理，再销毁对象。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>6. 事件订阅与旧回调冲突</h3>
         <p>框架能统一清理 Binder，但页面子类在打开后自行订阅的业务事件，仍需要在关闭后显式解绑。一个安全模型是保存 <code>bindingVersion</code>：</p>
 
@@ -337,8 +359,8 @@ subscription = source.Subscribe(value =&gt; {
     Render(value);
 });</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>7. 关闭与回收</h3>
         <p>Shutdown 会立即关闭所有活动面板、释放所有栈帧、销毁面板池并清空活动表和 PendingOpen。</p>
 
@@ -355,12 +377,22 @@ Close：取消令牌、Unbind、关闭动画
 可缓存 → Unspawn 回池
 不可缓存 → Destroy</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / FLOW / RULES</div>
         <h3>8. 复杂度与边界</h3>
         <p>必须单独验证的边界：</p>
         <ul><li>活动面板按键查询平均 <code>O(1)</code>；</li><li>Push 栈帧 <code>O(1)</code>，按 key 从后向前移除最坏 <code>O(S)</code>；</li><li>关闭同一 ID 的多个实例需要遍历快照；</li><li>池命中避免加载与实例化，但增加闲置内存；</li><li>过期池扫描约 <code>O(P)</code>，P 为池数量。</li><li>重复打开已处于 Open 的 Single 页面是否消费新 data；</li><li>自定义事件是否在 OnAfterClose 中解除；</li><li>关闭动画期间的重复 Close；</li><li>异步预载失败后是否回收面板并释放临时 Scope；</li><li>宿主不存在时，子面板必须拒绝挂到全局层；</li><li>页面回池后旧异步回调是否有取消令牌或绑定版本保护；</li><li>关停捷径是否也显式取消并释放面板令牌。</li></ul>
 
+      </article>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+        <h3>最后记住</h3>
+
+
+        <pre><code class="language-text">页面栈记录返回历史。
+活动表记录当前打开实例。
+面板池记录关闭后可复用对象。
+复用前必须清理旧绑定，关闭时必须完成取消和回收。</code></pre>
       </article></div>
       </div>
       <footer class="deck-controls">
@@ -371,7 +403,16 @@ Close：取消令牌、Unbind、关闭动画
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>页面系统常同时维护三种状态：</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>页面栈记录返回顺序，活动实例表回答某页面现在是否打开，面板池保存已经关闭但可复用的对象。一个页面出现在导航历史中，不等于它当前仍有活动实例。</p>
+<h3 id="打开-关闭和复用三页">打开、关闭和复用三页</h3>
+<pre><code class="language-text">打开 Home：栈 [Home]，活动 {Home}
+打开 Inventory：栈 [Home, Inventory]，活动 {Home, Inventory}
+打开 ItemDetail：栈 [Home, Inventory, ItemDetail]
+关闭 ItemDetail：栈回到 [Home, Inventory]，Detail 面板进入池
+再次打开另一件物品详情：从池复用 Detail，并绑定新的 ItemId</code></pre>
+<p>复用时必须清理旧事件订阅、异步请求和 ItemId。否则视觉上是新详情页，回调仍可能操作上一件物品。</p>
+<p>页面系统常同时维护三种状态：</p>
 <ul>
 <li>页面栈：记录返回顺序和打开参数；</li>
 <li>活动面板表：记录当前仍打开的实例；</li>
@@ -603,6 +644,11 @@ Close：取消令牌、Unbind、关闭动画
 <li>页面回池后旧异步回调是否有取消令牌或绑定版本保护；</li>
 <li>关停捷径是否也显式取消并释放面板令牌。</li>
 </ul>
+<h2 id="最后记住">最后记住</h2>
+<pre><code class="language-text">页面栈记录返回历史。
+活动表记录当前打开实例。
+面板池记录关闭后可复用对象。
+复用前必须清理旧绑定，关闭时必须完成取消和回收。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E4%BE%9D%E8%B5%96%E8%BF%BD%E8%B8%AA%E4%B8%8E%E6%89%B9%E9%87%8F%E5%88%B7%E6%96%B0/"><small>← PREVIOUS</small>UI 数据绑定：依赖追踪与批量刷新</a>
           <a href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E9%A1%B5%E5%A0%86%E6%A0%88%E4%B8%8Emalloc/"><small>NEXT →</small>虚拟内存、页、堆栈与 malloc</a>

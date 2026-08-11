@@ -286,7 +286,9 @@
       }
       state.cloudAvailable = false;
       renderAll();
-      showToast(`云端学习记录读取失败，正在使用本机记录：${error.message}`, true);
+      if (state.user) {
+        showToast(`云端学习记录读取失败，正在使用本机记录：${error.message}`, true);
+      }
       return false;
     }
   }

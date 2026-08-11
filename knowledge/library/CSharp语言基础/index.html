@@ -58,8 +58,11 @@
       <aside class="article-rail" aria-label="文章导航与学习进度">
 
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>01 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>04 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先建立总模型">先建立总模型</a>
+      <a class="sub" data-toc-link href="#一组贯穿数据">一组贯穿数据</a>
+      <a data-toc-link href="#推荐顺序">推荐顺序</a>
       <a data-toc-link href="#已收录">已收录</a>
     </nav>
   </details>
@@ -68,6 +71,19 @@
 
 
         <p>这个分类用于系统整理 C# 语言本身的核心语义，关注类型、职责边界、可变性、空值与成员声明，而不只停留在集合 API 的使用。</p>
+<h2 id="先建立总模型">先建立总模型</h2>
+<p>C# 语言基础主要回答两层问题：一个值是什么、能否为空、可以通过什么契约调用；以及一个成员属于实例还是类型、允许在什么时候改变。先理解语义，再记关键字会更稳定。</p>
+<h3 id="一组贯穿数据">一组贯穿数据</h3>
+<pre><code class="language-text">Player Id=42：构造后不变
+Speed=5：实例自己的可变属性
+AliveCount=3：所有 Player 共享的 static 状态
+IDamageable.TakeDamage(25)：接口契约
+Target=null：契约正确，但当前没有可调用对象</code></pre>
+<h2 id="推荐顺序">推荐顺序</h2>
+<ol>
+<li>先读类型、接口、委托与空值，建立“值、能力、行为和缺失状态”的边界。</li>
+<li>再读属性、常量、静态与只读，判断数据由谁拥有以及何时允许修改。</li>
+</ol>
 <h2 id="已收录">已收录</h2>
 <ul>
 <li><a href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/CSharp%E7%B1%BB%E5%9E%8B%E6%8E%A5%E5%8F%A3%E5%A7%94%E6%89%98%E4%B8%8E%E7%A9%BA%E5%80%BC/">C# 类型、接口、委托与空值</a></li>

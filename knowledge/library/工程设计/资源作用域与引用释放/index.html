@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：">
+  <meta name="description" content="资源系统至少要能观察资源记录、请求记录和作用域记录。相同资源的并发请求应合并底层加载，但每个调用者仍获得独立引用责任；Dispose 作用域只释放属于该作用域的引用。">
   <title>资源作用域与引用释放：让“谁还需要它”成为可观察状态 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>资源作用域与引用释放：让“谁还需要它”成为可观察状态</h1>
-      <p class="hero-copy">资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
+      <p class="hero-copy">资源系统至少要能观察资源记录、请求记录和作用域记录。相同资源的并发请求应合并底层加载，但每个调用者仍获得独立引用责任；Dispose 作用域只释放属于该作用域的引用。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>13 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>16 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#两个并发请求合并一次加载">两个并发请求合并一次加载</a>
       <a data-toc-link href="#1-三张表">1. 三张表</a>
       <a data-toc-link href="#2-正常加载与缓存命中">2. 正常加载与缓存命中</a>
       <a data-toc-link href="#3-并发请求合并">3. 并发请求合并</a>
@@ -86,6 +88,7 @@
       <a class="sub" data-toc-link href="#完成时出现另一个对象">完成时出现另一个对象</a>
       <a data-toc-link href="#7-状态复杂度与代价">7. 状态复杂度与代价</a>
       <a data-toc-link href="#8-不应从名字推断的能力">8. 不应从名字推断的能力</a>
+      <a data-toc-link href="#最后记住">最后记住</a>
     </nav>
   </details>
       </aside>
@@ -103,45 +106,64 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 三张表">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：1. 三张表">
+      <span>02</span>
       <strong>1. 三张表</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 正常加载与缓存命中">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：2. 正常加载与缓存命中">
+      <span>03</span>
       <strong>2. 正常加载与缓存命中</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 并发请求合并">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：3. 并发请求合并">
+      <span>04</span>
       <strong>3. 并发请求合并</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 单独 Release">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：4. 单独 Release">
+      <span>05</span>
       <strong>4. 单独 Release</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. Dispose 与场景卸载">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：5. Dispose 与场景卸载">
+      <span>06</span>
       <strong>5. Dispose 与场景卸载</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 失败与冲突">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：6. 失败与冲突">
+      <span>07</span>
       <strong>6. 失败与冲突</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 状态复杂度与代价">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：7. 状态复杂度与代价">
+      <span>08</span>
       <strong>7. 状态复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 不应从名字推断的能力">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：8. 不应从名字推断的能力">
+      <span>09</span>
       <strong>8. 不应从名字推断的能力</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最后记住">
+      <span>10</span>
+      <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>资源系统至少要能观察资源记录、请求记录和作用域记录。相同资源的并发请求应合并底层加载，但每个调用者仍获得独立引用责任；Dispose 作用域只释放属于该作用域的引用。</p>
+        <ul><li>谁正在使用这份资源？</li><li>两个并发请求会不会启动两次底层加载？</li><li>一个使用者释放后，另一个还能否安全访问？</li><li>场景卸载时，哪些资源应该一起释放？</li><li>加载失败、请求取消或类型冲突时，是否留下悬空状态？</li></ul>
+        <pre><code class="language-text">Scope A 请求 Hero.prefab：开始底层加载 L1
+Scope B 同时请求 Hero.prefab：加入 L1 等待者，不再启动 L2
+L1 完成：A、B 各得到一个句柄，引用数 2
+A Dispose：引用数 1
+B Release：引用数 0，资源可卸载</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>1. 三张表</h3>
         <p><code>Entries</code> 回答“资源被谁持有”，<code>Scopes</code> 回答“某个 Owner 持有哪些资源”，<code>PendingLoads</code> 回答“哪些请求正在等待同一次加载”。</p>
 
@@ -160,8 +182,8 @@ PendingLoads[location] = {
     requests: [{ scopeId, callback, canceled }]
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>2. 正常加载与缓存命中</h3>
         <p>每次请求先把外部键解析成稳定的 location，然后查询缓存：</p>
 
@@ -177,8 +199,8 @@ if (entries.TryGet(location, out entry)) {
     return TypeMismatch;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>3. 并发请求合并</h3>
         <p>异步请求未命中缓存后，先检查相同 location 是否已有 PendingLoad。</p>
         <ul><li>类型一致：把请求追加到等待列表，不启动第二次底层加载；</li><li>类型冲突：立即失败，不加入错误类型的等待队列；</li><li>没有 PendingLoad：创建一条 PendingLoad，并启动一次底层加载。</li></ul>
@@ -194,8 +216,8 @@ foreach (request in pending.Requests) {
 if (entry.Owners.Count == 0)
     ReleaseUnderlying(asset);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>4. 单独 Release</h3>
         <p>释放一个 Owner 对某资源的所有权，需要同时更新两边：</p>
 
@@ -207,33 +229,43 @@ if (entry.Owners.Count == 0) {
     ReleaseUnderlying(entry.Asset);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
         <h3>5. Dispose 与场景卸载</h3>
         <p>Scope.Dispose 的含义是：</p>
         <ul><li>对 Scope 当前持有的 location 快照逐个 Release；</li><li>从场景绑定索引中移除 Scope；</li><li>删除 Scope 状态；</li><li>令 Scope 对象进入 disposed 状态，后续请求不再产生所有权。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
         <h3>6. 失败与冲突</h3>
         <p>不创建缓存条目，所有未取消请求收到失败结果，PendingLoad 被移除。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
         <h3>7. 状态复杂度与代价</h3>
         <p>代价是需要维护双向索引，并认真处理取消、回调异常、类型冲突和完成顺序。收益是底层释放只发生在 Owners 真正归零时，而且每次状态变化都能被诊断工具展示。</p>
         <ul><li>缓存命中、Owner 添加与 Pending 查找平均为 <code>O(1)</code>。</li><li>单资源 Release 平均为 <code>O(1)</code>。</li><li>Scope.Dispose 为 <code>O(R)</code>，R 是该 Scope 持有的资源数。</li><li>场景卸载为 <code>O(S + ΣR)</code>，S 是场景 Scope 数。</li><li>Pending 完成为 <code>O(P)</code>，P 是合并的等待请求数。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
         <h3>8. 不应从名字推断的能力</h3>
         <p>好的资源系统不是“有一个字典”，而是让请求、等待、所有权、释放原因和底层对象的最终去向都可以被逐步解释。</p>
         <ul><li>同一 Scope 的重复 Load 不等于引用计数增加；Owner 是集合。</li><li>请求取消只取消该请求的交付，不等于取消底层共享加载。</li><li>普通 Scope 不会自动跟随场景卸载。</li><li>系统是否支持全局 Shutdown、超时、失败重试或容量淘汰，需要独立的入口和消费证据；没有链路就不要宣称已支持。</li></ul>
 
+      </article>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+        <h3>最后记住</h3>
+
+
+        <pre><code class="language-text">相同身份的并发请求可以共享一次底层加载。
+共享加载不等于共享释放责任，每个调用者仍有独立句柄。
+引用数归零后资源才具备卸载条件。
+作用域 Dispose 必须关闭请求、引用和晚到回调。</code></pre>
       </article></div>
       </div>
       <footer class="deck-controls">
@@ -244,7 +276,16 @@ if (entry.Owners.Count == 0) {
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>资源系统至少要能观察资源记录、请求记录和作用域记录。相同资源的并发请求应合并底层加载，但每个调用者仍获得独立引用责任；Dispose 作用域只释放属于该作用域的引用。</p>
+<h3 id="两个并发请求合并一次加载">两个并发请求合并一次加载</h3>
+<pre><code class="language-text">Scope A 请求 Hero.prefab：开始底层加载 L1
+Scope B 同时请求 Hero.prefab：加入 L1 等待者，不再启动 L2
+L1 完成：A、B 各得到一个句柄，引用数 2
+A Dispose：引用数 1
+B Release：引用数 0，资源可卸载</code></pre>
+<p>加载失败时两个等待者都应收到同一失败事实，但各自作用域仍要清理请求记录。资源名相同也不必然代表版本、变体和加载参数相同，合并键必须包含真实身份。</p>
+<p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p>
 <ul>
 <li>谁正在使用这份资源？</li>
 <li>两个并发请求会不会启动两次底层加载？</li>
@@ -352,6 +393,11 @@ if (entry.Owners.Count == 0) {
 <li>系统是否支持全局 Shutdown、超时、失败重试或容量淘汰，需要独立的入口和消费证据；没有链路就不要宣称已支持。</li>
 </ul>
 <p>好的资源系统不是“有一个字典”，而是让请求、等待、所有权、释放原因和底层对象的最终去向都可以被逐步解释。</p>
+<h2 id="最后记住">最后记住</h2>
+<pre><code class="language-text">相同身份的并发请求可以共享一次底层加载。
+共享加载不等于共享释放责任，每个调用者仍有独立句柄。
+引用数归零后资源才具备卸载条件。
+作用域 Dispose 必须关闭请求、引用和晚到回调。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/"><small>← PREVIOUS</small>资源生命周期统一管理</a>
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/ECS%E5%AE%9E%E4%BD%93%E7%BB%84%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80/"><small>NEXT →</small>ECS：实体、组件、系统与数据布局</a>

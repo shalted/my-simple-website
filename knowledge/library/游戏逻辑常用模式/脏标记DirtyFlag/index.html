@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="脏标记的核心是：">
+  <meta name="description" content="脏标记把“数据已经变化”和“派生结果已经重算”分成两个时刻。它适合多次写入、较少读取且重算有成本的场景，目的不是让计算消失，而是把重复计算合并。">
   <title>脏标记 Dirty Flag · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
       <h1>脏标记 Dirty Flag</h1>
-      <p class="hero-copy">脏标记的核心是：</p>
+      <p class="hero-copy">脏标记把“数据已经变化”和“派生结果已经重算”分成两个时刻。它适合多次写入、较少读取且重算有成本的场景，目的不是让计算消失，而是把重复计算合并。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#三次修改为什么只算一次">三次修改为什么只算一次</a>
       <a data-toc-link href="#核心思想">核心思想</a>
       <a data-toc-link href="#不用脏标记的问题">不用脏标记的问题</a>
       <a data-toc-link href="#基础写法">基础写法</a>
@@ -97,61 +99,76 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心思想">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心思想">
+      <span>02</span>
       <strong>核心思想</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：不用脏标记的问题">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：不用脏标记的问题">
+      <span>03</span>
       <strong>不用脏标记的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：基础写法">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：基础写法">
+      <span>04</span>
       <strong>基础写法</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：dirty 的含义">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：dirty 的含义">
+      <span>05</span>
       <strong>dirty 的含义</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：UI 刷新例子">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：UI 刷新例子">
+      <span>06</span>
       <strong>UI 刷新例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：为什么常放 LateUpdate">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：为什么常放 LateUpdate">
+      <span>07</span>
       <strong>为什么常放 LateUpdate</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：多个 dirty 标记">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：多个 dirty 标记">
+      <span>08</span>
       <strong>多个 dirty 标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：版本号也是一种 dirty">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：版本号也是一种 dirty">
+      <span>09</span>
       <strong>版本号也是一种 dirty</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：适合什么">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：适合什么">
+      <span>10</span>
       <strong>适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：不适合什么">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：不适合什么">
+      <span>11</span>
       <strong>不适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：常见坑">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：常见坑">
+      <span>12</span>
       <strong>常见坑</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>脏标记把“数据已经变化”和“派生结果已经重算”分成两个时刻。它适合多次写入、较少读取且重算有成本的场景，目的不是让计算消失，而是把重复计算合并。</p>
+
+        <pre><code class="language-text">初始攻击力：100，dirty = false
+装备加成改为 +20：dirty = true
+Buff 加成改为 +30：dirty 仍为 true
+天赋加成改为 +10：dirty 仍为 true
+帧末读取攻击力：重算 100 + 20 + 30 + 10 = 160，dirty = false</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心思想</h3>
         <p>脏标记的核心是：</p>
 
@@ -159,15 +176,15 @@
 先标记 dirty。
 等真正需要结果时，再统一刷新。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>不用脏标记的问题</h3>
         <p>例如角色攻击力：</p>
 
         <pre><code class="language-text">攻击力 = 基础攻击力 + 装备加成 + Buff 加成 + 天赋加成</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>基础写法</h3>
         <p>当数据变化时：</p>
 
@@ -188,15 +205,15 @@ public int Attack
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>dirty 的含义</h3>
         <p>表示：</p>
 
         <pre><code class="language-text">dirty = 脏了，不可信，需要刷新。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>UI 刷新例子</h3>
         <p>金币数量变化。</p>
 
@@ -206,8 +223,8 @@ public int Attack
     goldText.text = gold.ToString();
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>为什么常放 LateUpdate</h3>
         <p><code>Update</code> 里可能有很多系统改数据：</p>
 
@@ -216,8 +233,8 @@ public int Attack
 任务逻辑
 网络同步</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>多个 dirty 标记</h3>
         <p>例如角色面板：</p>
 
@@ -226,8 +243,8 @@ private bool attackDirty;
 private bool equipmentDirty;
 private bool skillDirty;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>版本号也是一种 dirty</h3>
         <p>有时候不用 bool，而用版本号。</p>
 
@@ -235,8 +252,8 @@ private bool skillDirty;</code></pre>
 private int cachedVersion = -1;
 private int cachedPower;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>适合什么</h3>
         <p>适合：</p>
 
@@ -245,8 +262,8 @@ private int cachedPower;</code></pre>
 读取没那么频繁
 可以延迟到需要时刷新</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>不适合什么</h3>
         <p>不适合必须立刻生效的核心事实。</p>
 
@@ -254,16 +271,16 @@ private int cachedPower;</code></pre>
 死亡判断必须马上执行。
 服务器校验必须立刻处理。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>常见坑</h3>
         <p>第一，忘记标 dirty。</p>
 
         <pre><code class="language-csharp">equipment.Attack += 10;
 // 忘记 attackDirty = true</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>它背后的思想是：</p>
 
@@ -279,6 +296,15 @@ private int cachedPower;</code></pre>
       </footer>
     </section>
         <p>分类：游戏逻辑常用模式</p>
+<h2 id="先说结论">先说结论</h2>
+<p>脏标记把“数据已经变化”和“派生结果已经重算”分成两个时刻。它适合多次写入、较少读取且重算有成本的场景，目的不是让计算消失，而是把重复计算合并。</p>
+<h3 id="三次修改为什么只算一次">三次修改为什么只算一次</h3>
+<pre><code class="language-text">初始攻击力：100，dirty = false
+装备加成改为 +20：dirty = true
+Buff 加成改为 +30：dirty 仍为 true
+天赋加成改为 +10：dirty 仍为 true
+帧末读取攻击力：重算 100 + 20 + 30 + 10 = 160，dirty = false</code></pre>
+<p>没有脏标记时可能重算三次；有脏标记后只在真正需要结果时算一次。若修改后立刻读取，就必须先 <code>EnsureFresh</code>，不能返回旧的缓存值。</p>
 <h2 id="核心思想">核心思想</h2>
 <p>脏标记的核心是：</p>
 <pre><code class="language-text">数据变了，不立刻做昂贵刷新。

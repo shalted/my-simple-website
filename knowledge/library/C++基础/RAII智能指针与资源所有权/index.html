@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象借用一把钥匙：">
+  <meta name="description" content="RAII 的核心是把“谁负责释放”绑定到对象生命周期。uniqueptr 表达唯一责任，sharedptr 表达共同延长生命周期，weakptr 只观察；它们首先是所有权语义，其次才是指针工具。">
   <title>RAII、智能指针与资源所有权 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
       <h1>RAII、智能指针与资源所有权</h1>
-      <p class="hero-copy">想象借用一把钥匙：</p>
+      <p class="hero-copy">RAII 的核心是把“谁负责释放”绑定到对象生命周期。uniqueptr 表达唯一责任，sharedptr 表达共同延长生命周期，weakptr 只观察；它们首先是所有权语义，其次才是指针工具。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>32 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>34 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#跟踪一份资源的所有者数量">跟踪一份资源的所有者数量</a>
       <a data-toc-link href="#先用生活模型理解所有权">先用生活模型理解所有权</a>
       <a data-toc-link href="#raii-是什么">RAII 是什么</a>
       <a data-toc-link href="#一个最小-raii-类型">一个最小 RAII 类型</a>
@@ -87,7 +89,7 @@
       <a data-toc-link href="#std-weak-ptr-不延长生命周期的观察者">`std::weak_ptr`：不延长生命周期的观察者</a>
       <a data-toc-link href="#共享指针环">共享指针环</a>
       <a data-toc-link href="#enable-shared-from-this">`enable_shared_from_this`</a>
-      <a data-toc-link href="#智能指针的线程安全边界">智能指针的线程安全边界</a>
+      <a data-toc-link href="#进阶-智能指针的线程安全边界">进阶：智能指针的线程安全边界</a>
       <a class="sub" data-toc-link href="#同一个-shared-ptr-对象">同一个 `shared_ptr` 对象</a>
       <a class="sub" data-toc-link href="#指向的对象">指向的对象</a>
       <a class="sub" data-toc-link href="#weak-ptr-lock">`weak_ptr::lock`</a>
@@ -117,77 +119,95 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 16</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解所有权">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用生活模型理解所有权">
+      <span>02</span>
       <strong>先用生活模型理解所有权</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：RAII 是什么">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：RAII 是什么">
+      <span>03</span>
       <strong>RAII 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：一个最小 RAII 类型">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：一个最小 RAII 类型">
+      <span>04</span>
       <strong>一个最小 RAII 类型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：RAII 的逐步状态">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：RAII 的逐步状态">
+      <span>05</span>
       <strong>RAII 的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：`std::unique_ptr`：独占所有权">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：`std::unique_ptr`：独占所有权">
+      <span>06</span>
       <strong>`std::unique_ptr`：独占所有权</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：`std::shared_ptr`：共享所有权">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：`std::shared_ptr`：共享所有权">
+      <span>07</span>
       <strong>`std::shared_ptr`：共享所有权</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：`std::weak_ptr`：不延长生命周期的观察者">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：`std::weak_ptr`：不延长生命周期的观察者">
+      <span>08</span>
       <strong>`std::weak_ptr`：不延长生命周期的观察者</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：共享指针环">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：共享指针环">
+      <span>09</span>
       <strong>共享指针环</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：`enable_shared_from_this`">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：`enable_shared_from_this`">
+      <span>10</span>
       <strong>`enable_shared_from_this`</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：智能指针的线程安全边界">
-      <span>10</span>
-      <strong>智能指针的线程安全边界</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：异常与失败路径">
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：进阶：智能指针的线程安全边界">
       <span>11</span>
+      <strong>进阶：智能指针的线程安全边界</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：异常与失败路径">
+      <span>12</span>
       <strong>异常与失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：标准保证与常见实现细节">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：标准保证与常见实现细节">
+      <span>13</span>
       <strong>标准保证与常见实现细节</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：怎样选择所有权类型">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：怎样选择所有权类型">
+      <span>14</span>
       <strong>怎样选择所有权类型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：复杂度与代价">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：复杂度与代价">
+      <span>15</span>
       <strong>复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：一段完整所有权示例">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：一段完整所有权示例">
+      <span>16</span>
       <strong>一段完整所有权示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：小结">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：小结">
+      <span>17</span>
       <strong>小结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>RAII 的核心是把“谁负责释放”绑定到对象生命周期。<code>unique_ptr</code> 表达唯一责任，<code>shared_ptr</code> 表达共同延长生命周期，<code>weak_ptr</code> 只观察；它们首先是所有权语义，其次才是指针工具。</p>
+
+        <pre><code class="language-text">创建 unique_ptr first：所有者 = first，数量 1
+move 到 second：所有者 = second，数量仍为 1
+second 离开作用域：所有者数量变为 0，资源释放
+
+创建 shared_ptr a：强所有者数量 1
+复制给 b：强所有者数量 2
+b 析构：数量回到 1
+a 析构：数量变为 0，对象析构</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先用生活模型理解所有权</h3>
         <p>想象借用一把钥匙：</p>
         <ul><li>钥匙只能由一个保管员负责归还，这是<strong>独占所有权</strong>。</li><li>多名登记人共同决定何时归还，这是<strong>共享所有权</strong>。</li><li>门口告示牌可以观察“钥匙是否仍在”，但不能阻止归还，这是<strong>弱观察关系</strong>。</li><li>保管员离开岗位时自动归还钥匙，这是 <strong>RAII</strong>。</li></ul>
@@ -196,8 +216,8 @@
 资源可以被几名所有者共同延长生命周期？
 谁只观察而不拥有？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>RAII 是什么</h3>
         <p>RAII 是 Resource Acquisition Is Initialization，常译为“资源获取即初始化”。</p>
 
@@ -205,8 +225,8 @@
 对象建立有效状态时获得资源。
 对象析构时释放资源。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>一个最小 RAII 类型</h3>
         <p>这个教学类型展示：</p>
         <ul><li>构造失败时抛出异常，不产生一个假装有效的对象；</li><li>析构函数释放资源；</li><li>禁止复制，避免两个对象都以为自己负责关闭同一文件；</li><li>移动操作显式转移责任；</li><li>被移动对象进入不拥有资源的有效状态。</li></ul>
@@ -269,8 +289,8 @@ private:
     std::FILE* file_;
 };</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>RAII 的逐步状态</h3>
         <p>构造失败路径：</p>
 
@@ -282,8 +302,8 @@ Owning：对象持有资源
     ↓ 离开作用域
 析构 Owning 对象并释放资源</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3><code>std::unique_ptr</code>：独占所有权</h3>
         <p><code>std::unique_ptr&lt;T&gt;</code> 表示一个资源在当前时刻只有一个所有者。</p>
 
@@ -315,8 +335,8 @@ int main()
     std::cout &lt;&lt; second-&gt;value &lt;&lt; &#39;\n&#39;;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3><code>std::shared_ptr</code>：共享所有权</h3>
         <p><code>std::shared_ptr&lt;T&gt;</code> 允许多个所有者共同延长对象生命周期。</p>
 
@@ -325,8 +345,8 @@ int main()
 删除器；
 可能还有分配器和其他实现数据。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3><code>std::weak_ptr</code>：不延长生命周期的观察者</h3>
         <p><code>std::weak_ptr&lt;T&gt;</code> 与 <code>shared_ptr</code> 关联，但不增加强所有权。</p>
 
@@ -354,8 +374,8 @@ int main()
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>共享指针环</h3>
         <p>如果两个对象用 <code>shared_ptr</code> 互相拥有，强引用计数可能永远不能归零。</p>
 
@@ -371,8 +391,8 @@ struct Parent
     std::shared_ptr&lt;Child&gt; child;
 };</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3><code>enable_shared_from_this</code></h3>
         <p>对象成员有时需要取得与现有控制块共享所有权的 <code>shared_ptr</code>：</p>
 
@@ -387,31 +407,31 @@ struct Parent
 auto node = std::make_shared&lt;Node&gt;();
 auto sameOwner = node-&gt;share();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
-        <h3>智能指针的线程安全边界</h3>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+        <h3>进阶：智能指针的线程安全边界</h3>
         <p>“<code>shared_ptr</code> 是线程安全的”这句话不够精确。</p>
 
         <pre><code class="language-text">不同 shared_ptr 对象即使共享同一控制块，
 也可以由不同线程执行相应的所有权操作，
 而不会仅因控制块引用计数产生数据竞争。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
         <h3>异常与失败路径</h3>
         <p><code>make_unique</code> 和 <code>make_shared</code> 在无法分配时通常通过异常报告失败。不要捕获后返回一个未经约定的空指针并声称创建成功。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CONCEPT</div>
         <h3>标准保证与常见实现细节</h3>
         <p>| 问题 | 标准语义 | 常见实现 | |---|---|---| | <code>unique_ptr</code> 是否独占 | 不可复制、可移动，按删除器释放 | 保存指针及可能的删除器状态 | | <code>shared_ptr</code> 何时销毁对象 | 最后一份强所有权结束 | 控制块维护原子式引用计数 | | 控制块布局 | 未规定固定布局 | 存放强弱计数、删除器等 | | <code>make_shared</code> 对象地址关系 | 不应依赖具体布局 | 常见为对象与控制块合并分配 | | <code>weak_ptr</code> 是否延长对象生命 | 不延长强所有权 | 保留控制块观察关系 | | 引用计数是否保护对象内容 | 不保护 <code>T</code> 的普通成员访问 | 只同步所有权元数据 |</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>怎样选择所有权类型</h3>
         <p>优先从 <code>unique_ptr</code> 开始，因为它的所有权图最清楚。只有确认存在真实共享生命周期需求时，才引入 <code>shared_ptr</code>。</p>
 
@@ -430,15 +450,15 @@ auto sameOwner = node-&gt;share();</code></pre>
 仅在调用期间借用，调用者保证生命周期
     -&gt; 引用或非拥有指针</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / FLOW / RULES</div>
         <h3>复杂度与代价</h3>
         <p>| 操作 | 常见抽象时间 | 主要代价 | |---|---:|---| | <code>unique_ptr</code> 移动 | <code>O(1)</code> | 转移指针与删除器状态 | | <code>unique_ptr</code> 析构 | <code>O(1)</code> 加资源释放成本 | 调用删除器 | | <code>shared_ptr</code> 复制 | <code>O(1)</code> | 更新共享计数，可能含同步成本 | | <code>shared_ptr</code> 析构 | <code>O(1)</code> 加可能的对象销毁 | 更新计数 | | <code>weak_ptr::lock</code> | <code>O(1)</code> | 尝试增加强所有权 | | <code>make_shared</code> | <code>O(1)</code> 次对象建立，加构造成本 | 分配与控制块管理 |</p>
         <ul><li><code>shared_ptr</code> 的控制块需要额外内存；</li><li>引用计数更新可能带来跨线程同步与缓存竞争；</li><li>自定义删除器和分配器增加类型或控制块状态；</li><li><code>weak_ptr</code> 可能让控制块在对象析构后继续存活；</li><li>所有权图复杂时，理解成本会超过裸指针语法本身。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>一段完整所有权示例</h3>
         <p>这里：</p>
 
@@ -496,8 +516,8 @@ int main()
     viewer.print();
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>小结</h3>
         <p>选择智能指针前，先画出所有权图：</p>
         <ul><li>哪条边负责让对象继续存活？</li><li>哪条边只是临时借用？</li><li>是否形成强引用环？</li><li>所有权会在哪个线程转移或结束？</li><li>资源释放失败怎样保持可见？</li></ul>
@@ -518,6 +538,18 @@ weak_ptr 观察共享对象并打破不应存在的强所有权环。
       </footer>
     </section>
         <p>分类：C++ 基础</p>
+<h2 id="先说结论">先说结论</h2>
+<p>RAII 的核心是把“谁负责释放”绑定到对象生命周期。<code>unique_ptr</code> 表达唯一责任，<code>shared_ptr</code> 表达共同延长生命周期，<code>weak_ptr</code> 只观察；它们首先是所有权语义，其次才是指针工具。</p>
+<h3 id="跟踪一份资源的所有者数量">跟踪一份资源的所有者数量</h3>
+<pre><code class="language-text">创建 unique_ptr first：所有者 = first，数量 1
+move 到 second：所有者 = second，数量仍为 1
+second 离开作用域：所有者数量变为 0，资源释放
+
+创建 shared_ptr a：强所有者数量 1
+复制给 b：强所有者数量 2
+b 析构：数量回到 1
+a 析构：数量变为 0，对象析构</code></pre>
+<p><code>std::move(first)</code> 后不是资源多出一份，而是责任发生转移。<code>weak_ptr</code> 也不会让强所有者数量增加，所以它能观察对象是否仍然存在，却不能单独保证对象存活。</p>
 <h2 id="先用生活模型理解所有权">先用生活模型理解所有权</h2>
 <p>想象借用一把钥匙：</p>
 <ul>
@@ -822,7 +854,7 @@ auto sameOwner = node-&gt;share();</code></pre>
 <pre><code class="language-cpp">// return std::shared_ptr&lt;Node&gt;(this);</code></pre>
 <p>这会创建新的独立控制块，产生重复释放风险。</p>
 <p><code>shared_from_this()</code> 只有在对象已经由合适的 <code>shared_ptr</code> 所有权关系管理后才能成功使用。过早调用会失败；构造函数执行期间通常尚不具备可用的共享所有权上下文。</p>
-<h2 id="智能指针的线程安全边界">智能指针的线程安全边界</h2>
+<h2 id="进阶-智能指针的线程安全边界">进阶：智能指针的线程安全边界</h2>
 <p>“<code>shared_ptr</code> 是线程安全的”这句话不够精确。</p>
 <p>C++ 标准提供的关键边界是：</p>
 <pre><code class="language-text">不同 shared_ptr 对象即使共享同一控制块，

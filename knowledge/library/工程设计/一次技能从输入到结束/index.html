@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。">
+  <meta name="description" content="技能流程应把输入意图、激活预检、资源提交、运行实例、时间线、目标查询、Effect 和结束清理分开。预检可以失败而不产生副作用，一旦提交资源就必须保证后续成功结束或明确回滚。">
   <title>一次技能从输入到结束 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>一次技能从输入到结束</h1>
-      <p class="hero-copy">按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。</p>
+      <p class="hero-copy">技能流程应把输入意图、激活预检、资源提交、运行实例、时间线、目标查询、Effect 和结束清理分开。预检可以失败而不产生副作用，一旦提交资源就必须保证后续成功结束或明确回滚。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>19 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一次火球技能的完整状态">一次火球技能的完整状态</a>
       <a data-toc-link href="#先看完整运行地图">先看完整运行地图</a>
       <a data-toc-link href="#第一段-输入只负责表达意图">第一段：输入只负责表达意图</a>
       <a data-toc-link href="#第二段-激活条件是一组有顺序的门">第二段：激活条件是一组有顺序的门</a>
@@ -107,61 +109,78 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先看完整运行地图">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先看完整运行地图">
+      <span>02</span>
       <strong>先看完整运行地图</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第一段：输入只负责表达意图">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第一段：输入只负责表达意图">
+      <span>03</span>
       <strong>第一段：输入只负责表达意图</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二段：激活条件是一组有顺序的门">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二段：激活条件是一组有顺序的门">
+      <span>04</span>
       <strong>第二段：激活条件是一组有顺序的门</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第三段：预检通过不等于副作用已经发生">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三段：预检通过不等于副作用已经发生">
+      <span>05</span>
       <strong>第三段：预检通过不等于副作用已经发生</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第四段：运行实例保存“这一次”的状态">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第四段：运行实例保存“这一次”的状态">
+      <span>06</span>
       <strong>第四段：运行实例保存“这一次”的状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第五段：Flow 决定分支，Timeline 决定时序">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第五段：Flow 决定分支，Timeline 决定时序">
+      <span>07</span>
       <strong>第五段：Flow 决定分支，Timeline 决定时序</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第六段：从目标查询到最终命中">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：第六段：从目标查询到最终命中">
+      <span>08</span>
       <strong>第六段：从目标查询到最终命中</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：第七段：Effect 与反馈是编排任务的消费结果">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：第七段：Effect 与反馈是编排任务的消费结果">
+      <span>09</span>
       <strong>第七段：Effect 与反馈是编排任务的消费结果</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：第八段：正常结束与中断必须走不同语义">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：第八段：正常结束与中断必须走不同语义">
+      <span>10</span>
       <strong>第八段：正常结束与中断必须走不同语义</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：四种最小调试场景">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：四种最小调试场景">
+      <span>11</span>
       <strong>四种最小调试场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界与代价">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界与代价">
+      <span>12</span>
       <strong>边界与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最后记住">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最后记住">
+      <span>13</span>
       <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>技能流程应把输入意图、激活预检、资源提交、运行实例、时间线、目标查询、Effect 和结束清理分开。预检可以失败而不产生副作用，一旦提交资源就必须保证后续成功结束或明确回滚。</p>
+        <ul><li>谁提出了请求？</li><li>哪一道规则允许或拒绝了它？</li><li>无论正常结束还是中断，谁负责收回本次运行产生的状态？</li></ul>
+        <pre><code class="language-text">输入：SkillId=Fireball，目标 Enemy12
+玩家 Mana=100，消耗=30，冷却可用
+预检通过：Mana 仍为 100
+提交：Mana 变为 70，创建 RuntimeInstance 501
+0.3 秒：生成投射物
+0.8 秒：命中 Enemy12，应用 40 伤害
+1.0 秒：实例结束并清理标签、订阅和临时资源</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先看完整运行地图</h3>
         <p>“请求”和“激活”必须分开。调用方提交请求时，只能知道它通过了当前时刻的同步预检；真正产生副作用前还要再次裁决。这样可以避免同一更新周期内多个请求同时认为自己成功。</p>
 
@@ -183,8 +202,8 @@ Flow / Timeline 编排
 正常结束 Finish ─────┐
 高优先级打断 Interrupt ├→ 恢复标签、清上下文、注销实例、发出结果事件</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>第一段：输入只负责表达意图</h3>
         <p>输入层可以立即提交，也可以在连段窗口、蓄力窗口或可打断窗口中排队。它不应该直接扣资源、播放伤害或修改目标属性。</p>
 
@@ -197,8 +216,8 @@ Flow / Timeline 编排
     return activationQueue.Enqueue(candidate, target);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>第二段：激活条件是一组有顺序的门</h3>
         <p>一个可调试的裁决器不应只返回 <code>false</code>，而要返回明确原因。常见顺序如下：</p>
         <ul><li>调试输出稳定，同一状态总会落到同一道门；</li><li>前面的轻量判断可以阻止后面的属性试算与目标工作。</li><li><code>all</code>：必须全部拥有；</li><li><code>any</code>：至少拥有一个；</li><li><code>none</code>：一个都不能拥有。</li></ul>
@@ -225,8 +244,8 @@ Flow / Timeline 编排
     return ActivationResult.Success;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第三段：预检通过不等于副作用已经发生</h3>
         <p>真正消费待激活请求时，要再次运行相同裁决，然后才创建本次运行状态。</p>
 
@@ -251,15 +270,15 @@ Flow / Timeline 编排
     request.Ability.Orchestrator.Start(instance);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / FLOW / RULES</div>
         <h3>第四段：运行实例保存“这一次”的状态</h3>
         <p>技能配置是模板，运行实例才代表一次释放。至少要区分：</p>
         <ul><li>稳定的技能定义；</li><li>本次激活实例标识；</li><li>本次目标；</li><li>本次临时上下文；</li><li>当前编排位置；</li><li>已经 Begin、Finish 或 Interrupt 的任务。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>第五段：Flow 决定分支，Timeline 决定时序</h3>
         <p>Flow 适合表达条件、分支、等待与组合；Timeline 适合表达精确到帧的动作、音效、命中窗口与控制锁。两者可以组合，但职责不要混在一起。</p>
 
@@ -274,8 +293,8 @@ Flow / Timeline 编排
     };
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>第六段：从目标查询到最终命中</h3>
         <p>目标查询不应直接等于伤害结算。完整链路通常是：</p>
 
@@ -286,15 +305,15 @@ Flow / Timeline 编排
   → 最终目标集合
   → Effect 结算</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CONCEPT</div>
         <h3>第七段：Effect 与反馈是编排任务的消费结果</h3>
         <p>命中任务把效果描述交给 Effect 管线。Effect 可以是即时属性变化，也可以拥有持续、周期、叠层与到期清理等独立生命周期。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>第八段：正常结束与中断必须走不同语义</h3>
         <p>正常结束表示编排已经完成：</p>
 
@@ -305,22 +324,22 @@ Flow / Timeline 编排
     PublishEnded(instance);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CONCEPT</div>
         <h3>四种最小调试场景</h3>
         <p>交互实验使用的是明确的教学场景参数，不代表任何产品数值：</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
         <h3>边界与代价</h3>
         <p>同步预检和待激活队列之间仍可能发生状态变化，因此消费请求时必须二次裁决。队列还应限制同一拥有者的并行待激活数量，或用明确优先级替换旧请求。</p>
         <ul><li>激活裁决通常是 O(当前活动技能数 + 标签条件数 + Cost Modifier 数)；</li><li>目标查询的主要成本来自空间候选数，粗筛越有效，后续精确判断越少；</li><li>Timeline 每帧扫描全部 Clip 的实现简单但成本为 O(Clip 数)，大规模使用时可按起止帧建立索引；</li><li>可观察状态会增加少量内存，但它能显著降低跨系统调试成本。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CONCEPT</div>
         <h3>最后记住</h3>
         <p>一次技能不是一个函数调用，而是一段有编号、有上下文、可结束也可中断的事务。</p>
 
@@ -335,7 +354,18 @@ Flow / Timeline 编排
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>技能流程应把输入意图、激活预检、资源提交、运行实例、时间线、目标查询、Effect 和结束清理分开。预检可以失败而不产生副作用，一旦提交资源就必须保证后续成功结束或明确回滚。</p>
+<h3 id="一次火球技能的完整状态">一次火球技能的完整状态</h3>
+<pre><code class="language-text">输入：SkillId=Fireball，目标 Enemy12
+玩家 Mana=100，消耗=30，冷却可用
+预检通过：Mana 仍为 100
+提交：Mana 变为 70，创建 RuntimeInstance 501
+0.3 秒：生成投射物
+0.8 秒：命中 Enemy12，应用 40 伤害
+1.0 秒：实例结束并清理标签、订阅和临时资源</code></pre>
+<p>若目标在提交前死亡，应停在预检阶段；若提交后被眩晕打断，则要走中断语义，不能假装技能从未开始。</p>
+<p>按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。</p>
 <p>这条链最重要的设计目标不是让技能“能播出来”，而是让每一次状态变化都能回答三个问题：</p>
 <ol>
 <li>谁提出了请求？</li>

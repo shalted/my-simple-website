@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象一张办理单：">
+  <meta name="description" content="Command 表达“请执行一个动作”，可以排队、记录结果并按明确规则撤销；Event 表达“某件事已经发生”，监听者不应决定原动作是否成立。撤销依赖执行时保存的事实，不能靠重新猜一个反向操作。">
   <title>命令模式：队列、撤销与事件边界 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>命令模式：队列、撤销与事件边界</h1>
-      <p class="hero-copy">想象一张办理单：</p>
+      <p class="hero-copy">Command 表达“请执行一个动作”，可以排队、记录结果并按明确规则撤销；Event 表达“某件事已经发生”，监听者不应决定原动作是否成立。撤销依赖执行时保存的事实，不能靠重新猜一个反向操作。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>19 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#加金币命令的执行与撤销">加金币命令的执行与撤销</a>
       <a data-toc-link href="#先用生活模型理解命令">先用生活模型理解命令</a>
       <a data-toc-link href="#为什么需要命令模式">为什么需要命令模式</a>
       <a data-toc-link href="#命令由哪些部分组成">命令由哪些部分组成</a>
@@ -84,7 +86,7 @@
       <a data-toc-link href="#撤销不是-再调用一次反向方法">撤销不是“再调用一次反向方法”</a>
       <a class="sub" data-toc-link href="#撤销栈的逐步状态">撤销栈的逐步状态</a>
       <a class="sub" data-toc-link href="#重做">重做</a>
-      <a data-toc-link href="#队列中的失败路径">队列中的失败路径</a>
+      <a data-toc-link href="#进阶-队列中的失败路径">进阶：队列中的失败路径</a>
       <a class="sub" data-toc-link href="#常见失败来源">常见失败来源</a>
       <a data-toc-link href="#命令与事件的完整边界">命令与事件的完整边界</a>
       <a data-toc-link href="#复杂度与代价">复杂度与代价</a>
@@ -102,61 +104,77 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先用生活模型理解命令">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用生活模型理解命令">
+      <span>02</span>
       <strong>先用生活模型理解命令</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：为什么需要命令模式">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么需要命令模式">
+      <span>03</span>
       <strong>为什么需要命令模式</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：命令由哪些部分组成">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：命令由哪些部分组成">
+      <span>04</span>
       <strong>命令由哪些部分组成</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：命令与事件不是一回事">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：命令与事件不是一回事">
+      <span>05</span>
       <strong>命令与事件不是一回事</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：命令队列怎样运行">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：命令队列怎样运行">
+      <span>06</span>
       <strong>命令队列怎样运行</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小 C# 示例">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最小 C# 示例">
+      <span>07</span>
       <strong>最小 C# 示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：撤销不是“再调用一次反向方法”">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：撤销不是“再调用一次反向方法”">
+      <span>08</span>
       <strong>撤销不是“再调用一次反向方法”</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：队列中的失败路径">
-      <span>08</span>
-      <strong>队列中的失败路径</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：命令与事件的完整边界">
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：进阶：队列中的失败路径">
       <span>09</span>
+      <strong>进阶：队列中的失败路径</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：命令与事件的完整边界">
+      <span>10</span>
       <strong>命令与事件的完整边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：复杂度与代价">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：复杂度与代价">
+      <span>11</span>
       <strong>复杂度与代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：何时不适合使用命令模式">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：何时不适合使用命令模式">
+      <span>12</span>
       <strong>何时不适合使用命令模式</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：小结">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：小结">
+      <span>13</span>
       <strong>小结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>Command 表达“请执行一个动作”，可以排队、记录结果并按明确规则撤销；Event 表达“某件事已经发生”，监听者不应决定原动作是否成立。撤销依赖执行时保存的事实，不能靠重新猜一个反向操作。</p>
+
+        <pre><code class="language-text">执行前金币：90
+命令：AddGold(+10)
+执行后金币：100
+命令记录：实际增加 10
+事件：GoldChanged(90 -&gt; 100)
+撤销：按记录减去 10，金币回到 90</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先用生活模型理解命令</h3>
         <p>想象一张办理单：</p>
 
@@ -166,15 +184,15 @@
 办理结果可能成功，也可能明确失败。
 若规则允许，还可以按记录把操作撤销。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>为什么需要命令模式</h3>
         <p>直接调用方法并没有错：</p>
         <ul><li>请求产生时间与执行时间分离；</li><li>请求需要进入队列并按规则处理；</li><li>执行前需要统一校验；</li><li>需要记录成功操作以支持撤销；</li><li>需要重放同一类确定性操作；</li><li>调用方不应直接依赖具体执行对象。</li></ul>
         <pre><code class="language-csharp">document.Insert(&quot;示例文字&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>命令由哪些部分组成</h3>
         <p>一个最小命令模型通常包含：</p>
 
@@ -184,16 +202,16 @@
 接收者：真正持有并修改状态的对象。
 结果：明确表示成功或失败。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>命令与事件不是一回事</h3>
         <p>命令和事件都可能被封装成消息，但语义完全不同：</p>
 
         <pre><code class="language-text">发布“请求移动”事件，
 然后期待某个不确定的监听者负责真正移动。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>命令队列怎样运行</h3>
         <p>队列把“提交请求”和“执行请求”分开。</p>
 
@@ -205,8 +223,8 @@ Executing：执行器取出并校验
     ├─ Succeeded：状态修改完成，可按规则进入撤销栈
     └─ Failed：保留失败信息，不进入成功历史</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>最小 C# 示例</h3>
         <p>下面的示例展示队列、执行结果和撤销记录。字符串和容量均为教学示例数据。</p>
         <ul><li>执行校验失败会返回明确的 <code>CommandResult.Failure</code>。</li><li>不可撤销状态会抛出异常。</li><li>只有成功执行的命令进入历史。</li></ul>
@@ -365,8 +383,8 @@ Console.WriteLine(buffer); // 教学示例输出：甲乙
 queue.UndoLast();
 Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>撤销不是“再调用一次反向方法”</h3>
         <p>撤销要求恢复命令执行前的可识别状态。</p>
 
@@ -374,17 +392,17 @@ Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
 改变数值 -&gt; 记录修改前的数值
 移动元素 -&gt; 记录原位置</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
-        <h3>队列中的失败路径</h3>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+        <h3>进阶：队列中的失败路径</h3>
         <p>命令队列必须明确失败如何影响后续命令。</p>
         <ul><li>命令参数在执行时已经失效；</li><li>接收者状态与创建命令时不同；</li><li>同一命令实例被重复执行；</li><li>撤销所依赖的历史状态已被其他操作改变；</li><li>队列被多线程同时访问但没有同步约束；</li><li>命令在执行一半时抛出异常。</li></ul>
         <pre><code class="language-text">停止：当前命令失败后暂停队列。
 继续：记录失败，然后处理下一条。
 整批原子执行：任一失败则整批不生效。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>命令与事件的完整边界</h3>
         <p>教学流程可以写成：</p>
 
@@ -395,22 +413,22 @@ Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
 5. 发布 NameChangedEvent，描述旧值与新值。
 6. 监听者更新各自派生状态。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
         <h3>复杂度与代价</h3>
         <p>使用普通队列和栈时：</p>
         <ul><li>命令对象和快照占用内存；</li><li>历史长度需要明确管理；</li><li>异步命令使完成顺序更复杂；</li><li>撤销要求状态变化可逆且可验证；</li><li>重放要求输入和外部依赖具有可解释的一致性。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
         <h3>何时不适合使用命令模式</h3>
         <p>模式应服务于状态和时间边界，而不是增加文件数量。</p>
         <ul><li>操作只是局部、立即且没有排队或撤销需求；</li><li>封装后没有减少调用方与执行细节的耦合；</li><li>外部副作用无法可靠逆转，却被强行包装为可撤销；</li><li>请求结果必须同步返回，但系统又把它无意义地绕进队列；</li><li>操作语义本来是“事实通知”，却被写成命令。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>小结</h3>
         <p>设计命令系统时，先回答四个问题：</p>
         <ul><li>谁是唯一负责执行请求的人？</li><li>请求何时算成功，失败怎样保持可见？</li><li>哪些状态必须保存，才能可靠撤销？</li><li>成功后发布什么事实事件，监听者是否影响原操作结果？</li></ul>
@@ -430,6 +448,16 @@ Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>Command 表达“请执行一个动作”，可以排队、记录结果并按明确规则撤销；Event 表达“某件事已经发生”，监听者不应决定原动作是否成立。撤销依赖执行时保存的事实，不能靠重新猜一个反向操作。</p>
+<h3 id="加金币命令的执行与撤销">加金币命令的执行与撤销</h3>
+<pre><code class="language-text">执行前金币：90
+命令：AddGold(+10)
+执行后金币：100
+命令记录：实际增加 10
+事件：GoldChanged(90 -&gt; 100)
+撤销：按记录减去 10，金币回到 90</code></pre>
+<p>若金币上限为 95，实际只增加 5，撤销时也只能减 5。直接调用 <code>AddGold(-10)</code> 会得到 85，说明“反向参数”不等于可靠撤销。</p>
 <h2 id="先用生活模型理解命令">先用生活模型理解命令</h2>
 <p>想象一张办理单：</p>
 <pre><code class="language-text">申请人写下“把物品从 A 柜移动到 B 柜”。
@@ -720,7 +748,7 @@ Console.WriteLine(buffer); // 教学示例输出：甲</code></pre>
 <pre><code class="language-text">撤销成功 -&gt; 命令进入重做栈
 执行新的普通命令 -&gt; 清空旧重做分支</code></pre>
 <p>“执行新命令后是否保留重做分支”属于产品语义，不是命令模式自动决定的规则。</p>
-<h2 id="队列中的失败路径">队列中的失败路径</h2>
+<h2 id="进阶-队列中的失败路径">进阶：队列中的失败路径</h2>
 <p>命令队列必须明确失败如何影响后续命令。</p>
 <p>可能的策略包括：</p>
 <pre><code class="language-text">停止：当前命令失败后暂停队列。

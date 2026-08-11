@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：">
+  <meta name="description" content="命中判定应逐层缩小集合：空间粗筛只负责找“可能靠近”的对象，阵营和状态过滤负责排除不合法目标，形状精判才回答是否真正位于圆、扇形或盒形内。不要让最昂贵的精判直接面对全世界对象。">
   <title>目标筛选与命中判定：从世界坐标到入选原因 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>目标筛选与命中判定：从世界坐标到入选原因</h1>
-      <p class="hero-copy">“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
+      <p class="hero-copy">命中判定应逐层缩小集合：空间粗筛只负责找“可能靠近”的对象，阵营和状态过滤负责排除不合法目标，形状精判才回答是否真正位于圆、扇形或盒形内。不要让最昂贵的精判直接面对全世界对象。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>16 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>19 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一次查询怎样从-1000-缩到-3">一次查询怎样从 1000 缩到 3</a>
       <a data-toc-link href="#第一步-把本地形状放进世界">第一步：把本地形状放进世界</a>
       <a data-toc-link href="#第二步-空间粗筛只负责减少候选">第二步：空间粗筛只负责减少候选</a>
       <a data-toc-link href="#第三步-先过滤阵营与无效对象">第三步：先过滤阵营与无效对象</a>
@@ -89,6 +91,7 @@
       <a class="sub" data-toc-link href="#高速移动">高速移动</a>
       <a class="sub" data-toc-link href="#目标半径">目标半径</a>
       <a data-toc-link href="#复杂度">复杂度</a>
+      <a data-toc-link href="#最后记住">最后记住</a>
     </nav>
   </details>
       </aside>
@@ -106,57 +109,76 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：第一步：把本地形状放进世界">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第一步：把本地形状放进世界">
+      <span>02</span>
       <strong>第一步：把本地形状放进世界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：第二步：空间粗筛只负责减少候选">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第二步：空间粗筛只负责减少候选">
+      <span>03</span>
       <strong>第二步：空间粗筛只负责减少候选</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：第三步：先过滤阵营与无效对象">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第三步：先过滤阵营与无效对象">
+      <span>04</span>
       <strong>第三步：先过滤阵营与无效对象</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：圆形：比较平方距离">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：圆形：比较平方距离">
+      <span>05</span>
       <strong>圆形：比较平方距离</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：扇形：先距离，再角度">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：扇形：先距离，再角度">
+      <span>06</span>
       <strong>扇形：先距离，再角度</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：盒形：先转到局部坐标">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：盒形：先转到局部坐标">
+      <span>07</span>
       <strong>盒形：先转到局部坐标</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：第四步：命中任务消费最终集合">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：第四步：命中任务消费最终集合">
+      <span>08</span>
       <strong>第四步：命中任务消费最终集合</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：三类调试场景">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：三类调试场景">
+      <span>09</span>
       <strong>三类调试场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：计算次数如何观察">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：计算次数如何观察">
+      <span>10</span>
       <strong>计算次数如何观察</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界与失效条件">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界与失效条件">
+      <span>11</span>
       <strong>边界与失效条件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：复杂度">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：复杂度">
+      <span>12</span>
       <strong>复杂度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最后记住">
+      <span>13</span>
+      <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>命中判定应逐层缩小集合：空间粗筛只负责找“可能靠近”的对象，阵营和状态过滤负责排除不合法目标，形状精判才回答是否真正位于圆、扇形或盒形内。不要让最昂贵的精判直接面对全世界对象。</p>
+
+        <pre><code class="language-text">场景实体：1000
+空间粗筛后：40
+排除友军、死亡和无敌目标后：12
+圆形或扇形精判后：3
+最终命中任务只消费这 3 个 Entity</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>第一步：把本地形状放进世界</h3>
         <p>查询形状可以使用固定世界坐标，也可以跟随施法者。跟随模式下，偏移和旋转都要继承施法者姿态：</p>
 
@@ -176,8 +198,8 @@
     return new QueryPose(center, rotation);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>第二步：空间粗筛只负责减少候选</h3>
         <p>圆形和扇形可以用外接圆查询附近对象；旋转盒形可以用覆盖四个角的外接圆。粗筛半径还要考虑目标自身碰撞半径：</p>
 
@@ -191,8 +213,8 @@
     };
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>第三步：先过滤阵营与无效对象</h3>
         <p>在精确几何之前排除自己、友方、已销毁对象或缺少空间位置的对象，能减少后续计算。</p>
 
@@ -207,8 +229,8 @@
     preciseCandidates.Add(target);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>圆形：比较平方距离</h3>
         <p>圆形只关心目标中心到查询中心的平面距离。把目标半径加到技能半径上，可以让目标边缘进入范围时也算命中。</p>
 
@@ -223,8 +245,8 @@
         &lt;= combined * combined;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>扇形：先距离，再角度</h3>
         <p>扇形先复用圆形距离判断，再把目标方向与扇形前向做点积：</p>
 
@@ -248,16 +270,16 @@
     return pointAngle &lt;= angle * 0.5f + tolerance;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>盒形：先转到局部坐标</h3>
         <p>旋转盒形在世界空间不好判断。先把目标相对盒子中心的向量旋转到盒子的局部坐标：</p>
 
         <pre><code class="language-csharp">Vector2 local =
     RotateInverse(target.Position - box.Center, box.Rotation);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>第四步：命中任务消费最终集合</h3>
         <p>查询器只负责返回目标。命中任务再处理同一目标的重复命中间隔、目标数量上限、效果结算与反馈：</p>
 
@@ -277,33 +299,43 @@
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
         <h3>三类调试场景</h3>
         <p>本文交互实验中的尺寸、角度、坐标和目标半径都是教学场景参数：</p>
         <ul><li>正常：多个目标分布在形状内外，观察候选集逐层缩小；</li><li>边界：目标中心位于几何边缘附近，观察目标半径与 <code>&lt;=</code> 如何影响结果；</li><li>失败：目标进入空间粗筛，却因阵营或精确几何失败而被排除。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / FLOW / RULES</div>
         <h3>计算次数如何观察</h3>
         <p>一次查询至少记录四个数字：</p>
         <ul><li>场景中可观察对象数；</li><li>空间索引返回的粗筛候选数；</li><li>通过阵营与有效性过滤的目标数；</li><li>实际执行精确几何判断的次数。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CONCEPT</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CONCEPT</div>
         <h3>边界与失效条件</h3>
         <p>半径、角度、盒形半宽或半深接近零时，查询应明确返回空集合，不要悄悄改成另一种形状。</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
         <h3>复杂度</h3>
         <p>设空间粗筛返回 <code>k</code> 个候选：</p>
         <ul><li>粗筛成本取决于空间索引；</li><li>阵营过滤是 O(k)；</li><li>圆形、扇形、盒形对每个候选都是 O(1)；</li><li>精确阶段总成本为 O(k)；</li><li>结果列表复用可把每次查询的额外分配降到接近零。</li></ul>
 
+      </article>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+        <h3>最后记住</h3>
+
+
+        <pre><code class="language-text">先把本地形状转换到世界空间。
+空间粗筛只减少候选，不能代替精确命中。
+阵营、生命和免疫规则应在精判前过滤。
+最终结果要保留入选或拒绝原因，方便调试。</code></pre>
       </article></div>
       </div>
       <footer class="deck-controls">
@@ -314,7 +346,16 @@
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>命中判定应逐层缩小集合：空间粗筛只负责找“可能靠近”的对象，阵营和状态过滤负责排除不合法目标，形状精判才回答是否真正位于圆、扇形或盒形内。不要让最昂贵的精判直接面对全世界对象。</p>
+<h3 id="一次查询怎样从-1000-缩到-3">一次查询怎样从 1000 缩到 3</h3>
+<pre><code class="language-text">场景实体：1000
+空间粗筛后：40
+排除友军、死亡和无敌目标后：12
+圆形或扇形精判后：3
+最终命中任务只消费这 3 个 Entity</code></pre>
+<p>40、12、3 是教学数据，真实数量取决于场景。调试时同时记录每一层的输入与输出，才能判断问题出在空间索引、过滤规则还是几何计算。</p>
+<p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p>
 <pre><code class="language-text">形状配置 + 施法者姿态
   → 世界空间查询姿态
   → 空间索引粗筛
@@ -472,6 +513,11 @@
 <li>结果列表复用可把每次查询的额外分配降到接近零。</li>
 </ul>
 <p>最值得优化的通常是 <code>k</code>，最值得展示的则是每个目标从哪一层被排除。</p>
+<h2 id="最后记住">最后记住</h2>
+<pre><code class="language-text">先把本地形状转换到世界空间。
+空间粗筛只减少候选，不能代替精确命中。
+阵营、生命和免疫规则应在精判前过滤。
+最终结果要保留入选或拒绝原因，方便调试。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%A9%BA%E9%97%B4%E5%88%92%E5%88%86-%E4%B9%9D%E5%AE%AB%E6%A0%BC%E4%B8%8E%E5%9B%9B%E5%8F%89%E6%A0%91/"><small>← PREVIOUS</small>空间划分：九宫格与四叉树</a>
           <a href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/"><small>NEXT →</small>启发式决策模型：怪物集群候选打分</a>

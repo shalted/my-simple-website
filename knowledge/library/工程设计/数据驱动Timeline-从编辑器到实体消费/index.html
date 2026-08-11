@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。">
+  <meta name="description" content="Timeline 源数据由编辑器修改，构建阶段把它验证并编译成运行时快照，播放实例按固定逻辑帧推进，Clip 只发语义命令，最终由实体系统仲裁和落地。编辑器预览、配置快照和运行实例是三个不同状态。">
   <title>数据驱动 Timeline：从编辑器到实体消费 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>数据驱动 Timeline：从编辑器到实体消费</h1>
-      <p class="hero-copy">一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p>
+      <p class="hero-copy">Timeline 源数据由编辑器修改，构建阶段把它验证并编译成运行时快照，播放实例按固定逻辑帧推进，Clip 只发语义命令，最终由实体系统仲裁和落地。编辑器预览、配置快照和运行实例是三个不同状态。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>17 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>19 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一条-1-2-秒技能时间线">一条 1.2 秒技能时间线</a>
       <a data-toc-link href="#先建立完整心智模型">先建立完整心智模型</a>
       <a data-toc-link href="#第一步-准备最小数据模型">第一步：准备最小数据模型</a>
       <a data-toc-link href="#第二步-让编辑器只修改源数据">第二步：让编辑器只修改源数据</a>
@@ -84,7 +86,7 @@
       <a data-toc-link href="#第八步-激活时创建播放实例">第八步：激活时创建播放实例</a>
       <a class="sub" data-toc-link href="#一个生命周期核心-两种宿主适配">一个生命周期核心，两种宿主适配</a>
       <a data-toc-link href="#第九步-用固定帧推进并补齐丢帧">第九步：用固定帧推进并补齐丢帧</a>
-      <a data-toc-link href="#第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</a>
+      <a data-toc-link href="#进阶-统一-clip-的四段生命周期">进阶：统一 Clip 的四段生命周期</a>
       <a class="sub" data-toc-link href="#flow-作用域-task-还要经过-dispose">Flow 作用域 Task 还要经过 Dispose</a>
       <a data-toc-link href="#第十一步-task-只发语义命令">第十一步：Task 只发语义命令</a>
       <a data-toc-link href="#第十二步-实体侧仲裁-落地并清理">第十二步：实体侧仲裁、落地并清理</a>
@@ -184,7 +186,36 @@
         <button class="is-danger" type="button" data-timeline-interrupt data-lab-control>中断 Timeline</button>
       </footer>
     </section>
-        <p>分类：工程设计</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>Timeline 源数据由编辑器修改，构建阶段把它验证并编译成运行时快照，播放实例按固定逻辑帧推进，Clip 只发语义命令，最终由实体系统仲裁和落地。编辑器预览、配置快照和运行实例是三个不同状态。</p>
+<h3 id="一条-1-2-秒技能时间线">一条 1.2 秒技能时间线</h3>
+<table><thead><tr>
+<th>Clip</th>
+<th>开始</th>
+<th>结束</th>
+<th>语义</th>
+</tr></thead><tbody>
+<tr>
+<td>Windup</td>
+<td>0.0</td>
+<td>0.3</td>
+<td>禁止移动</td>
+</tr>
+<tr>
+<td>Hit</td>
+<td>0.3</td>
+<td>0.4</td>
+<td>发起一次命中查询</td>
+</tr>
+<tr>
+<td>Recover</td>
+<td>0.4</td>
+<td>1.2</td>
+<td>保持后摇，结束时恢复移动</td>
+</tr>
+</tbody></table>
+<p>逻辑帧从 0.25 跳到 0.45 时，系统不能漏掉 0.3 的 Hit 边界；它应补处理跨越区间内的进入、更新和退出事件。若实体在 0.35 被眩晕，Timeline 只提出命令，是否中断由实体侧规则决定。</p>
+<p>分类：工程设计</p>
 <h2 id="先建立完整心智模型">先建立完整心智模型</h2>
 <p>一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p>
 <p>&gt; Timeline 是<a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/">一次技能从输入到结束</a>中的执行编排环节。这里深入讲编辑、构建、播放与 Task 生命周期；完整的激活、命中、结算和清理链路请回到父专题查看。</p>
@@ -562,7 +593,7 @@ void TickFrame(int frame)
 <p>假设渲染线程从第 7 帧一次跳到第 10 帧，<code>while</code> 会依次执行第 8、9、10 帧。因此 8—9 帧的短命中 Clip 仍然能够完整经历 Begin、Tick 和 Finish。</p>
 <p>备注：如果 Begin 与 Finish 落在同一帧，这一帧仍会依次执行 Begin、Tick、Finish，生命周期不会缺段。页面下方可开启“同帧命中”观察：该 Clip 在这一帧处理完成后会立即退出活动集合，随后执行中断时不会再次收到 Interrupt。</p>
 <p>逐帧追赶可以保证低帧率下不会跳过短 Clip。代价是单帧卡顿后可能集中执行多次，因此 Task 的每帧逻辑应保持轻量，并避免无界循环。</p>
-<h2 id="第十步-统一-clip-的四段生命周期">第十步：统一 Clip 的四段生命周期</h2>
+<h2 id="进阶-统一-clip-的四段生命周期">进阶：统一 Clip 的四段生命周期</h2>
 <p>每个运行时 Clip 至少需要 Begin、Tick、Finish、Interrupt 四种语义。播放器只根据帧和状态调用它们，不理解具体业务。</p>
 <ul>
 <li>Begin：首次进入片段，创建状态或提交持续请求</li>

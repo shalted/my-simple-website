@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="GAS / ECS 这类系统内部通常很复杂：">
+  <meta name="description" content="门面把底层 ECS、存储或网络细节收在稳定 API 后面；泛型 helper 抽取多个入口中完全相同的流程，只把类型和少量差异作为参数。前者控制依赖方向，后者减少重复实现。">
   <title>门面模式与泛型消重 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>门面模式与泛型消重</h1>
-      <p class="hero-copy">GAS / ECS 这类系统内部通常很复杂：</p>
+      <p class="hero-copy">门面把底层 ECS、存储或网络细节收在稳定 API 后面；泛型 helper 抽取多个入口中完全相同的流程，只把类型和少量差异作为参数。前者控制依赖方向，后者减少重复实现。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>06 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>08 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#两个重复入口怎样合并">两个重复入口怎样合并</a>
       <a data-toc-link href="#核心问题">核心问题</a>
       <a data-toc-link href="#门面模式">门面模式</a>
       <a data-toc-link href="#为什么-public-api-不暴露-ecs-很重要">为什么 public API 不暴露 ECS 很重要</a>
@@ -91,37 +93,49 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 06</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心问题">
+      <span>02</span>
       <strong>核心问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：门面模式">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：门面模式">
+      <span>03</span>
       <strong>门面模式</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么 public API 不暴露 ECS 很重要">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：为什么 public API 不暴露 ECS 很重要">
+      <span>04</span>
       <strong>为什么 public API 不暴露 ECS 很重要</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：泛型 helper：固定流程，传入变化点">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：泛型 helper：固定流程，传入变化点">
+      <span>05</span>
       <strong>泛型 helper：固定流程，传入变化点</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：SetTagsInternal 的价值">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：SetTagsInternal 的价值">
+      <span>06</span>
       <strong>SetTagsInternal 的价值</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最重要的收获">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最重要的收获">
+      <span>07</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>门面把底层 ECS、存储或网络细节收在稳定 API 后面；泛型 helper 抽取多个入口中完全相同的流程，只把类型和少量差异作为参数。前者控制依赖方向，后者减少重复实现。</p>
+
+        <pre><code class="language-text">SetPlayerTags：验证 ID -&gt; 取组件 -&gt; 清旧值 -&gt; 写新值 -&gt; 发事件
+SetMonsterTags：验证 ID -&gt; 取组件 -&gt; 清旧值 -&gt; 写新值 -&gt; 发事件</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心问题</h3>
         <p>GAS / ECS 这类系统内部通常很复杂：</p>
 
@@ -134,30 +148,30 @@ RemoveComponent
 SetComponentData
 Dispose</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>门面模式</h3>
         <p>门面的设计准则是：</p>
 
         <pre><code class="language-text">门面无 ECS，内部随便用。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>为什么 public API 不暴露 ECS 很重要</h3>
         <p>如果接口返回 <code>NativeArray&lt;int&gt;</code>：</p>
 
         <pre><code class="language-csharp">public NativeArray&lt;int&gt; GetAssetTags()</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>泛型 helper：固定流程，传入变化点</h3>
         <p>例如 <code>AssetTags</code> 和 <code>GrantedTags</code> 的 public API 很相似：</p>
 
         <pre><code class="language-csharp">public int[] GetAssetTags() =&gt; GetTagsInternal&lt;CEffectAssetTags&gt;(c =&gt; c.tags);
 public int[] GetGrantedTags() =&gt; GetTagsInternal&lt;CEffectGrantedTags&gt;(c =&gt; c.tags);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>SetTagsInternal 的价值</h3>
         <p>设置 Tag 时，底层要做几件危险操作：</p>
 
@@ -168,8 +182,8 @@ public int[] GetGrantedTags() =&gt; GetTagsInternal&lt;CEffectGrantedTags&gt;(c 
 创建新 NativeArray
 写回 ECS</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>门面模式负责隔离复杂性。</p>
 
@@ -185,6 +199,12 @@ public int[] GetGrantedTags() =&gt; GetTagsInternal&lt;CEffectGrantedTags&gt;(c 
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>门面把底层 ECS、存储或网络细节收在稳定 API 后面；泛型 helper 抽取多个入口中完全相同的流程，只把类型和少量差异作为参数。前者控制依赖方向，后者减少重复实现。</p>
+<h3 id="两个重复入口怎样合并">两个重复入口怎样合并</h3>
+<pre><code class="language-text">SetPlayerTags：验证 ID -&gt; 取组件 -&gt; 清旧值 -&gt; 写新值 -&gt; 发事件
+SetMonsterTags：验证 ID -&gt; 取组件 -&gt; 清旧值 -&gt; 写新值 -&gt; 发事件</code></pre>
+<p>若五步流程完全相同，只是组件类型不同，可以收敛到 <code>SetTagsInternal&lt;TComponent&gt;</code>。公开层仍保留 <code>SetPlayerTags</code> 和 <code>SetMonsterTags</code>，调用者不需要知道底层查询和组件存储。</p>
 <h2 id="核心问题">核心问题</h2>
 <p>GAS / ECS 这类系统内部通常很复杂：</p>
 <pre><code class="language-text">Entity

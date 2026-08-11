@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="虚拟列表解决的是：">
+  <meta name="description" content="UI 数据绑定应记录“哪个显示结果依赖哪些源数据”，源数据变化时只标记相关绑定，再在统一刷新点合并更新。它不是每个字段一变就立即递归刷新整棵 UI。">
   <title>UI 数据绑定：依赖追踪与批量刷新 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>UI 数据绑定：依赖追踪与批量刷新</h1>
-      <p class="hero-copy">虚拟列表解决的是：</p>
+      <p class="hero-copy">UI 数据绑定应记录“哪个显示结果依赖哪些源数据”，源数据变化时只标记相关绑定，再在统一刷新点合并更新。它不是每个字段一变就立即递归刷新整棵 UI。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>37 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>39 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#同一帧三次变化只刷新一次">同一帧三次变化只刷新一次</a>
       <a data-toc-link href="#这篇文章深化什么">这篇文章深化什么</a>
       <a data-toc-link href="#先用账单看板理解问题">先用账单看板理解问题</a>
       <a data-toc-link href="#数据绑定不是简单赋值">数据绑定不是简单赋值</a>
@@ -80,7 +82,7 @@
       <a data-toc-link href="#两类依赖追踪">两类依赖追踪</a>
       <a class="sub" data-toc-link href="#显式声明依赖">显式声明依赖</a>
       <a class="sub" data-toc-link href="#求值时动态收集依赖">求值时动态收集依赖</a>
-      <a data-toc-link href="#条件依赖为什么麻烦">条件依赖为什么麻烦</a>
+      <a data-toc-link href="#进阶-条件依赖为什么麻烦">进阶：条件依赖为什么麻烦</a>
       <a data-toc-link href="#从变化到刷新的逐步状态">从变化到刷新的逐步状态</a>
       <a data-toc-link href="#批量刷新怎样工作">批量刷新怎样工作</a>
       <a class="sub" data-toc-link href="#第一步-数据源提交变化">第一步：数据源提交变化</a>
@@ -122,88 +124,102 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 18</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这篇文章深化什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：这篇文章深化什么">
+      <span>02</span>
       <strong>这篇文章深化什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先用账单看板理解问题">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：先用账单看板理解问题">
+      <span>03</span>
       <strong>先用账单看板理解问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：数据绑定不是简单赋值">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：数据绑定不是简单赋值">
+      <span>04</span>
       <strong>数据绑定不是简单赋值</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：依赖图">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：依赖图">
+      <span>05</span>
       <strong>依赖图</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：两类依赖追踪">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：两类依赖追踪">
+      <span>06</span>
       <strong>两类依赖追踪</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：条件依赖为什么麻烦">
-      <span>06</span>
-      <strong>条件依赖为什么麻烦</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从变化到刷新的逐步状态">
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：进阶：条件依赖为什么麻烦">
       <span>07</span>
+      <strong>进阶：条件依赖为什么麻烦</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从变化到刷新的逐步状态">
+      <span>08</span>
       <strong>从变化到刷新的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：批量刷新怎样工作">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：批量刷新怎样工作">
+      <span>09</span>
       <strong>批量刷新怎样工作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最小 C# 模型">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小 C# 模型">
+      <span>10</span>
       <strong>最小 C# 模型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：与虚拟列表怎样结合">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：与虚拟列表怎样结合">
+      <span>11</span>
       <strong>与虚拟列表怎样结合</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：正常路径">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：正常路径">
+      <span>12</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：边界路径">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：边界路径">
+      <span>13</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：失败路径">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败路径">
+      <span>14</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：性能代价">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：性能代价">
+      <span>15</span>
       <strong>性能代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：观测指标">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：观测指标">
+      <span>16</span>
       <strong>观测指标</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：通用机制与实现选择">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：通用机制与实现选择">
+      <span>17</span>
       <strong>通用机制与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
-      <span>17</span>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：最后总结">
+      <span>18</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>UI 数据绑定应记录“哪个显示结果依赖哪些源数据”，源数据变化时只标记相关绑定，再在统一刷新点合并更新。它不是每个字段一变就立即递归刷新整棵 UI。</p>
+
+        <pre><code class="language-text">Gold：100 -&gt; 120 -&gt; 90
+绑定文本：&quot;金币：{Gold}&quot;
+同一帧 dirty 记录：Gold
+帧末刷新一次，最终显示：金币：90</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>这篇文章深化什么</h3>
         <p>虚拟列表解决的是：</p>
 
         <pre><code class="language-text">数据很多时，只创建和更新当前可见的少量 UI 项。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>先用账单看板理解问题</h3>
         <p>想象墙上有一块家庭账单看板：</p>
 
@@ -214,15 +230,15 @@
 折扣
 应付金额</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>数据绑定不是简单赋值</h3>
         <p>最简单的绑定像这样：</p>
 
         <pre><code class="language-text">nameText.text = item.Name</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>依赖图</h3>
         <p>把数据和绑定画成图：</p>
 
@@ -233,8 +249,8 @@ UnitPrice ─┘                  │
 OtherSubtotals ───────────────┘           ├─&gt; PayableText
 Discount ─────────────────────────────────┘</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>两类依赖追踪</h3>
         <p>注册绑定时直接声明字段：</p>
 
@@ -243,9 +259,9 @@ Discount ───────────────────────�
     dependencies = [Total, Discount],
     evaluate = total - discount)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
-        <h3>条件依赖为什么麻烦</h3>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>进阶：条件依赖为什么麻烦</h3>
         <p>考虑：</p>
 
         <pre><code class="language-text">displayName =
@@ -253,8 +269,8 @@ Discount ───────────────────────�
         ? nickname
         : fullName</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>从变化到刷新的逐步状态</h3>
         <p>一次批量刷新可以分成这些状态：</p>
 
@@ -276,8 +292,8 @@ Applying
 Clean
   写入成功，绑定恢复一致。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>批量刷新怎样工作</h3>
         <p>一轮逻辑可能修改多个字段：</p>
 
@@ -285,8 +301,8 @@ Clean
 UnitPrice changed
 Discount changed</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最小 C# 模型</h3>
         <p>下面的示例展示去重队列和失败可见性，不绑定具体 UI 框架：</p>
 
@@ -392,16 +408,16 @@ public sealed class RefreshBatch
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>与虚拟列表怎样结合</h3>
         <p>虚拟列表会反复复用可见项：</p>
 
         <pre><code class="language-text">槽位 3 原来显示数据 18
 滚动后改为显示数据 43</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>正常路径</h3>
 
 
@@ -411,24 +427,24 @@ NameText 进入脏集合
 求值并写入成功
 NameText -&gt; Clean</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>绑定 A 求值时触发了数据变化，使绑定 B 变脏。</p>
 
         <pre><code class="language-text">B 加入当前批次剩余队列
 还是进入下一批次</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>应输出完整或最小环路：</p>
 
         <pre><code class="language-text">A 显示依赖 B
 B 显示依赖 A</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>性能代价</h3>
         <p>依赖追踪会增加：</p>
 
@@ -438,8 +454,8 @@ B 显示依赖 A</code></pre>
 拓扑排序或优先队列成本
 诊断元数据</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>观测指标</h3>
         <p>一轮刷新至少应能观察：</p>
 
@@ -454,8 +470,8 @@ CycleCount
 StaleGenerationCount
 BatchDuration</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>通用机制与实现选择</h3>
 
 
@@ -466,8 +482,8 @@ BatchDuration</code></pre>
 目标复用时必须隔离旧绑定代次。
 失败后的绑定不能声称与数据一致。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="16" hidden>
-        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
         <h3>最后总结</h3>
         <p>虚拟列表回答：</p>
 
@@ -483,6 +499,14 @@ BatchDuration</code></pre>
       </footer>
     </section>
         <p>分类：工程设计 / UI 架构</p>
+<h2 id="先说结论">先说结论</h2>
+<p>UI 数据绑定应记录“哪个显示结果依赖哪些源数据”，源数据变化时只标记相关绑定，再在统一刷新点合并更新。它不是每个字段一变就立即递归刷新整棵 UI。</p>
+<h3 id="同一帧三次变化只刷新一次">同一帧三次变化只刷新一次</h3>
+<pre><code class="language-text">Gold：100 -&gt; 120 -&gt; 90
+绑定文本：&quot;金币：{Gold}&quot;
+同一帧 dirty 记录：Gold
+帧末刷新一次，最终显示：金币：90</code></pre>
+<p>中间值 120 没有被渲染，但业务状态变化仍可由日志或事件记录。若绑定表达式是 <code>IsVip ? VipPrice : NormalPrice</code>，依赖集合还会随条件改变，这类动态依赖需要重新收集。</p>
 <h2 id="这篇文章深化什么">这篇文章深化什么</h2>
 <p>虚拟列表解决的是：</p>
 <pre><code class="language-text">数据很多时，只创建和更新当前可见的少量 UI 项。</code></pre>
@@ -601,7 +625,7 @@ dependencies = EndCollect(binding)</code></pre>
 条件分支可能让依赖集合变化
 调试和性能模型更复杂</code></pre>
 <p>显式声明和动态收集都是实现选择，不是数据绑定的固定要求。</p>
-<h2 id="条件依赖为什么麻烦">条件依赖为什么麻烦</h2>
+<h2 id="进阶-条件依赖为什么麻烦">进阶：条件依赖为什么麻烦</h2>
 <p>考虑：</p>
 <pre><code class="language-text">displayName =
     useNickname

@@ -35,10 +35,13 @@ npm run knowledge:build
 
 ```powershell
 npm run check:content
+npm run audit:teaching
 npm run check:links
 ```
 
 `check:content` 会检查每篇正文是否同时包含实现代码、具体场景、运行跟踪、原因说明和边界说明，避免文章退回到“只有术语和结论”的状态。
+
+`audit:teaching` 会按[渐进式教学内容规范](docs/learning-content-style-guide.md)扫描全库，找出缺少入门入口、运行过程、常见误解、结尾收束或进阶分层的文章，并作为发布门禁返回失败状态。需要临时生成非阻断报告时，可直接运行 `node scripts/audit-teaching-structure.mjs`。
 
 ## 自动部署
 

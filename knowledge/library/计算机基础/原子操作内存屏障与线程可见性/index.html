@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象两个人在不同房间协作。">
+  <meta name="description" content="原子操作保证某个操作不可被并发撕裂，内存顺序约束多个读写之间的可观察关系，happens-before 才是判断另一个线程能否合法看到数据的主线。原子变量安全不等于它旁边的普通数据自动安全。">
   <title>原子操作、内存屏障与线程可见性 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">计算机基础 / KNOWLEDGE NOTE</div>
       <h1>原子操作、内存屏障与线程可见性</h1>
-      <p class="hero-copy">想象两个人在不同房间协作。</p>
+      <p class="hero-copy">原子操作保证某个操作不可被并发撕裂，内存顺序约束多个读写之间的可观察关系，happens-before 才是判断另一个线程能否合法看到数据的主线。原子变量安全不等于它旁边的普通数据自动安全。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>50 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>52 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#发布-42-的最小过程">发布 42 的最小过程</a>
       <a data-toc-link href="#生活化模型-公告栏与交接旗">生活化模型：公告栏与交接旗</a>
       <a data-toc-link href="#三个容易混淆的问题">三个容易混淆的问题</a>
       <a class="sub" data-toc-link href="#原子性">原子性</a>
@@ -81,7 +83,7 @@
       <a data-toc-link href="#数据竞争与未定义行为">数据竞争与未定义行为</a>
       <a data-toc-link href="#happens-before-主线">happens-before 主线</a>
       <a data-toc-link href="#最小发布-获取示例">最小发布—获取示例</a>
-      <a data-toc-link href="#memory-order-六种常见形式">memory_order 六种常见形式</a>
+      <a data-toc-link href="#进阶-memory-order-六种常见形式">进阶：memory_order 六种常见形式</a>
       <a class="sub" data-toc-link href="#memory-order-relaxed">memory_order_relaxed</a>
       <a class="sub" data-toc-link href="#memory-order-release">memory_order_release</a>
       <a class="sub" data-toc-link href="#memory-order-acquire">memory_order_acquire</a>
@@ -135,117 +137,131 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 22</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 23</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：公告栏与交接旗">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：公告栏与交接旗">
+      <span>02</span>
       <strong>生活化模型：公告栏与交接旗</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：三个容易混淆的问题">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：三个容易混淆的问题">
+      <span>03</span>
       <strong>三个容易混淆的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：数据竞争与未定义行为">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：数据竞争与未定义行为">
+      <span>04</span>
       <strong>数据竞争与未定义行为</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：happens-before 主线">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：happens-before 主线">
+      <span>05</span>
       <strong>happens-before 主线</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：最小发布—获取示例">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小发布—获取示例">
+      <span>06</span>
       <strong>最小发布—获取示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：memory_order 六种常见形式">
-      <span>06</span>
-      <strong>memory_order 六种常见形式</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：原子读改写">
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：进阶：memory_order 六种常见形式">
       <span>07</span>
+      <strong>进阶：memory_order 六种常见形式</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：原子读改写">
+      <span>08</span>
       <strong>原子读改写</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：compare_exchange 的逐步状态">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：compare_exchange 的逐步状态">
+      <span>09</span>
       <strong>compare_exchange 的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：内存屏障是什么">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：内存屏障是什么">
+      <span>10</span>
       <strong>内存屏障是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：可见性不等于立刻刷新所有缓存">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：可见性不等于立刻刷新所有缓存">
+      <span>11</span>
       <strong>可见性不等于立刻刷新所有缓存</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：shared_ptr 的两种线程安全">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：shared_ptr 的两种线程安全">
+      <span>12</span>
       <strong>shared_ptr 的两种线程安全</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：shared_ptr 发布示例">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：shared_ptr 发布示例">
+      <span>13</span>
       <strong>shared_ptr 发布示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：进程与线程">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：进程与线程">
+      <span>14</span>
       <strong>进程与线程</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：上下文切换">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：上下文切换">
+      <span>15</span>
       <strong>上下文切换</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：一次消息发布的逐步状态">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：一次消息发布的逐步状态">
+      <span>16</span>
       <strong>一次消息发布的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：正常路径">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：正常路径">
+      <span>17</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：边界路径">
-      <span>17</span>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：边界路径">
+      <span>18</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：失败路径">
-      <span>18</span>
+    <button class="" type="button" data-deck-jump="18" aria-label="查看第 19 步：失败路径">
+      <span>19</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="18" aria-label="查看第 19 步：代价">
-      <span>19</span>
+    <button class="" type="button" data-deck-jump="19" aria-label="查看第 20 步：代价">
+      <span>20</span>
       <strong>代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="19" aria-label="查看第 20 步：调试与可观测性">
-      <span>20</span>
+    <button class="" type="button" data-deck-jump="20" aria-label="查看第 21 步：调试与可观测性">
+      <span>21</span>
       <strong>调试与可观测性</strong>
     </button>
-    <button class="" type="button" data-deck-jump="20" aria-label="查看第 21 步：标准、操作系统与实现选择">
-      <span>21</span>
+    <button class="" type="button" data-deck-jump="21" aria-label="查看第 22 步：标准、操作系统与实现选择">
+      <span>22</span>
       <strong>标准、操作系统与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="21" aria-label="查看第 22 步：最后总结">
-      <span>22</span>
+    <button class="" type="button" data-deck-jump="22" aria-label="查看第 23 步：最后总结">
+      <span>23</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>原子操作保证某个操作不可被并发撕裂，内存顺序约束多个读写之间的可观察关系，happens-before 才是判断另一个线程能否合法看到数据的主线。原子变量安全不等于它旁边的普通数据自动安全。</p>
+
+        <pre><code class="language-text">线程 A：data = 42
+线程 A：ready.store(true, release)
+线程 B：ready.load(acquire) 读到 true
+线程 B：读取 data，得到 42</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>生活化模型：公告栏与交接旗</h3>
         <p>想象两个人在不同房间协作。</p>
 
         <pre><code class="language-text">填写表格内容
 升旗表示“填写完成”</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>三个容易混淆的问题</h3>
         <p>一个操作不会被其他线程观察成撕裂的中间状态。</p>
 
         <pre><code class="language-text">读取看到某次完整写入的值，
 不会看到该原子写入的一半。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>数据竞争与未定义行为</h3>
         <p>如果两个线程并发访问同一内存位置：</p>
 
@@ -253,15 +269,15 @@
 访问不是由合适原子操作完成
 也没有 happens-before 关系</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>happens-before 主线</h3>
         <p>线程内：</p>
 
         <pre><code class="language-text">操作 A sequenced-before 操作 B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>最小发布—获取示例</h3>
         <p>这里的数值和文本只是示意。</p>
 
@@ -299,16 +315,16 @@ bool Consumer()
     return true;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
-        <h3>memory_order 六种常见形式</h3>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>进阶：memory_order 六种常见形式</h3>
         <p>保证该原子对象上的操作具有原子性和修改顺序，但不为周围普通内存建立 acquire/release 同步。</p>
 
         <pre><code class="language-text">只需要无撕裂计数
 不通过该计数发布其他数据</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>原子读改写</h3>
         <p>每次 <code>fetch_add</code> 是一个原子读—改—写操作。</p>
 
@@ -319,16 +335,16 @@ void Count()
     counter.fetch_add(1, std::memory_order_relaxed);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>compare_exchange 的逐步状态</h3>
         <p>CAS 比较当前值与期望值：</p>
 
         <pre><code class="language-text">相等 -&gt; 写入新值并报告成功
 不等 -&gt; 不写新值，把实际值放回 expected 并报告失败</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>内存屏障是什么</h3>
         <p>“内存屏障”可能指不同层次：</p>
 
@@ -336,16 +352,16 @@ void Count()
 硬件屏障：约束处理器内存操作顺序。
 C++ atomic_thread_fence：参与 C++ 内存模型的栅栏操作。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>可见性不等于立刻刷新所有缓存</h3>
         <p>常见误解：</p>
 
         <pre><code class="language-text">release 会把所有缓存立即写回主内存，
 acquire 会从主内存重新加载所有变量。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>shared_ptr 的两种线程安全</h3>
         <p>这部分必须区分三样东西：</p>
 
@@ -353,8 +369,8 @@ acquire 会从主内存重新加载所有变量。</code></pre>
 shared_ptr 指向的控制块
 被管理对象</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>shared_ptr 发布示例</h3>
         <p><code>std::atomic&lt;std::shared_ptr&lt;T&gt;&gt;</code> 的类模板特化从 C++20 起提供；更早标准使用针对 <code>shared_ptr</code> 的原子自由函数。</p>
 
@@ -383,8 +399,8 @@ std::shared_ptr&lt;const Snapshot&gt; Acquire()
     return current.load(std::memory_order_acquire);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>进程与线程</h3>
         <p>进程通常拥有：</p>
 
@@ -393,8 +409,8 @@ std::shared_ptr&lt;const Snapshot&gt; Acquire()
 安全身份和隔离边界
 至少一个执行线程</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>上下文切换</h3>
         <p>线程被切出时，系统需要保留足以恢复执行的状态，例如：</p>
 
@@ -403,8 +419,8 @@ std::shared_ptr&lt;const Snapshot&gt; Acquire()
 栈指针
 调度信息</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>一次消息发布的逐步状态</h3>
         <p>失败或未就绪状态：</p>
 
@@ -429,8 +445,8 @@ Observed
 Reading
   消费者读取 happens-before 保证下的数据。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>正常路径</h3>
         <p>同步关系完整。</p>
 
@@ -439,24 +455,24 @@ Reading
 消费者 acquire load 读到该标志
 消费者读取普通数据</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="16" hidden>
-        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>如果读取仍为 <code>false</code>：</p>
 
         <pre><code class="language-text">没有通过这次读取建立发布—获取关系。
 消费者不能读取 message。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="17" hidden>
-        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="18" hidden>
+        <div class="deck-step-meta">STEP 19 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>消费者 relaxed 读到 <code>true</code>，并不因此获得读取非原子 <code>payload</code> 的发布—获取保证。</p>
 
         <pre><code class="language-cpp">payload = value;
 ready.store(true, std::memory_order_relaxed);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="18" hidden>
-        <div class="deck-step-meta">STEP 19 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="19" hidden>
+        <div class="deck-step-meta">STEP 20 / CODE / LOGIC</div>
         <h3>代价</h3>
         <p>原子与同步成本可能来自：</p>
 
@@ -467,8 +483,8 @@ ready.store(true, std::memory_order_relaxed);</code></pre>
 进入内核等待
 线程唤醒和上下文切换</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="19" hidden>
-        <div class="deck-step-meta">STEP 20 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="20" hidden>
+        <div class="deck-step-meta">STEP 21 / CODE / LOGIC</div>
         <h3>调试与可观测性</h3>
         <p>并发问题需要记录：</p>
 
@@ -481,8 +497,8 @@ ready.store(true, std::memory_order_relaxed);</code></pre>
 超时、CAS 失败和重试次数
 上下文切换与调度信息</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="20" hidden>
-        <div class="deck-step-meta">STEP 21 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="21" hidden>
+        <div class="deck-step-meta">STEP 22 / CODE / LOGIC</div>
         <h3>标准、操作系统与实现选择</h3>
 
 
@@ -493,8 +509,8 @@ happens-before 与 synchronizes-with
 mutex 和条件变量同步保证
 shared_ptr 控制块的线程安全边界</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="21" hidden>
-        <div class="deck-step-meta">STEP 22 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="22" hidden>
+        <div class="deck-step-meta">STEP 23 / CODE / LOGIC</div>
         <h3>最后总结</h3>
 
 
@@ -517,6 +533,14 @@ shared_ptr 引用计数安全不等于同一 shared_ptr 变量或被管理对象
       </footer>
     </section>
         <p>分类：计算机基础 / 并发与内存模型</p>
+<h2 id="先说结论">先说结论</h2>
+<p>原子操作保证某个操作不可被并发撕裂，内存顺序约束多个读写之间的可观察关系，happens-before 才是判断另一个线程能否合法看到数据的主线。原子变量安全不等于它旁边的普通数据自动安全。</p>
+<h3 id="发布-42-的最小过程">发布 42 的最小过程</h3>
+<pre><code class="language-text">线程 A：data = 42
+线程 A：ready.store(true, release)
+线程 B：ready.load(acquire) 读到 true
+线程 B：读取 data，得到 42</code></pre>
+<p>release 与读到它的 acquire 建立同步，使 A 在前面的 <code>data = 42</code> 对 B 可见。若 B 没读到 true，就不能进入读取；若 ready 只是普通 bool，两个线程的并发访问还可能直接形成数据竞争。</p>
 <h2 id="生活化模型-公告栏与交接旗">生活化模型：公告栏与交接旗</h2>
 <p>想象两个人在不同房间协作。</p>
 <p>甲先填写一张表，再升起一面旗：</p>
@@ -626,7 +650,7 @@ bool Consumer()
 发布后没有线程无同步地继续修改 message。
 消费者的 acquire 确实读到对应发布值或其发布序列允许的值。</code></pre>
 <p>如果多个生产者同时写 <code>message</code>，这个简单模型不再安全。</p>
-<h2 id="memory-order-六种常见形式">memory_order 六种常见形式</h2>
+<h2 id="进阶-memory-order-六种常见形式">进阶：memory_order 六种常见形式</h2>
 <h3 id="memory-order-relaxed">memory_order_relaxed</h3>
 <p>保证该原子对象上的操作具有原子性和修改顺序，但不为周围普通内存建立 acquire/release 同步。</p>
 <p>适合的典型语义：</p>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象整理一座资料室：">
+  <meta name="description" content="这四种工具解决的不是同一类问题：二分缩小有序搜索区间，Top K 只保留最重要的 K 项，并查集维护不断合并的分组，动态规划复用重复子问题。先识别问题形状，再选择工具。">
   <title>算法工具箱：二分、Top K、并查集与动态规划 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">算法 / KNOWLEDGE NOTE</div>
       <h1>算法工具箱：二分、Top K、并查集与动态规划</h1>
-      <p class="hero-copy">想象整理一座资料室：</p>
+      <p class="hero-copy">这四种工具解决的不是同一类问题：二分缩小有序搜索区间，Top K 只保留最重要的 K 项，并查集维护不断合并的分组，动态规划复用重复子问题。先识别问题形状，再选择工具。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>26 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>28 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#四个最小数字例子">四个最小数字例子</a>
       <a data-toc-link href="#四种工具分别解决什么">四种工具分别解决什么</a>
       <a data-toc-link href="#二分查找-每次排除一半范围">二分查找：每次排除一半范围</a>
       <a class="sub" data-toc-link href="#为什么需要二分查找">为什么需要二分查找</a>
@@ -97,7 +99,7 @@
       <a class="sub" data-toc-link href="#c-最小示例-4">C# 最小示例</a>
       <a class="sub" data-toc-link href="#记忆化搜索与递推">记忆化搜索与递推</a>
       <a class="sub" data-toc-link href="#边界与失败情况-4">边界与失败情况</a>
-      <a data-toc-link href="#四种工具的复杂度">四种工具的复杂度</a>
+      <a data-toc-link href="#进阶-四种工具的复杂度">进阶：四种工具的复杂度</a>
       <a data-toc-link href="#小结">小结</a>
     </nav>
   </details>
@@ -111,41 +113,55 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 07</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 08</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：四种工具分别解决什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：四种工具分别解决什么">
+      <span>02</span>
       <strong>四种工具分别解决什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：二分查找：每次排除一半范围">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：二分查找：每次排除一半范围">
+      <span>03</span>
       <strong>二分查找：每次排除一半范围</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Top K：只维护当前最重要的 K 个候选">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Top K：只维护当前最重要的 K 个候选">
+      <span>04</span>
       <strong>Top K：只维护当前最重要的 K 个候选</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：并查集：维护不断合并的分组">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：并查集：维护不断合并的分组">
+      <span>05</span>
       <strong>并查集：维护不断合并的分组</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：动态规划：保存重复子问题的答案">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：动态规划：保存重复子问题的答案">
+      <span>06</span>
       <strong>动态规划：保存重复子问题的答案</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：四种工具的复杂度">
-      <span>06</span>
-      <strong>四种工具的复杂度</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：小结">
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：进阶：四种工具的复杂度">
       <span>07</span>
+      <strong>进阶：四种工具的复杂度</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：小结">
+      <span>08</span>
       <strong>小结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>这四种工具解决的不是同一类问题：二分缩小有序搜索区间，Top K 只保留最重要的 K 项，并查集维护不断合并的分组，动态规划复用重复子问题。先识别问题形状，再选择工具。</p>
+
+        <pre><code class="language-text">二分：[2, 5, 8, 12, 20] 中找 12 -&gt; 先看 8，再只查右半
+Top K：分数 [7, 2, 9, 5] 取前 2 -&gt; [9, 7]
+并查集：连接 (1,2)、(2,3) -&gt; 1、2、3 属于同组
+动态规划：爬 5 阶，每次 1 或 2 阶 -&gt; ways(5)=8</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>四种工具分别解决什么</h3>
         <p>想象整理一座资料室：</p>
         <ul><li><strong>二分查找</strong>：书架已经按编号排序，每次查看中间位置，排除一半范围。</li><li><strong>Top K</strong>：传送带持续送来物品，只保留当前最值得关注的 <code>K</code> 件。</li><li><strong>并查集</strong>：不断把小组连接起来，并快速判断两个人是否已在同一组。</li><li><strong>动态规划</strong>：把复杂任务拆成重复子任务，保存已经算过的答案再组合。</li></ul>
@@ -154,8 +170,8 @@
 动态合并与连通判断 -&gt; 并查集
 重叠子问题与最优子结构 -&gt; 动态规划</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>二分查找：每次排除一半范围</h3>
         <p>顺序查找从头逐个比较，最坏要检查 <code>n</code> 个元素。</p>
         <ul><li>输入未按比较规则排序时，结果不可信。</li><li>有重复值时，普通二分只保证找到某一个匹配项，不保证第一个或最后一个。</li><li><code>left &lt;= right</code>、边界移动和中点计算容易出现差一错误。</li><li>空数组会直接结束循环并返回未找到。</li><li>若排序使用一种比较规则、查找使用另一种规则，二分前提同样被破坏。</li></ul>
@@ -163,8 +179,8 @@
 目标更大 -&gt; 只保留右半边
 目标相等 -&gt; 找到</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Top K：只维护当前最重要的 K 个候选</h3>
         <p>若只需要最大的 <code>K</code> 个元素，把全部 <code>n</code> 个元素排序需要 <code>O(n log n)</code>。</p>
         <ul><li><code>K = 0</code> 时结果为空，这是示例函数明确支持的输入。</li><li><code>K</code> 大于元素数量时，会返回全部元素。</li><li>“最大”必须有稳定的比较规则；复合对象常需要显式比较键。</li><li>相同值是否允许重复，属于结果契约。上例保留输入中的重复项。</li><li>堆输出不是最终排名；需要有序结果时还要排序，增加 <code>O(K log K)</code> 成本。</li><li>数据全部已在内存且 <code>K</code> 接近 <code>n</code> 时，完整排序可能更简单。</li></ul>
@@ -172,16 +188,16 @@
 新元素不大于堆顶 -&gt; 不进入 Top K
 新元素大于堆顶 -&gt; 移除堆顶，再加入新元素</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>并查集：维护不断合并的分组</h3>
         <p>并查集也叫 Disjoint Set Union，简称 DSU。</p>
         <ul><li>上例使用连续整数索引，越界会暴露为异常；其他标识需要先建立映射。</li><li>并查集擅长“合并”，不擅长删除连接或把集合拆开。</li><li>它能判断是否同组，但不会直接给出两个节点之间的具体路径。</li><li>路径压缩会改变内部父子结构，因此不能把父数组误当成原始连接关系。</li><li>若操作包含动态删除，应重新审视问题模型，而不是给并查集添加未经证明的修补逻辑。</li></ul>
         <pre><code class="language-text">x 和 y 是否已经连通？
 把 x 所在组与 y 所在组合并。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>动态规划：保存重复子问题的答案</h3>
         <p>有些问题可以拆成更小问题，但不同分支会反复计算相同子问题。</p>
         <ul><li><strong>重叠子问题</strong>：不同路径反复需要同一状态的答案。</li><li><strong>最优子结构或可组合结构</strong>：大问题答案可以由小问题答案推导。</li><li>状态定义含糊时，转移公式即使能运行也可能回答了另一个问题。</li><li>初始状态遗漏会让后续所有结果偏移。</li><li>状态间存在循环依赖时，简单递推顺序不成立。</li><li>不是所有递归都适合动态规划；若子问题不重叠，缓存可能只增加空间。</li><li>计数或代价可能溢出，需要依据输入范围选择数值类型和溢出策略。</li><li>局部最优选择不等于动态规划。能否由子问题组合出正确答案，需要证明，而不是凭直觉套公式。</li></ul>
@@ -190,15 +206,15 @@
 到第 i - 1 级的走法数 +
 到第 i - 2 级的走法数。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CONCEPT</div>
-        <h3>四种工具的复杂度</h3>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CONCEPT</div>
+        <h3>进阶：四种工具的复杂度</h3>
         <p>| 工具 | 典型时间复杂度 | 额外空间 | 关键前提 | |---|---:|---:|---| | 二分查找 | <code>O(log n)</code> | 迭代写法 <code>O(1)</code> | 数据按同一比较规则有序 | | 最小堆求最大 Top K | <code>O(n log K)</code> | <code>O(K)</code> | 只需保留 K 个极值 | | 并查集合并/查询 | 均摊 <code>O(α(n))</code> | <code>O(n)</code> | 主要操作是合并和连通判断 | | 一维动态规划示例 | <code>O(n)</code> | 可优化到 <code>O(1)</code> | 状态只依赖前两个状态 |</p>
 
 
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>小结</h3>
         <p>遇到新问题时，可以依次问：</p>
         <ul><li>数据是否已经有序，或答案是否具有单调边界？</li><li>是否只关心少量最大或最小候选？</li><li>是否反复进行集合合并和连通查询？</li><li>大问题是否由重复的小问题组合而成？</li></ul>
@@ -217,6 +233,14 @@ Top K 用小容量堆避免对全部候选完整排序。
       </footer>
     </section>
         <p>分类：算法</p>
+<h2 id="先说结论">先说结论</h2>
+<p>这四种工具解决的不是同一类问题：二分缩小有序搜索区间，Top K 只保留最重要的 K 项，并查集维护不断合并的分组，动态规划复用重复子问题。先识别问题形状，再选择工具。</p>
+<h3 id="四个最小数字例子">四个最小数字例子</h3>
+<pre><code class="language-text">二分：[2, 5, 8, 12, 20] 中找 12 -&gt; 先看 8，再只查右半
+Top K：分数 [7, 2, 9, 5] 取前 2 -&gt; [9, 7]
+并查集：连接 (1,2)、(2,3) -&gt; 1、2、3 属于同组
+动态规划：爬 5 阶，每次 1 或 2 阶 -&gt; ways(5)=8</code></pre>
+<p>同一个项目可能同时使用四种工具，但每一种都应对应一个明确的不变量或递推关系，不能因为“复杂度看起来更好”就机械套用。</p>
 <h2 id="四种工具分别解决什么">四种工具分别解决什么</h2>
 <p>想象整理一座资料室：</p>
 <ul>
@@ -601,7 +625,7 @@ Console.WriteLine(CountWays(4)); // 4 是教学示例级数，输出 5</code></p
 <li>计数或代价可能溢出，需要依据输入范围选择数值类型和溢出策略。</li>
 <li>局部最优选择不等于动态规划。能否由子问题组合出正确答案，需要证明，而不是凭直觉套公式。</li>
 </ul>
-<h2 id="四种工具的复杂度">四种工具的复杂度</h2>
+<h2 id="进阶-四种工具的复杂度">进阶：四种工具的复杂度</h2>
 <table><thead><tr>
 <th>工具</th>
 <th>典型时间复杂度</th>

@@ -58,8 +58,11 @@
       <aside class="article-rail" aria-label="文章导航与学习进度">
 
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>01 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>04 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先建立总模型">先建立总模型</a>
+      <a class="sub" data-toc-link href="#一条跨模块状态链">一条跨模块状态链</a>
+      <a data-toc-link href="#推荐顺序">推荐顺序</a>
       <a data-toc-link href="#已收录">已收录</a>
     </nav>
   </details>
@@ -68,6 +71,21 @@
 
 
         <p>这个分类用于整理工程设计中的核心思维：生命周期管理、所有权边界、缓存策略、异步请求合并、模块职责划分、错误恢复和可维护性设计。</p>
+<h2 id="先建立总模型">先建立总模型</h2>
+<p>工程设计不是模式数量，而是让状态、责任和失败都可追踪。先明确权威数据和所有者，再定义正常路径、异步晚到、取消、重试与清理，最后才讨论抽象和性能。</p>
+<h3 id="一条跨模块状态链">一条跨模块状态链</h3>
+<pre><code class="language-text">输入技能 -&gt; 预检 Mana 100 &gt;= 30
+提交后 Mana=70 -&gt; 创建运行实例 501
+Timeline 在 0.3 秒生成投射物
+命中后应用 Effect，并发布 HealthChanged
+实例结束 -&gt; 清理标签、订阅和资源作用域</code></pre>
+<h2 id="推荐顺序">推荐顺序</h2>
+<ol>
+<li>从对象池、事件系统和资源生命周期开始。</li>
+<li>再看技能、Effect、状态仲裁和战斗判定的完整链路。</li>
+<li>学习缓存、配置、网络与异步一致性。</li>
+<li>最后进入 ECS、UE Gameplay、UI 绑定和 Timeline 等系统边界。</li>
+</ol>
 <h2 id="已收录">已收录</h2>
 <ul>
 <li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/">一次技能从输入到结束</a></li>
@@ -84,6 +102,17 @@
 <li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">对象池</a></li>
 <li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/">事件系统与发布订阅</a></li>
 <li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E6%95%B0%E6%8D%AE%E9%A9%B1%E5%8A%A8Timeline-%E4%BB%8E%E7%BC%96%E8%BE%91%E5%99%A8%E5%88%B0%E5%AE%9E%E4%BD%93%E6%B6%88%E8%B4%B9/">数据驱动 Timeline：从编辑器到实体消费</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/ECS%E5%AE%9E%E4%BD%93%E7%BB%84%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80/">ECS：实体、组件、系统与数据布局</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%8A%A8%E4%BD%9C%E6%B8%B8%E6%88%8F%E5%AE%8C%E6%95%B4%E6%88%98%E6%96%97%E5%88%A4%E5%AE%9A/">动作游戏完整战斗判定</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E9%98%9F%E5%88%97%E5%BB%B6%E8%BF%9F%E7%9B%91%E5%90%AC%E8%B0%83%E8%AF%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E9%A3%8E%E6%9A%B4/">事件队列、延迟监听与事件风暴</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E9%98%9F%E5%88%97%E6%92%A4%E9%94%80%E4%B8%8E%E4%BA%8B%E4%BB%B6%E8%BE%B9%E7%95%8C/">命令模式、队列、撤销与事件边界</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%8A%B6%E6%80%81%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%AB%9E%E6%80%81/">对象生命周期状态与异步竞态</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BC%93%E5%AD%98%E5%BB%BA%E7%AB%8B%E5%A4%B1%E6%95%88%E7%89%88%E6%9C%AC%E4%B8%8E%E9%87%8D%E5%BB%BA/">缓存建立、失效、版本与重建</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E7%83%AD%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E5%A4%B1%E8%B4%A5%E5%8F%AF%E8%A7%81%E6%80%A7/">配置热更新、版本一致性与失败可见性</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E6%8A%96%E5%8A%A8%E7%BC%93%E5%86%B2%E5%BF%AB%E7%85%A7%E6%8F%92%E5%80%BC%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/">网络抖动缓冲、快照插值与可观测性</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E4%BE%9D%E8%B5%96%E8%BF%BD%E8%B8%AA%E4%B8%8E%E6%89%B9%E9%87%8F%E5%88%B7%E6%96%B0/">UI 数据绑定、依赖追踪与批量刷新</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UEGameplay%E6%A1%86%E6%9E%B6%E8%81%8C%E8%B4%A3%E4%B8%8E%E7%8A%B6%E6%80%81%E6%B5%81/">UE Gameplay 框架职责与状态流</a></li>
+<li><a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F%E8%8A%82%E7%82%B9%E6%9D%A1%E4%BB%B6%E6%95%88%E6%9E%9C%E4%B8%8E%E8%B7%B3%E8%BD%AC/">对话系统节点、条件、效果与跳转</a></li>
 </ul>
         <nav class="article-pager" aria-label="上下篇">
           <span></span>

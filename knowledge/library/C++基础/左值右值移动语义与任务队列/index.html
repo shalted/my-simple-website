@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="想象仓库里有一个带固定货位的箱子：">
+  <meta name="description" content="左值和右值描述表达式怎样关联对象，移动语义允许资源所有权从一个对象转交给另一个对象。std::move 本身不搬任何字节，它只是把表达式转换成可以匹配移动操作的形式。">
   <title>C++ 左值、右值、移动语义与任务队列 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">C++基础 / KNOWLEDGE NOTE</div>
       <h1>C++ 左值、右值、移动语义与任务队列</h1>
-      <p class="hero-copy">想象仓库里有一个带固定货位的箱子：</p>
+      <p class="hero-copy">左值和右值描述表达式怎样关联对象，移动语义允许资源所有权从一个对象转交给另一个对象。std::move 本身不搬任何字节，它只是把表达式转换成可以匹配移动操作的形式。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,14 +71,16 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>28 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>30 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#用一个-1-mib-缓冲区看复制与移动">用一个 1 MiB 缓冲区看复制与移动</a>
       <a data-toc-link href="#生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</a>
       <a data-toc-link href="#表达式的值类别">表达式的值类别</a>
       <a data-toc-link href="#std-move-到底做什么">std::move 到底做什么</a>
       <a data-toc-link href="#最小资源类型">最小资源类型</a>
       <a data-toc-link href="#复制-移动与异常保证">复制、移动与异常保证</a>
-      <a data-toc-link href="#完美转发与移动不是一回事">完美转发与移动不是一回事</a>
+      <a data-toc-link href="#进阶-完美转发与移动不是一回事">进阶：完美转发与移动不是一回事</a>
       <a data-toc-link href="#从对象转交到生产者-消费者">从对象转交到生产者—消费者</a>
       <a data-toc-link href="#线程-锁与条件变量的边界">线程、锁与条件变量的边界</a>
       <a data-toc-link href="#为什么条件变量必须配合条件">为什么条件变量必须配合条件</a>
@@ -113,88 +115,101 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 17</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 18</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：物品、标签与转交">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：物品、标签与转交">
+      <span>02</span>
       <strong>生活化模型：物品、标签与转交</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：表达式的值类别">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：表达式的值类别">
+      <span>03</span>
       <strong>表达式的值类别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：std::move 到底做什么">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：std::move 到底做什么">
+      <span>04</span>
       <strong>std::move 到底做什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：最小资源类型">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：最小资源类型">
+      <span>05</span>
       <strong>最小资源类型</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：复制、移动与异常保证">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：复制、移动与异常保证">
+      <span>06</span>
       <strong>复制、移动与异常保证</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：完美转发与移动不是一回事">
-      <span>06</span>
-      <strong>完美转发与移动不是一回事</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：从对象转交到生产者—消费者">
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：进阶：完美转发与移动不是一回事">
       <span>07</span>
+      <strong>进阶：完美转发与移动不是一回事</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：从对象转交到生产者—消费者">
+      <span>08</span>
       <strong>从对象转交到生产者—消费者</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：线程、锁与条件变量的边界">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：线程、锁与条件变量的边界">
+      <span>09</span>
       <strong>线程、锁与条件变量的边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：为什么条件变量必须配合条件">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：为什么条件变量必须配合条件">
+      <span>10</span>
       <strong>为什么条件变量必须配合条件</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最小任务队列">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最小任务队列">
+      <span>11</span>
       <strong>最小任务队列</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：一次任务的逐步状态">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：一次任务的逐步状态">
+      <span>12</span>
       <strong>一次任务的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：正常路径">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：正常路径">
+      <span>13</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：边界路径">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：边界路径">
+      <span>14</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：失败路径">
-      <span>14</span>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：失败路径">
+      <span>15</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：代价">
-      <span>15</span>
+    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：代价">
+      <span>16</span>
       <strong>代价</strong>
     </button>
-    <button class="" type="button" data-deck-jump="15" aria-label="查看第 16 步：标准、操作系统与实现选择">
-      <span>16</span>
+    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：标准、操作系统与实现选择">
+      <span>17</span>
       <strong>标准、操作系统与实现选择</strong>
     </button>
-    <button class="" type="button" data-deck-jump="16" aria-label="查看第 17 步：最后总结">
-      <span>17</span>
+    <button class="" type="button" data-deck-jump="17" aria-label="查看第 18 步：最后总结">
+      <span>18</span>
       <strong>最后总结</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>左值和右值描述表达式怎样关联对象，移动语义允许资源所有权从一个对象转交给另一个对象。<code>std::move</code> 本身不搬任何字节，它只是把表达式转换成可以匹配移动操作的形式。</p>
+
+        <pre><code class="language-text">bufferA 持有 1 MiB 内存
+复制到 bufferB：重新分配 1 MiB，再复制 1 MiB 数据
+移动到 bufferB：转交指针和长度，bufferA 进入有效但不拥有资源的状态</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>生活化模型：物品、标签与转交</h3>
         <p>想象仓库里有一个带固定货位的箱子：</p>
 
         <pre><code class="language-text">货位 A-17 上的箱子</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>表达式的值类别</h3>
         <p>C++ 标准描述的是表达式类别，不是“变量天生属于左值或右值”这么简单。</p>
 
@@ -206,15 +221,15 @@ prvalue：用于初始化对象或计算操作数的纯右值。
 
 rvalue = prvalue + xvalue</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>std::move 到底做什么</h3>
         <p><code>std::move</code> 本质上进行值类别转换，近似于：</p>
 
         <pre><code class="language-cpp">static_cast&lt;T&amp;&amp;&gt;(value)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>最小资源类型</h3>
         <p>这段示例的移动成本较低，是因为 <code>Buffer</code> 的资源由一个指针间接持有。这个结论属于该类型的实现，不是所有移动操作的标准保证。</p>
 
@@ -274,16 +289,16 @@ private:
     std::size_t size_;
 };</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>复制、移动与异常保证</h3>
         <p>容器扩容时，需要把旧存储中的元素构造到新存储。</p>
 
         <pre><code class="language-cpp">std::move_if_noexcept(value)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
-        <h3>完美转发与移动不是一回事</h3>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+        <h3>进阶：完美转发与移动不是一回事</h3>
         <p>模板中的转发引用用于保留调用方值类别：</p>
 
         <pre><code class="language-cpp">template &lt;class T&gt;
@@ -292,8 +307,8 @@ void Relay(T&amp;&amp; value)
     Consume(std::forward&lt;T&gt;(value));
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>从对象转交到生产者—消费者</h3>
         <p>生活化模型继续扩展：</p>
 
@@ -301,8 +316,8 @@ void Relay(T&amp;&amp; value)
 一个运输队列暂存包裹。
 运输人员从队列取走并处理。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>线程、锁与条件变量的边界</h3>
         <p>C++ 标准库定义：</p>
 
@@ -311,15 +326,15 @@ std::mutex 的互斥同步
 std::condition_variable 的等待与通知
 满足条件时的 happens-before 关系</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>为什么条件变量必须配合条件</h3>
         <p>错误直觉：</p>
 
         <pre><code class="language-text">收到一次 notify，就一定有一个任务。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最小任务队列</h3>
         <p>这个示例明确规定：</p>
 
@@ -394,8 +409,8 @@ private:
     bool closed_ = false;
 };</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>一次任务的逐步状态</h3>
         <p>任务所有权可以经历：</p>
 
@@ -420,8 +435,8 @@ Running
 Completed 或 Failed
   任务结果被明确记录。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>正常路径</h3>
         <p>这里发生两次“移动”：</p>
 
@@ -434,23 +449,23 @@ Task 移出 deque
 释放锁
 消费者执行 Task</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>移动赋值可能遇到：</p>
 
         <pre><code class="language-cpp">object = std::move(object);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="13" hidden>
-        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>如果 <code>Task</code> 移入容器时抛出：</p>
 
         <pre><code class="language-text">Push 没有完成。
 是否保留源值取决于 Task 的异常保证。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="14" hidden>
-        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="15" hidden>
+        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
         <h3>代价</h3>
         <p>移动语义可能减少资源复制，但仍可能产生：</p>
 
@@ -460,8 +475,8 @@ Task 移出 deque
 源对象状态维护
 异常保证需要的额外路径</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="15" hidden>
-        <div class="deck-step-meta">STEP 16 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="16" hidden>
+        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
         <h3>标准、操作系统与实现选择</h3>
 
 
@@ -471,8 +486,8 @@ std::move 是到右值引用类型的转换工具
 mutex、condition_variable 和线程同步关系
 数据竞争导致未定义行为的规则</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="16" hidden>
-        <div class="deck-step-meta">STEP 17 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="17" hidden>
+        <div class="deck-step-meta">STEP 18 / CODE / LOGIC</div>
         <h3>最后总结</h3>
 
 
@@ -493,6 +508,13 @@ std::move 只表达“允许把它当作可复用资源的对象”。
       </footer>
     </section>
         <p>分类：C++ 基础 / 对象语义与并发</p>
+<h2 id="先说结论">先说结论</h2>
+<p>左值和右值描述表达式怎样关联对象，移动语义允许资源所有权从一个对象转交给另一个对象。<code>std::move</code> 本身不搬任何字节，它只是把表达式转换成可以匹配移动操作的形式。</p>
+<h3 id="用一个-1-mib-缓冲区看复制与移动">用一个 1 MiB 缓冲区看复制与移动</h3>
+<pre><code class="language-text">bufferA 持有 1 MiB 内存
+复制到 bufferB：重新分配 1 MiB，再复制 1 MiB 数据
+移动到 bufferB：转交指针和长度，bufferA 进入有效但不拥有资源的状态</code></pre>
+<p>把任务放入队列时同样如此：若任务独占一个大缓冲区，移动入队可以转交责任；但生产者移动后不能继续假设原对象仍保存旧内容。队列的锁与条件变量解决线程协调，移动语义只解决任务数据如何转交，两者职责不同。</p>
 <h2 id="生活化模型-物品-标签与转交">生活化模型：物品、标签与转交</h2>
 <p>想象仓库里有一个带固定货位的箱子：</p>
 <pre><code class="language-text">货位 A-17 上的箱子</code></pre>
@@ -618,7 +640,7 @@ private:
 <pre><code class="language-text">在类型特征允许时使用移动，
 否则可能保留复制路径。</code></pre>
 <p>是否发生复制仍取决于具体容器操作、类型能力和标准规定。不能看到源码中写了 <code>std::move</code>，就断言运行时一定没有复制。</p>
-<h2 id="完美转发与移动不是一回事">完美转发与移动不是一回事</h2>
+<h2 id="进阶-完美转发与移动不是一回事">进阶：完美转发与移动不是一回事</h2>
 <p>模板中的转发引用用于保留调用方值类别：</p>
 <pre><code class="language-cpp">template &lt;class T&gt;
 void Relay(T&amp;&amp; value)

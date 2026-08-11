@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="NavMesh 和 A Star 解决的是：">
+  <meta name="description" content="RVO 和 ORCA 不负责从地图起点规划到终点，它们只在短时间范围内调整当前速度，避免附近移动体即将发生的碰撞。输入是位置、半径、当前速度和期望速度，输出仍是一个速度。">
   <title>局部避障：RVO 与 ORCA 理解笔记 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏AI与逻辑建模 / KNOWLEDGE NOTE</div>
       <h1>局部避障：RVO 与 ORCA 理解笔记</h1>
-      <p class="hero-copy">NavMesh 和 A Star 解决的是：</p>
+      <p class="hero-copy">RVO 和 ORCA 不负责从地图起点规划到终点，它们只在短时间范围内调整当前速度，避免附近移动体即将发生的碰撞。输入是位置、半径、当前速度和期望速度，输出仍是一个速度。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>12 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>14 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#两个人迎面相遇">两个人迎面相遇</a>
       <a data-toc-link href="#先记住它解决什么问题">先记住它解决什么问题</a>
       <a data-toc-link href="#改速度不只是改快慢">改速度不只是改快慢</a>
       <a data-toc-link href="#跟着代码做-先判断两个人会不会撞">跟着代码做：先判断两个人会不会撞</a>
@@ -97,75 +99,88 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 12</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先记住它解决什么问题">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：先记住它解决什么问题">
+      <span>02</span>
       <strong>先记住它解决什么问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：改速度不只是改快慢">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：改速度不只是改快慢">
+      <span>03</span>
       <strong>改速度不只是改快慢</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着代码做：先判断两个人会不会撞">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：跟着代码做：先判断两个人会不会撞">
+      <span>04</span>
       <strong>跟着代码做：先判断两个人会不会撞</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：第二步：从候选速度里挑一个安全的">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第二步：从候选速度里挑一个安全的">
+      <span>05</span>
       <strong>第二步：从候选速度里挑一个安全的</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：第三步：从“我全躲”变成“双方分担”">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：第三步：从“我全躲”变成“双方分担”">
+      <span>06</span>
       <strong>第三步：从“我全躲”变成“双方分担”</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：它为什么能提前避让">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：它为什么能提前避让">
+      <span>07</span>
       <strong>它为什么能提前避让</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：RVO 和 ORCA 的直观区别">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：RVO 和 ORCA 的直观区别">
+      <span>08</span>
       <strong>RVO 和 ORCA 的直观区别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：开阔地里的图解">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：开阔地里的图解">
+      <span>09</span>
       <strong>开阔地里的图解</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：左侧有墙时的问题">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：左侧有墙时的问题">
+      <span>10</span>
       <strong>左侧有墙时的问题</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：窄路时 RVO / ORCA 不够">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：窄路时 RVO / ORCA 不够">
+      <span>11</span>
       <strong>窄路时 RVO / ORCA 不够</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：现在的分层理解">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：现在的分层理解">
+      <span>12</span>
       <strong>现在的分层理解</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：最重要的收获">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
+      <span>13</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>RVO 和 ORCA 不负责从地图起点规划到终点，它们只在短时间范围内调整当前速度，避免附近移动体即将发生的碰撞。输入是位置、半径、当前速度和期望速度，输出仍是一个速度。</p>
+
+        <pre><code class="language-text">A：位置 (-2, 0)，期望速度 (1, 0)
+B：位置 ( 2, 0)，期望速度 (-1, 0)
+双方半径：0.5</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>先记住它解决什么问题</h3>
         <p>NavMesh 和 A Star 解决的是：</p>
 
         <pre><code class="language-text">从哪里走到哪里。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>改速度不只是改快慢</h3>
         <p>容易误解的一点是：</p>
 
         <pre><code class="language-text">改变速度是不是只改变跑得快慢？</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>跟着代码做：先判断两个人会不会撞</h3>
         <p>先不实现完整 RVO / ORCA，只做一个可以运行的二维预测器。A 在左边向右走，B 在右边向左走：</p>
 
@@ -209,8 +224,8 @@ Console.WriteLine(WillCollide(
     combinedRadius: 1f,
     timeHorizon: 3f));</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>第二步：从候选速度里挑一个安全的</h3>
         <p>先用离散候选做教学版本：直走、左绕、右绕和停下。</p>
 
@@ -250,37 +265,37 @@ foreach (Vector2 candidate in candidates)
 
 Console.WriteLine($&quot;选择速度: ({best.X:F1}, {best.Y:F1})&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>第三步：从“我全躲”变成“双方分担”</h3>
         <p>上面的 A 假设 B 完全不改变速度，于是 A 承担全部避让。如果双方都运行同一规则，可以各自修正一部分：</p>
 
         <pre><code class="language-text">A 原速度 ( 1.0, 0.0) -&gt; 建议修正到 ( 0.85, 0.35)
 B 原速度 (-1.0, 0.0) -&gt; 建议修正到 (-0.85,-0.35)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>它为什么能提前避让</h3>
         <p>如果只判断当前有没有碰撞，发现时通常已经晚了。</p>
 
         <pre><code class="language-text">如果我继续用某个速度移动，未来几秒内会不会和附近单位重叠。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>RVO 和 ORCA 的直观区别</h3>
         <p>RVO 的意思是 Reciprocal Velocity Obstacles。</p>
 
         <pre><code class="language-text">双方共同承担避让。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>开阔地里的图解</h3>
         <p>开阔地时，RVO / ORCA 比较适合：</p>
 
         <pre><code class="language-text">A ---&gt;           &lt;--- B</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>左侧有墙时的问题</h3>
         <p>如果左侧是墙：</p>
 
@@ -289,15 +304,15 @@ B 原速度 (-1.0, 0.0) -&gt; 建议修正到 (-0.85,-0.35)</code></pre>
 |   A ---&gt;        &lt;--- B
 |</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>窄路时 RVO / ORCA 不够</h3>
         <p>如果两侧都是墙：</p>
 
         <pre><code class="language-text">墙 |  A ---&gt;     &lt;--- B  | 墙</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>现在的分层理解</h3>
         <p>可以先按这几层记：</p>
 
@@ -309,8 +324,8 @@ RVO / ORCA：开阔区域里，实时选择安全速度向量。
 通道预约 / 优先级：窄路里决定谁先过。
 物理碰撞：最后防止真的穿模重叠。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>RVO / ORCA 的作用不是：</p>
 
@@ -326,6 +341,13 @@ RVO / ORCA：开阔区域里，实时选择安全速度向量。
       </footer>
     </section>
         <p>分类：游戏 AI 与逻辑建模 / 算法</p>
+<h2 id="先说结论">先说结论</h2>
+<p>RVO 和 ORCA 不负责从地图起点规划到终点，它们只在短时间范围内调整当前速度，避免附近移动体即将发生的碰撞。输入是位置、半径、当前速度和期望速度，输出仍是一个速度。</p>
+<h3 id="两个人迎面相遇">两个人迎面相遇</h3>
+<pre><code class="language-text">A：位置 (-2, 0)，期望速度 (1, 0)
+B：位置 ( 2, 0)，期望速度 (-1, 0)
+双方半径：0.5</code></pre>
+<p>若保持速度，约 2 秒后中心重合。局部避障会在速度空间中排除危险速度，并选择接近期望速度的可行解，例如 A 稍向上、B 稍向下。若走廊宽度不足以并排通过，仅靠局部速度调整可能来回犹豫，需要更高层的让路规则。</p>
 <p>状态：理解笔记，后续还需要继续深入。</p>
 <h2 id="先记住它解决什么问题">先记住它解决什么问题</h2>
 <p>NavMesh 和 A Star 解决的是：</p>

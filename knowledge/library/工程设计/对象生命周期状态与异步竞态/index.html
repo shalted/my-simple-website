@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="把一个对象想成餐厅里的一张取餐号牌。">
+  <meta name="description" content="异步结果回来时，“对象引用还不为空”不足以证明结果仍然属于当前对象。生命周期状态和 generation token 要共同回答：对象是否还活着、是否仍是发起请求时的那一代。">
   <title>对象生命周期状态与异步竞态 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>对象生命周期状态与异步竞态</h1>
-      <p class="hero-copy">把一个对象想成餐厅里的一张取餐号牌。</p>
+      <p class="hero-copy">异步结果回来时，“对象引用还不为空”不足以证明结果仍然属于当前对象。生命周期状态和 generation token 要共同回答：对象是否还活着、是否仍是发起请求时的那一代。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>20 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>22 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一个晚到的头像请求">一个晚到的头像请求</a>
       <a data-toc-link href="#生活化模型-一张取餐号牌">生活化模型：一张取餐号牌</a>
       <a data-toc-link href="#为什么-对象还存在-不够">为什么“对象还存在”不够</a>
       <a data-toc-link href="#用显式状态表达生命周期">用显式状态表达生命周期</a>
@@ -83,7 +85,7 @@
       <a data-toc-link href="#异步回调晚到的完整事实链">异步回调晚到的完整事实链</a>
       <a data-toc-link href="#最小-c-示例">最小 C# 示例</a>
       <a class="sub" data-toc-link href="#错误为什么仍然可见">错误为什么仍然可见</a>
-      <a data-toc-link href="#取消不是错误替代器">取消不是错误替代器</a>
+      <a data-toc-link href="#进阶-取消不是错误替代器">进阶：取消不是错误替代器</a>
       <a data-toc-link href="#可视化的逐步状态">可视化的逐步状态</a>
       <a data-toc-link href="#正常路径">正常路径</a>
       <a data-toc-link href="#边界路径">边界路径</a>
@@ -105,65 +107,80 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：生活化模型：一张取餐号牌">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：生活化模型：一张取餐号牌">
+      <span>02</span>
       <strong>生活化模型：一张取餐号牌</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：为什么“对象还存在”不够">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：为什么“对象还存在”不够">
+      <span>03</span>
       <strong>为什么“对象还存在”不够</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：用显式状态表达生命周期">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：用显式状态表达生命周期">
+      <span>04</span>
       <strong>用显式状态表达生命周期</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Generation Token：为每一代身份编号">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Generation Token：为每一代身份编号">
+      <span>05</span>
       <strong>Generation Token：为每一代身份编号</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：异步回调晚到的完整事实链">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：异步回调晚到的完整事实链">
+      <span>06</span>
       <strong>异步回调晚到的完整事实链</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：最小 C# 示例">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：最小 C# 示例">
+      <span>07</span>
       <strong>最小 C# 示例</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：取消不是错误替代器">
-      <span>07</span>
-      <strong>取消不是错误替代器</strong>
-    </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：可视化的逐步状态">
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：进阶：取消不是错误替代器">
       <span>08</span>
+      <strong>进阶：取消不是错误替代器</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：可视化的逐步状态">
+      <span>09</span>
       <strong>可视化的逐步状态</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：正常路径">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：正常路径">
+      <span>10</span>
       <strong>正常路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：边界路径">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：边界路径">
+      <span>11</span>
       <strong>边界路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：失败路径">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：失败路径">
+      <span>12</span>
       <strong>失败路径</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：代价与权衡">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：代价与权衡">
+      <span>13</span>
       <strong>代价与权衡</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
+      <span>14</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>异步结果回来时，“对象引用还不为空”不足以证明结果仍然属于当前对象。生命周期状态和 generation token 要共同回答：对象是否还活着、是否仍是发起请求时的那一代。</p>
+
+        <pre><code class="language-text">对象槽位：7，generation=3
+请求 A：加载玩家 100 的头像
+对象被回收，槽位 7 generation 变为 4
+请求 B：同一槽位现在显示玩家 205
+请求 A 晚到，携带 generation=3</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>生活化模型：一张取餐号牌</h3>
         <p>把一个对象想成餐厅里的一张取餐号牌。</p>
 
@@ -175,15 +192,15 @@
     ↓
 顾客取走，号牌作废</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>为什么“对象还存在”不够</h3>
         <p>同步代码通常按顺序发生：</p>
 
         <pre><code class="language-text">创建 → 使用 → 销毁</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>用显式状态表达生命周期</h3>
         <p>生命周期状态机把允许发生的变化写清楚。</p>
 
@@ -198,8 +215,8 @@ Disposed
 Active ── Fault ──&gt; Faulted
 Stopping ─ Fault ─&gt; Faulted</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>Generation Token：为每一代身份编号</h3>
         <p>Generation Token 可以理解成号牌背后的批次号。</p>
 
@@ -208,8 +225,8 @@ Stopping ─ Fault ─&gt; Faulted</code></pre>
 回调到达时与当前 generation 比较。
 只有相等时，结果才有资格修改当前状态。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>异步回调晚到的完整事实链</h3>
         <p>“发出取消请求”不等于“回调绝不会再来”。取消通常是协作式协议，操作是否以及何时响应，取决于被调用方。</p>
 
@@ -233,8 +250,8 @@ Stopping ─ Fault ─&gt; Faulted</code></pre>
     ↓
 取消与失败仍以明确结果对外可见</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>最小 C# 示例</h3>
         <p>下面是一个教学用的异步资源拥有者。它展示状态、generation、取消以及错误可见性，不提供重试或默认值替代。</p>
 
@@ -329,17 +346,17 @@ public sealed class AsyncOwner&lt;T&gt; : IAsyncDisposable
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
-        <h3>取消不是错误替代器</h3>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+        <h3>进阶：取消不是错误替代器</h3>
         <p>取消与失败是不同事实：</p>
 
         <pre><code class="language-text">取消：调用方不再需要这项工作，且操作接受了取消请求。
 失败：操作尝试完成，但发生错误。
 过期：操作可能成功，但结果不再属于当前生命周期。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>可视化的逐步状态</h3>
         <p>可以用时间轴观察竞态：</p>
 
@@ -353,8 +370,8 @@ public sealed class AsyncOwner&lt;T&gt; : IAsyncDisposable
 结果归属      A 捕获 G1      B 捕获 G2
 提交判断              G1 != G2   G2 == G2</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>正常路径</h3>
         <p>正常路径也应经过归属验证，而不是只有发生异常时才检查。</p>
 
@@ -364,8 +381,8 @@ public sealed class AsyncOwner&lt;T&gt; : IAsyncDisposable
 generation 与状态仍匹配。
 结果写入并返回 Applied。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>边界路径</h3>
         <p>取消请求与异步完成之间没有天然的全局先后保证。</p>
 
@@ -373,8 +390,8 @@ generation 与状态仍匹配。
 若取消已被接受并抛出对应取消异常，则报告 Cancelled。
 若代次已改变，即使操作成功也报告 Superseded。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>失败路径</h3>
         <p>这里没有“失败后默认成功”的路径。</p>
 
@@ -385,8 +402,8 @@ generation 与状态仍匹配。
 清理自身失败：应单独暴露清理错误，不能因对象已标记结束就吞掉。
 generation 溢出：checked 运算暴露异常，而不是悄悄回绕。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>代价与权衡</h3>
         <p>显式生命周期会增加：</p>
 
@@ -396,8 +413,8 @@ generation 溢出：checked 运算暴露异常，而不是悄悄回绕。</code>
 结果类型和错误传播。
 并发访问时的同步成本。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
 
 
@@ -418,6 +435,15 @@ generation 描述结果属于哪一代。
       </footer>
     </section>
         <p>分类：工程设计</p>
+<h2 id="先说结论">先说结论</h2>
+<p>异步结果回来时，“对象引用还不为空”不足以证明结果仍然属于当前对象。生命周期状态和 generation token 要共同回答：对象是否还活着、是否仍是发起请求时的那一代。</p>
+<h3 id="一个晚到的头像请求">一个晚到的头像请求</h3>
+<pre><code class="language-text">对象槽位：7，generation=3
+请求 A：加载玩家 100 的头像
+对象被回收，槽位 7 generation 变为 4
+请求 B：同一槽位现在显示玩家 205
+请求 A 晚到，携带 generation=3</code></pre>
+<p>虽然槽位 index 仍是 7，但 generation 不匹配，请求 A 必须丢弃。否则玩家 100 的头像会覆盖玩家 205，这类错误看起来像“偶发 UI 串图”，根因却是身份代次没有验证。</p>
 <h2 id="生活化模型-一张取餐号牌">生活化模型：一张取餐号牌</h2>
 <p>把一个对象想成餐厅里的一张取餐号牌。</p>
 <p>号牌会经历：</p>
@@ -629,7 +655,7 @@ Superseded：结果成功返回，但已不属于当前代。
 Faulted：操作失败，并携带原始 Exception。</code></pre>
 <p>没有把异常转换为“成功 + 空值”，也没有在失败后自动使用旧数据。</p>
 <p>调用方必须检查 <code>LoadOutcome</code>。如果调用方选择记录或展示失败，那是上层明确策略；底层不应默默吞掉它。</p>
-<h2 id="取消不是错误替代器">取消不是错误替代器</h2>
+<h2 id="进阶-取消不是错误替代器">进阶：取消不是错误替代器</h2>
 <p>取消与失败是不同事实：</p>
 <pre><code class="language-text">取消：调用方不再需要这项工作，且操作接受了取消请求。
 失败：操作尝试完成，但发生错误。

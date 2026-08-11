@@ -7,6 +7,7 @@
     "knowledge:build": "node scripts/knowledge-pipeline.mjs build",
     "knowledge:all": "node scripts/knowledge-pipeline.mjs all",
     "check:content": "node scripts/check-learning-content.mjs",
+    "audit:teaching": "node scripts/audit-teaching-structure.mjs --strict",
     "check:links": "node scripts/check-static-links.mjs"
   }
 }

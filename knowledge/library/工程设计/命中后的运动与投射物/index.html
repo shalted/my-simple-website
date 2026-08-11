@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…">
+  <meta name="description" content="投射物每帧应从旧位置扫掠到新位置，候选按命中时间排序后依次经过阵营、重复命中、穿透次数和目标间隔等规则。命中后的击退也要按时间曲线的增量推进，不能每帧重复叠加累计总量。">
   <title>命中后的运动与投射物 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">工程设计 / KNOWLEDGE NOTE</div>
       <h1>命中后的运动与投射物</h1>
-      <p class="hero-copy">一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…</p>
+      <p class="hero-copy">投射物每帧应从旧位置扫掠到新位置，候选按命中时间排序后依次经过阵营、重复命中、穿透次数和目标间隔等规则。命中后的击退也要按时间曲线的增量推进，不能每帧重复叠加累计总量。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>15 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>18 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#一颗可穿透两人的子弹">一颗可穿透两人的子弹</a>
       <a data-toc-link href="#1-完整运行地图">1. 完整运行地图</a>
       <a data-toc-link href="#2-生成快照-创建阶段就固定运行输入">2. 生成快照：创建阶段就固定运行输入</a>
       <a data-toc-link href="#3-两种已确认的运动策略">3. 两种已确认的运动策略</a>
@@ -88,6 +90,7 @@
       <a data-toc-link href="#11-完成与清理">11. 完成与清理</a>
       <a data-toc-link href="#12-复杂度与边界">12. 复杂度与边界</a>
       <a data-toc-link href="#13-与相邻专题的关系">13. 与相邻专题的关系</a>
+      <a data-toc-link href="#最后记住">最后记住</a>
     </nav>
   </details>
       </aside>
@@ -105,65 +108,83 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 15</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：1. 完整运行地图">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：1. 完整运行地图">
+      <span>02</span>
       <strong>1. 完整运行地图</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：2. 生成快照：创建阶段就固定运行输入">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：2. 生成快照：创建阶段就固定运行输入">
+      <span>03</span>
       <strong>2. 生成快照：创建阶段就固定运行输入</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：3. 两种已确认的运动策略">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：3. 两种已确认的运动策略">
+      <span>04</span>
       <strong>3. 两种已确认的运动策略</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：4. 从线段变成平面胶囊扫掠">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：4. 从线段变成平面胶囊扫掠">
+      <span>05</span>
       <strong>4. 从线段变成平面胶囊扫掠</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：5. 候选还要经过四道门">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：5. 候选还要经过四道门">
+      <span>06</span>
       <strong>5. 候选还要经过四道门</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：6. 有限穿透与候选顺序冲突">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：6. 有限穿透与候选顺序冲突">
+      <span>07</span>
       <strong>6. 有限穿透与候选顺序冲突</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：7. 同目标间隔门控">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：7. 同目标间隔门控">
+      <span>08</span>
       <strong>7. 同目标间隔门控</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：8. 击退：累计曲线求差，而不是重复累加总量">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：8. 击退：累计曲线求差，而不是重复累加总量">
+      <span>09</span>
       <strong>8. 击退：累计曲线求差，而不是重复累加总量</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：9. 为什么在下一次逻辑更新判定受阻">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：9. 为什么在下一次逻辑更新判定受阻">
+      <span>10</span>
       <strong>9. 为什么在下一次逻辑更新判定受阻</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：10. 同来源新击退替换旧请求">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：10. 同来源新击退替换旧请求">
+      <span>11</span>
       <strong>10. 同来源新击退替换旧请求</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：11. 完成与清理">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：11. 完成与清理">
+      <span>12</span>
       <strong>11. 完成与清理</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：12. 复杂度与边界">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：12. 复杂度与边界">
+      <span>13</span>
       <strong>12. 复杂度与边界</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：13. 与相邻专题的关系">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：13. 与相邻专题的关系">
+      <span>14</span>
       <strong>13. 与相邻专题的关系</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="14" aria-label="查看第 15 步：最后记住">
+      <span>15</span>
+      <strong>最后记住</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>投射物每帧应从旧位置扫掠到新位置，候选按命中时间排序后依次经过阵营、重复命中、穿透次数和目标间隔等规则。命中后的击退也要按时间曲线的增量推进，不能每帧重复叠加累计总量。</p>
+
+        <pre><code class="language-text">上一帧位置：x=0
+本帧目标位置：x=12
+候选：EnemyA 在 x=4，EnemyB 在 x=8，EnemyC 在 x=10
+最大命中数：2</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>1. 完整运行地图</h3>
         <p>候选集合来自空间查询。它不保证按“距离最近”排序，因此有限穿透不能偷偷依赖最近优先。如果设计需要最近目标优先，必须在消费前明确排序，并承担额外的时间成本。</p>
 
@@ -178,8 +199,8 @@
   → 完成、创建失败或被取消
   → 释放运行实例与临时状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>2. 生成快照：创建阶段就固定运行输入</h3>
         <p>运行实例需要保存后续帧会用到的最小信息：</p>
 
@@ -197,8 +218,8 @@
     return run;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>3. 两种已确认的运动策略</h3>
         <p>追踪模式在目标有效时更新目标快照，并朝当前目标位置计算方向：</p>
 
@@ -210,8 +231,8 @@
     return Normalize(run.TargetSnapshot - run.Position);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>4. 从线段变成平面胶囊扫掠</h3>
         <p>高速物体若只检查帧末位置，很容易穿过目标。更稳妥的做法是把“上一位置 → 下一位置”的线段与投射物半径组合成平面胶囊：</p>
 
@@ -222,8 +243,8 @@ Vector2 end = start + expected;
 IReadOnlyList&lt;Candidate&gt; candidates =
     QueryCapsuleOnPlane(start, end, projectileRadius);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>5. 候选还要经过四道门</h3>
         <p>空间查询返回候选后，至少还要过滤：</p>
         <ul><li>来源自身；</li><li>阵营或目标类型不匹配；</li><li>已失效、已销毁或不可被命中的目标；</li><li>同一目标仍处于命中间隔内。</li></ul>
@@ -237,8 +258,8 @@ IReadOnlyList&lt;Candidate&gt; candidates =
     ApplyHit(run, candidate);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>6. 有限穿透与候选顺序冲突</h3>
         <p>有限穿透通常在每次成功消费后递减：</p>
 
@@ -252,8 +273,8 @@ IReadOnlyList&lt;Candidate&gt; candidates =
         run.Complete(&quot;穿透次数耗尽&quot;);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>7. 同目标间隔门控</h3>
         <p>持续穿过较大目标时，同一目标可能连续多帧出现在胶囊候选中。按目标保存下一次可命中时刻，可以阻止每帧重复结算：</p>
 
@@ -265,16 +286,16 @@ IReadOnlyList&lt;Candidate&gt; candidates =
     return now &gt;= next;
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>8. 击退：累计曲线求差，而不是重复累加总量</h3>
         <p>击退曲线常表达“从开始到归一化时间 <code>t</code> 为止，累计应该移动多少比例”。设总距离为 <code>D</code>，累计曲线为 <code>C(t)</code>：</p>
 
         <pre><code class="language-text">累计期望位移 S(t) = D × C(t)
 本帧增量 ΔS = S(t_now) - S(t_prev)</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>9. 为什么在下一次逻辑更新判定受阻</h3>
         <p>移动接口返回实际位移，但碰撞解算和位置提交可能与请求发生在不同阶段。已确认的链路在下一次逻辑更新中比较上一帧的期望位移与实际位移；当差异达到运行规则时提前停止：</p>
 
@@ -289,8 +310,8 @@ IReadOnlyList&lt;Candidate&gt; candidates =
     ApplyNextCurveDelta(run);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>10. 同来源新击退替换旧请求</h3>
         <p>同一来源再次发起击退时，新请求替换旧运行实例：</p>
 
@@ -302,26 +323,36 @@ IReadOnlyList&lt;Candidate&gt; candidates =
     activeBySource[source] = CreateRun(next);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
         <h3>11. 完成与清理</h3>
         <p>以下路径都必须收束到可观察的结束状态：</p>
         <ul><li>投射物达到目标快照；</li><li>剩余穿透耗尽；</li><li>运行被主动取消；</li><li>创建实体失败；</li><li>击退曲线结束；</li><li>击退检测到受阻；</li><li>同来源新击退替换旧请求。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / FLOW / RULES</div>
         <h3>12. 复杂度与边界</h3>
         <p>设一帧空间查询返回 <code>k</code> 个候选，当前命中历史有 <code>h</code> 个目标：</p>
         <ul><li>胶囊查询的成本取决于空间索引；</li><li>候选过滤与按返回顺序消费为 <code>O(k)</code>；</li><li>哈希命中历史的平均查询、写入为 <code>O(1)</code>，空间为 <code>O(h)</code>；</li><li>如果显式做最近优先排序，则为 <code>O(k log k)</code>；</li><li>击退曲线求值、求差和阻挡比较每帧为 <code>O(1)</code>。</li><li>候选顺序没有最近优先保证；</li><li>没有足够证据声称投射物处理环境碰撞或弹道高度；</li><li>没有足够证据声明第三种普通直线运动实现；</li><li>创建失败必须保持可见；</li><li>阻挡阈值与真实运行默认值不作为公开知识固定值。</li></ul>
 
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / FLOW / RULES</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / FLOW / RULES</div>
         <h3>13. 与相邻专题的关系</h3>
 
         <ul><li><a href="/knowledge/target-filter/">目标筛选与命中判定</a>解释世界坐标如何经过粗筛与精确几何得到候选；</li><li><a href="/knowledge/effect-lifecycle/">Effect / Buff 生命周期</a>解释命中后如何创建效果规格、结算属性、叠层与移除；</li><li>本专题负责两者之间的运动、连续扫掠、命中历史、穿透消费，以及击退的期望—实际差值。</li></ul>
 
+      </article>
+      <article class="deck-slide" data-deck-slide="14" hidden>
+        <div class="deck-step-meta">STEP 15 / CODE / LOGIC</div>
+        <h3>最后记住</h3>
+
+
+        <pre><code class="language-text">投射物用旧位置到新位置的扫掠避免穿透。
+候选按命中时间排序后再经过合法性和次数门控。
+有限穿透必须定义排序和停止规则。
+击退曲线按本帧增量推进，不重复叠加累计总量。</code></pre>
       </article></div>
       </div>
       <footer class="deck-controls">
@@ -332,7 +363,15 @@ IReadOnlyList&lt;Candidate&gt; candidates =
         <div data-deck-runtime-dots hidden></div>
       </footer>
     </section>
-        <p>一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：配置的是一条累计位移曲线，为什么每帧只能应用其中的增量？</p>
+        <h2 id="先说结论">先说结论</h2>
+<p>投射物每帧应从旧位置扫掠到新位置，候选按命中时间排序后依次经过阵营、重复命中、穿透次数和目标间隔等规则。命中后的击退也要按时间曲线的增量推进，不能每帧重复叠加累计总量。</p>
+<h3 id="一颗可穿透两人的子弹">一颗可穿透两人的子弹</h3>
+<pre><code class="language-text">上一帧位置：x=0
+本帧目标位置：x=12
+候选：EnemyA 在 x=4，EnemyB 在 x=8，EnemyC 在 x=10
+最大命中数：2</code></pre>
+<p>扫掠结果按进入时间得到 A、B、C。A 和 B 通过过滤后消耗两个命中名额，C 即使几何相交也因穿透上限被拒绝。若 A 在 0.2 秒内不能重复受同来源伤害，还要查询上次命中时间。</p>
+<p>一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：配置的是一条累计位移曲线，为什么每帧只能应用其中的增量？</p>
 <p>本文把两条链路放在同一个专题中，是因为它们共享同一个调试核心：<strong>期望发生什么、实际发生了什么、差值由谁解释</strong>。</p>
 <p>&gt; 页面中的速度、半径、穿透次数、命中间隔和障碍位置都是教学场景数据。它们帮助观察状态变化，不代表任何运行环境的真实默认值或阻挡阈值。</p>
 <h2 id="1-完整运行地图">1. 完整运行地图</h2>
@@ -501,6 +540,11 @@ run.PendingBlockCheck = (requested, actual);</code></pre>
 <li><a href="/knowledge/effect-lifecycle/">Effect / Buff 生命周期</a>解释命中后如何创建效果规格、结算属性、叠层与移除；</li>
 <li>本专题负责两者之间的运动、连续扫掠、命中历史、穿透消费，以及击退的期望—实际差值。</li>
 </ul>
+<h2 id="最后记住">最后记住</h2>
+<pre><code class="language-text">投射物用旧位置到新位置的扫掠避免穿透。
+候选按命中时间排序后再经过合法性和次数门控。
+有限穿透必须定义排序和停止规则。
+击退曲线按本帧增量推进，不重复叠加累计总量。</code></pre>
         <nav class="article-pager" aria-label="上下篇">
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E9%98%9F%E5%88%97%E6%92%A4%E9%94%80%E4%B8%8E%E4%BA%8B%E4%BB%B6%E8%BE%B9%E7%95%8C/"><small>← PREVIOUS</small>命令模式：队列、撤销与事件边界</a>
           <a href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E7%83%AD%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E5%A4%B1%E8%B4%A5%E5%8F%AF%E8%A7%81%E6%80%A7/"><small>NEXT →</small>配置热更新：版本一致性与失败可见性</a>

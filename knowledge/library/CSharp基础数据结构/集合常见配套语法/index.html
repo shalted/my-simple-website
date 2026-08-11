@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="List&lt;T&gt;、Dictionary&lt;TKey, TValue&gt;、HashSet&lt;T&gt; 这些集合经常会和一些 C# 语法一起出现：">
+  <meta name="description" content="var、泛型、out、lambda 和 foreach 不是五套孤立语法，它们经常共同出现在一次集合查询中：泛型约束元素类型，lambda 描述条件，out 返回额外结果，foreach 顺序消费集合，var 让局部类型由右侧表达…">
   <title>集合常见配套语法 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>集合常见配套语法</h1>
-      <p class="hero-copy">List&lt;T&gt;、Dictionary&lt;TKey, TValue&gt;、HashSet&lt;T&gt; 这些集合经常会和一些 C# 语法一起出现：</p>
+      <p class="hero-copy">var、泛型、out、lambda 和 foreach 不是五套孤立语法，它们经常共同出现在一次集合查询中：泛型约束元素类型，lambda 描述条件，out 返回额外结果，foreach 顺序消费集合，var 让局部类型由右侧表达…</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>09 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#看一条完整数据流">看一条完整数据流</a>
       <a data-toc-link href="#这些语法为什么重要">这些语法为什么重要</a>
       <a data-toc-link href="#var">var</a>
       <a data-toc-link href="#泛型-t">泛型 &lt;T&gt;</a>
@@ -94,49 +96,63 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 09</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：这些语法为什么重要">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：这些语法为什么重要">
+      <span>02</span>
       <strong>这些语法为什么重要</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：var">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：var">
+      <span>03</span>
       <strong>var</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：泛型 &lt;T&gt;">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：泛型 &lt;T&gt;">
+      <span>04</span>
       <strong>泛型 &lt;T&gt;</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：out">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：out">
+      <span>05</span>
       <strong>out</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：lambda =&gt;">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：lambda =&gt;">
+      <span>06</span>
       <strong>lambda =&gt;</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：foreach">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：foreach">
+      <span>07</span>
       <strong>foreach</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：foreach 里不要修改集合">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：foreach 里不要修改集合">
+      <span>08</span>
       <strong>foreach 里不要修改集合</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：组合例子">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：组合例子">
+      <span>09</span>
       <strong>组合例子</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最重要的收获">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
+      <span>10</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p><code>var</code>、泛型、<code>out</code>、lambda 和 <code>foreach</code> 不是五套孤立语法，它们经常共同出现在一次集合查询中：泛型约束元素类型，lambda 描述条件，<code>out</code> 返回额外结果，<code>foreach</code> 顺序消费集合，<code>var</code> 让局部类型由右侧表达式推导。</p>
+
+        <pre><code class="language-text">敌人字典：{ 42 -&gt; HP 20, 77 -&gt; HP 80 }
+TryGetValue(42, out enemy) -&gt; true，enemy.HP = 20
+lambda：enemy =&gt; enemy.HP &lt; 30 -&gt; true
+结果：42 号敌人进入低血量集合</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>这些语法为什么重要</h3>
         <p><code>List&lt;T&gt;</code>、<code>Dictionary&lt;TKey, TValue&gt;</code>、<code>HashSet&lt;T&gt;</code> 这些集合经常会和一些 C# 语法一起出现：</p>
 
@@ -146,8 +162,8 @@ out
 lambda =&gt;
 foreach</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>var</h3>
         <p><code>var</code> 不是“没有类型”，而是让编译器自动推断类型。</p>
 
@@ -155,8 +171,8 @@ foreach</code></pre>
 var score = 90;
 var names = new List&lt;string&gt;();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>泛型 &lt;T&gt;</h3>
         <p><code>&lt;T&gt;</code> 表示“这个集合里存什么类型”。</p>
 
@@ -164,8 +180,8 @@ var names = new List&lt;string&gt;();</code></pre>
 List&lt;string&gt; names = new();
 Queue&lt;GameObject&gt; effects = new();</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>out</h3>
         <p><code>out</code> 常见于 <code>TryGetValue</code>：</p>
 
@@ -174,15 +190,15 @@ Queue&lt;GameObject&gt; effects = new();</code></pre>
     Debug.Log(score);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>lambda =&gt;</h3>
         <p>lambda 是临时写在调用处的小函数。</p>
 
         <pre><code class="language-csharp">names.RemoveAll(name =&gt; name == &quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>foreach</h3>
         <p>遍历集合：</p>
 
@@ -191,8 +207,8 @@ Queue&lt;GameObject&gt; effects = new();</code></pre>
     Debug.Log(name);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>foreach 里不要修改集合</h3>
         <p>不要这样写：</p>
 
@@ -204,8 +220,8 @@ Queue&lt;GameObject&gt; effects = new();</code></pre>
     }
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>组合例子</h3>
         <p>这里同时用了：</p>
 
@@ -225,8 +241,8 @@ foreach (var skillId in skills)
     Debug.Log(skillId);
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>这些语法熟了之后，看集合代码会顺很多。</p>
 
@@ -246,6 +262,14 @@ foreach：逐个遍历集合。</code></pre>
       </footer>
     </section>
         <p>分类：CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p><code>var</code>、泛型、<code>out</code>、lambda 和 <code>foreach</code> 不是五套孤立语法，它们经常共同出现在一次集合查询中：泛型约束元素类型，lambda 描述条件，<code>out</code> 返回额外结果，<code>foreach</code> 顺序消费集合，<code>var</code> 让局部类型由右侧表达式推导。</p>
+<h3 id="看一条完整数据流">看一条完整数据流</h3>
+<pre><code class="language-text">敌人字典：{ 42 -&gt; HP 20, 77 -&gt; HP 80 }
+TryGetValue(42, out enemy) -&gt; true，enemy.HP = 20
+lambda：enemy =&gt; enemy.HP &lt; 30 -&gt; true
+结果：42 号敌人进入低血量集合</code></pre>
+<p>这里 <code>out enemy</code> 不是创建另一个敌人，lambda 也不会自动执行；它们只有在对应方法被调用时才参与这条数据流。</p>
 <h2 id="这些语法为什么重要">这些语法为什么重要</h2>
 <p><code>List&lt;T&gt;</code>、<code>Dictionary&lt;TKey, TValue&gt;</code>、<code>HashSet&lt;T&gt;</code> 这些集合经常会和一些 C# 语法一起出现：</p>
 <pre><code class="language-text">var

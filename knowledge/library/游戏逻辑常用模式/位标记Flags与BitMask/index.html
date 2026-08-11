@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="位标记的核心是：">
+  <meta name="description" content="Flags 用一个整数的不同二进制位保存多个互不排斥的真假状态。按位或负责添加，按位与负责检查，按位与反码负责移除；读懂它的关键是观察每一位，而不是把整数当普通数值。">
   <title>位标记 Flags 与 BitMask · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">游戏逻辑常用模式 / KNOWLEDGE NOTE</div>
       <h1>位标记 Flags 与 BitMask</h1>
-      <p class="hero-copy">位标记的核心是：</p>
+      <p class="hero-copy">Flags 用一个整数的不同二进制位保存多个互不排斥的真假状态。按位或负责添加，按位与负责检查，按位与反码负责移除；读懂它的关键是观察每一位，而不是把整数当普通数值。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>16 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>18 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#四位状态怎样变化">四位状态怎样变化</a>
       <a data-toc-link href="#核心思想">核心思想</a>
       <a data-toc-link href="#跟着二进制位一步步运行">跟着二进制位一步步运行</a>
       <a class="sub" data-toc-link href="#第二步-判断一个或多个标记">第二步：判断一个或多个标记</a>
@@ -106,72 +108,91 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 13</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 14</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：核心思想">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：核心思想">
+      <span>02</span>
       <strong>核心思想</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：跟着二进制位一步步运行">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：跟着二进制位一步步运行">
+      <span>03</span>
       <strong>跟着二进制位一步步运行</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：基础声明">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：基础声明">
+      <span>04</span>
       <strong>基础声明</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：添加标记">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：添加标记">
+      <span>05</span>
       <strong>添加标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：判断标记">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：判断标记">
+      <span>06</span>
       <strong>判断标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：移除标记">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：移除标记">
+      <span>07</span>
       <strong>移除标记</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：互斥状态为什么也能放在 Flags 里">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：互斥状态为什么也能放在 Flags 里">
+      <span>08</span>
       <strong>互斥状态为什么也能放在 Flags 里</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：最大好处">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最大好处">
+      <span>09</span>
       <strong>最大好处</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：最多支持多少位">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最多支持多少位">
+      <span>10</span>
       <strong>最多支持多少位</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：适合什么">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：适合什么">
+      <span>11</span>
       <strong>适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：不适合什么">
-      <span>11</span>
+    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：不适合什么">
+      <span>12</span>
       <strong>不适合什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="11" aria-label="查看第 12 步：常用模板">
-      <span>12</span>
+    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：常用模板">
+      <span>13</span>
       <strong>常用模板</strong>
     </button>
-    <button class="" type="button" data-deck-jump="12" aria-label="查看第 13 步：最重要的收获">
-      <span>13</span>
+    <button class="" type="button" data-deck-jump="13" aria-label="查看第 14 步：最重要的收获">
+      <span>14</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>Flags 用一个整数的不同二进制位保存多个互不排斥的真假状态。按位或负责添加，按位与负责检查，按位与反码负责移除；读懂它的关键是观察每一位，而不是把整数当普通数值。</p>
+
+        <pre><code class="language-text">Poisoned = 0001
+Stunned  = 0010
+Invincible = 0100
+
+初始：0000
+添加 Poisoned：0001
+再添加 Stunned：0011
+检查 Invincible：0011 &amp; 0100 = 0000，结果 false
+移除 Poisoned：0011 &amp; 1110 = 0010</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>核心思想</h3>
         <p>位标记的核心是：</p>
 
         <pre><code class="language-text">用一个整数里的不同二进制位，表示多个可以同时存在的开关。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>跟着二进制位一步步运行</h3>
         <p>先用四个状态观察每一位怎样变化：</p>
 
@@ -187,8 +208,8 @@ enum UnitState
     Invincible = 1 &lt;&lt; 3  // 1000
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>基础声明</h3>
         <p>以攻击结果为例，可以这样声明标记：</p>
 
@@ -204,16 +225,16 @@ public enum AttributeAttackEffect
     Heal = 1 &lt;&lt; 5,
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>添加标记</h3>
         <p>添加标记用按位或：</p>
 
         <pre><code class="language-csharp">effects |= AttributeAttackEffect.Precision;
 effects |= AttributeAttackEffect.Critical;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>判断标记</h3>
         <p>判断有没有某个标记，用按位与：</p>
 
@@ -222,15 +243,15 @@ effects |= AttributeAttackEffect.Critical;</code></pre>
     // 有暴击标记
 }</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>移除标记</h3>
         <p>移除标记常用：</p>
 
         <pre><code class="language-csharp">flags &amp;= ~SomeFlag;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>互斥状态为什么也能放在 Flags 里</h3>
         <p>注意：Flags 只是存储和传递多个标签的方式，不负责保证业务规则。</p>
 
@@ -238,15 +259,15 @@ effects |= AttributeAttackEffect.Critical;</code></pre>
 Miss 和 Block 通常互斥。
 Precision 和 Critical 可以叠加。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>最大好处</h3>
         <p>最大的好处不是省内存，而是：</p>
 
         <pre><code class="language-text">把一次结果里可能带的多个信息压成一个字段，传递和判断都很方便。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>最多支持多少位</h3>
         <p>Flags 能支持多少个标记，取决于底层类型。</p>
 
@@ -255,8 +276,8 @@ uint：可以更舒服地用满 32 位。
 long：常用 63 个常规标记。
 ulong：可以用满 64 位。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>适合什么</h3>
         <p>适合：</p>
 
@@ -266,8 +287,8 @@ ulong：可以用满 64 位。</code></pre>
 状态数量不太多
 需要轻量传递或保存结果标签</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="10" hidden>
-        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="11" hidden>
+        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
         <h3>不适合什么</h3>
         <p>不适合：</p>
 
@@ -276,8 +297,8 @@ ulong：可以用满 64 位。</code></pre>
 需要记录来源、持续时间、层数的 Buff
 需要策划动态扩展很多类型的状态</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="11" hidden>
-        <div class="deck-step-meta">STEP 12 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="12" hidden>
+        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
         <h3>常用模板</h3>
 
 
@@ -293,8 +314,8 @@ flags &amp;= ~SomeFlag;
 // 多个组合
 var combined = FlagA | FlagB;</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="12" hidden>
-        <div class="deck-step-meta">STEP 13 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="13" hidden>
+        <div class="deck-step-meta">STEP 14 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>它适合表达“多标签结果”，但不自动保证业务合法性。</p>
 
@@ -310,6 +331,19 @@ var combined = FlagA | FlagB;</code></pre>
       </footer>
     </section>
         <p>分类：游戏逻辑常用模式 / CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p>Flags 用一个整数的不同二进制位保存多个互不排斥的真假状态。按位或负责添加，按位与负责检查，按位与反码负责移除；读懂它的关键是观察每一位，而不是把整数当普通数值。</p>
+<h3 id="四位状态怎样变化">四位状态怎样变化</h3>
+<pre><code class="language-text">Poisoned = 0001
+Stunned  = 0010
+Invincible = 0100
+
+初始：0000
+添加 Poisoned：0001
+再添加 Stunned：0011
+检查 Invincible：0011 &amp; 0100 = 0000，结果 false
+移除 Poisoned：0011 &amp; 1110 = 0010</code></pre>
+<p>最终整数是 2，但业务含义不是“状态等于 2”，而是第二位开启，即角色仍处于 Stunned。</p>
 <h2 id="核心思想">核心思想</h2>
 <p>位标记的核心是：</p>
 <pre><code class="language-text">用一个整数里的不同二进制位，表示多个可以同时存在的开关。</code></pre>

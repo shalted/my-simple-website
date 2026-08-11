@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Queue&lt;T&gt; 是队列：">
+  <meta name="description" content="Queue 和 Stack 保存的可以是同一批数据，区别只在“下一次取谁”：Queue 先进先出，Stack 后进先出。选择它们是在选择处理顺序，而不仅是在选择 API。">
   <title>Queue 与 Stack 常用操作 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/interactive-lab.css">
   <script src="/assets/interactive-lab.js" defer></script>
@@ -54,7 +54,7 @@
     <section class="article-hero knowledge-shell">
       <div class="eyebrow">CSharp基础数据结构 / KNOWLEDGE NOTE</div>
       <h1>Queue 与 Stack 常用操作</h1>
-      <p class="hero-copy">Queue&lt;T&gt; 是队列：</p>
+      <p class="hero-copy">Queue 和 Stack 保存的可以是同一批数据，区别只在“下一次取谁”：Queue 先进先出，Stack 后进先出。选择它们是在选择处理顺序，而不仅是在选择 API。</p>
     </section>
     <div class="article-layout knowledge-shell">
       <aside class="article-rail" aria-label="文章导航与学习进度">
@@ -71,8 +71,10 @@
         </div>
       </section>
         <details class="toc" data-article-toc open>
-    <summary><span>本页目录</span><strong>11 SECTIONS</strong></summary>
+    <summary><span>本页目录</span><strong>13 SECTIONS</strong></summary>
     <nav aria-label="文章目录">
+      <a data-toc-link href="#先说结论">先说结论</a>
+      <a class="sub" data-toc-link href="#同一组数据的两种结果">同一组数据的两种结果</a>
       <a data-toc-link href="#queue-是什么">Queue 是什么</a>
       <a data-toc-link href="#queue-常用操作">Queue 常用操作</a>
       <a data-toc-link href="#queue-适合什么场景">Queue 适合什么场景</a>
@@ -96,67 +98,80 @@
           <span class="deck-kicker">DYNAMIC EXPLAINER / ARTICLE FLOW</span>
           <h2>把章节变成可单步观察的过程</h2>
         </div>
-        <span class="deck-counter"><b data-deck-current>01</b> / 10</span>
+        <span class="deck-counter"><b data-deck-current>01</b> / 11</span>
       </header>
       <div class="deck-stage">
         <nav class="deck-nav" aria-label="动态讲解步骤">
-    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：Queue 是什么">
+    <button class="active" type="button" data-deck-jump="0" aria-label="查看第 1 步：先说结论">
       <span>01</span>
+      <strong>先说结论</strong>
+    </button>
+    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Queue 是什么">
+      <span>02</span>
       <strong>Queue 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="1" aria-label="查看第 2 步：Queue 常用操作">
-      <span>02</span>
+    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Queue 常用操作">
+      <span>03</span>
       <strong>Queue 常用操作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="2" aria-label="查看第 3 步：Queue 适合什么场景">
-      <span>03</span>
+    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Queue 适合什么场景">
+      <span>04</span>
       <strong>Queue 适合什么场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="3" aria-label="查看第 4 步：Stack 是什么">
-      <span>04</span>
+    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Stack 是什么">
+      <span>05</span>
       <strong>Stack 是什么</strong>
     </button>
-    <button class="" type="button" data-deck-jump="4" aria-label="查看第 5 步：Stack 常用操作">
-      <span>05</span>
+    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Stack 常用操作">
+      <span>06</span>
       <strong>Stack 常用操作</strong>
     </button>
-    <button class="" type="button" data-deck-jump="5" aria-label="查看第 6 步：Stack 适合什么场景">
-      <span>06</span>
+    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Stack 适合什么场景">
+      <span>07</span>
       <strong>Stack 适合什么场景</strong>
     </button>
-    <button class="" type="button" data-deck-jump="6" aria-label="查看第 7 步：Queue 和 Stack 对比">
-      <span>07</span>
+    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：Queue 和 Stack 对比">
+      <span>08</span>
       <strong>Queue 和 Stack 对比</strong>
     </button>
-    <button class="" type="button" data-deck-jump="7" aria-label="查看第 8 步：和 List 的区别">
-      <span>08</span>
+    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：和 List 的区别">
+      <span>09</span>
       <strong>和 List 的区别</strong>
     </button>
-    <button class="" type="button" data-deck-jump="8" aria-label="查看第 9 步：完整运行：任务排队与操作撤销">
-      <span>09</span>
+    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：完整运行：任务排队与操作撤销">
+      <span>10</span>
       <strong>完整运行：任务排队与操作撤销</strong>
     </button>
-    <button class="" type="button" data-deck-jump="9" aria-label="查看第 10 步：最重要的收获">
-      <span>10</span>
+    <button class="" type="button" data-deck-jump="10" aria-label="查看第 11 步：最重要的收获">
+      <span>11</span>
       <strong>最重要的收获</strong>
     </button></nav>
         <div class="deck-slides">
       <article class="deck-slide active" data-deck-slide="0">
         <div class="deck-step-meta">STEP 01 / CODE / LOGIC</div>
+        <h3>先说结论</h3>
+        <p>Queue 和 Stack 保存的可以是同一批数据，区别只在“下一次取谁”：Queue 先进先出，Stack 后进先出。选择它们是在选择处理顺序，而不仅是在选择 API。</p>
+
+        <pre><code class="language-text">依次放入：A、B、C
+Queue.Dequeue() -&gt; A，剩余 [B, C]
+Stack.Pop()     -&gt; C，剩余 [A, B]</code></pre>
+      </article>
+      <article class="deck-slide" data-deck-slide="1" hidden>
+        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
         <h3>Queue 是什么</h3>
         <p><code>Queue&lt;T&gt;</code> 是队列：</p>
 
         <pre><code class="language-text">先进先出。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="1" hidden>
-        <div class="deck-step-meta">STEP 02 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="2" hidden>
+        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
         <h3>Queue 常用操作</h3>
         <p>入队：</p>
 
         <pre><code class="language-csharp">queue.Enqueue(&quot;Alice&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="2" hidden>
-        <div class="deck-step-meta">STEP 03 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="3" hidden>
+        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
         <h3>Queue 适合什么场景</h3>
         <p><code>Queue</code> 适合按顺序处理任务：</p>
 
@@ -167,22 +182,22 @@ AI 命令队列
 网络包按顺序处理
 BFS 广度优先搜索</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="3" hidden>
-        <div class="deck-step-meta">STEP 04 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="4" hidden>
+        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
         <h3>Stack 是什么</h3>
         <p><code>Stack&lt;T&gt;</code> 是栈：</p>
 
         <pre><code class="language-text">后进先出。</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="4" hidden>
-        <div class="deck-step-meta">STEP 05 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="5" hidden>
+        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
         <h3>Stack 常用操作</h3>
         <p>入栈：</p>
 
         <pre><code class="language-csharp">stack.Push(&quot;PageA&quot;);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="5" hidden>
-        <div class="deck-step-meta">STEP 06 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="6" hidden>
+        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
         <h3>Stack 适合什么场景</h3>
         <p><code>Stack</code> 适合回退、撤销、嵌套结构：</p>
 
@@ -193,15 +208,15 @@ BFS 广度优先搜索</code></pre>
 DFS 深度优先搜索
 状态压栈和恢复</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="6" hidden>
-        <div class="deck-step-meta">STEP 07 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="7" hidden>
+        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
         <h3>Queue 和 Stack 对比</h3>
         <p>同样放入：</p>
 
         <pre><code class="language-text">1, 2, 3</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="7" hidden>
-        <div class="deck-step-meta">STEP 08 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="8" hidden>
+        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
         <h3>和 List 的区别</h3>
         <p>可以用 <code>List</code> 模拟栈：</p>
 
@@ -209,8 +224,8 @@ DFS 深度优先搜索
 var item = list[^1];
 list.RemoveAt(list.Count - 1); // pop</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="8" hidden>
-        <div class="deck-step-meta">STEP 09 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="9" hidden>
+        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
         <h3>完整运行：任务排队与操作撤销</h3>
         <p>为什么 Queue 适合任务处理：先到的请求必须先执行。</p>
 
@@ -222,8 +237,8 @@ jobs.Enqueue(&quot;进入场景&quot;);
 while (jobs.TryDequeue(out string? job))
     Console.WriteLine(job);</code></pre>
       </article>
-      <article class="deck-slide" data-deck-slide="9" hidden>
-        <div class="deck-step-meta">STEP 10 / CODE / LOGIC</div>
+      <article class="deck-slide" data-deck-slide="10" hidden>
+        <div class="deck-step-meta">STEP 11 / CODE / LOGIC</div>
         <h3>最重要的收获</h3>
         <p>最常记的 API：</p>
 
@@ -240,6 +255,13 @@ Stack：适合回退撤销，后来的先处理。</code></pre>
       </footer>
     </section>
         <p>分类：CSharp 基础数据结构</p>
+<h2 id="先说结论">先说结论</h2>
+<p>Queue 和 Stack 保存的可以是同一批数据，区别只在“下一次取谁”：Queue 先进先出，Stack 后进先出。选择它们是在选择处理顺序，而不仅是在选择 API。</p>
+<h3 id="同一组数据的两种结果">同一组数据的两种结果</h3>
+<pre><code class="language-text">依次放入：A、B、C
+Queue.Dequeue() -&gt; A，剩余 [B, C]
+Stack.Pop()     -&gt; C，剩余 [A, B]</code></pre>
+<p>任务排队通常希望 A 先执行，所以用 Queue；撤销操作通常希望最后执行的 C 先撤销，所以用 Stack。若业务需要从中间任意删除，两者都不是天然合适的结构。</p>
 <h2 id="queue-是什么">Queue 是什么</h2>
 <p><code>Queue&lt;T&gt;</code> 是队列：</p>
 <pre><code class="language-text">先进先出。</code></pre>
