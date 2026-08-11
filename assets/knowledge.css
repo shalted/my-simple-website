@@ -306,12 +306,23 @@ input {
   padding-bottom: 100px;
 }
 
-.toc {
+.article-rail {
   position: sticky;
-  top: 100px;
+  top: 92px;
   align-self: start;
-  max-height: calc(100vh - 130px);
+  display: grid;
+  gap: 22px;
+  max-height: calc(100vh - 112px);
   overflow: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.toc {
+  position: static;
+  max-height: none;
+  overflow: visible;
 }
 
 .toc strong {
@@ -531,9 +542,23 @@ input {
     grid-template-columns: 1fr;
   }
 
+  .article-rail {
+    display: contents;
+  }
+
+  .article-rail .toc {
+    grid-row: 1;
+  }
+
+  .article-body {
+    grid-row: 2;
+  }
+
+  .article-rail .article-progress-card {
+    grid-row: 3;
+  }
+
   .toc {
-    position: static;
-    max-height: none;
     padding: 18px;
     border: 1px solid var(--line);
     border-radius: 8px;

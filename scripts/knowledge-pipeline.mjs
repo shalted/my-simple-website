@@ -968,10 +968,12 @@ function renderArticlePage(document, markdown, previous, next, documents) {
       <div class="eyebrow">${escapeHtml(document.category)} / ${document.isReadme ? "CATEGORY" : "KNOWLEDGE NOTE"}</div>
       <h1>${escapeHtml(document.title)}</h1>
       <p class="hero-copy">${escapeHtml(document.summary)}</p>
-      ${progressCard}
     </section>
     <div class="article-layout knowledge-shell">
-      ${renderToc(rendered.toc)}
+      <aside class="article-rail" aria-label="文章导航与学习进度">
+        ${progressCard}
+        ${renderToc(rendered.toc)}
+      </aside>
       <article class="article-body" id="article-start">
         ${interactiveCallout(document)}
         ${document.isReadme ? "" : isTimelineDocument(document) ? renderTimelineLab() : isHashSetDocument(document) ? renderHashSetLab() : renderDynamicDeck(markdown, document.relativeMarkdown)}
