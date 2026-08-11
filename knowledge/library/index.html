@@ -7,7 +7,9 @@
   <title>知识库 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
+  <link rel="stylesheet" href="/assets/learning-progress.css">
   <script src="/assets/knowledge.js" defer></script>
+  <script src="/assets/learning-progress.js" defer></script>
 </head>
 <body>
 
@@ -31,6 +33,7 @@
           <button type="submit" aria-label="提交搜索">搜索</button>
         </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <button class="account-trigger" type="button" data-account-open>登录 / 进度</button>
       </div>
     </nav>
     <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
@@ -44,6 +47,19 @@
       <div class="library-search">
         <input id="knowledge-search" type="search" placeholder="搜索标题、分类或关键词…" autocomplete="off" aria-label="搜索知识库">
       </div>
+      <section class="learning-dashboard" data-learning-dashboard aria-label="学习进度概览">
+        <div class="learning-dashboard__top">
+          <div><span class="learning-dashboard__eyebrow">YOUR LEARNING MAP</span><h2>你的学习进度</h2></div>
+          <span class="learning-dashboard__identity" data-dashboard-identity>当前未登录，学习记录保存在这台设备。</span>
+        </div>
+        <div class="learning-dashboard__stats">
+          <div><span>已完成</span><strong data-dashboard-completed>0 / 61</strong></div>
+          <div><span>学习中</span><strong data-dashboard-progress>0</strong></div>
+          <div><span>总进度</span><strong data-dashboard-percent>0%</strong></div>
+        </div>
+        <div class="learning-dashboard__bar" aria-hidden="true"><i data-dashboard-bar></i></div>
+        <div class="learning-dashboard__continue" data-dashboard-continue>打开任意文章即可开始记录进度。</div>
+      </section>
     </section>
     <div class="library-context knowledge-shell">
       <nav class="category-strip" aria-label="知识分类">
@@ -234,275 +250,275 @@
       <div class="article-groups"><details class="article-group" data-article-group>
       <summary><span>工程设计</span><small>25 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="动作游戏完整战斗判定 工程设计 想象两名练习者使用带感应区域的护具：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%8A%A8%E4%BD%9C%E6%B8%B8%E6%88%8F%E5%AE%8C%E6%95%B4%E6%88%98%E6%96%97%E5%88%A4%E5%AE%9A/">
-          <div><h3>动作游戏完整战斗判定</h3><p>想象两名练习者使用带感应区域的护具：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/动作游戏完整战斗判定.md" data-article-title="动作游戏完整战斗判定" data-search="动作游戏完整战斗判定 工程设计 想象两名练习者使用带感应区域的护具：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%8A%A8%E4%BD%9C%E6%B8%B8%E6%88%8F%E5%AE%8C%E6%95%B4%E6%88%98%E6%96%97%E5%88%A4%E5%AE%9A/">
+          <div><h3>动作游戏完整战斗判定</h3><p>想象两名练习者使用带感应区域的护具：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="对话系统：节点、条件、效果与跳转 工程设计 想象一本互动导览册：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F%E8%8A%82%E7%82%B9%E6%9D%A1%E4%BB%B6%E6%95%88%E6%9E%9C%E4%B8%8E%E8%B7%B3%E8%BD%AC/">
-          <div><h3>对话系统：节点、条件、效果与跳转</h3><p>想象一本互动导览册：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/对话系统节点条件效果与跳转.md" data-article-title="对话系统：节点、条件、效果与跳转" data-search="对话系统：节点、条件、效果与跳转 工程设计 想象一本互动导览册：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F%E8%8A%82%E7%82%B9%E6%9D%A1%E4%BB%B6%E6%95%88%E6%9E%9C%E4%B8%8E%E8%B7%B3%E8%BD%AC/">
+          <div><h3>对话系统：节点、条件、效果与跳转</h3><p>想象一本互动导览册：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="对象池 工程设计 游戏里有很多对象会频繁创建和销毁：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">
-          <div><h3>对象池</h3><p>游戏里有很多对象会频繁创建和销毁：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/对象池.md" data-article-title="对象池" data-search="对象池 工程设计 游戏里有很多对象会频繁创建和销毁：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E6%B1%A0/">
+          <div><h3>对象池</h3><p>游戏里有很多对象会频繁创建和销毁：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="对象生命周期状态与异步竞态 工程设计 把一个对象想成餐厅里的一张取餐号牌。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%8A%B6%E6%80%81%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%AB%9E%E6%80%81/">
-          <div><h3>对象生命周期状态与异步竞态</h3><p>把一个对象想成餐厅里的一张取餐号牌。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/对象生命周期状态与异步竞态.md" data-article-title="对象生命周期状态与异步竞态" data-search="对象生命周期状态与异步竞态 工程设计 把一个对象想成餐厅里的一张取餐号牌。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%8A%B6%E6%80%81%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%AB%9E%E6%80%81/">
+          <div><h3>对象生命周期状态与异步竞态</h3><p>把一个对象想成餐厅里的一张取餐号牌。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="缓存：建立、失效、版本与重建 工程设计 想象图书馆为热门书架准备了一张手写索引卡：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BC%93%E5%AD%98%E5%BB%BA%E7%AB%8B%E5%A4%B1%E6%95%88%E7%89%88%E6%9C%AC%E4%B8%8E%E9%87%8D%E5%BB%BA/">
-          <div><h3>缓存：建立、失效、版本与重建</h3><p>想象图书馆为热门书架准备了一张手写索引卡：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/缓存建立失效版本与重建.md" data-article-title="缓存：建立、失效、版本与重建" data-search="缓存：建立、失效、版本与重建 工程设计 想象图书馆为热门书架准备了一张手写索引卡：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BC%93%E5%AD%98%E5%BB%BA%E7%AB%8B%E5%A4%B1%E6%95%88%E7%89%88%E6%9C%AC%E4%B8%8E%E9%87%8D%E5%BB%BA/">
+          <div><h3>缓存：建立、失效、版本与重建</h3><p>想象图书馆为热门书架准备了一张手写索引卡：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="门面模式与泛型消重 工程设计 gas / ecs 这类系统内部通常很复杂：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%B3%9B%E5%9E%8B%E6%B6%88%E9%87%8D/">
-          <div><h3>门面模式与泛型消重</h3><p>GAS / ECS 这类系统内部通常很复杂：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/门面模式与泛型消重.md" data-article-title="门面模式与泛型消重" data-search="门面模式与泛型消重 工程设计 gas / ecs 这类系统内部通常很复杂：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%B3%9B%E5%9E%8B%E6%B6%88%E9%87%8D/">
+          <div><h3>门面模式与泛型消重</h3><p>GAS / ECS 这类系统内部通常很复杂：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="命令模式：队列、撤销与事件边界 工程设计 想象一张办理单：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E9%98%9F%E5%88%97%E6%92%A4%E9%94%80%E4%B8%8E%E4%BA%8B%E4%BB%B6%E8%BE%B9%E7%95%8C/">
-          <div><h3>命令模式：队列、撤销与事件边界</h3><p>想象一张办理单：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/命令模式队列撤销与事件边界.md" data-article-title="命令模式：队列、撤销与事件边界" data-search="命令模式：队列、撤销与事件边界 工程设计 想象一张办理单：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E9%98%9F%E5%88%97%E6%92%A4%E9%94%80%E4%B8%8E%E4%BA%8B%E4%BB%B6%E8%BE%B9%E7%95%8C/">
+          <div><h3>命令模式：队列、撤销与事件边界</h3><p>想象一张办理单：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="命中后的运动与投射物 工程设计 一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%B8%AD%E5%90%8E%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E6%8A%95%E5%B0%84%E7%89%A9/">
-          <div><h3>命中后的运动与投射物</h3><p>一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/命中后的运动与投射物.md" data-article-title="命中后的运动与投射物" data-search="命中后的运动与投射物 工程设计 一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E5%91%BD%E4%B8%AD%E5%90%8E%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E6%8A%95%E5%B0%84%E7%89%A9/">
+          <div><h3>命中后的运动与投射物</h3><p>一次命中不是“目标进入半径”这么简单。对会移动的投射物来说，系统还要回答：生成时保存了什么、这一帧从哪里扫到哪里、哪些候选可以命中、同一目标能否再次命中、命中后如何结算，以及什么时候清理运行实例。击退则要回答另一个容易出错的问题：…</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="配置热更新：版本一致性与失败可见性 工程设计 配置生成管线关注：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E7%83%AD%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E5%A4%B1%E8%B4%A5%E5%8F%AF%E8%A7%81%E6%80%A7/">
-          <div><h3>配置热更新：版本一致性与失败可见性</h3><p>配置生成管线关注：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/配置热更新版本一致性与失败可见性.md" data-article-title="配置热更新：版本一致性与失败可见性" data-search="配置热更新：版本一致性与失败可见性 工程设计 配置生成管线关注：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E7%83%AD%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E%E5%A4%B1%E8%B4%A5%E5%8F%AF%E8%A7%81%E6%80%A7/">
+          <div><h3>配置热更新：版本一致性与失败可见性</h3><p>配置生成管线关注：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="配置数据生成管线：让错误停在构建期 工程设计 配置表不是把电子表格“另存为 json”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90%E7%AE%A1%E7%BA%BF/">
-          <div><h3>配置数据生成管线：让错误停在构建期</h3><p>配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/配置数据生成管线.md" data-article-title="配置数据生成管线：让错误停在构建期" data-search="配置数据生成管线：让错误停在构建期 工程设计 配置表不是把电子表格“另存为 json”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90%E7%AE%A1%E7%BA%BF/">
+          <div><h3>配置数据生成管线：让错误停在构建期</h3><p>配置表不是把电子表格“另存为 JSON”。一条可靠的生成管线要把人类易编辑的源记录，经过多层验证，变成运行时可安全查询的只读快照：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="事件队列：延迟、监听、调试与事件风暴 工程设计 想象一块公告板：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E9%98%9F%E5%88%97%E5%BB%B6%E8%BF%9F%E7%9B%91%E5%90%AC%E8%B0%83%E8%AF%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E9%A3%8E%E6%9A%B4/">
-          <div><h3>事件队列：延迟、监听、调试与事件风暴</h3><p>想象一块公告板：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/事件队列延迟监听调试与事件风暴.md" data-article-title="事件队列：延迟、监听、调试与事件风暴" data-search="事件队列：延迟、监听、调试与事件风暴 工程设计 想象一块公告板：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E9%98%9F%E5%88%97%E5%BB%B6%E8%BF%9F%E7%9B%91%E5%90%AC%E8%B0%83%E8%AF%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E9%A3%8E%E6%9A%B4/">
+          <div><h3>事件队列：延迟、监听、调试与事件风暴</h3><p>想象一块公告板：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="事件系统与发布订阅 工程设计 事件系统解决的是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/">
-          <div><h3>事件系统与发布订阅</h3><p>事件系统解决的是：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/事件系统与发布订阅.md" data-article-title="事件系统与发布订阅" data-search="事件系统与发布订阅 工程设计 事件系统解决的是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/">
+          <div><h3>事件系统与发布订阅</h3><p>事件系统解决的是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="数据驱动 timeline：从编辑器到实体消费 工程设计 一套可用于战斗、剧情或复杂交互的 timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E6%95%B0%E6%8D%AE%E9%A9%B1%E5%8A%A8Timeline-%E4%BB%8E%E7%BC%96%E8%BE%91%E5%99%A8%E5%88%B0%E5%AE%9E%E4%BD%93%E6%B6%88%E8%B4%B9/">
-          <div><h3>数据驱动 Timeline：从编辑器到实体消费</h3><p>一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/数据驱动Timeline-从编辑器到实体消费.md" data-article-title="数据驱动 Timeline：从编辑器到实体消费" data-search="数据驱动 timeline：从编辑器到实体消费 工程设计 一套可用于战斗、剧情或复杂交互的 timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E6%95%B0%E6%8D%AE%E9%A9%B1%E5%8A%A8Timeline-%E4%BB%8E%E7%BC%96%E8%BE%91%E5%99%A8%E5%88%B0%E5%AE%9E%E4%BD%93%E6%B6%88%E8%B4%B9/">
+          <div><h3>数据驱动 Timeline：从编辑器到实体消费</h3><p>一套可用于战斗、剧情或复杂交互的 Timeline，不只是“在某一秒播放动画”。它更像一条小型编译与执行管线：编辑器负责描述意图，构建阶段负责验证并生成运行时数据，播放器负责调度，实体组件负责真正执行。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="网络抖动缓冲、快照插值与可观测性 工程设计 这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E6%8A%96%E5%8A%A8%E7%BC%93%E5%86%B2%E5%BF%AB%E7%85%A7%E6%8F%92%E5%80%BC%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/">
-          <div><h3>网络抖动缓冲、快照插值与可观测性</h3><p>这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/网络抖动缓冲快照插值与可观测性.md" data-article-title="网络抖动缓冲、快照插值与可观测性" data-search="网络抖动缓冲、快照插值与可观测性 工程设计 这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E6%8A%96%E5%8A%A8%E7%BC%93%E5%86%B2%E5%BF%AB%E7%85%A7%E6%8F%92%E5%80%BC%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/">
+          <div><h3>网络抖动缓冲、快照插值与可观测性</h3><p>这篇讨论的主要不是“自己的角色按键后怎样立即移动”，而是“其他玩家怎样在我的屏幕上平滑移动”。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="网络预测与服务器校正：先响应，再用权威结果收敛 工程设计 玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E9%A2%84%E6%B5%8B%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A0%A1%E6%AD%A3/">
-          <div><h3>网络预测与服务器校正：先响应，再用权威结果收敛</h3><p>玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/网络预测与服务器校正.md" data-article-title="网络预测与服务器校正：先响应，再用权威结果收敛" data-search="网络预测与服务器校正：先响应，再用权威结果收敛 工程设计 玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%BD%91%E7%BB%9C%E9%A2%84%E6%B5%8B%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A0%A1%E6%AD%A3/">
+          <div><h3>网络预测与服务器校正：先响应，再用权威结果收敛</h3><p>玩家按下“向前”时，如果客户端一定要等服务器回复后才移动，操作就会显得迟钝。客户端预测的做法是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口 工程设计 普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%99%9A%E6%8B%9F%E5%88%97%E8%A1%A8%E4%B8%8E%E8%8A%82%E7%82%B9%E5%A4%8D%E7%94%A8/">
-          <div><h3>虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口</h3><p>普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/虚拟列表与节点复用.md" data-article-title="虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口" data-search="虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口 工程设计 普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%99%9A%E6%8B%9F%E5%88%97%E8%A1%A8%E4%B8%8E%E8%8A%82%E7%82%B9%E5%A4%8D%E7%94%A8/">
+          <div><h3>虚拟列表与节点复用：滚动一万条数据，只保留一小扇窗口</h3><p>普通列表常按数据量创建节点。数据从几十条增长到几千条时，节点创建、布局、绑定和渲染都会随总量增长。虚拟列表换一个问题：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="一次技能从输入到结束 工程设计 按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/">
-          <div><h3>一次技能从输入到结束</h3><p>按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/一次技能从输入到结束.md" data-article-title="一次技能从输入到结束" data-search="一次技能从输入到结束 工程设计 按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E4%B8%80%E6%AC%A1%E6%8A%80%E8%83%BD%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%BB%93%E6%9D%9F/">
+          <div><h3>一次技能从输入到结束</h3><p>按下一个技能按钮，看起来只发生了“一次释放”。运行时真正要完成的，却是一条跨越输入、规则裁决、执行编排、目标查询、效果结算与清理的状态链。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="状态来源与技能仲裁 工程设计 “角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%8A%B6%E6%80%81%E6%9D%A5%E6%BA%90%E4%B8%8E%E6%8A%80%E8%83%BD%E4%BB%B2%E8%A3%81/">
-          <div><h3>状态来源与技能仲裁</h3><p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/状态来源与技能仲裁.md" data-article-title="状态来源与技能仲裁" data-search="状态来源与技能仲裁 工程设计 “角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E7%8A%B6%E6%80%81%E6%9D%A5%E6%BA%90%E4%B8%8E%E6%8A%80%E8%83%BD%E4%BB%B2%E8%A3%81/">
+          <div><h3>状态来源与技能仲裁</h3><p>“角色正在施法”“此时不能移动”“下一个输入能否接管当前动作”，看起来都是布尔判断。真正困难的地方在于：同一个状态可能由多个系统同时提供，而技能冲突又会因所处阶段不同而采用不同规则。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="资源生命周期统一管理 工程设计 资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、owner 矩阵和最终释放，可进入资源作用域与引用释放。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">
-          <div><h3>资源生命周期统一管理</h3><p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、Owner 矩阵和最终释放，可进入资源作用域与引用释放。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/资源生命周期统一管理.md" data-article-title="资源生命周期统一管理" data-search="资源生命周期统一管理 工程设计 资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、owner 矩阵和最终释放，可进入资源作用域与引用释放。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%BB%9F%E4%B8%80%E7%AE%A1%E7%90%86/">
+          <div><h3>资源生命周期统一管理</h3><p>资源管理里最重要的不是“引用计数这个数字本身”，而是资源的获取和释放必须有统一入口、统一规则、统一生命周期归属。要逐步观察并发加载、Owner 矩阵和最终释放，可进入资源作用域与引用释放。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="资源作用域与引用释放：让“谁还需要它”成为可观察状态 工程设计 资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E9%87%8A%E6%94%BE/">
-          <div><h3>资源作用域与引用释放：让“谁还需要它”成为可观察状态</h3><p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/资源作用域与引用释放.md" data-article-title="资源作用域与引用释放：让“谁还需要它”成为可观察状态" data-search="资源作用域与引用释放：让“谁还需要它”成为可观察状态 工程设计 资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/%E8%B5%84%E6%BA%90%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E9%87%8A%E6%94%BE/">
+          <div><h3>资源作用域与引用释放：让“谁还需要它”成为可观察状态</h3><p>资源缓存最危险的问题不是“没加载到”，而是加载成功后没有人能回答：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="ecs：实体、组件、系统与数据布局 工程设计 想象一个大型仓库：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/ECS%E5%AE%9E%E4%BD%93%E7%BB%84%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80/">
-          <div><h3>ECS：实体、组件、系统与数据布局</h3><p>想象一个大型仓库：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/ECS实体组件系统与数据布局.md" data-article-title="ECS：实体、组件、系统与数据布局" data-search="ecs：实体、组件、系统与数据布局 工程设计 想象一个大型仓库：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/ECS%E5%AE%9E%E4%BD%93%E7%BB%84%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80/">
+          <div><h3>ECS：实体、组件、系统与数据布局</h3><p>想象一个大型仓库：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="effect 与 buff 生命周期：从一次申请到彻底清理 工程设计 &gt; effect 是一份“如何改变状态”的定义，buff 是持续存在、会被后续更新和移除的 effect。把两者放进同一条生命周期管线，才能解释叠层、周期、属性重算与清理为什么不会互相打架。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">
-          <div><h3>Effect 与 Buff 生命周期：从一次申请到彻底清理</h3><p>&gt; Effect 是一份“如何改变状态”的定义，Buff 是持续存在、会被后续更新和移除的 Effect。把两者放进同一条生命周期管线，才能解释叠层、周期、属性重算与清理为什么不会互相打架。</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/Effect与Buff生命周期.md" data-article-title="Effect 与 Buff 生命周期：从一次申请到彻底清理" data-search="effect 与 buff 生命周期：从一次申请到彻底清理 工程设计 &gt; effect 是一份“如何改变状态”的定义，buff 是持续存在、会被后续更新和移除的 effect。把两者放进同一条生命周期管线，才能解释叠层、周期、属性重算与清理为什么不会互相打架。" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/Effect%E4%B8%8EBuff%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">
+          <div><h3>Effect 与 Buff 生命周期：从一次申请到彻底清理</h3><p>&gt; Effect 是一份“如何改变状态”的定义，Buff 是持续存在、会被后续更新和移除的 Effect。把两者放进同一条生命周期管线，才能解释叠层、周期、属性重算与清理为什么不会互相打架。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="ue gameplay 框架：职责与状态流 工程设计 可以把一局多人比赛想成：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UEGameplay%E6%A1%86%E6%9E%B6%E8%81%8C%E8%B4%A3%E4%B8%8E%E7%8A%B6%E6%80%81%E6%B5%81/">
-          <div><h3>UE Gameplay 框架：职责与状态流</h3><p>可以把一局多人比赛想成：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/UEGameplay框架职责与状态流.md" data-article-title="UE Gameplay 框架：职责与状态流" data-search="ue gameplay 框架：职责与状态流 工程设计 可以把一局多人比赛想成：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UEGameplay%E6%A1%86%E6%9E%B6%E8%81%8C%E8%B4%A3%E4%B8%8E%E7%8A%B6%E6%80%81%E6%B5%81/">
+          <div><h3>UE Gameplay 框架：职责与状态流</h3><p>可以把一局多人比赛想成：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="ui 数据绑定：依赖追踪与批量刷新 工程设计 虚拟列表解决的是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E4%BE%9D%E8%B5%96%E8%BF%BD%E8%B8%AA%E4%B8%8E%E6%89%B9%E9%87%8F%E5%88%B7%E6%96%B0/">
-          <div><h3>UI 数据绑定：依赖追踪与批量刷新</h3><p>虚拟列表解决的是：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/UI数据绑定依赖追踪与批量刷新.md" data-article-title="UI 数据绑定：依赖追踪与批量刷新" data-search="ui 数据绑定：依赖追踪与批量刷新 工程设计 虚拟列表解决的是：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E4%BE%9D%E8%B5%96%E8%BF%BD%E8%B8%AA%E4%B8%8E%E6%89%B9%E9%87%8F%E5%88%B7%E6%96%B0/">
+          <div><h3>UI 数据绑定：依赖追踪与批量刷新</h3><p>虚拟列表解决的是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="ui 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事 工程设计 页面系统常同时维护三种状态：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E9%A1%B5%E9%9D%A2%E6%A0%88%E4%B8%8E%E9%9D%A2%E6%9D%BF%E6%B1%A0/">
-          <div><h3>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</h3><p>页面系统常同时维护三种状态：</p></div>
+        <a class="article-card" data-article-card data-article-id="工程设计/UI页面栈与面板池.md" data-article-title="UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事" data-search="ui 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事 工程设计 页面系统常同时维护三种状态：" href="/knowledge/library/%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1/UI%E9%A1%B5%E9%9D%A2%E6%A0%88%E4%B8%8E%E9%9D%A2%E6%9D%BF%E6%B1%A0/">
+          <div><h3>UI 页面栈与面板池：导航历史、活动实例与可复用对象不是一回事</h3><p>页面系统常同时维护三种状态：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>计算机基础</span><small>02 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="虚拟内存、页、堆栈与 malloc 计算机基础 想象每个旅行团都拿到一本自己的酒店手册。" href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E9%A1%B5%E5%A0%86%E6%A0%88%E4%B8%8Emalloc/">
-          <div><h3>虚拟内存、页、堆栈与 malloc</h3><p>想象每个旅行团都拿到一本自己的酒店手册。</p></div>
+        <a class="article-card" data-article-card data-article-id="计算机基础/虚拟内存页堆栈与malloc.md" data-article-title="虚拟内存、页、堆栈与 malloc" data-search="虚拟内存、页、堆栈与 malloc 计算机基础 想象每个旅行团都拿到一本自己的酒店手册。" href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E9%A1%B5%E5%A0%86%E6%A0%88%E4%B8%8Emalloc/">
+          <div><h3>虚拟内存、页、堆栈与 malloc</h3><p>想象每个旅行团都拿到一本自己的酒店手册。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="原子操作、内存屏障与线程可见性 计算机基础 想象两个人在不同房间协作。" href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C%E4%B8%8E%E7%BA%BF%E7%A8%8B%E5%8F%AF%E8%A7%81%E6%80%A7/">
-          <div><h3>原子操作、内存屏障与线程可见性</h3><p>想象两个人在不同房间协作。</p></div>
+        <a class="article-card" data-article-card data-article-id="计算机基础/原子操作内存屏障与线程可见性.md" data-article-title="原子操作、内存屏障与线程可见性" data-search="原子操作、内存屏障与线程可见性 计算机基础 想象两个人在不同房间协作。" href="/knowledge/library/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C%E4%B8%8E%E7%BA%BF%E7%A8%8B%E5%8F%AF%E8%A7%81%E6%80%A7/">
+          <div><h3>原子操作、内存屏障与线程可见性</h3><p>想象两个人在不同房间协作。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>数据结构</span><small>01 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="二叉堆优先队列 数据结构 优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。" href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
-          <div><h3>二叉堆优先队列</h3><p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p></div>
+        <a class="article-card" data-article-card data-article-id="数据结构/二叉堆优先队列.md" data-article-title="二叉堆优先队列" data-search="二叉堆优先队列 数据结构 优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。" href="/knowledge/library/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E4%BA%8C%E5%8F%89%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
+          <div><h3>二叉堆优先队列</h3><p>优先队列适合解决这类问题：等待区里的任务带有优先级，调度器需要快速取出当前优先级最高的一项。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>算法</span><small>11 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="集群 ai 槽位分配与非攻击意图 算法 集群怪物不是每一只都应该同时攻击玩家。" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E9%9B%86%E7%BE%A4AI%E6%A7%BD%E4%BD%8D%E5%88%86%E9%85%8D%E4%B8%8E%E9%9D%9E%E6%94%BB%E5%87%BB%E6%84%8F%E5%9B%BE/">
-          <div><h3>集群 AI 槽位分配与非攻击意图</h3><p>集群怪物不是每一只都应该同时攻击玩家。</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/集群AI槽位分配与非攻击意图.md" data-article-title="集群 AI 槽位分配与非攻击意图" data-search="集群 ai 槽位分配与非攻击意图 算法 集群怪物不是每一只都应该同时攻击玩家。" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E9%9B%86%E7%BE%A4AI%E6%A7%BD%E4%BD%8D%E5%88%86%E9%85%8D%E4%B8%8E%E9%9D%9E%E6%94%BB%E5%87%BB%E6%84%8F%E5%9B%BE/">
+          <div><h3>集群 AI 槽位分配与非攻击意图</h3><p>集群怪物不是每一只都应该同时攻击玩家。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="空间划分：九宫格与四叉树 算法 空间划分解决的是：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%A9%BA%E9%97%B4%E5%88%92%E5%88%86-%E4%B9%9D%E5%AE%AB%E6%A0%BC%E4%B8%8E%E5%9B%9B%E5%8F%89%E6%A0%91/">
-          <div><h3>空间划分：九宫格与四叉树</h3><p>空间划分解决的是：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/空间划分-九宫格与四叉树.md" data-article-title="空间划分：九宫格与四叉树" data-search="空间划分：九宫格与四叉树 算法 空间划分解决的是：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%A9%BA%E9%97%B4%E5%88%92%E5%88%86-%E4%B9%9D%E5%AE%AB%E6%A0%BC%E4%B8%8E%E5%9B%9B%E5%8F%89%E6%A0%91/">
+          <div><h3>空间划分：九宫格与四叉树</h3><p>空间划分解决的是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="目标筛选与命中判定：从世界坐标到入选原因 算法 “找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%9B%AE%E6%A0%87%E7%AD%9B%E9%80%89%E4%B8%8E%E5%91%BD%E4%B8%AD%E5%88%A4%E5%AE%9A/">
-          <div><h3>目标筛选与命中判定：从世界坐标到入选原因</h3><p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/目标筛选与命中判定.md" data-article-title="目标筛选与命中判定：从世界坐标到入选原因" data-search="目标筛选与命中判定：从世界坐标到入选原因 算法 “找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%9B%AE%E6%A0%87%E7%AD%9B%E9%80%89%E4%B8%8E%E5%91%BD%E4%B8%AD%E5%88%A4%E5%AE%9A/">
+          <div><h3>目标筛选与命中判定：从世界坐标到入选原因</h3><p>“找出范围内的目标”不是一次判断，而是一条逐层缩小候选集的查询管线：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="启发式决策模型：怪物集群候选打分 算法 一群怪物都想攻击玩家，但不能所有怪一起攻击。" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/">
-          <div><h3>启发式决策模型：怪物集群候选打分</h3><p>一群怪物都想攻击玩家，但不能所有怪一起攻击。</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/启发式决策模型-怪物集群候选打分.md" data-article-title="启发式决策模型：怪物集群候选打分" data-search="启发式决策模型：怪物集群候选打分 算法 一群怪物都想攻击玩家，但不能所有怪一起攻击。" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B-%E6%80%AA%E7%89%A9%E9%9B%86%E7%BE%A4%E5%80%99%E9%80%89%E6%89%93%E5%88%86/">
+          <div><h3>启发式决策模型：怪物集群候选打分</h3><p>一群怪物都想攻击玩家，但不能所有怪一起攻击。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="算法工具箱：二分、top k、并查集与动态规划 算法 想象整理一座资料室：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95%E5%B7%A5%E5%85%B7%E7%AE%B1-%E4%BA%8C%E5%88%86TopK%E5%B9%B6%E6%9F%A5%E9%9B%86%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">
-          <div><h3>算法工具箱：二分、Top K、并查集与动态规划</h3><p>想象整理一座资料室：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/算法工具箱-二分TopK并查集与动态规划.md" data-article-title="算法工具箱：二分、Top K、并查集与动态规划" data-search="算法工具箱：二分、top k、并查集与动态规划 算法 想象整理一座资料室：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95%E5%B7%A5%E5%85%B7%E7%AE%B1-%E4%BA%8C%E5%88%86TopK%E5%B9%B6%E6%9F%A5%E9%9B%86%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">
+          <div><h3>算法工具箱：二分、Top K、并查集与动态规划</h3><p>想象整理一座资料室：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="图遍历与最短路：bfs、dfs、dijkstra 算法 想象一座展馆：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%9B%BE%E9%81%8D%E5%8E%86%E4%B8%8E%E6%9C%80%E7%9F%AD%E8%B7%AF-BFS-DFS-Dijkstra/">
-          <div><h3>图遍历与最短路：BFS、DFS、Dijkstra</h3><p>想象一座展馆：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/图遍历与最短路-BFS-DFS-Dijkstra.md" data-article-title="图遍历与最短路：BFS、DFS、Dijkstra" data-search="图遍历与最短路：bfs、dfs、dijkstra 算法 想象一座展馆：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E5%9B%BE%E9%81%8D%E5%8E%86%E4%B8%8E%E6%9C%80%E7%9F%AD%E8%B7%AF-BFS-DFS-Dijkstra/">
+          <div><h3>图遍历与最短路：BFS、DFS、Dijkstra</h3><p>想象一座展馆：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="物理碰撞检测基础：broad phase、aabb、obb、bvh 与 sat 算法 物理碰撞检测解决的是：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%89%A9%E7%90%86%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%9F%BA%E7%A1%80-BroadPhase-AABB-OBB-BVH-SAT/">
-          <div><h3>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</h3><p>物理碰撞检测解决的是：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/物理碰撞检测基础-BroadPhase-AABB-OBB-BVH-SAT.md" data-article-title="物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT" data-search="物理碰撞检测基础：broad phase、aabb、obb、bvh 与 sat 算法 物理碰撞检测解决的是：" href="/knowledge/library/%E7%AE%97%E6%B3%95/%E7%89%A9%E7%90%86%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%9F%BA%E7%A1%80-BroadPhase-AABB-OBB-BVH-SAT/">
+          <div><h3>物理碰撞检测基础：Broad Phase、AABB、OBB、BVH 与 SAT</h3><p>物理碰撞检测解决的是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="a 星寻路中的 g 值与 parent 回溯 算法 a 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。" href="/knowledge/library/%E7%AE%97%E6%B3%95/A%E6%98%9F%E5%AF%BB%E8%B7%AF%E4%B8%AD%E7%9A%84G%E5%80%BC%E4%B8%8EParent%E5%9B%9E%E6%BA%AF/">
-          <div><h3>A 星寻路中的 G 值与 Parent 回溯</h3><p>A 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/A星寻路中的G值与Parent回溯.md" data-article-title="A 星寻路中的 G 值与 Parent 回溯" data-search="a 星寻路中的 g 值与 parent 回溯 算法 a 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。" href="/knowledge/library/%E7%AE%97%E6%B3%95/A%E6%98%9F%E5%AF%BB%E8%B7%AF%E4%B8%AD%E7%9A%84G%E5%80%BC%E4%B8%8EParent%E5%9B%9E%E6%BA%AF/">
+          <div><h3>A 星寻路中的 G 值与 Parent 回溯</h3><p>A 星寻路用于在地图中寻找一条从起点到终点的路径，并尽量绕开障碍、缩短距离。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="ccd：连续碰撞检测与高速穿透 算法 普通离散碰撞检测只检查若干离散时刻的形状关系。" href="/knowledge/library/%E7%AE%97%E6%B3%95/CCD%E8%BF%9E%E7%BB%AD%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E4%B8%8E%E9%AB%98%E9%80%9F%E7%A9%BF%E9%80%8F/">
-          <div><h3>CCD：连续碰撞检测与高速穿透</h3><p>普通离散碰撞检测只检查若干离散时刻的形状关系。</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/CCD连续碰撞检测与高速穿透.md" data-article-title="CCD：连续碰撞检测与高速穿透" data-search="ccd：连续碰撞检测与高速穿透 算法 普通离散碰撞检测只检查若干离散时刻的形状关系。" href="/knowledge/library/%E7%AE%97%E6%B3%95/CCD%E8%BF%9E%E7%BB%AD%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E4%B8%8E%E9%AB%98%E9%80%9F%E7%A9%BF%E9%80%8F/">
+          <div><h3>CCD：连续碰撞检测与高速穿透</h3><p>普通离散碰撞检测只检查若干离散时刻的形状关系。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="gjk：凸形状碰撞检测理解笔记 算法 gjk 全名：" href="/knowledge/library/%E7%AE%97%E6%B3%95/GJK%E5%87%B8%E5%BD%A2%E7%8A%B6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/">
-          <div><h3>GJK：凸形状碰撞检测理解笔记</h3><p>GJK 全名：</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/GJK凸形状碰撞检测理解笔记.md" data-article-title="GJK：凸形状碰撞检测理解笔记" data-search="gjk：凸形状碰撞检测理解笔记 算法 gjk 全名：" href="/knowledge/library/%E7%AE%97%E6%B3%95/GJK%E5%87%B8%E5%BD%A2%E7%8A%B6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/">
+          <div><h3>GJK：凸形状碰撞检测理解笔记</h3><p>GJK 全名：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="navmesh：多边形寻路与动态障碍 算法 规则网格把空间切成大量格子，而 navmesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。" href="/knowledge/library/%E7%AE%97%E6%B3%95/NavMesh%E5%A4%9A%E8%BE%B9%E5%BD%A2%E5%AF%BB%E8%B7%AF%E4%B8%8E%E5%8A%A8%E6%80%81%E9%9A%9C%E7%A2%8D/">
-          <div><h3>NavMesh：多边形寻路与动态障碍</h3><p>规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p></div>
+        <a class="article-card" data-article-card data-article-id="算法/NavMesh多边形寻路与动态障碍.md" data-article-title="NavMesh：多边形寻路与动态障碍" data-search="navmesh：多边形寻路与动态障碍 算法 规则网格把空间切成大量格子，而 navmesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。" href="/knowledge/library/%E7%AE%97%E6%B3%95/NavMesh%E5%A4%9A%E8%BE%B9%E5%BD%A2%E5%AF%BB%E8%B7%AF%E4%B8%8E%E5%8A%A8%E6%80%81%E9%9A%9C%E7%A2%8D/">
+          <div><h3>NavMesh：多边形寻路与动态障碍</h3><p>规则网格把空间切成大量格子，而 NavMesh 把“可以行走的连续区域”表示成一组相邻的凸多边形。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>游戏逻辑常用模式</span><small>05 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="时间控制小模式：冷却、计时器、延迟与 tick 游戏逻辑常用模式 冷却、计时器、延迟和 tick 都围绕同一个问题：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E6%97%B6%E9%97%B4%E6%8E%A7%E5%88%B6%E5%B0%8F%E6%A8%A1%E5%BC%8F-%E5%86%B7%E5%8D%B4%E8%AE%A1%E6%97%B6%E5%99%A8%E5%BB%B6%E8%BF%9F%E4%B8%8ETick/">
-          <div><h3>时间控制小模式：冷却、计时器、延迟与 Tick</h3><p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏逻辑常用模式/时间控制小模式-冷却计时器延迟与Tick.md" data-article-title="时间控制小模式：冷却、计时器、延迟与 Tick" data-search="时间控制小模式：冷却、计时器、延迟与 tick 游戏逻辑常用模式 冷却、计时器、延迟和 tick 都围绕同一个问题：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E6%97%B6%E9%97%B4%E6%8E%A7%E5%88%B6%E5%B0%8F%E6%A8%A1%E5%BC%8F-%E5%86%B7%E5%8D%B4%E8%AE%A1%E6%97%B6%E5%99%A8%E5%BB%B6%E8%BF%9F%E4%B8%8ETick/">
+          <div><h3>时间控制小模式：冷却、计时器、延迟与 Tick</h3><p>冷却、计时器、延迟和 Tick 都围绕同一个问题：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="属性脏标记与局部重算 游戏逻辑常用模式 属性系统常同时保存两类值：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E5%B1%9E%E6%80%A7%E8%84%8F%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B1%80%E9%83%A8%E9%87%8D%E7%AE%97/">
-          <div><h3>属性脏标记与局部重算</h3><p>属性系统常同时保存两类值：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏逻辑常用模式/属性脏标记与局部重算.md" data-article-title="属性脏标记与局部重算" data-search="属性脏标记与局部重算 游戏逻辑常用模式 属性系统常同时保存两类值：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E5%B1%9E%E6%80%A7%E8%84%8F%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B1%80%E9%83%A8%E9%87%8D%E7%AE%97/">
+          <div><h3>属性脏标记与局部重算</h3><p>属性系统常同时保存两类值：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="随机系统 游戏逻辑常用模式 随机系统的核心不是“随便抽一个”，而是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E9%9A%8F%E6%9C%BA%E7%B3%BB%E7%BB%9F/">
-          <div><h3>随机系统</h3><p>随机系统的核心不是“随便抽一个”，而是：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏逻辑常用模式/随机系统.md" data-article-title="随机系统" data-search="随机系统 游戏逻辑常用模式 随机系统的核心不是“随便抽一个”，而是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E9%9A%8F%E6%9C%BA%E7%B3%BB%E7%BB%9F/">
+          <div><h3>随机系统</h3><p>随机系统的核心不是“随便抽一个”，而是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="位标记 flags 与 bitmask 游戏逻辑常用模式 位标记的核心是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E4%BD%8D%E6%A0%87%E8%AE%B0Flags%E4%B8%8EBitMask/">
-          <div><h3>位标记 Flags 与 BitMask</h3><p>位标记的核心是：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏逻辑常用模式/位标记Flags与BitMask.md" data-article-title="位标记 Flags 与 BitMask" data-search="位标记 flags 与 bitmask 游戏逻辑常用模式 位标记的核心是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E4%BD%8D%E6%A0%87%E8%AE%B0Flags%E4%B8%8EBitMask/">
+          <div><h3>位标记 Flags 与 BitMask</h3><p>位标记的核心是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="脏标记 dirty flag 游戏逻辑常用模式 脏标记的核心是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E8%84%8F%E6%A0%87%E8%AE%B0DirtyFlag/">
-          <div><h3>脏标记 Dirty Flag</h3><p>脏标记的核心是：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏逻辑常用模式/脏标记DirtyFlag.md" data-article-title="脏标记 Dirty Flag" data-search="脏标记 dirty flag 游戏逻辑常用模式 脏标记的核心是：" href="/knowledge/library/%E6%B8%B8%E6%88%8F%E9%80%BB%E8%BE%91%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%BC%8F/%E8%84%8F%E6%A0%87%E8%AE%B0DirtyFlag/">
+          <div><h3>脏标记 Dirty Flag</h3><p>脏标记的核心是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>游戏AI与逻辑建模</span><small>05 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="局部避障：rvo 与 orca 理解笔记 游戏ai与逻辑建模 navmesh 和 a star 解决的是：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E5%B1%80%E9%83%A8%E9%81%BF%E9%9A%9C-RVO%E4%B8%8EORCA%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/">
-          <div><h3>局部避障：RVO 与 ORCA 理解笔记</h3><p>NavMesh 和 A Star 解决的是：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏AI与逻辑建模/局部避障-RVO与ORCA理解笔记.md" data-article-title="局部避障：RVO 与 ORCA 理解笔记" data-search="局部避障：rvo 与 orca 理解笔记 游戏ai与逻辑建模 navmesh 和 a star 解决的是：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E5%B1%80%E9%83%A8%E9%81%BF%E9%9A%9C-RVO%E4%B8%8EORCA%E7%90%86%E8%A7%A3%E7%AC%94%E8%AE%B0/">
+          <div><h3>局部避障：RVO 与 ORCA 理解笔记</h3><p>NavMesh 和 A Star 解决的是：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="行为树执行栈、节点返回值与中断 游戏ai与逻辑建模 想象一家小店开门后的值班流程：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%89%A7%E8%A1%8C%E6%A0%88%E8%8A%82%E7%82%B9%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%8E%E4%B8%AD%E6%96%AD/">
-          <div><h3>行为树执行栈、节点返回值与中断</h3><p>想象一家小店开门后的值班流程：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏AI与逻辑建模/行为树执行栈节点返回值与中断.md" data-article-title="行为树执行栈、节点返回值与中断" data-search="行为树执行栈、节点返回值与中断 游戏ai与逻辑建模 想象一家小店开门后的值班流程：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%89%A7%E8%A1%8C%E6%A0%88%E8%8A%82%E7%82%B9%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%8E%E4%B8%AD%E6%96%AD/">
+          <div><h3>行为树执行栈、节点返回值与中断</h3><p>想象一家小店开门后的值班流程：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="状态机、行为树、效用 ai 与 goap 对比 游戏ai与逻辑建模 复杂 ai 或流程逻辑不是只能靠一堆 if else。" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/">
-          <div><h3>状态机、行为树、效用 AI 与 GOAP 对比</h3><p>复杂 AI 或流程逻辑不是只能靠一堆 if else。</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏AI与逻辑建模/状态机行为树效用AI与GOAP对比.md" data-article-title="状态机、行为树、效用 AI 与 GOAP 对比" data-search="状态机、行为树、效用 ai 与 goap 对比 游戏ai与逻辑建模 复杂 ai 或流程逻辑不是只能靠一堆 if else。" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A1%8C%E4%B8%BA%E6%A0%91%E6%95%88%E7%94%A8AI%E4%B8%8EGOAP%E5%AF%B9%E6%AF%94/">
+          <div><h3>状态机、行为树、效用 AI 与 GOAP 对比</h3><p>复杂 AI 或流程逻辑不是只能靠一堆 if else。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="htn 与 mcts 决策模型 游戏ai与逻辑建模 想象两个生活场景。" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/HTN%E4%B8%8EMCTS%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B/">
-          <div><h3>HTN 与 MCTS 决策模型</h3><p>想象两个生活场景。</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏AI与逻辑建模/HTN与MCTS决策模型.md" data-article-title="HTN 与 MCTS 决策模型" data-search="htn 与 mcts 决策模型 游戏ai与逻辑建模 想象两个生活场景。" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/HTN%E4%B8%8EMCTS%E5%86%B3%E7%AD%96%E6%A8%A1%E5%9E%8B/">
+          <div><h3>HTN 与 MCTS 决策模型</h3><p>想象两个生活场景。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="steering、rvo、orca 与速度空间 游戏ai与逻辑建模 想象在人群中去车站：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/Steering-RVO-ORCA%E9%80%9F%E5%BA%A6%E7%A9%BA%E9%97%B4/">
-          <div><h3>Steering、RVO、ORCA 与速度空间</h3><p>想象在人群中去车站：</p></div>
+        <a class="article-card" data-article-card data-article-id="游戏AI与逻辑建模/Steering-RVO-ORCA速度空间.md" data-article-title="Steering、RVO、ORCA 与速度空间" data-search="steering、rvo、orca 与速度空间 游戏ai与逻辑建模 想象在人群中去车站：" href="/knowledge/library/%E6%B8%B8%E6%88%8FAI%E4%B8%8E%E9%80%BB%E8%BE%91%E5%BB%BA%E6%A8%A1/Steering-RVO-ORCA%E9%80%9F%E5%BA%A6%E7%A9%BA%E9%97%B4/">
+          <div><h3>Steering、RVO、ORCA 与速度空间</h3><p>想象在人群中去车站：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>知识路线</span><small>01 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="后续学习计划 知识路线 更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。" href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">
-          <div><h3>后续学习计划</h3><p>更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。</p></div>
+        <a class="article-card" data-article-card data-article-id="后续学习计划.md" data-article-title="后续学习计划" data-search="后续学习计划 知识路线 更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。" href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">
+          <div><h3>后续学习计划</h3><p>更新于 2026-07-28。当前知识库共有 61 篇学习笔记和 17 个交互专题；本轮列出的继续补强、尚未开始与可选深化内容均已加入网站。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>C++基础</span><small>03 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="c++ 对象模型、虚表与动态绑定 c++基础 想象一个统一的“发声”按钮。" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/C%2B%2B%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B%E8%99%9A%E8%A1%A8%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A/">
-          <div><h3>C++ 对象模型、虚表与动态绑定</h3><p>想象一个统一的“发声”按钮。</p></div>
+        <a class="article-card" data-article-card data-article-id="C++基础/C++对象模型虚表与动态绑定.md" data-article-title="C++ 对象模型、虚表与动态绑定" data-search="c++ 对象模型、虚表与动态绑定 c++基础 想象一个统一的“发声”按钮。" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/C%2B%2B%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B%E8%99%9A%E8%A1%A8%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A/">
+          <div><h3>C++ 对象模型、虚表与动态绑定</h3><p>想象一个统一的“发声”按钮。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="c++ 左值、右值、移动语义与任务队列 c++基础 想象仓库里有一个带固定货位的箱子：" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/%E5%B7%A6%E5%80%BC%E5%8F%B3%E5%80%BC%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97/">
-          <div><h3>C++ 左值、右值、移动语义与任务队列</h3><p>想象仓库里有一个带固定货位的箱子：</p></div>
+        <a class="article-card" data-article-card data-article-id="C++基础/左值右值移动语义与任务队列.md" data-article-title="C++ 左值、右值、移动语义与任务队列" data-search="c++ 左值、右值、移动语义与任务队列 c++基础 想象仓库里有一个带固定货位的箱子：" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/%E5%B7%A6%E5%80%BC%E5%8F%B3%E5%80%BC%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97/">
+          <div><h3>C++ 左值、右值、移动语义与任务队列</h3><p>想象仓库里有一个带固定货位的箱子：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="raii、智能指针与资源所有权 c++基础 想象借用一把钥匙：" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/RAII%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8E%E8%B5%84%E6%BA%90%E6%89%80%E6%9C%89%E6%9D%83/">
-          <div><h3>RAII、智能指针与资源所有权</h3><p>想象借用一把钥匙：</p></div>
+        <a class="article-card" data-article-card data-article-id="C++基础/RAII智能指针与资源所有权.md" data-article-title="RAII、智能指针与资源所有权" data-search="raii、智能指针与资源所有权 c++基础 想象借用一把钥匙：" href="/knowledge/library/C%2B%2B%E5%9F%BA%E7%A1%80/RAII%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8E%E8%B5%84%E6%BA%90%E6%89%80%E6%9C%89%E6%9D%83/">
+          <div><h3>RAII、智能指针与资源所有权</h3><p>想象借用一把钥匙：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>CSharp基础数据结构</span><small>06 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="集合常见配套语法 csharp基础数据结构 list&lt;t&gt;、dictionary&lt;tkey, tvalue&gt;、hashset&lt;t&gt; 这些集合经常会和一些 c# 语法一起出现：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E5%B8%B8%E8%A7%81%E9%85%8D%E5%A5%97%E8%AF%AD%E6%B3%95/">
-          <div><h3>集合常见配套语法</h3><p>List&lt;T&gt;、Dictionary&lt;TKey, TValue&gt;、HashSet&lt;T&gt; 这些集合经常会和一些 C# 语法一起出现：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/集合常见配套语法.md" data-article-title="集合常见配套语法" data-search="集合常见配套语法 csharp基础数据结构 list&lt;t&gt;、dictionary&lt;tkey, tvalue&gt;、hashset&lt;t&gt; 这些集合经常会和一些 c# 语法一起出现：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E5%B8%B8%E8%A7%81%E9%85%8D%E5%A5%97%E8%AF%AD%E6%B3%95/">
+          <div><h3>集合常见配套语法</h3><p>List&lt;T&gt;、Dictionary&lt;TKey, TValue&gt;、HashSet&lt;T&gt; 这些集合经常会和一些 C# 语法一起出现：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="集合排序查找筛选 csharp基础数据结构 这一节重点记录适合 unity 运行时和战斗热路径的集合写法：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E6%8E%92%E5%BA%8F%E6%9F%A5%E6%89%BE%E7%AD%9B%E9%80%89/">
-          <div><h3>集合排序查找筛选</h3><p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/集合排序查找筛选.md" data-article-title="集合排序查找筛选" data-search="集合排序查找筛选 csharp基础数据结构 这一节重点记录适合 unity 运行时和战斗热路径的集合写法：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E9%9B%86%E5%90%88%E6%8E%92%E5%BA%8F%E6%9F%A5%E6%89%BE%E7%AD%9B%E9%80%89/">
+          <div><h3>集合排序查找筛选</h3><p>这一节重点记录适合 Unity 运行时和战斗热路径的集合写法：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="dictionary 常用操作与深入用法 csharp基础数据结构 dictionary&lt;tkey, tvalue&gt; 可以理解成：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Dictionary%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%B7%B1%E5%85%A5%E7%94%A8%E6%B3%95/">
-          <div><h3>Dictionary 常用操作与深入用法</h3><p>Dictionary&lt;TKey, TValue&gt; 可以理解成：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/Dictionary常用操作与深入用法.md" data-article-title="Dictionary 常用操作与深入用法" data-search="dictionary 常用操作与深入用法 csharp基础数据结构 dictionary&lt;tkey, tvalue&gt; 可以理解成：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Dictionary%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%B7%B1%E5%85%A5%E7%94%A8%E6%B3%95/">
+          <div><h3>Dictionary 常用操作与深入用法</h3><p>Dictionary&lt;TKey, TValue&gt; 可以理解成：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="hashset：把“是否见过”变成可观察的状态 csharp基础数据结构 hashset&lt;t&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/HashSet%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%8E%BB%E9%87%8D%E6%A3%80%E6%B5%8B/">
-          <div><h3>HashSet：把“是否见过”变成可观察的状态</h3><p>HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/HashSet常用操作与去重检测.md" data-article-title="HashSet：把“是否见过”变成可观察的状态" data-search="hashset：把“是否见过”变成可观察的状态 csharp基础数据结构 hashset&lt;t&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/HashSet%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%8E%BB%E9%87%8D%E6%A3%80%E6%B5%8B/">
+          <div><h3>HashSet：把“是否见过”变成可观察的状态</h3><p>HashSet&lt;T&gt; 不是“一排数据”，而是一张只登记某个值是否出现过的表。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="list 常用操作与删除规则 csharp基础数据结构 list&lt;t&gt; 可以理解成“可变长度数组”。" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/List%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%88%A0%E9%99%A4%E8%A7%84%E5%88%99/">
-          <div><h3>List 常用操作与删除规则</h3><p>List&lt;T&gt; 可以理解成“可变长度数组”。</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/List常用操作与删除规则.md" data-article-title="List 常用操作与删除规则" data-search="list 常用操作与删除规则 csharp基础数据结构 list&lt;t&gt; 可以理解成“可变长度数组”。" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/List%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%88%A0%E9%99%A4%E8%A7%84%E5%88%99/">
+          <div><h3>List 常用操作与删除规则</h3><p>List&lt;T&gt; 可以理解成“可变长度数组”。</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="queue 与 stack 常用操作 csharp基础数据结构 queue&lt;t&gt; 是队列：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Queue%E4%B8%8EStack%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-          <div><h3>Queue 与 Stack 常用操作</h3><p>Queue&lt;T&gt; 是队列：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp基础数据结构/Queue与Stack常用操作.md" data-article-title="Queue 与 Stack 常用操作" data-search="queue 与 stack 常用操作 csharp基础数据结构 queue&lt;t&gt; 是队列：" href="/knowledge/library/CSharp%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/Queue%E4%B8%8EStack%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+          <div><h3>Queue 与 Stack 常用操作</h3><p>Queue&lt;T&gt; 是队列：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details><details class="article-group" data-article-group>
       <summary><span>CSharp语言基础</span><small>02 ARTICLES</small></summary>
       <div class="article-list">
-        <a class="article-card" data-article-card data-search="c# 类型、接口、委托与空值 csharp语言基础 想象一个物品寄存处：" href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/CSharp%E7%B1%BB%E5%9E%8B%E6%8E%A5%E5%8F%A3%E5%A7%94%E6%89%98%E4%B8%8E%E7%A9%BA%E5%80%BC/">
-          <div><h3>C# 类型、接口、委托与空值</h3><p>想象一个物品寄存处：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp语言基础/CSharp类型接口委托与空值.md" data-article-title="C# 类型、接口、委托与空值" data-search="c# 类型、接口、委托与空值 csharp语言基础 想象一个物品寄存处：" href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/CSharp%E7%B1%BB%E5%9E%8B%E6%8E%A5%E5%8F%A3%E5%A7%94%E6%89%98%E4%B8%8E%E7%A9%BA%E5%80%BC/">
+          <div><h3>C# 类型、接口、委托与空值</h3><p>想象一个物品寄存处：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>
-        <a class="article-card" data-article-card data-search="c# 属性、常量、静态与只读语义 csharp语言基础 想象一张设备登记卡：" href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/CSharp%E5%B1%9E%E6%80%A7%E5%B8%B8%E9%87%8F%E9%9D%99%E6%80%81%E4%B8%8E%E5%8F%AA%E8%AF%BB%E8%AF%AD%E4%B9%89/">
-          <div><h3>C# 属性、常量、静态与只读语义</h3><p>想象一张设备登记卡：</p></div>
+        <a class="article-card" data-article-card data-article-id="CSharp语言基础/CSharp属性常量静态与只读语义.md" data-article-title="C# 属性、常量、静态与只读语义" data-search="c# 属性、常量、静态与只读语义 csharp语言基础 想象一张设备登记卡：" href="/knowledge/library/CSharp%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/CSharp%E5%B1%9E%E6%80%A7%E5%B8%B8%E9%87%8F%E9%9D%99%E6%80%81%E4%B8%8E%E5%8F%AA%E8%AF%BB%E8%AF%AD%E4%B9%89/">
+          <div><h3>C# 属性、常量、静态与只读语义</h3><p>想象一张设备登记卡：</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a></div>
     </details></div>
@@ -513,5 +529,50 @@
   <footer class="knowledge-footer">
     <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
   </footer>
+
+  <dialog class="account-dialog" data-account-dialog aria-labelledby="account-dialog-title">
+    <header class="account-dialog__header">
+      <div><span>OPTIONAL ACCOUNT / CLOUD PROGRESS</span><h2 id="account-dialog-title">账号与学习进度</h2></div>
+      <button class="account-dialog__close" type="button" data-account-close aria-label="关闭账号窗口">×</button>
+    </header>
+    <div class="account-dialog__body">
+      <section class="account-anonymous" data-account-anonymous>
+        <div class="account-tabs" role="tablist" aria-label="登录或注册">
+          <button type="button" role="tab" data-account-tab="login" aria-selected="true">登录</button>
+          <button type="button" role="tab" data-account-tab="register" aria-selected="false">创建账号</button>
+        </div>
+        <form class="account-form" data-account-form="login">
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="account-submit" type="submit">登录并同步</button>
+        </form>
+        <form class="account-form" data-account-form="register" hidden>
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="new-password" required></label>
+          <p class="account-help">用户名支持 3–24 个中文、字母、数字、下划线或连字符。密码只需 4–64 个字符，不要求复杂组合。</p>
+          <button class="account-submit" type="submit">创建账号</button>
+        </form>
+      </section>
+      <section class="account-signed-in" data-account-signed-in hidden>
+        <div class="account-user-card">
+          <strong data-account-username></strong>
+          <p>学习记录会同步到这个账号；退出后网站仍然完全公开可读。</p>
+        </div>
+        <section class="account-merge" data-account-merge hidden>
+          <h3>检测到本机学习记录</h3>
+          <p>你可以把未登录时的记录合并到账号，也可以只使用已有云端记录。本机记录不会被静默删除。</p>
+          <div class="account-merge__actions">
+            <button class="account-action" type="button" data-account-merge-confirm>合并到账号</button>
+            <button class="account-action is-secondary" type="button" data-account-cloud-only>仅使用云端</button>
+          </div>
+        </section>
+        <div class="account-signed-in__actions">
+          <button class="account-action is-secondary" type="button" data-account-logout>退出登录</button>
+        </div>
+      </section>
+      <p class="account-status" data-account-status role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+  <div class="sync-toast" data-sync-toast role="status" aria-live="polite" hidden></div>
 </body>
 </html>

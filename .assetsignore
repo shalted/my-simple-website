@@ -1,0 +1,12 @@
+.git/
+.github/
+.wrangler/
+content/
+docs/
+migrations/
+scripts/
+worker/
+README.md
+package.json
+package-lock.json
+wrangler.jsonc

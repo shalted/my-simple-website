@@ -351,10 +351,59 @@ function siteHeader() {
           <button type="submit" aria-label="提交搜索">搜索</button>
         </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <button class="account-trigger" type="button" data-account-open>登录 / 进度</button>
       </div>
     </nav>
     <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
   </header>`;
+}
+
+function accountDialog() {
+  return `
+  <dialog class="account-dialog" data-account-dialog aria-labelledby="account-dialog-title">
+    <header class="account-dialog__header">
+      <div><span>OPTIONAL ACCOUNT / CLOUD PROGRESS</span><h2 id="account-dialog-title">账号与学习进度</h2></div>
+      <button class="account-dialog__close" type="button" data-account-close aria-label="关闭账号窗口">×</button>
+    </header>
+    <div class="account-dialog__body">
+      <section class="account-anonymous" data-account-anonymous>
+        <div class="account-tabs" role="tablist" aria-label="登录或注册">
+          <button type="button" role="tab" data-account-tab="login" aria-selected="true">登录</button>
+          <button type="button" role="tab" data-account-tab="register" aria-selected="false">创建账号</button>
+        </div>
+        <form class="account-form" data-account-form="login">
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="account-submit" type="submit">登录并同步</button>
+        </form>
+        <form class="account-form" data-account-form="register" hidden>
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="new-password" required></label>
+          <p class="account-help">用户名支持 3–24 个中文、字母、数字、下划线或连字符。密码只需 4–64 个字符，不要求复杂组合。</p>
+          <button class="account-submit" type="submit">创建账号</button>
+        </form>
+      </section>
+      <section class="account-signed-in" data-account-signed-in hidden>
+        <div class="account-user-card">
+          <strong data-account-username></strong>
+          <p>学习记录会同步到这个账号；退出后网站仍然完全公开可读。</p>
+        </div>
+        <section class="account-merge" data-account-merge hidden>
+          <h3>检测到本机学习记录</h3>
+          <p>你可以把未登录时的记录合并到账号，也可以只使用已有云端记录。本机记录不会被静默删除。</p>
+          <div class="account-merge__actions">
+            <button class="account-action" type="button" data-account-merge-confirm>合并到账号</button>
+            <button class="account-action is-secondary" type="button" data-account-cloud-only>仅使用云端</button>
+          </div>
+        </section>
+        <div class="account-signed-in__actions">
+          <button class="account-action is-secondary" type="button" data-account-logout>退出登录</button>
+        </div>
+      </section>
+      <p class="account-status" data-account-status role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+  <div class="sync-toast" data-sync-toast role="status" aria-live="polite" hidden></div>`;
 }
 
 function siteFooter() {
@@ -382,12 +431,15 @@ function pageDocument({ title, description, body, interactive }) {
   <title>${escapeHtml(title)} · XIANYUWO</title>
 ${interactiveAssets}  <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
+  <link rel="stylesheet" href="/assets/learning-progress.css">
   <script src="/assets/knowledge.js" defer></script>
+  <script src="/assets/learning-progress.js" defer></script>
 </head>
 <body>
 ${siteHeader()}
 ${body}
 ${siteFooter()}
+${accountDialog()}
 </body>
 </html>
 `;
@@ -889,8 +941,25 @@ function renderArticlePage(document, markdown, previous, next, documents) {
     ? `<a href="${next.url}"><small>NEXT →</small>${escapeHtml(next.title)}</a>`
     : "<span></span>";
 
+  const articleTracking = document.isReadme
+    ? ""
+    : ` data-learning-article data-article-id="${escapeHtml(document.relativeMarkdown)}" data-article-title="${escapeHtml(document.title)}" data-article-category="${escapeHtml(document.category)}"`;
+  const progressCard = document.isReadme
+    ? ""
+    : `
+      <section class="article-progress-card" aria-label="本文学习进度">
+        <div>
+          <span class="article-progress-card__eyebrow">LEARNING PROGRESS</span>
+          <strong data-article-progress-status>正在读取学习记录…</strong>
+          <p data-article-progress-detail>未登录也可以正常阅读和保存本机进度。</p>
+        </div>
+        <div class="article-progress-card__actions">
+          <button type="button" data-article-progress-resume hidden>继续上次位置</button>
+          <button class="is-primary" type="button" data-article-progress-complete>标记为已完成</button>
+        </div>
+      </section>`;
   const body = `
-  <main>
+  <main${articleTracking}>
     <div class="article-context knowledge-shell">
       ${renderBreadcrumb(document, categories)}
       ${renderCategoryStrip(categories, document.category)}
@@ -899,6 +968,7 @@ function renderArticlePage(document, markdown, previous, next, documents) {
       <div class="eyebrow">${escapeHtml(document.category)} / ${document.isReadme ? "CATEGORY" : "KNOWLEDGE NOTE"}</div>
       <h1>${escapeHtml(document.title)}</h1>
       <p class="hero-copy">${escapeHtml(document.summary)}</p>
+      ${progressCard}
     </section>
     <div class="article-layout knowledge-shell">
       ${renderToc(rendered.toc)}
@@ -931,8 +1001,8 @@ function renderLibraryIndex(documents) {
     const cards = articles.filter((document) => document.category === category.name).map((document) => {
       const search = `${document.title} ${document.category} ${document.summary}`.toLocaleLowerCase("zh-CN");
       return `
-        <a class="article-card" data-article-card data-search="${escapeHtml(search)}" href="${document.url}">
-          <div><h3>${escapeHtml(document.title)}</h3><p>${escapeHtml(document.summary)}</p></div>
+        <a class="article-card" data-article-card data-article-id="${escapeHtml(document.relativeMarkdown)}" data-article-title="${escapeHtml(document.title)}" data-search="${escapeHtml(search)}" href="${document.url}">
+          <div><h3>${escapeHtml(document.title)}</h3><p>${escapeHtml(document.summary)}</p><span class="article-progress-badge" data-progress-label>未开始</span></div>
           <span class="card-arrow">阅读 →</span>
         </a>`;
     }).join("");
@@ -966,6 +1036,19 @@ function renderLibraryIndex(documents) {
       <div class="library-search">
         <input id="knowledge-search" type="search" placeholder="搜索标题、分类或关键词…" autocomplete="off" aria-label="搜索知识库">
       </div>
+      <section class="learning-dashboard" data-learning-dashboard aria-label="学习进度概览">
+        <div class="learning-dashboard__top">
+          <div><span class="learning-dashboard__eyebrow">YOUR LEARNING MAP</span><h2>你的学习进度</h2></div>
+          <span class="learning-dashboard__identity" data-dashboard-identity>当前未登录，学习记录保存在这台设备。</span>
+        </div>
+        <div class="learning-dashboard__stats">
+          <div><span>已完成</span><strong data-dashboard-completed>0 / ${articles.length}</strong></div>
+          <div><span>学习中</span><strong data-dashboard-progress>0</strong></div>
+          <div><span>总进度</span><strong data-dashboard-percent>0%</strong></div>
+        </div>
+        <div class="learning-dashboard__bar" aria-hidden="true"><i data-dashboard-bar></i></div>
+        <div class="learning-dashboard__continue" data-dashboard-continue>打开任意文章即可开始记录进度。</div>
+      </section>
     </section>
     <div class="library-context knowledge-shell">
       ${renderCategoryStrip(categories)}

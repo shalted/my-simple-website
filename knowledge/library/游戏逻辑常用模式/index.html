@@ -7,7 +7,9 @@
   <title>游戏逻辑常用模式 · XIANYUWO</title>
   <link rel="stylesheet" href="/assets/site-tokens.css">
   <link rel="stylesheet" href="/assets/knowledge.css">
+  <link rel="stylesheet" href="/assets/learning-progress.css">
   <script src="/assets/knowledge.js" defer></script>
+  <script src="/assets/learning-progress.js" defer></script>
 </head>
 <body>
 
@@ -31,6 +33,7 @@
           <button type="submit" aria-label="提交搜索">搜索</button>
         </form>
         <a href="https://github.com/shalted/my-simple-website" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <button class="account-trigger" type="button" data-account-open>登录 / 进度</button>
       </div>
     </nav>
     <div class="reading-progress" data-reading-progress aria-hidden="true"><i></i></div>
@@ -50,6 +53,7 @@
       <div class="eyebrow">游戏逻辑常用模式 / CATEGORY</div>
       <h1>游戏逻辑常用模式</h1>
       <p class="hero-copy">这个分类用于沉淀游戏逻辑里高频出现的小模式：时间控制、冷却、Tick、脏标记、位标记、延迟触发、节流、防连点、重试间隔等。</p>
+
     </section>
     <div class="article-layout knowledge-shell">
       <details class="toc" data-article-toc open>
@@ -82,5 +86,50 @@
   <footer class="knowledge-footer">
     <div class="knowledge-shell">XIANYUWO / KNOWLEDGE PIPELINE · 从 Markdown 自动生成</div>
   </footer>
+
+  <dialog class="account-dialog" data-account-dialog aria-labelledby="account-dialog-title">
+    <header class="account-dialog__header">
+      <div><span>OPTIONAL ACCOUNT / CLOUD PROGRESS</span><h2 id="account-dialog-title">账号与学习进度</h2></div>
+      <button class="account-dialog__close" type="button" data-account-close aria-label="关闭账号窗口">×</button>
+    </header>
+    <div class="account-dialog__body">
+      <section class="account-anonymous" data-account-anonymous>
+        <div class="account-tabs" role="tablist" aria-label="登录或注册">
+          <button type="button" role="tab" data-account-tab="login" aria-selected="true">登录</button>
+          <button type="button" role="tab" data-account-tab="register" aria-selected="false">创建账号</button>
+        </div>
+        <form class="account-form" data-account-form="login">
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="account-submit" type="submit">登录并同步</button>
+        </form>
+        <form class="account-form" data-account-form="register" hidden>
+          <label>用户名<input name="username" autocomplete="username" required></label>
+          <label>密码<input name="password" type="password" autocomplete="new-password" required></label>
+          <p class="account-help">用户名支持 3–24 个中文、字母、数字、下划线或连字符。密码只需 4–64 个字符，不要求复杂组合。</p>
+          <button class="account-submit" type="submit">创建账号</button>
+        </form>
+      </section>
+      <section class="account-signed-in" data-account-signed-in hidden>
+        <div class="account-user-card">
+          <strong data-account-username></strong>
+          <p>学习记录会同步到这个账号；退出后网站仍然完全公开可读。</p>
+        </div>
+        <section class="account-merge" data-account-merge hidden>
+          <h3>检测到本机学习记录</h3>
+          <p>你可以把未登录时的记录合并到账号，也可以只使用已有云端记录。本机记录不会被静默删除。</p>
+          <div class="account-merge__actions">
+            <button class="account-action" type="button" data-account-merge-confirm>合并到账号</button>
+            <button class="account-action is-secondary" type="button" data-account-cloud-only>仅使用云端</button>
+          </div>
+        </section>
+        <div class="account-signed-in__actions">
+          <button class="account-action is-secondary" type="button" data-account-logout>退出登录</button>
+        </div>
+      </section>
+      <p class="account-status" data-account-status role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+  <div class="sync-toast" data-sync-toast role="status" aria-live="polite" hidden></div>
 </body>
 </html>

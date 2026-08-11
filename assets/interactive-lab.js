@@ -22,6 +22,53 @@
     if (!Array.isArray(value) || value.length === 0) fail("steps 必须是非空数组");
   }
 
+  const labArticles = {
+    "/knowledge/ability-flow/": ["一次技能从输入到结束", "/knowledge/library/工程设计/一次技能从输入到结束/"],
+    "/knowledge/binary-heap/": ["二叉堆优先队列", "/knowledge/library/数据结构/二叉堆优先队列/"],
+    "/knowledge/config-pipeline/": ["配置数据生成管线", "/knowledge/library/工程设计/配置数据生成管线/"],
+    "/knowledge/dirty-attribute/": ["属性脏标记与局部重算", "/knowledge/library/游戏逻辑常用模式/属性脏标记与局部重算/"],
+    "/knowledge/effect-lifecycle/": ["Effect / Buff 生命周期", "/knowledge/library/工程设计/Effect与Buff生命周期/"],
+    "/knowledge/network-prediction/": ["网络预测与服务器校正", "/knowledge/library/工程设计/网络预测与服务器校正/"],
+    "/knowledge/projectile-motion/": ["命中后的运动与投射物", "/knowledge/library/工程设计/命中后的运动与投射物/"],
+    "/knowledge/resource-scope/": ["资源作用域与引用释放", "/knowledge/library/工程设计/资源作用域与引用释放/"],
+    "/knowledge/swarm-ai/": ["集群 AI 槽位与行为", "/knowledge/library/算法/集群AI槽位分配与非攻击意图/"],
+    "/knowledge/tag-arbitration/": ["状态来源与技能仲裁", "/knowledge/library/工程设计/状态来源与技能仲裁/"],
+    "/knowledge/target-filter/": ["目标筛选与命中判定", "/knowledge/library/算法/目标筛选与命中判定/"],
+    "/knowledge/ui-stack-pool/": ["UI 页面栈与面板池", "/knowledge/library/工程设计/UI页面栈与面板池/"],
+    "/knowledge/virtual-list/": ["虚拟列表与节点复用", "/knowledge/library/工程设计/虚拟列表与节点复用/"]
+  };
+
+  function getLabArticle() {
+    if (window.location.pathname === "/knowledge/systems-lab/") {
+      if (window.location.hash === "#random") {
+        return ["随机系统", "/knowledge/library/游戏逻辑常用模式/随机系统/"];
+      }
+      if (window.location.hash === "#space") {
+        return ["空间划分：九宫格与四叉树", "/knowledge/library/算法/空间划分-九宫格与四叉树/"];
+      }
+      return ["位标记 Flags 与 BitMask", "/knowledge/library/游戏逻辑常用模式/位标记Flags与BitMask/"];
+    }
+
+    return labArticles[window.location.pathname] || null;
+  }
+
+  function renderLearningPath(main, article) {
+    if (!article) return;
+
+    const [title, href] = article;
+    const learningPath = document.createElement("aside");
+    learningPath.className = "lab-learning-path";
+    learningPath.setAttribute("aria-label", "推荐学习顺序");
+    learningPath.innerHTML = `
+      <div class="lab-learning-path__label">RECOMMENDED PATH</div>
+      <div class="lab-learning-path__steps">
+        <a href="${href}"><span>01</span><strong>先读完整讲解</strong><small>${title} · 概念、代码与具体示例</small></a>
+        <i aria-hidden="true">→</i>
+        <div><span>02</span><strong>再操作当前实验</strong><small>单步观察代码与状态变化</small></div>
+      </div>`;
+    main.prepend(learningPath);
+  }
+
   /**
    * 交互专题由独立页面组成，这里只统一站点级导航与层级，不介入专题自身逻辑。
    */
@@ -53,8 +100,12 @@
         </div>
       </nav>`;
 
-    if (articleLink instanceof HTMLAnchorElement) {
-      const articleHref = articleLink.getAttribute("href");
+    const mappedArticle = getLabArticle();
+    const mappedHref = mappedArticle ? mappedArticle[1] : null;
+    if (articleLink instanceof HTMLAnchorElement || mappedHref) {
+      const articleHref = articleLink instanceof HTMLAnchorElement
+        ? articleLink.getAttribute("href")
+        : mappedHref;
       if (!articleHref) fail("配套文章链接缺少 href");
       const contextLink = document.createElement("a");
       contextLink.className = "site-context-link";
@@ -85,6 +136,7 @@
 
     const main = document.querySelector("main");
     if (!(main instanceof HTMLElement)) fail("交互专题缺少 main 元素");
+    renderLearningPath(main, mappedArticle);
     const pageTitle = document.title.split("·")[0].trim();
     const context = document.createElement("div");
     context.className = "lab-site-context";

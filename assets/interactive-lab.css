@@ -245,10 +245,89 @@ html.xianyu-lab body {
   color: var(--color-text);
 }
 
+.lab-learning-path {
+  width: min(1180px, calc(100% - 40px));
+  margin: 20px auto 0;
+  padding: 14px 18px;
+  border-block: 1px solid var(--color-border);
+  background: rgba(var(--color-accent-rgb), 0.045);
+}
+
+.lab-learning-path__label {
+  margin-bottom: 10px;
+  color: var(--color-accent);
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
+.lab-learning-path__steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.lab-learning-path__steps > a,
+.lab-learning-path__steps > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  column-gap: 10px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.lab-learning-path__steps span {
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--color-text-dim);
+  font: 700 12px/1 var(--font-mono);
+}
+
+.lab-learning-path__steps strong {
+  overflow: hidden;
+  font: 700 14px/1.35 var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-learning-path__steps small {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font: 12px/1.45 var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-learning-path__steps > a:hover strong,
+.lab-learning-path__steps > a:focus-visible strong {
+  color: var(--color-accent);
+}
+
+.lab-learning-path__steps > i {
+  color: var(--color-text-dim);
+  font-style: normal;
+}
+
 @media (max-width: 620px) {
   .unified-site-header .site-shell-nav,
-  .lab-site-context {
+  .lab-site-context,
+  .lab-learning-path {
     width: min(100% - 24px, 1180px);
+  }
+
+  .lab-learning-path {
+    padding: 12px 0;
+    background: transparent;
+  }
+
+  .lab-learning-path__steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .lab-learning-path__steps > i {
+    display: none;
   }
 
   .unified-site-header .site-shell-menu-toggle {

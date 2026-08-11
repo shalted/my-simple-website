@@ -1,7 +1,30 @@
 {
   "name": "my-simple-website",
   "compatibility_date": "2026-07-21",
+  "main": "worker/index.js",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-simple-website-learning",
+      "database_id": "20dc5ca1-88f3-410d-aaf5-2b761aa4dfd5",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "LOGIN_RATE_LIMITER",
+      "namespace_id": "1968745994",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ]
 }

@@ -1448,7 +1448,7 @@ input {
   margin-top: 18px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
+  align-items: baseline;
   gap: 18px;
   border-block: 1px solid var(--line);
 }
@@ -1463,13 +1463,9 @@ input {
 
 .category-strip > div {
   display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
   gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.category-strip > div::-webkit-scrollbar {
-  display: none;
 }
 
 .category-strip a {
