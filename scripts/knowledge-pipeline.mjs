@@ -343,6 +343,7 @@ function siteHeader() {
       <div class="knowledge-nav-links" id="knowledge-primary-links" data-site-menu>
         <a href="/">首页</a>
         <a href="/knowledge/library/">知识库</a>
+        <a href="/knowledge/library/#learning-progress">学习进度</a>
         <a href="/knowledge/library/%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习路线</a>
         <a href="/#lab">交互专题</a>
         <form class="knowledge-nav-search" action="/knowledge/library/" role="search">
@@ -1038,7 +1039,7 @@ function renderLibraryIndex(documents) {
       <div class="library-search">
         <input id="knowledge-search" type="search" placeholder="搜索标题、分类或关键词…" autocomplete="off" aria-label="搜索知识库">
       </div>
-      <section class="learning-dashboard" data-learning-dashboard aria-label="学习进度概览">
+      <section class="learning-dashboard" id="learning-progress" data-learning-dashboard aria-label="学习进度概览">
         <div class="learning-dashboard__top">
           <div><span class="learning-dashboard__eyebrow">YOUR LEARNING MAP</span><h2>你的学习进度</h2></div>
           <span class="learning-dashboard__identity" data-dashboard-identity>当前未登录，学习记录保存在这台设备。</span>
