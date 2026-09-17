@@ -1,0 +1,287 @@
+{
+  "schema": "lion-resource-manifest/v1",
+  "source": "js/assets.js",
+  "totalBytes": 37603680,
+  "entries": [
+    {
+      "key": "idle",
+      "url": "./resources/idle.png",
+      "mime": "image/png",
+      "bytes": 862981,
+      "sha256": "aba4cd30ea5d1196538eac24bab664c7f323051d3d5d270b3aefc49470b35486"
+    },
+    {
+      "key": "move",
+      "url": "./resources/move.png",
+      "mime": "image/png",
+      "bytes": 663124,
+      "sha256": "5e106a3845be0b26117fc2be3f588af19c96870ca3d6c629263a577068ce393f"
+    },
+    {
+      "key": "attack",
+      "url": "./resources/attack.png",
+      "mime": "image/png",
+      "bytes": 863780,
+      "sha256": "f48e6c14bf8b461e7bbdb090af0b6cb780966c3c5386c9a52406373ef9b1b695"
+    },
+    {
+      "key": "courtyard",
+      "url": "./resources/courtyard.webp",
+      "mime": "image/webp",
+      "bytes": 68024,
+      "sha256": "6ed9fd836f8d6b52bde82ec6f6cb035e491a014ac6ea8f13fcbece421487d91e"
+    },
+    {
+      "key": "xiaotian_idle",
+      "url": "./resources/xiaotian_idle.png",
+      "mime": "image/png",
+      "bytes": 978956,
+      "sha256": "4bad7e9254834b344d432e4d7c43b4c9d2f717dec1104b2ddde55ad34a93e29c"
+    },
+    {
+      "key": "xiaotian_move",
+      "url": "./resources/xiaotian_move.png",
+      "mime": "image/png",
+      "bytes": 991852,
+      "sha256": "5879e2493d280ef5945ae358466adcfa1711f9c1a4eb2a37117668096ee98ecd"
+    },
+    {
+      "key": "xiaotian_attack",
+      "url": "./resources/xiaotian_attack.png",
+      "mime": "image/png",
+      "bytes": 987724,
+      "sha256": "3f9ffdbc3eb84fa4cc081aaa4cd9ce30c7534009981c2a6d870208fc18ab2a75"
+    },
+    {
+      "key": "xiaoyu_idle",
+      "url": "./resources/xiaoyu_idle.png",
+      "mime": "image/png",
+      "bytes": 910834,
+      "sha256": "0a208f5e6a66b033c5437a371e8ecb567b4ebc0e2d3a2af572c66d571a4233aa"
+    },
+    {
+      "key": "xiaoyu_move",
+      "url": "./resources/xiaoyu_move.png",
+      "mime": "image/png",
+      "bytes": 861579,
+      "sha256": "4041960c1d096f1770cd0394d81ad5ab7eee42b112f3f7eb6c608da9f5496688"
+    },
+    {
+      "key": "xiaoyu_attack",
+      "url": "./resources/xiaoyu_attack.png",
+      "mime": "image/png",
+      "bytes": 882608,
+      "sha256": "7533cbf972b681bcceba918465f0c430500482fa7f6de51ca7089cb068d5b832"
+    },
+    {
+      "key": "aolie_idle",
+      "url": "./resources/aolie_idle.png",
+      "mime": "image/png",
+      "bytes": 942947,
+      "sha256": "67ab526cea7cf00b8c6d601397892f46f19c82b9a1cb07b281c3a2f42eab3749"
+    },
+    {
+      "key": "aolie_move",
+      "url": "./resources/aolie_move.png",
+      "mime": "image/png",
+      "bytes": 870211,
+      "sha256": "8124a4662daef47f2f8c9e9889b2408a42eb3d267eea56d5533ffade0a8ad249"
+    },
+    {
+      "key": "aolie_attack",
+      "url": "./resources/aolie_attack.png",
+      "mime": "image/png",
+      "bytes": 952540,
+      "sha256": "6f9700bcb6ad31f709efe16c3ffd9dbc3f89b11ed2e6e76ca7dfc1a4168c8e95"
+    },
+    {
+      "key": "yangjian_idle",
+      "url": "./resources/yangjian_idle.png",
+      "mime": "image/png",
+      "bytes": 968571,
+      "sha256": "07189ba72e26f58a068285701e12a966861387788e2476d7d73df5b7c79861ed"
+    },
+    {
+      "key": "yangjian_move",
+      "url": "./resources/yangjian_move.png",
+      "mime": "image/png",
+      "bytes": 890596,
+      "sha256": "7ecfbb3ef3c11e141e9ef05cf497b2f77c3fad91910243796508dbf6847bf8c5"
+    },
+    {
+      "key": "yangjian_attack",
+      "url": "./resources/yangjian_attack.png",
+      "mime": "image/png",
+      "bytes": 970136,
+      "sha256": "845800618b6840f50a178adeda6392fe01c1e0ce5a970830f2f2a4cd93f3e8f8"
+    },
+    {
+      "key": "nezha_idle",
+      "url": "./resources/nezha_idle.png",
+      "mime": "image/png",
+      "bytes": 932268,
+      "sha256": "2e8a5dc74d511f3d3db0a95dece976c16f044ddc0949b65619ca03d63c3ce577"
+    },
+    {
+      "key": "nezha_move",
+      "url": "./resources/nezha_move.png",
+      "mime": "image/png",
+      "bytes": 969649,
+      "sha256": "0ccf553c88f1cef7d5c7e733e4d77cb9eb48601dd554ee9bc5ca7375b5dc3799"
+    },
+    {
+      "key": "nezha_attack",
+      "url": "./resources/nezha_attack.png",
+      "mime": "image/png",
+      "bytes": 955684,
+      "sha256": "81c2a2717c7be2a1e5a8e5b258980889899de1cbbe6fd1b2cb1247a9d5b3cf76"
+    },
+    {
+      "key": "jiuyue_skill",
+      "url": "./resources/jiuyue_skill.png",
+      "mime": "image/png",
+      "bytes": 1059154,
+      "sha256": "f71f070bcc0478bd8c227366a305ca00f67b5e66ebc97f5002a3a8d0e0297526"
+    },
+    {
+      "key": "xiaotian_skill",
+      "url": "./resources/xiaotian_skill.png",
+      "mime": "image/png",
+      "bytes": 1060596,
+      "sha256": "137c5d8309fa7a47931ff46331db3f7127e260fa32c98136ff44d84789f83d37"
+    },
+    {
+      "key": "xiaoyu_skill",
+      "url": "./resources/xiaoyu_skill.png",
+      "mime": "image/png",
+      "bytes": 1161126,
+      "sha256": "fcf8b498ea30d7d2ef94c2a9082e2696be713af6e3badabfbe7fcb9b3591a80a"
+    },
+    {
+      "key": "aolie_skill",
+      "url": "./resources/aolie_skill.png",
+      "mime": "image/png",
+      "bytes": 1067505,
+      "sha256": "b0f7c0695672d940849fd385669888cd080be3af6b671f74dea014fb7981dd2d"
+    },
+    {
+      "key": "yangjian_skill",
+      "url": "./resources/yangjian_skill.png",
+      "mime": "image/png",
+      "bytes": 1162861,
+      "sha256": "bfd49f90fdc94b5fdd4c2fac1352a7a459d003c832f411fcf296bcece84aeb45"
+    },
+    {
+      "key": "nezha_skill",
+      "url": "./resources/nezha_skill.png",
+      "mime": "image/png",
+      "bytes": 1372581,
+      "sha256": "97706f40cc2c532931fd39852eca7828f01dc99a1d24a700a92e34ab6e40c08c"
+    },
+    {
+      "key": "shrimp_star1",
+      "url": "./resources/shrimp_star1.png",
+      "mime": "image/png",
+      "bytes": 748203,
+      "sha256": "5669fbe2b852c7d1cb388d9883a9c2dfb3e29791708f2bff9dbb20a62e295b2e"
+    },
+    {
+      "key": "shrimp_star2",
+      "url": "./resources/shrimp_star2.png",
+      "mime": "image/png",
+      "bytes": 818138,
+      "sha256": "75c7be05f9222069922f9a3dba0e50b8e57ba59a6a460041db92261660d748a2"
+    },
+    {
+      "key": "shrimp_star3",
+      "url": "./resources/shrimp_star3.png",
+      "mime": "image/png",
+      "bytes": 858859,
+      "sha256": "71ddbe1eba2640edca3937f4cf0b9bc66b4e704316be972e4d94fc7e60d2f0c8"
+    },
+    {
+      "key": "nian_idle",
+      "url": "./resources/nian_idle.png",
+      "mime": "image/png",
+      "bytes": 1075070,
+      "sha256": "30d709a32ca1e0cdcee084d87ec5dcf6f751c99e1f65d3bb0ecf03274cb71876"
+    },
+    {
+      "key": "nian_move",
+      "url": "./resources/nian_move.png",
+      "mime": "image/png",
+      "bytes": 915285,
+      "sha256": "966b3810d4f5dccebdeb3b89f08a6284caba2c4071a4b2eb625e8493a954dbe0"
+    },
+    {
+      "key": "nian_attack",
+      "url": "./resources/nian_attack.png",
+      "mime": "image/png",
+      "bytes": 950825,
+      "sha256": "ea08b0db741520901e761eabed9eea5b07652300b27d4b9b2d0fa239e97d5b21"
+    },
+    {
+      "key": "carrier_idle",
+      "url": "./resources/carrier_idle.png",
+      "mime": "image/png",
+      "bytes": 938246,
+      "sha256": "6ebc2d2d810339f2c264f2e10f34644729e740f1d8c23da0278a94eab23e43e3"
+    },
+    {
+      "key": "carrier_move",
+      "url": "./resources/carrier_move.png",
+      "mime": "image/png",
+      "bytes": 855187,
+      "sha256": "cecbc5ae8aeef8d0a3ddc36f8d562e3c6ee68013ff2659d5d1a3e964af416c88"
+    },
+    {
+      "key": "carrier_attack",
+      "url": "./resources/carrier_attack.png",
+      "mime": "image/png",
+      "bytes": 992821,
+      "sha256": "f99d77537d73fbe97aff336db8f3926e20c010a91eaa8bb7e7a6ddcc2a9f788b"
+    },
+    {
+      "key": "guard_idle",
+      "url": "./resources/guard_idle.png",
+      "mime": "image/png",
+      "bytes": 1031126,
+      "sha256": "156880f5e0b923a769099b15c022c1bcf734b05fb41a2e61e7abfb2897bdfbb4"
+    },
+    {
+      "key": "guard_move",
+      "url": "./resources/guard_move.png",
+      "mime": "image/png",
+      "bytes": 932134,
+      "sha256": "e30e96bc61a22de896a103f260666789a4d2ac906c1b566230a123e1cbc5ad08"
+    },
+    {
+      "key": "guard_attack",
+      "url": "./resources/guard_attack.png",
+      "mime": "image/png",
+      "bytes": 1002177,
+      "sha256": "b7fbc055030787254694322b22e40781d5830db2ae793173da932ad9dacbc502"
+    },
+    {
+      "key": "thrower_idle",
+      "url": "./resources/thrower_idle.png",
+      "mime": "image/png",
+      "bytes": 1051679,
+      "sha256": "8baf9caed7844e4dac146a7b28533ad955766de09fc7c59412df29fccf3e403c"
+    },
+    {
+      "key": "thrower_move",
+      "url": "./resources/thrower_move.png",
+      "mime": "image/png",
+      "bytes": 1007761,
+      "sha256": "27d4f741e716a82c9ba9609b73c944c860a42797e585c039e10babd2d90bc21c"
+    },
+    {
+      "key": "thrower_attack",
+      "url": "./resources/thrower_attack.png",
+      "mime": "image/png",
+      "bytes": 1018282,
+      "sha256": "2811e3755c96a3afefdea32beddb90161e43ed06b22c2ec5919a9e717399fe03"
+    }
+  ]
+}
