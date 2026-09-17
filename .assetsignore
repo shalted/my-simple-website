@@ -5,6 +5,9 @@ content/
 docs/
 migrations/
 scripts/
+output/
+games/jiuyue/art/
+games/jiuyue/js/assets.js
 worker/
 README.md
 package.json

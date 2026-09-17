@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "game:build": "node scripts/build-jiuyue-assets.mjs && node scripts/build-jiuyue-resources.mjs",
+    "game:test": "node --test scripts/test-jiuyue.mjs scripts/test-jiuyue-experience-ui.mjs scripts/test-jiuyue-enemies.mjs scripts/test-jiuyue-content.mjs scripts/test-jiuyue-onboarding.mjs scripts/test-jiuyue-retry.mjs scripts/test-jiuyue-flow.mjs",
     "knowledge:import": "node scripts/knowledge-pipeline.mjs import",
     "knowledge:build": "node scripts/knowledge-pipeline.mjs build",
     "knowledge:all": "node scripts/knowledge-pipeline.mjs all",
