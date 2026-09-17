@@ -1,0 +1,27 @@
+{
+  "input": "games\\jiuyue\\art\\xiaotian\\source-idle.png",
+  "output": "games\\jiuyue\\art\\xiaotian\\matted-idle.png",
+  "source_size": [
+    1536,
+    1024
+  ],
+  "birefnet_model": "ZhengPeng7/BiRefNet_HR",
+  "birefnet_revision": "a7a562f6fd16021180f2f4348f4de003a2d3d1e1",
+  "birefnet_input_size": 2048,
+  "vitmatte_model": "hustvl/vitmatte-small-composition-1k",
+  "vitmatte_revision": "6a58ad7646403c1df626fbd746900aec7361ea1d",
+  "foreground_threshold": 0.98,
+  "background_threshold": 0.02,
+  "edge_radius": 4,
+  "preview_files": {
+    "white": "games\\jiuyue\\art\\xiaotian\\matted-idle_preview_white.png",
+    "black": "games\\jiuyue\\art\\xiaotian\\matted-idle_preview_black.png",
+    "board": "games\\jiuyue\\art\\xiaotian\\matted-idle_preview_board.png"
+  },
+  "unique_alpha_values": 256,
+  "transparent_pixels": 983609,
+  "semi_transparent_pixels": 73808,
+  "opaque_pixels": 515447,
+  "transparent_rgb_nonzero": 0,
+  "visual_fringe_check_required": true
+}
