@@ -1,0 +1,330 @@
+{
+  "frameSize": [
+    416,
+    480
+  ],
+  "anchor": [
+    208,
+    440
+  ],
+  "sourceCell": 512,
+  "scale": 0.869140625,
+  "referenceBounds": [
+    13,
+    29,
+    393,
+    444
+  ],
+  "sourceBounds": [
+    58,
+    22,
+    435,
+    500
+  ],
+  "backdrop": "#FF00FF",
+  "actions": {
+    "idle": {
+      "durationsMs": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "frames": [
+        {
+          "sourceBounds": [
+            58,
+            22,
+            435,
+            500
+          ],
+          "offset": [
+            -14,
+            5
+          ],
+          "outputBounds": [
+            34,
+            22,
+            365,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            63,
+            19,
+            438,
+            500
+          ],
+          "offset": [
+            -14,
+            4
+          ],
+          "outputBounds": [
+            39,
+            20,
+            368,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            73,
+            25,
+            449,
+            502
+          ],
+          "offset": [
+            -14,
+            3
+          ],
+          "outputBounds": [
+            48,
+            23,
+            378,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            64,
+            20,
+            435,
+            498
+          ],
+          "offset": [
+            -14,
+            7
+          ],
+          "outputBounds": [
+            40,
+            23,
+            366,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            57,
+            15,
+            431,
+            498
+          ],
+          "offset": [
+            -14,
+            7
+          ],
+          "outputBounds": [
+            34,
+            19,
+            362,
+            440
+          ]
+        }
+      ]
+    },
+    "move": {
+      "durationsMs": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "frames": [
+        {
+          "sourceBounds": [
+            67,
+            13,
+            430,
+            500
+          ],
+          "offset": [
+            -14,
+            4
+          ],
+          "outputBounds": [
+            44,
+            16,
+            361,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            69,
+            13,
+            421,
+            491
+          ],
+          "offset": [
+            -14,
+            12
+          ],
+          "outputBounds": [
+            45,
+            22,
+            353,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            75,
+            14,
+            432,
+            498
+          ],
+          "offset": [
+            -14,
+            7
+          ],
+          "outputBounds": [
+            51,
+            19,
+            363,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            69,
+            14,
+            424,
+            488
+          ],
+          "offset": [
+            -14,
+            14
+          ],
+          "outputBounds": [
+            45,
+            26,
+            356,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            74,
+            14,
+            432,
+            495
+          ],
+          "offset": [
+            -14,
+            8
+          ],
+          "outputBounds": [
+            48,
+            20,
+            364,
+            440
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "durationsMs": [
+        100,
+        100,
+        200,
+        200,
+        200
+      ],
+      "frames": [
+        {
+          "sourceBounds": [
+            82,
+            24,
+            440,
+            498
+          ],
+          "offset": [
+            -14,
+            7
+          ],
+          "outputBounds": [
+            56,
+            27,
+            371,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            82,
+            25,
+            444,
+            498
+          ],
+          "offset": [
+            -14,
+            7
+          ],
+          "outputBounds": [
+            56,
+            27,
+            373,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            82,
+            26,
+            451,
+            501
+          ],
+          "offset": [
+            -14,
+            4
+          ],
+          "outputBounds": [
+            56,
+            25,
+            380,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            82,
+            26,
+            448,
+            499
+          ],
+          "offset": [
+            -14,
+            5
+          ],
+          "outputBounds": [
+            56,
+            26,
+            377,
+            440
+          ]
+        },
+        {
+          "sourceBounds": [
+            82,
+            26,
+            440,
+            499
+          ],
+          "offset": [
+            -14,
+            5
+          ],
+          "outputBounds": [
+            57,
+            26,
+            370,
+            440
+          ]
+        }
+      ]
+    }
+  }
+}
