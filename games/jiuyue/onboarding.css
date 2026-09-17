@@ -1,0 +1,38 @@
+:root{--lion-ink:#4b2d24;--lion-paper:#fff4d7;--lion-cinnabar:#bd4939;--lion-gold:#f3b83f;--lion-night:rgba(39,24,30,.78)}
+/* 双目标共用一个挖孔遮罩；箭头与高亮边线沿用教程已有线宽和色板。 */
+.lion-tutorial__canvas{position:fixed;inset:0;width:100%;height:100%;overflow:visible}
+.lion-tutorial__shade{fill:var(--lion-night)}
+.lion-tutorial__arrow,.lion-tutorial__arrow-outline{fill:none;stroke:var(--lion-cinnabar);stroke-width:3px;stroke-linecap:round;stroke-linejoin:round}
+.lion-tutorial__arrow-outline{stroke:var(--lion-paper);stroke-width:7px}
+/* 小抄先给行动答案，完整计算与逐步教程收进折叠目录。 */
+.help>summary{font-size:14px;color:var(--lion-ink)}
+.help summary small{display:block;font-weight:400}
+.help-content{display:grid;gap:12px;margin-top:12px;font-size:12px;line-height:1.65}
+.help-content h3{margin:0 0 7px;font-size:14px;color:var(--lion-ink)}
+.help-content p{margin:7px 0 0}
+.help-priority{padding:12px;border:1px solid var(--lion-gold);border-left:4px solid var(--lion-cinnabar);border-radius:9px 7px 10px 6px;background:var(--lion-paper)}
+.help-priority strong,.help-facts strong{color:var(--lion-cinnabar)}
+.help-goal{border-left-color:var(--teal)}
+.help-goal strong{color:var(--teal)}
+.help-section{border-top:1px dashed var(--line);padding-top:12px}
+.help-facts{margin:0;display:grid;gap:12px}
+.help-facts dt{font-weight:700;color:var(--ink)}
+.help-facts dd{margin:0}.help-facts dd span{display:block}
+.help-facts strong{font-size:14px}
+.help-keypoints{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.help-keypoints strong,.help-keypoints span{display:block}
+.help-keypoints strong{color:var(--teal)}
+.help-reference{padding-top:12px;border-top:1px dashed var(--line)}
+.help-reference summary{color:var(--lion-cinnabar)}
+.lion-loading{position:fixed;inset:0;z-index:1200;display:grid;place-content:center;justify-items:center;padding:24px;color:var(--lion-ink);text-align:center;background:radial-gradient(circle at 50% 34%,rgba(255,239,173,.96) 0 10%,transparent 32%),linear-gradient(165deg,#712f37,#301f2c 72%);font-family:"KaiTi","STKaiti",serif}
+.lion-loading::before{content:"";position:absolute;inset:18px;border:1px solid rgba(255,220,132,.38);border-radius:28px;box-shadow:inset 0 0 70px rgba(36,13,18,.42);pointer-events:none}
+.lion-loading__moon{position:relative;width:132px;height:104px;margin-bottom:12px;border-radius:66px 66px 42px 42px;background:#f7cd62;box-shadow:0 0 54px #f6c95e,0 14px 0 -7px #a84636}
+.lion-loading__moon::after{content:"月饼装篮中";position:absolute;inset:36px 0 auto;font-weight:900;letter-spacing:.12em}
+.lion-loading__moon i{position:absolute;bottom:-12px;width:29px;height:29px;border:3px solid #6d382c;border-radius:50%;background:#efaa36;animation:lion-basket-bob 1.25s ease-in-out infinite}
+.lion-loading__moon i:nth-child(1){left:12px}.lion-loading__moon i:nth-child(2){left:51px;animation-delay:.14s}.lion-loading__moon i:nth-child(3){right:12px;animation-delay:.28s}
+.lion-loading__eyebrow{margin:16px 0 4px;color:#f8d67d;font:700 13px/1.4 "Microsoft YaHei",sans-serif;letter-spacing:.24em}.lion-loading h2{margin:0;color:#fff6d8;font-size:clamp(26px,5vw,42px)}.lion-loading__story{max-width:34em;margin:10px 0 20px;color:#f7dfbd;font-family:"Microsoft YaHei",sans-serif}
+.lion-loading__track{width:min(420px,78vw);height:12px;overflow:hidden;border:2px solid #6b362d;border-radius:999px;background:#3b2630;box-shadow:0 4px 0 rgba(20,8,13,.25)}.lion-loading__track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d9593f,#f5bf42 65%,#fff1a8);transition:width .16s linear}.lion-loading__count{margin:9px 0;color:#ffe59b;font:700 13px/1.4 "Microsoft YaHei",sans-serif}.lion-loading.is-error .lion-loading__moon{background:#d98266;box-shadow:0 0 42px rgba(217,130,102,.55)}.lion-loading.is-complete .lion-loading__moon{animation:lion-lantern-glow .6s ease both}
+.lion-tutorial{position:fixed;inset:0;z-index:1100;pointer-events:none;color:var(--lion-ink);font-family:"Microsoft YaHei",sans-serif}.lion-tutorial__spotlight{position:fixed;border:3px solid #ffd46b;border-radius:16px;box-shadow:0 0 0 7px rgba(255,212,107,.2),0 0 30px rgba(255,190,65,.75);transition:left .24s ease,top .24s ease,width .24s ease,height .24s ease}.lion-tutorial__card{position:fixed;width:min(330px,calc(100vw - 24px));box-sizing:border-box;padding:19px 20px 16px;border:2px solid #7d4934;border-radius:18px;background:linear-gradient(145deg,#fff8e6,#f8dfaa);box-shadow:0 14px 0 rgba(69,31,30,.28),0 24px 60px rgba(20,9,17,.34);pointer-events:auto}.lion-tutorial__card::before{content:"";position:absolute;inset:5px;border:1px dashed rgba(141,76,46,.38);border-radius:12px;pointer-events:none}.lion-tutorial__step{position:relative;margin:0 0 5px;color:#a24436;font-size:12px;font-weight:800;letter-spacing:.08em}.lion-tutorial h2{position:relative;margin:0 0 7px;font:900 22px/1.25 "KaiTi","STKaiti",serif}.lion-tutorial__body{position:relative;margin:0;line-height:1.65}.lion-tutorial__actions{position:relative;display:flex;justify-content:flex-end;margin-top:12px}.lion-tutorial button{padding:7px 12px;border:1px solid #9d6953;border-radius:999px;color:#744337;background:#fff7e3;font-weight:700;cursor:pointer}.lion-tutorial button:focus-visible{outline:3px solid #db663f;outline-offset:2px}
+@keyframes lion-basket-bob{50%{transform:translateY(-8px) rotate(4deg)}}@keyframes lion-lantern-glow{50%{transform:scale(1.08);filter:brightness(1.2)}}
+@media(max-width:640px){.lion-loading::before{inset:8px}.lion-tutorial__card{left:12px!important}.lion-tutorial__spotlight{border-radius:12px}}
+@media(prefers-reduced-motion:reduce){.lion-loading__moon i,.lion-loading.is-complete .lion-loading__moon{animation:none}.lion-loading__track span,.lion-tutorial__spotlight{transition:none}}
